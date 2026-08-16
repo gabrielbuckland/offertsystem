@@ -1,0 +1,42 @@
+{
+  "location": {
+    "score": 0.82,
+    "originalScore": 0.82,
+    "isOverridden": false
+  },
+  "family": {
+    "score": 0.74,
+    "originalScore": 0.74,
+    "isOverridden": false
+  },
+  "health": {
+    "score": 0.68,
+    "originalScore": 0.68,
+    "isOverridden": false
+  },
+  "leisure": {
+    "score": 0.71,
+    "originalScore": 0.71,
+    "isOverridden": false
+  },
+  "shopping": {
+    "score": 0.9,
+    "originalScore": 0.9,
+    "isOverridden": false
+  },
+  "catering": {
+    "score": 0.86,
+    "originalScore": 0.86,
+    "isOverridden": false
+  },
+  "view": {
+    "score": 0.55,
+    "originalScore": 0.55,
+    "isOverridden": false
+  },
+  "noise": {
+    "score": 0.62,
+    "originalScore": 0.62,
+    "isOverridden": false
+  }
+}

@@ -2,25 +2,15 @@
  * Zentrale Testvorbereitung der Projekte `pricehubble` und `contract`.
  * Eingebunden wird sie in `vitest.workspace.ts`, nicht paketlokal (PE-12).
  *
- * Zweck: AK-07 — in `test:unit` darf kein Netzwerkzugriff stattfinden. Solange
- * es keinen Adaptercode gibt, wird die Zusage hier durch eine Sperre auf der
- * globalen `fetch`-Funktion eingeloest. P3 ersetzt diese Sperre durch einen
- * MSW-Server mit `onUnhandledRequest: 'error'`; die Zusage bleibt dieselbe,
- * nur die Durchsetzung wird genauer.
+ * Zweck: AK-07 — in `test:unit` darf kein Netzwerkzugriff stattfinden.
+ *
+ * P1 hatte hier eine Sperre auf der globalen `fetch`-Funktion, solange es keinen
+ * Adaptercode gab. Diese Fassung loest sie ab (wie dort vorgesehen): Der MSW-Server
+ * mit `onUnhandledRequest: 'error'` ist die genauere Durchsetzung derselben Zusage —
+ * er laesst die abgedeckten Aufrufe zu und macht jeden nicht abgedeckten ausgehenden
+ * Request zum Testfehler. Damit ist das Entkopplungskriterium (a) maschinell belegt
+ * statt zugesichert (Spec 06 §6.2).
+ *
+ * Die Lebenszyklushaken stehen in `../msw/server.ts`; dieser Import registriert sie.
  */
-import { afterAll, beforeAll } from 'vitest';
-
-const echtesFetch = globalThis.fetch;
-
-beforeAll(() => {
-  globalThis.fetch = ((eingabe: unknown): never => {
-    throw new Error(
-      `AK-07: Netzwerkzugriff im Testlauf unterbunden (${String(eingabe)}). `
-      + 'Antworten kommen aus fixtures/pricehubble/, nie aus dem Netz.',
-    );
-  }) as unknown as typeof globalThis.fetch;
-});
-
-afterAll(() => {
-  globalThis.fetch = echtesFetch;
-});
+import '../msw/server.js';

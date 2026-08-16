@@ -1,0 +1,11 @@
+{
+  "isValuationStale": false,
+  "valuationSale": {
+    "valueRange": {
+      "lower": 893000,
+      "upper": 1079300
+    },
+    "valuationConfidence": "good",
+    "valuationDate": "2026-03-27"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "id": "00000000-0000-4000-8000-000000000001",
+  "countryCode": "CH",
+  "isValuationStale": true,
+  "property": {
+    "livingArea": 82,
+    "balconyArea": 12,
+    "numberOfRooms": 3.5,
+    "floorNumber": 2,
+    "numberOfBathrooms": 1,
+    "hasLift": true,
+    "buildingYear": 2026,
+    "energyLabel": "minergie",
+    "heatingGenerationType": "heat_pump_air",
+    "condition": {
+      "bathrooms": "new_or_recently_renovated",
+      "flooring": "new_or_recently_renovated",
+      "kitchen": "new_or_recently_renovated",
+      "windows": "new_or_recently_renovated"
+    },
+    "quality": {
+      "bathrooms": "high_quality",
+      "flooring": "high_quality",
+      "kitchen": "high_quality",
+      "windows": "high_quality"
+    },
+    "location": {
+      "address": {
+        "street": "Musterstrasse",
+        "houseNumber": "1",
+        "postCode": "6000",
+        "city": "Luzern"
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "isValuationStale": false,
+  "valuationSale": {
+    "value": 971000,
+    "valueRange": {
+      "lower": 893000,
+      "upper": 1079300
+    },
+    "valuationConfidence": "good",
+    "valuationConfidenceScore": 0.191266805,
+    "valuationDate": "2026-03-27"
+  },
+  "marketTrendIndicator": {
+    "quarterly": 0.4
+  }
+}

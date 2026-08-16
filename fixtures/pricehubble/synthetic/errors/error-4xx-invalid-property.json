@@ -1,0 +1,1 @@
+{ "error": "validation_error", "field": "property.livingArea", "message": "must be > 0" }

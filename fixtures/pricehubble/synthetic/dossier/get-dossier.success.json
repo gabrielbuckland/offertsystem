@@ -1,0 +1,48 @@
+{
+  "id": "00000000-0000-4000-8000-000000000001",
+  "countryCode": "CH",
+  "dealType": "sale",
+  "createdAt": "2026-01-01T00:00:00Z",
+  "modifiedAt": "2026-03-27T15:55:55.102192Z",
+  "isValuationStale": false,
+  "property": {
+    "livingArea": 127.0,
+    "balconyArea": 120.0,
+    "numberOfRooms": 5.5,
+    "floorNumber": 3,
+    "numberOfBathrooms": 2,
+    "hasLift": true,
+    "buildingYear": 2026,
+    "energyLabel": "minergie",
+    "heatingGenerationType": "heat_pump_air",
+    "condition": {
+      "bathrooms": "new_or_recently_renovated",
+      "flooring": "new_or_recently_renovated",
+      "kitchen": "new_or_recently_renovated",
+      "windows": "new_or_recently_renovated"
+    },
+    "quality": {
+      "bathrooms": "high_quality",
+      "flooring": "high_quality",
+      "kitchen": "high_quality",
+      "windows": "high_quality"
+    },
+    "propertyType": { "code": "apartment", "subcode": "apartment_normal" },
+    "location": {
+      "address": {
+        "street": "Musterstrasse",
+        "houseNumber": "1",
+        "postCode": "6000",
+        "city": "Luzern"
+      },
+      "coordinates": { "latitude": 47.05, "longitude": 8.3 }
+    }
+  },
+  "valuationSale": {
+    "value": 971000,
+    "valueRange": { "lower": 893000, "upper": 1079300 },
+    "valuationConfidence": "good",
+    "valuationConfidenceScore": 0.191266805,
+    "valuationDate": "2026-03-27"
+  }
+}
