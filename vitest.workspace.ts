@@ -20,12 +20,16 @@ const MUSTER = 'test/**/*.test.{ts,tsx}';
  *  netzberuehrenden Projekte greifen (AK-07, PE-12). */
 const MSW_VORBEREITUNG = `${wurzel}packages/pricehubble/test/setup/msw.ts`;
 
+/** Setzt Seed und numRuns von fast-check und schreibt die Nachweisartefakte (PE-18). */
+const PROPERTY_VORBEREITUNG = `${wurzel}packages/core/test/property/globalSetup.ts`;
+
 interface ProjektOptionen {
   readonly name: string;
   readonly root: string;
   readonly include: readonly string[];
   readonly exclude?: readonly string[];
   readonly setupFiles?: readonly string[];
+  readonly globalSetup?: string;
 }
 
 const projekt = (optionen: ProjektOptionen) => ({
@@ -36,13 +40,20 @@ const projekt = (optionen: ProjektOptionen) => ({
     include: [...optionen.include],
     exclude: [...(optionen.exclude ?? []), '**/node_modules/**', '**/dist/**'],
     ...(optionen.setupFiles === undefined ? {} : { setupFiles: [...optionen.setupFiles] }),
+    ...(optionen.globalSetup === undefined ? {} : { globalSetup: optionen.globalSetup }),
     environment: 'node' as const,
     passWithNoTests: true,
   },
 });
 
 export default defineWorkspace([
-  projekt({ name: 'core', root: './packages/core', include: [MUSTER] }),
+  projekt({
+    name: 'core',
+    root: './packages/core',
+    include: [MUSTER, 'test/**/*.property.test.ts'],
+    globalSetup: PROPERTY_VORBEREITUNG,
+    setupFiles: [`${wurzel}packages/core/test/property/setup.ts`],
+  }),
   projekt({
     name: 'pricehubble',
     root: './packages/pricehubble',

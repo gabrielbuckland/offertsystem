@@ -81,9 +81,45 @@ export default tseslint.config(
     },
   },
 
-  // R1 — Der Berechnungskern ist nach aussen abhaengigkeitsfrei (NFA-02, I-03, I-23).
+  // R1a — Der Berechnungskern ist nach aussen abhaengigkeitsfrei (NFA-02, I-03, I-23).
+  // Gilt fuer das GANZE Paket, Tests eingeschlossen: Ein Kerntest, der ein Schwesterpaket
+  // oder React hereinzoege, machte die Abhaengigkeitsfreiheit zur blossen Absichtserklaerung.
   {
     files: ['packages/core/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: ['@offert/pricehubble', '@offert/pricehubble/*',
+                    '@offert/offer', '@offert/offer/*',
+                    '@offert/web', '@offert/web/*'],
+            message: 'NFA-02/I-23: Der Berechnungskern darf kein aeusseres Modul kennen. '
+                   + 'Zugriff auf Bewertungsdaten ausschliesslich ueber ValuationProvider.',
+          },
+          {
+            group: ['react', 'react-dom', 'next', 'next/*'],
+            message: 'Der Kern ist framework-frei (Spec 01 §2.1).',
+          },
+          {
+            group: ['axios', 'node-fetch', 'undici', 'msw', 'playwright', 'playwright-core'],
+            message: 'Der Kern kennt keinen HTTP-Client und keinen Browser (Spec 01 §3.2).',
+          },
+          KEINE_RELATIVEN_PAKETPFADE,
+        ],
+      }],
+    },
+  },
+
+  // R1b — Zusaetzlich fuer den QUELLCODE des Kerns: kein Dateisystem, keine Pruefsumme,
+  // kein Testcode. Der Geltungsbereich endet bewusst an `src/`.
+  //
+  // Die Property-Infrastruktur unter `test/property/` schreibt die Nachweisartefakte, die
+  // PE-18 verlangt, und liest dafuer `node:fs`. Ein paketweites Verbot zwaenge dazu, den
+  // Artefaktschreiber ausserhalb des Pakets anzusiedeln — die Aussage «der Kern liest
+  // nicht vom Dateisystem» wuerde dadurch nicht wahrer, nur die Ablage unuebersichtlicher.
+  // Wiederholt werden die Muster aus R1a, weil `no-restricted-imports` nicht additiv ist.
+  {
+    files: ['packages/core/src/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': ['error', {
         patterns: [
@@ -163,8 +199,15 @@ export default tseslint.config(
   },
 
   // Zugangsdaten werden ausschliesslich in apps/web/src/server gelesen (Spec 01 §7.2).
+  //
+  // Der Geltungsbereich ist `src/**`, nicht das ganze Paket: Die Zusage betrifft den
+  // ausgelieferten Code. Die Property-Infrastruktur unter `packages/core/test/property/`
+  // liest `FC_SEED` — das ist der von Spec 06 §4.2 vorgeschriebene Seed-Mechanismus und
+  // keine verdeckte Konfigurationsquelle des Kerns. Ein Verbot dort zwaenge dazu, den
+  // Seed anders hereinzureichen, ohne dass die Aussage «der Kern liest keine Umgebung»
+  // dadurch staerker wuerde.
   {
-    files: ['packages/**/*.{ts,tsx}'],
+    files: ['packages/*/src/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-properties': ['error', {
         object: 'process',
