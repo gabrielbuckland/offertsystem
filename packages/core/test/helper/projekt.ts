@@ -18,6 +18,15 @@ import {
   type PipelineEingang,
 } from '../../src/pipeline/stufe1-eingabe.js';
 import type { VermarkterFaktoren } from '../../src/pipeline/beschaffer.js';
+import {
+  berechneVerkaufssumme,
+  type VerkaufssummeErgebnis,
+} from '../../src/pipeline/stufe2-verkaufssumme.js';
+import {
+  ergaenzeAbgeleiteteFaktoren,
+  type GeschlossenerEingang,
+} from '../../src/pipeline/stufe2a-abgeleitete.js';
+import type { NormalisierungErgebnis } from '../../src/pipeline/stufe3-normalisierung.js';
 import type { FaktorId, LagescoreName } from '../../src/domain/ids.js';
 import type { FaktorParameter, Konfiguration } from '../../src/config/typen.js';
 import type { Score } from '../../src/domain/geld.js';
@@ -281,4 +290,50 @@ export function pipelineEingang(optionen: EingangsFixtureOptionen = {}): Pipelin
   const r = bereiteEingabeAuf(eingangsArgumente(optionen));
   if (!r.ok) throw new Error(`Stufe 1 des Fixtures schlug fehl: ${r.fehler.code}`);
   return r.wert;
+}
+
+/** Stufe 2 des Standardfixtures. */
+export function verkaufssummeErgebnis(
+  optionen: EingangsFixtureOptionen = {},
+): VerkaufssummeErgebnis {
+  const r = berechneVerkaufssumme(pipelineEingang(optionen));
+  if (!r.ok) throw new Error(`Stufe 2 des Fixtures schlug fehl: ${r.fehler.code}`);
+  return r.wert;
+}
+
+/** Eingang nach dem Zwischenschritt 4.2a; einzige zulaessige Eingabe von Stufe 3. */
+export function geschlossenerEingang(
+  optionen: EingangsFixtureOptionen = {},
+): GeschlossenerEingang {
+  const eingang = pipelineEingang(optionen);
+  const verkauf = berechneVerkaufssumme(eingang);
+  if (!verkauf.ok) throw new Error(`Stufe 2 des Fixtures schlug fehl: ${verkauf.fehler.code}`);
+  const r = ergaenzeAbgeleiteteFaktoren(eingang, verkauf.wert);
+  if (!r.ok) throw new Error(`Zwischenschritt des Fixtures schlug fehl: ${r.fehler.code}`);
+  return r.wert;
+}
+
+/**
+ * Normalisierungsergebnis mit frei gesetzten normierten Werten.
+ *
+ * Die Werte werden direkt gesetzt statt ueber Stufe 3 erzeugt: Die Stufe-4-Tests pruefen
+ * die Gewichtung, und ein Umweg ueber die Normalisierung machte ihre Erwartungswerte von
+ * den Faktorgrenzen abhaengig — ein Fehler in Stufe 3 wuerde dann als Fehler in Stufe 4
+ * erscheinen.
+ */
+export function normalisierungErgebnis(
+  normierte: Readonly<Record<string, number>>,
+): NormalisierungErgebnis {
+  const faktoren = Object.entries(normierte)
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([name, wert]) => ({
+      faktorId: faktorId(name),
+      rohwert: wert,
+      grenzeMin: 0,
+      grenzeMax: 1,
+      strategie: 'min-max' as const,
+      gekappt: false,
+      normiert: score(wert),
+    }));
+  return { faktoren };
 }
