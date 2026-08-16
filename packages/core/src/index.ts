@@ -87,3 +87,51 @@ export {
   type StrategieBezeichner as KernStrategieBezeichner,
   type Stuetzstelle as KernStuetzstelle,
 } from './config/typen.js';
+
+// --- Berechnungskern (P2), ANGEFUEGT und nicht ersetzt (PE-15) ---
+// Die fuenf Stufen sind einzeln exportiert und einzeln aufrufbar (NFA-03);
+// `berechne` ist nur Verkettung.
+//
+// Die Kerntypen der Konfiguration (`Konfiguration`, `FaktorParameter`, die vier
+// Kern-praefigierten Namen nach PE-27) stehen bereits weiter oben; sie werden hier
+// nicht erneut ausgefuehrt.
+export type { Branded } from './domain/brand.js';
+export * from './domain/ids.js';
+export * from './domain/geld.js';
+export * from './domain/result.js';
+export type { Adresse } from './domain/adresse.js';
+export type { ZuAbschlag } from './domain/zuabschlag.js';
+export type { Einheit } from './domain/einheit.js';
+export type { RepraesentativeParametrisierung, Wohnungstyp } from './domain/wohnungstyp.js';
+export { erzeugeLiegenschaft } from './domain/liegenschaft.js';
+export type { AggregatFehler, Liegenschaft, LiegenschaftEntwurf } from './domain/liegenschaft.js';
+export type { BerechnungsFehlerCode } from './fehler/codes.js';
+export { stufenFehler } from './fehler/stufenfehler.js';
+export type { StufenFehler } from './fehler/stufenfehler.js';
+export { validiereLiegenschaftEingabe } from './eingabe/validiere.js';
+export type { EingabeFehler, PreisanpassungsGrenzen } from './eingabe/validiere.js';
+export * from './ports/valuation-provider.js';
+export { alleToleranzen, rangeBreiteToleranz, toleranzFuer } from './config/toleranzen.js';
+export type { InvariantenId, Toleranz } from './config/toleranzen.js';
+export { gewichteteFlaeche } from './modell/flaeche.js';
+export { alleStrategien, loeseStrategieAuf } from './modell/normalisierung.js';
+export type { NormalisierterFaktor, Normalisierungsstrategie } from './modell/normalisierung.js';
+export { skalierung } from './modell/skalierung.js';
+export { beschafferFuer } from './pipeline/beschaffer.js';
+export type { Beschaffer, BeschaffungsKontext, VermarkterFaktoren } from './pipeline/beschaffer.js';
+export { bereiteEingabeAuf } from './pipeline/stufe1-eingabe.js';
+export type { EingangsArgumente, PipelineEingang } from './pipeline/stufe1-eingabe.js';
+export { berechneVerkaufssumme } from './pipeline/stufe2-verkaufssumme.js';
+export type { EinheitPreisPosition, VerkaufssummeErgebnis, WohnungstypAbleitung }
+  from './pipeline/stufe2-verkaufssumme.js';
+export { ergaenzeAbgeleiteteFaktoren } from './pipeline/stufe2a-abgeleitete.js';
+export type { GeschlossenerEingang } from './pipeline/stufe2a-abgeleitete.js';
+export { normalisiereFaktoren } from './pipeline/stufe3-normalisierung.js';
+export type { NormalisierungErgebnis } from './pipeline/stufe3-normalisierung.js';
+export { berechneAufwandindikator } from './pipeline/stufe4-gewichtung.js';
+export type { Faktorbeitrag, GewichtungErgebnis } from './pipeline/stufe4-gewichtung.js';
+export { bildeHonorarrange } from './pipeline/stufe5-honorar.js';
+export type { HonorarErgebnis } from './pipeline/stufe5-honorar.js';
+export { berechne } from './pipeline/berechne.js';
+export type { BerechnungsErgebnis } from './pipeline/berechne.js';
+export { sortiereNachSchluessel } from './util/sortierung.js';
