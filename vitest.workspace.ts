@@ -3,11 +3,20 @@ import { defineWorkspace } from 'vitest/config';
 
 const wurzel = fileURLToPath(new URL('.', import.meta.url));
 
-const alias = {
-  '@offert/core': `${wurzel}packages/core/src/index.ts`,
-  '@offert/pricehubble': `${wurzel}packages/pricehubble/src/index.ts`,
-  '@offert/offer': `${wurzel}packages/offer/src/index.ts`,
-};
+/**
+ * Reihenfolge zaehlt: Die Unterpfad-Regeln stehen VOR den Paketnamen, sonst griffe die
+ * exakte Namensregel zuerst und ein Import wie `@offert/offer/src/pdf/drucke-offerte.js`
+ * bliebe unaufgeloest. Unterpfade werden gebraucht, weil `druckeOfferte` bewusst nicht
+ * im Paketindex steht (er zoege `playwright` in das Browser-Bundle der Erfassung).
+ */
+const alias = [
+  { find: /^@offert\/core\/(.*)\.js$/, replacement: `${wurzel}packages/core/$1.ts` },
+  { find: /^@offert\/pricehubble\/(.*)\.js$/, replacement: `${wurzel}packages/pricehubble/$1.ts` },
+  { find: /^@offert\/offer\/(.*)\.js$/, replacement: `${wurzel}packages/offer/$1.ts` },
+  { find: '@offert/core', replacement: `${wurzel}packages/core/src/index.ts` },
+  { find: '@offert/pricehubble', replacement: `${wurzel}packages/pricehubble/src/index.ts` },
+  { find: '@offert/offer', replacement: `${wurzel}packages/offer/src/index.ts` },
+];
 
 /**
  * Alle Projekte lesen `test/**` und erfassen `.ts` UND `.tsx` (PE-12). Ein reines

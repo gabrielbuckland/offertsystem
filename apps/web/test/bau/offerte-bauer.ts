@@ -18,7 +18,9 @@ import {
   parseKonfiguration,
   rappen,
   score,
+  serialisiereEingang,
   type BerechnungsErgebnis,
+  type EingangsArgumente,
   type Einheit,
   type EinheitId,
   type FaktorId,
@@ -156,8 +158,8 @@ function lagescores(): Lagescores {
   };
 }
 
-export function baueBerechnungsErgebnis(optionen: BauOptionen = {}): BerechnungsErgebnis {
-  const ergebnis = berechne({
+export function baueEingangsArgumente(optionen: BauOptionen = {}): EingangsArgumente {
+  return {
     liegenschaft: baueLiegenschaft(optionen),
     bewertungen: [
       bewertung('T-3.5', 85_000_000, 'good'),
@@ -168,7 +170,11 @@ export function baueBerechnungsErgebnis(optionen: BauOptionen = {}): Berechnungs
     vermarkterFaktoren: { werte: new Map([['innenausbau_qualitaet' as FaktorId, 4]]) },
     konfiguration: standardKonfiguration(),
     zeitstempel: ZEITSTEMPEL,
-  });
+  };
+}
+
+export function baueBerechnungsErgebnis(optionen: BauOptionen = {}): BerechnungsErgebnis {
+  const ergebnis = berechne(baueEingangsArgumente(optionen));
   if (!ergebnis.ok) {
     throw new Error(`Berechnung fehlgeschlagen: ${ergebnis.fehler.code}`);
   }
@@ -184,16 +190,24 @@ export const BEISPIEL_KUNDE = {
 export const BEISPIEL_META = {
   offertId: 'A-2026-014',
   erstelltAm: ZEITSTEMPEL,
-  konfigVersion: '1.0.0',
+  // Aus der Konfiguration gelesen, nicht literal gesetzt: Sonst behauptete das Fixture
+  // eine Version, die der eingebettete Abdruck nicht traegt.
+  konfigVersion: standardKonfiguration().meta.konfigVersion,
   konfigPruefsumme: 'a'.repeat(64),
   berechnungsEingabe: { schemaVersion: 1 },
 } as const;
 
 export function baueBeispielOfferte(optionen: BauOptionen = {}): Offer {
+  const eingang = baueEingangsArgumente(optionen);
   return baueOfferte({
     ergebnis: baueBerechnungsErgebnis(optionen),
-    liegenschaft: baueLiegenschaft(optionen),
+    liegenschaft: eingang.liegenschaft,
     kunde: BEISPIEL_KUNDE,
-    meta: BEISPIEL_META,
+    meta: {
+      ...BEISPIEL_META,
+      // PE-08: der serialisierte EINGANG, nicht die Formulardaten. Nur so ist das
+      // Fixture derselbe Reproduktionsanker wie ein echt erzeugtes Artefakt.
+      berechnungsEingabe: serialisiereEingang(eingang) as Record<string, unknown>,
+    },
   });
 }
