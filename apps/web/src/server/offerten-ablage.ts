@@ -23,9 +23,9 @@ export interface ListenEintrag {
   readonly kunde: string;
   readonly liegenschaft: string;
   readonly erstelltAm: string;
-  readonly verkaufssumme?: number;
-  readonly honorarMin?: number;
-  readonly honorarMax?: number;
+  readonly verkaufssumme?: number | undefined;
+  readonly honorarMin?: number | undefined;
+  readonly honorarMax?: number | undefined;
   readonly fehlerhaft: boolean;
   readonly datei: string;
 }
