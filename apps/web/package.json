@@ -9,6 +9,14 @@
   "dependencies": {
     "@offert/core": "*",
     "@offert/offer": "*",
-    "@offert/pricehubble": "*"
+    "@offert/pricehubble": "*",
+    "next": "15.1.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "start": "next start"
   }
 }

@@ -21,11 +21,16 @@
     "test": "npm run lint && npm run typecheck && npm run test:unit",
     "verify": "npm run lint && npm run check:deps && npm run typecheck && npm run test:unit && npm run test:contract",
     "test:record": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/record-fixtures.ts",
+    "build": "npm run build --workspace @offert/web",
+    "dev": "npm run dev --workspace @offert/web",
+    "pdf:smoke": "node --experimental-strip-types tools/pdf-smoke.ts",
     "eval:config": "npm run typecheck && node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/config-validation.ts"
   },
   "devDependencies": {
     "@eslint/js": "9.9.0",
     "@types/node": "22.5.0",
+    "@types/react": "19.0.1",
+    "@types/react-dom": "19.0.2",
     "@vitest/coverage-v8": "2.0.5",
     "eslint": "9.9.0",
     "fast-check": "3.22.0",
