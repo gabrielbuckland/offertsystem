@@ -7,7 +7,10 @@
  * entsteht kein Artefakt (I-24).
  */
 import { berechne, serialisiereEingang } from '@offert/core';
-import { baueOfferte } from '@offert/offer';
+// Modulpfad statt Paketindex: Der Index re-exportiert auch die React-Komponenten
+// (.tsx). Node leistet fuer JSX kein Type-Stripping (PE-09), und dieser Pfad wird
+// von `tools/beispiel-offerte.ts` unter Node ausgefuehrt. Es bleibt ein Paketimport.
+import { baueOfferte } from '@offert/offer/src/model/baue-offerte.js';
 import { beschaffe, zuEingangsArgumenten } from '../../../server/eingang.js';
 import { erfassungsSchema } from '../../../server/erfassung-schema.js';
 import { zuFeldmeldungen } from '../../../server/feldmeldungen.js';

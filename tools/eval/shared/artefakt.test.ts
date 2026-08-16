@@ -65,3 +65,33 @@ describe('alsCsv', () => {
     expect(csv).toBe('a;b\n"x;y";"er sagte ""ja"""\n');
   });
 });
+
+describe('leseLatest — die drei Zeigerformen der Plaene', () => {
+  function zeiger(inhalt: unknown, ablage: string): string {
+    const wurzel = mkdtempSync(join(tmpdir(), 'eval-'));
+    const ordner = join(wurzel, 'artifacts', ...ablage.split('/'));
+    mkdirSync(join(ordner, '2026-08-16T10-00-00Z'), { recursive: true });
+    writeFileSync(join(ordner, 'latest.json'), JSON.stringify(inhalt), 'utf8');
+    return wurzel;
+  }
+
+  it('loest einen nur zeitstempelbenannten Zeiger auf (P2, config)', () => {
+    const w = zeiger({ verzeichnis: '2026-08-16T10-00-00Z' }, 'config');
+    expect(leseLatest(w, 'config'))
+      .toBe(join(w, 'artifacts', 'config', '2026-08-16T10-00-00Z'));
+  });
+
+  it('loest einen repositoriumsrelativen Zeiger auf (P2, scenarios)', () => {
+    const w = zeiger({ verzeichnis: 'artifacts/scenarios/2026-08-16T10-00-00Z' }, 'scenarios');
+    expect(leseLatest(w, 'scenarios'))
+      .toBe(join(w, 'artifacts', 'scenarios', '2026-08-16T10-00-00Z'));
+  });
+
+  it('loest einen Zeiger auf die Datei selbst auf (P3, contract)', () => {
+    const w = zeiger(
+      { pfad: join('/x', 'artifacts', 'contract', '2026-08-16T10-00-00Z', 'contract.json') },
+      'contract');
+    expect(leseLatest(w, 'contract'))
+      .toBe(join('/x', 'artifacts', 'contract', '2026-08-16T10-00-00Z'));
+  });
+});

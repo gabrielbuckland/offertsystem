@@ -11,7 +11,10 @@
  * Wohnungspreis, der die Anpassungen bereits enthaelt.
  */
 import { bereiteEingabeAuf, berechneVerkaufssumme, type Konfiguration } from '@offert/core';
-import { formatiereAggregat } from '@offert/offer';
+// Modulpfad statt Paketindex: Der Index re-exportiert die React-Komponenten (.tsx);
+// Node leistet fuer JSX kein Type-Stripping (PE-09). Serverseitige Module, die unter
+// Node laufen sollen, binden die Formatierer deshalb ueber ihren Modulpfad ein.
+import { formatiereAggregat } from '@offert/offer/src/format/de-ch.js';
 import { zuEingangsArgumenten, type Beschafft } from './eingang.js';
 import type { Erfassung } from './erfassung-schema.js';
 import { uebersetzeStufenFehler } from './fehlertexte.js';

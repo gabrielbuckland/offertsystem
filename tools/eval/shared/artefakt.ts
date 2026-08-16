@@ -12,8 +12,8 @@
  */
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export interface Laufkopf {
@@ -98,8 +98,21 @@ export function schreibeArtefakt(
  */
 export function leseLatest(wurzel: string, ablage: string): string {
   const pfad = join(wurzel, 'artifacts', ...ablage.split('/'), 'latest.json');
-  const zeiger = JSON.parse(readFileSync(pfad, 'utf8')) as { verzeichnis: string };
-  return zeiger.verzeichnis;
+  const zeiger = JSON.parse(readFileSync(pfad, 'utf8')) as {
+    verzeichnis?: string; pfad?: string;
+  };
+  // Die Zeiger der Plaene sind nicht formgleich: P2 schreibt `verzeichnis` teils
+  // repositoriumsrelativ, teils nur den Zeitstempel; P3 schreibt `pfad` auf die Datei.
+  // Statt drei Erzeuger nachtraeglich zu vereinheitlichen — was ihre Tests braeche —
+  // loest der Leser alle drei Formen auf. Er ist die einzige Stelle, die den Zeiger liest.
+  const roh = zeiger.verzeichnis ?? (zeiger.pfad === undefined ? undefined : dirname(zeiger.pfad));
+  if (roh === undefined) {
+    throw new Error(`Zeiger ${pfad} nennt weder 'verzeichnis' noch 'pfad'.`);
+  }
+  if (isAbsolute(roh)) return roh;
+  const alsRepoPfad = join(wurzel, roh);
+  if (existsSync(alsRepoPfad)) return alsRepoPfad;
+  return join(wurzel, 'artifacts', ...ablage.split('/'), roh);
 }
 
 /** Stabile Iterationsreihenfolge fuer alle Werkzeuge. */

@@ -15,7 +15,10 @@
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs/promises';
 import { join } from 'node:path';
-import { offerSchema, type Offer } from '@offert/offer';
+// Modulpfad statt Paketindex: Der Index re-exportiert auch die React-Komponenten
+// (.tsx). Node leistet fuer JSX kein Type-Stripping (PE-09), und dieser Pfad wird
+// von `tools/beispiel-offerte.ts` unter Node ausgefuehrt. Es bleibt ein Paketimport.
+import { offerSchema, type Offer } from '@offert/offer/src/model/offer.js';
 
 export interface ListenEintrag {
   readonly offertId: string;
