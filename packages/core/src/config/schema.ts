@@ -1,5 +1,7 @@
 /**
- * Ebene 1 der Konfigurationspruefung: Struktur (Spec 02 §3.1).
+ * Keine Formel. Ebene 1 der Konfigurationspruefung: Struktur (Spec 02 §3.1).
+ * Die geprueften Parameter gehen in eq:flaeche, eq:normalisierung,
+ * eq:aufwandindikator und eq:honorar_mapping ein; gerechnet wird hier nicht.
  * Geprueft werden Pflichtfelder, JSON-Typen, unbekannte Schluessel, Aufzaehlungen
  * und die Schemaversion. Zahlenbereiche gehoeren bewusst nach Ebene 2, damit
  * jede Verletzung einen fachlich sprechenden CFG_*-Code traegt.

@@ -1,5 +1,6 @@
 /**
- * Ein Zod-Artefakt fuer alle drei Pruefebenen (Spec 02 §3, NFA-08, AK-1).
+ * Keine Formel. Ein Zod-Artefakt fuer alle drei Pruefebenen
+ * (Spec 02 §3, NFA-08, AK-1).
  * Es gibt keine handgeschriebene interface-Definition der Konfiguration; alle
  * Typen entstehen per z.infer, damit Laufzeit- und Uebersetzungszeitpruefung
  * nicht auseinanderlaufen koennen.

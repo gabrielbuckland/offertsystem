@@ -1,5 +1,5 @@
 /**
- * Fehlercode-Namensraum der Konfiguration (Spec 02 §3.0, E-16).
+ * Keine Formel — Fehlercode-Namensraum der Konfiguration (Spec 02 §3.0, E-16).
  * CFG_* gilt ausschliesslich fuer LADEZEIT-Fehler. Laufzeit-Vorbedingungen der
  * Pipeline-Stufen tragen einen eigenen Namensraum; wo derselbe Sachverhalt
  * bereits zur Ladezeit feststellbar ist, ist der CFG_*-Code der frueher

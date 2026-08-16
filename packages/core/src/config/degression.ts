@@ -129,8 +129,12 @@ function findeEinheitenzahlGewicht(konfiguration: RohKonfiguration): {
 export function berechneNettoDegression(
   konfiguration: RohKonfiguration,
 ): NettoDegressionsBefund | undefined {
-  const projektumfang = findeEinheitenzahlGewicht(konfiguration);
-  if (projektumfang === undefined) return undefined;
+  // Bewusst NICHT `projektumfang` benannt: Der Faktor, der die Einheitenzahl traegt,
+  // heisst in der Standardkonfiguration zufaellig so, koennte aber jeden Bezeichner
+  // fuehren. Gesucht wird ueber den Quellschluessel (E-05, PE-03); ein Variablenname,
+  // der einen Faktorbezeichner nennt, legte eine Privilegierung nahe, die es nicht gibt.
+  const umfangFaktor = findeEinheitenzahlGewicht(konfiguration);
+  if (umfangFaktor === undefined) return undefined;
 
   const stuetzstellen = konfiguration.honorar.stuetzstellen;
   const letzte = stuetzstellen[stuetzstellen.length - 1];
@@ -139,8 +143,8 @@ export function berechneNettoDegression(
   const { gMin, gMax } = konfiguration.honorar.skalierung;
   if (gMin <= 0) return undefined;
 
-  const lambda = projektumfang.mMax / projektumfang.mMin;
-  const rhoMax = (gMin + projektumfang.gewicht * (gMax - gMin)) / gMin;
+  const lambda = umfangFaktor.mMax / umfangFaktor.mMin;
+  const rhoMax = (gMin + umfangFaktor.gewicht * (gMax - gMin)) / gMin;
   const schwelle = 1 / rhoMax;
 
   const kandidaten = new Set<number>();

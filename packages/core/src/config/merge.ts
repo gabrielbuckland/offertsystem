@@ -1,5 +1,5 @@
 /**
- * Zwei-Ebenen-Merge (Spec 02 §2.2, §2.3).
+ * Keine Formel. Zwei-Ebenen-Merge (Spec 02 §2.2, §2.3).
  * Ebene 1 ist die firmenweite Berechnungsbasis, Ebene 2 ein Teilbaum des
  * Projektdatensatzes — keine zweite Konfigurationsdatei. Ueberschreibbar sind
  * ausschliesslich die Dossier-Parameter je Wohnungstyp und die Zu-/Abschlaege
