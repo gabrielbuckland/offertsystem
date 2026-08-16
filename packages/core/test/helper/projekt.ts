@@ -184,21 +184,41 @@ export function standardKonfiguration(): Konfiguration {
  * Alle Einheiten tragen die Referenzflaechen und keine Anpassungen — damit ist die
  * Referenztreue I-05 an diesem Fixture unmittelbar pruefbar.
  */
-export function liegenschaftFixture(): Liegenschaft {
+export interface LiegenschaftFixtureOptionen {
+  /** Anpassungen der ERSTEN Einheit (A-01); alle uebrigen bleiben ohne. */
+  readonly anpassungenErsteEinheit?: readonly ZuAbschlag[];
+  /** Setzt beide Referenzflaechen des Wohnungstyps auf null — provoziert S-04. */
+  readonly referenzflaecheNull?: boolean;
+  readonly parkplaetze?: number;
+  /** Aussenflaeche fuer Typ UND Einheiten zugleich, damit I-05 haelt. */
+  readonly aussenflaeche?: number;
+}
+
+export function liegenschaftFixture(
+  optionen: LiegenschaftFixtureOptionen = {},
+): Liegenschaft {
+  const aussen = optionen.aussenflaeche ?? 0;
+  const basis = parametrisierungFixture();
   const typ = {
     id: wohnungstypId('T1'),
     zimmerzahl: 3.5,
-    parametrisierung: parametrisierungFixture(),
+    parametrisierung: optionen.referenzflaecheNull === true
+      ? {
+          ...basis,
+          flaecheInnen: quadratmeterAbNull(0),
+          flaecheAussen: quadratmeterAbNull(0),
+        }
+      : { ...basis, flaecheAussen: quadratmeterAbNull(aussen) },
   };
   const einheiten = ['A-01', 'A-02', 'A-03', 'A-04'].map((nummer, index) => ({
     id: einheitId(`E-${index + 1}`),
     wohnungsnummer: wohnungsnummer(nummer),
     wohnungstypId: typ.id,
     flaecheInnen: quadratmeter(92.5),
-    flaecheAussen: quadratmeterAbNull(0),
+    flaecheAussen: quadratmeterAbNull(aussen),
     stockwerk: index,
-    parkplaetze: 1,
-    anpassungen: [] as readonly ZuAbschlag[],
+    parkplaetze: optionen.parkplaetze ?? 1,
+    anpassungen: index === 0 ? optionen.anpassungenErsteEinheit ?? [] : [],
   }));
   const erzeugt = erzeugeLiegenschaft({
     id: liegenschaftId('L-1'),
@@ -212,8 +232,10 @@ export function liegenschaftFixture(): Liegenschaft {
   return erzeugt.wert;
 }
 
-export interface EingangsFixtureOptionen {
+export interface EingangsFixtureOptionen extends LiegenschaftFixtureOptionen {
   readonly liegenschaft?: Liegenschaft;
+  /** Ueberschreibt `flaeche.alpha` der Standardkonfiguration. */
+  readonly alpha?: number;
   readonly bewertungen?: readonly Referenzbewertung[];
   readonly lagescores?: Lagescores;
   readonly vermarkterFaktoren?: VermarkterFaktoren;
@@ -226,7 +248,7 @@ export interface EingangsFixtureOptionen {
 export function eingangsArgumente(
   optionen: EingangsFixtureOptionen = {},
 ): EingangsArgumente {
-  const liegenschaft = optionen.liegenschaft ?? liegenschaftFixture();
+  const liegenschaft = optionen.liegenschaft ?? liegenschaftFixture(optionen);
   const bewertungen = optionen.bewertungen ?? [referenzbewertungFixture('T1')];
   /**
    * Ohne ausdrueckliche Angabe wird die Vollstaendigkeit aus den Daten abgeleitet,
@@ -245,7 +267,11 @@ export function eingangsArgumente(
       ?? lagescoresFixture(new Map([[lagescoreName('location'), score(0.8)]])),
     vermarkterFaktoren: optionen.vermarkterFaktoren
       ?? { werte: new Map([[faktorId('innenausbau_qualitaet'), 3]]) },
-    konfiguration: optionen.konfiguration ?? standardKonfiguration(),
+    konfiguration: optionen.konfiguration ?? (
+      optionen.alpha === undefined
+        ? standardKonfiguration()
+        : { ...standardKonfiguration(), flaeche: { alpha: optionen.alpha } }
+    ),
     zeitstempel: optionen.zeitstempel ?? '2026-08-16T10:00:00.000Z',
   };
 }

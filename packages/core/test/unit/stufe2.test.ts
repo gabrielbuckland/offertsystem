@@ -1,0 +1,111 @@
+import { describe, expect, it } from 'vitest';
+import { berechneVerkaufssumme } from '../../src/pipeline/stufe2-verkaufssumme.js';
+import { pipelineEingang } from '../helper/projekt.js';
+
+describe('Stufe 2 — berechneVerkaufssumme (eq:flaeche, eq:qm_preis, eq:wohnungspreis, eq:verkaufssumme)', () => {
+  it('bildet q_t ungerundet und p_j auf ganze Rappen gerundet (R2)', () => {
+    // P_ref = 85 000 000 Rappen, A_ref = 92.5 m^2, alpha = 0.5, A_aussen = 0
+    const r = berechneVerkaufssumme(pipelineEingang());
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      const t = r.wert.typAbleitungen[0]!;
+      expect(t.quadratmeterpreis).toBeCloseTo(85_000_000 / 92.5, 9);
+      expect(Number.isInteger(t.quadratmeterpreis)).toBe(false);
+      for (const p of r.wert.positionen) expect(Number.isInteger(p.preis)).toBe(true);
+    }
+  });
+
+  it('haelt I-05 exakt: Referenzflaechen und keine Anpassungen ergeben P_ref', () => {
+    const r = berechneVerkaufssumme(pipelineEingang());
+    if (r.ok) for (const p of r.wert.positionen) expect(p.preis).toBe(85_000_000);
+  });
+
+  it('bildet V als exakte Ganzzahlsumme (eq:verkaufssumme)', () => {
+    const r = berechneVerkaufssumme(pipelineEingang());
+    if (r.ok) {
+      expect(r.wert.verkaufssumme).toBe(4 * 85_000_000);
+      expect(r.wert.einheitenzahl).toBe(4);
+    }
+  });
+
+  it('verknuepft Anpassungen additiv und reihenfolgeunabhaengig (I-08)', () => {
+    const a = [{ faktor: 0.1, begruendung: 'Attikalage mit Dachterrasse', erfassungsform: 'relativ' as const },
+               { faktor: -0.05, begruendung: 'Erdgeschoss stark einsehbar', erfassungsform: 'relativ' as const }];
+    const vor = berechneVerkaufssumme(pipelineEingang({ anpassungenErsteEinheit: a }));
+    const um = berechneVerkaufssumme(pipelineEingang({ anpassungenErsteEinheit: [a[1]!, a[0]!] }));
+    expect(vor.ok && um.ok).toBe(true);
+    if (vor.ok && um.ok) {
+      expect(vor.wert.positionen[0]!.preis).toBe(um.wert.positionen[0]!.preis);
+      expect(vor.wert.positionen[0]!.anpassungssumme).toBeCloseTo(0.05, 12);
+      expect(vor.wert.positionen[0]!.preis).toBe(85_000_000 * 1.05);
+    }
+  });
+
+  it('weist die Anpassungen einzeln aus (I-09, A-14)', () => {
+    const r = berechneVerkaufssumme(pipelineEingang({ anpassungenErsteEinheit: [
+      { faktor: -0.05, begruendung: 'Laermexposition Strassenseite', erfassungsform: 'relativ' }] }));
+    if (r.ok) {
+      expect(r.wert.positionen[0]!.anpassungen).toHaveLength(1);
+      expect(r.wert.positionen[0]!.anpassungen[0]!.begruendung)
+        .toBe('Laermexposition Strassenseite');
+      expect(r.wert.positionen[0]!.basispreis).toBeCloseTo(85_000_000, 6);
+    }
+  });
+
+  it('bricht bei A_t_ref = 0 ab — S-04, kein Infinity in der Offerte', () => {
+    const r = berechneVerkaufssumme(pipelineEingang({ referenzflaecheNull: true }));
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.fehler.code).toBe('REFERENZFLAECHE_NULL');
+      expect(r.fehler.stufe).toBe(2);
+      expect(r.fehler.parameter).toMatchObject({ wohnungstypId: 'T1', alpha: 0.5 });
+      expect(Object.keys(r.fehler.parameter)).toEqual(
+        expect.arrayContaining(['zimmerzahl', 'flaecheInnen', 'flaecheAussen', 'alpha']));
+    }
+  });
+
+  it('bricht bei z_j <= -1 ab und kappt nicht — S-06, Modellgrenze', () => {
+    const r = berechneVerkaufssumme(pipelineEingang({ anpassungenErsteEinheit: [
+      { faktor: -1, begruendung: 'Vollstaendiger Abschlag', erfassungsform: 'relativ' }] }));
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.fehler.code).toBe('ANPASSUNG_UNZULAESSIG');
+      expect(r.fehler.parameter).toMatchObject({ art: 'modellgrenze', zSumme: -1 });
+    }
+  });
+
+  it('bricht bei z_j ausserhalb der konfigurierten Grenzen ab — S-06, Konfigurationsgrenze', () => {
+    const r = berechneVerkaufssumme(pipelineEingang({ anpassungenErsteEinheit: [
+      { faktor: 0.4, begruendung: 'Aussichtslage mit Seeblick', erfassungsform: 'relativ' }] }));
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.fehler.parameter).toMatchObject(
+        { art: 'konfigurationsgrenze', min: -0.25, max: 0.25 });
+      expect(r.fehler.parameter['anpassungen']).toEqual(['0.4|Aussichtslage mit Seeblick']);
+    }
+  });
+
+  it('laesst Parkplaetze ohne Preiswirkung (Brief §8)', () => {
+    const ohne = berechneVerkaufssumme(pipelineEingang({ parkplaetze: 0 }));
+    const mit = berechneVerkaufssumme(pipelineEingang({ parkplaetze: 3 }));
+    if (ohne.ok && mit.ok) expect(mit.wert.verkaufssumme).toBe(ohne.wert.verkaufssumme);
+  });
+
+  it('bildet A_t_ref und A_j mit demselben alpha (Abnahmekriterium 9)', () => {
+    const r = berechneVerkaufssumme(pipelineEingang({ alpha: 0.25, aussenflaeche: 12 }));
+    if (r.ok) {
+      expect(r.wert.alpha).toBe(0.25);
+      expect(r.wert.typAbleitungen[0]!.referenzflaeche).toBeCloseTo(92.5 + 0.25 * 12, 12);
+      expect(r.wert.positionen[0]!.gewichteteFlaeche).toBeCloseTo(92.5 + 0.25 * 12, 12);
+      expect(r.wert.positionen[0]!.preis).toBe(85_000_000); // I-05 haelt auch mit Aussenflaeche
+    }
+  });
+
+  it('gibt die Positionen nach Wohnungsnummer sortiert aus (Spec 03 §9.3)', () => {
+    const r = berechneVerkaufssumme(pipelineEingang());
+    if (r.ok) {
+      const n = r.wert.positionen.map((p) => p.wohnungsnummer);
+      expect(n).toEqual([...n].sort());
+    }
+  });
+});
