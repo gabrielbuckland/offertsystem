@@ -27,9 +27,10 @@ import {
   type GeschlossenerEingang,
 } from '../../src/pipeline/stufe2a-abgeleitete.js';
 import type { NormalisierungErgebnis } from '../../src/pipeline/stufe3-normalisierung.js';
+import type { GewichtungErgebnis } from '../../src/pipeline/stufe4-gewichtung.js';
 import type { FaktorId, LagescoreName } from '../../src/domain/ids.js';
 import type { FaktorParameter, Konfiguration } from '../../src/config/typen.js';
-import type { Score } from '../../src/domain/geld.js';
+import type { Rappen, Score } from '../../src/domain/geld.js';
 import type { RepraesentativeParametrisierung } from '../../src/domain/wohnungstyp.js';
 import type {
   Lagescores,
@@ -185,6 +186,12 @@ export function standardKonfiguration(): Konfiguration {
       ],
       skalierung: { form: 'linear', gMin: 0.85, gMax: 1.15 },
     },
+    /**
+     * Feste Testpruefsumme. Im Betrieb setzt der Lader in `apps/web` dieses Feld
+     * (E-26, PE-04); der Kern bildet sie nicht. Hier steht ein Literal, damit der
+     * Determinismusnachweis (I-14) nicht von einer Hashberechnung abhaengt.
+     */
+    konfigPruefsumme: '0'.repeat(63) + '1',
   };
 }
 
@@ -292,13 +299,36 @@ export function pipelineEingang(optionen: EingangsFixtureOptionen = {}): Pipelin
   return r.wert;
 }
 
-/** Stufe 2 des Standardfixtures. */
+/**
+ * Stufe 2 des Standardfixtures.
+ *
+ * Zwei Aufrufformen, weil die Stufen 2a und 5 Verschiedenes brauchen: Mit
+ * Fixture-Optionen entsteht das echte Stufe-2-Ergebnis samt Positionen; mit einer
+ * blossen Verkaufssumme entsteht ein Traeger, der nur `V` fuehrt. Stufe 5 liest
+ * ausschliesslich `verkaufssumme` — ein echtes Projekt zu konstruieren, das eine
+ * bestimmte Verkaufssumme trifft, waere Umweg ohne Erkenntnisgewinn und wuerde die
+ * Stufe-5-Erwartungen von der Preisableitung abhaengig machen.
+ */
 export function verkaufssummeErgebnis(
-  optionen: EingangsFixtureOptionen = {},
+  eingabe: EingangsFixtureOptionen | Rappen = {},
 ): VerkaufssummeErgebnis {
-  const r = berechneVerkaufssumme(pipelineEingang(optionen));
+  if (typeof eingabe === 'number') {
+    return {
+      typAbleitungen: [],
+      positionen: [],
+      verkaufssumme: eingabe,
+      einheitenzahl: 0,
+      alpha: 0.5,
+    };
+  }
+  const r = berechneVerkaufssumme(pipelineEingang(eingabe));
   if (!r.ok) throw new Error(`Stufe 2 des Fixtures schlug fehl: ${r.fehler.code}`);
   return r.wert;
+}
+
+/** Gewichtungsergebnis mit unmittelbar gesetztem Aufwandindikator D. */
+export function gewichtungErgebnis(d: number): GewichtungErgebnis {
+  return { beitraege: [], gewichtssumme: 1, aufwandindikator: d };
 }
 
 /** Eingang nach dem Zwischenschritt 4.2a; einzige zulaessige Eingabe von Stufe 3. */
