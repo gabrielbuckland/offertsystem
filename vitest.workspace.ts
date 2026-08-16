@@ -78,5 +78,8 @@ export default defineWorkspace([
     include: ['test/contract/**/*.test.{ts,tsx}'],
     setupFiles: [MSW_VORBEREITUNG],
   }),
-  projekt({ name: 'tools', root: './tools', include: [MUSTER] }),
+  // Werkzeugtests liegen bei ihrem Werkzeug (tools/eval/**), die uebrigen unter
+  // tools/test/**. Beide Muster sind noetig; PE-12 regelt die Paketablage, nicht
+  // die Werkzeugebene.
+  projekt({ name: 'tools', root: './tools', include: [MUSTER, 'eval/**/*.test.ts'] }),
 ]);
