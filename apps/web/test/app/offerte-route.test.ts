@@ -1,0 +1,97 @@
+/**
+ * Der Route Handler wird gegen die echte Verdrahtung gefahren: `VALUATION_PROVIDER=mock`
+ * liefert einen Provider ohne Netzzugriff, `OFFERTEN_VERZEICHNIS` zeigt auf ein
+ * Temporaerverzeichnis. Attrappen fuer `berechne` waeren hier irrefuehrend — geprueft
+ * wird gerade, dass im Fehlerfall NICHTS abgelegt wird, und das haengt an der echten
+ * Reihenfolge im Handler.
+ */
+import { mkdtemp, readdir } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { leereZwischenspeicher } from '../../src/server/konfigurations-lader.js';
+import { POST } from '../../src/app/api/offerte/route.js';
+
+const WURZEL = resolve(import.meta.dirname, '../../../..');
+const urspruenglich = { ...process.env };
+
+let ablage: string;
+
+beforeEach(async () => {
+  ablage = await mkdtemp(join(tmpdir(), 'offerten-'));
+  leereZwischenspeicher();
+  process.env['VALUATION_PROVIDER'] = 'mock';
+  process.env['COMPANY_DEFAULTS_PATH'] = `${WURZEL}/config/company-defaults.json`;
+  process.env['OFFERTEN_VERZEICHNIS'] = ablage;
+});
+
+afterEach(() => {
+  process.env = { ...urspruenglich };
+});
+
+function beispielErfassung(): Record<string, unknown> {
+  return {
+    kunde: { name: 'Muster Immobilien AG', referenznummer: 'A-2026-014', kontakt: {} },
+    liegenschaft: {
+      adresse: { strasse: 'Musterstrasse', hausnummer: '1', plz: '6000', ort: 'Luzern' },
+      baujahr: 2027,
+      grundstuecksflaeche: 1_250,
+    },
+    wohnungstypen: [{
+      id: 'T-3.5', zimmerzahl: 3.5,
+      parametrisierung: {
+        flaecheInnen: 82, flaecheAussen: 12, stockwerk: 2, energielabel: 'A',
+        zustandsbewertungen: {}, qualitaetsbewertungen: {},
+        anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'Waermepumpe',
+      },
+    }],
+    einheiten: Array.from({ length: 6 }, (_, i) => ({
+      wohnungsnummer: `A${i + 1}.01`, wohnungstypId: 'T-3.5',
+      flaecheInnen: 82, flaecheAussen: 12, stockwerk: i + 1, parkplaetze: 1, anpassungen: [],
+    })),
+    aufwandfaktoren: { innenausbau_qualitaet: 4 },
+  };
+}
+
+function anfrageMit(koerper: unknown): Request {
+  return new Request('http://localhost/api/offerte', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(koerper),
+  });
+}
+
+async function jsonVon(antwort: Response): Promise<Record<string, unknown>> {
+  return (await antwort.json()) as Record<string, unknown>;
+}
+
+describe('POST /api/offerte', () => {
+  it('legt die Offerte im Verzeichnis aus der Umgebung ab, nicht im Standardpfad (PE-24)', async () => {
+    const antwort = await POST(anfrageMit(beispielErfassung()));
+    expect(antwort.status).toBe(201);
+    expect((await readdir(ablage)).filter((d) => d.endsWith('.json'))).toHaveLength(1);
+  });
+
+  it('weist eine verletzende Erfassung feldverankert zurueck und legt nichts ab', async () => {
+    const kaputt = beispielErfassung();
+    (kaputt['liegenschaft'] as Record<string, unknown>)['grundstuecksflaeche'] = -1;
+    const antwort = await POST(anfrageMit(kaputt));
+    expect(antwort.status).toBe(422);
+    const koerper = await jsonVon(antwort);
+    expect(Array.isArray(koerper['meldungen'])).toBe(true);
+    expect(await readdir(ablage)).toEqual([]);
+  });
+
+  it('legt bei einem Stufenfehler keine Offerte ab (I-24)', async () => {
+    // Ohne den konfigurierten manuellen Aufwandfaktor bricht Stufe 3 mit FAKTOR_FEHLT ab.
+    // Das Erfassungsschema laesst die leere Faktormenge zu — die Vollstaendigkeit je
+    // Faktor prueft `pruefeFaktorwerte` in der Maske, nicht das Schema.
+    const ohneFaktor = beispielErfassung();
+    ohneFaktor['aufwandfaktoren'] = {};
+    const antwort = await POST(anfrageMit(ohneFaktor));
+    expect(antwort.status).toBe(422);
+    expect(await readdir(ablage)).toEqual([]);
+    const koerper = await jsonVon(antwort);
+    expect((koerper['fehler'] as { text: string }).text).toContain('liegt kein Wert vor');
+  });
+});

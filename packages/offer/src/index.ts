@@ -55,5 +55,11 @@ export {
 export { HerkunftsBlock, HerkunftsWert } from './template/HerkunftsWert.js';
 export { OfferteDokument } from './template/OfferteDokument.js';
 
-export { druckeOfferte } from './pdf/drucke-offerte.js';
-export type { BrowserFabrik, DruckOptionen } from './pdf/drucke-offerte.js';
+/*
+ * `druckeOfferte` steht BEWUSST NICHT hier, abweichend vom Plan. Der Drucker zieht
+ * `playwright` in den Abhaengigkeitsgraphen; ueber den Paketindex landete es im
+ * Browser-Bundle der Erfassungsmaske, und der Next-Build scheiterte. Der Druckpfad wird
+ * ausschliesslich serverseitig gebraucht und deshalb ueber seinen Modulpfad eingebunden:
+ *   import { druckeOfferte } from '@offert/offer/src/pdf/drucke-offerte.js';
+ * Das bleibt ein Paketimport ueber `@offert/*` und verletzt die Boundary-Regel nicht.
+ */

@@ -3,7 +3,7 @@
  * `server/pdf-dateiname.ts`, damit sie ohne laufenden Server pruefbar ist — eine
  * `route.ts` darf ausser den Handlern nichts exportieren.
  */
-import { druckeOfferte } from '@offert/offer';
+import { druckeOfferte } from '@offert/offer/src/pdf/drucke-offerte.js';
 import { verzeichnisAusLaufzeit } from '../../../../../server/laufzeit.js';
 import { ladeOfferte } from '../../../../../server/offerten-ablage.js';
 import { dateiname } from '../../../../../server/pdf-dateiname.js';
