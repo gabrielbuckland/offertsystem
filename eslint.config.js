@@ -62,6 +62,22 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unsafe-assignment': 'error',
+
+      // Der Unterstrich-Praefix ist die projektweite Kennzeichnung fuer
+      // absichtlich ungenutzte Bezeichner. TypeScript selbst behandelt sie unter
+      // `noUnusedParameters` bereits so; ohne diese Angleichung meldete ESLint
+      // genau die Stellen, die `tsc` bewusst durchlaesst.
+      '@typescript-eslint/no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      }],
+
+      // Eine Methode, die einen Port mit Promise-Rueckgabe erfuellt, ist aus
+      // Vertragsgruenden `async` — auch wenn ihre Testfassung nichts erwartet.
+      // Die Regel forderte hier eine Verrenkung (`Promise.resolve`) ohne
+      // fachlichen Gewinn und wuerde die Implementierung vom Port entkoppeln.
+      '@typescript-eslint/require-await': 'off',
     },
   },
 
