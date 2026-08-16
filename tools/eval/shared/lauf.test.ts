@@ -55,10 +55,19 @@ describe('Abgrenzung der Werkzeugebene (Spec 06 §7)', () => {
     };
     sammle(join(repoWurzel(), 'tools', 'eval'));
     expect(dateien.length).toBeGreaterThan(0);
+    // Geprueft werden IMPORTE, nicht jedes Vorkommen der Zeichenkette: Der Messfilter
+    // der Erweiterbarkeitsmessung nennt Pfade wie `apps/web/src/...` als Testdaten, und
+    // das ist kein Zugriff auf das Paket.
+    const importe = (inhalt: string): readonly string[] =>
+      [...inhalt.matchAll(/(?:from|import)\s*\(?\s*'([^']+)'/g)].map((m) => m[1] ?? '');
     for (const datei of dateien) {
-      const inhalt = readFileSync(datei, 'utf8');
-      for (const verboten of verbotene) {
-        expect(inhalt.includes(`'${verboten}`), `${datei} importiert ${verboten}`).toBe(false);
+      for (const spezifizierer of importe(readFileSync(datei, 'utf8'))) {
+        for (const verboten of verbotene) {
+          expect(
+            spezifizierer === verboten || spezifizierer.startsWith(`${verboten}/`),
+            `${datei} importiert ${spezifizierer}`,
+          ).toBe(false);
+        }
       }
     }
   });
