@@ -7,6 +7,8 @@
 export interface Uhr {
   jetztMs(): number;
   warte(ms: number): Promise<void>;
+  /** Plant einen Rueckruf und liefert die Abbestellung. Traegt das Zeitlimit je Versuch. */
+  plane(ms: number, rueckruf: () => void): () => void;
 }
 
 export const systemUhr: Uhr = {
@@ -15,4 +17,8 @@ export const systemUhr: Uhr = {
     new Promise<void>((aufloesen) => {
       setTimeout(aufloesen, ms);
     }),
+  plane: (ms, rueckruf) => {
+    const kennung = setTimeout(rueckruf, ms);
+    return () => clearTimeout(kennung);
+  },
 };

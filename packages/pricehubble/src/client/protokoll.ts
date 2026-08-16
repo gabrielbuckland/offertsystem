@@ -4,9 +4,9 @@ export interface VersuchEreignis {
   readonly endpoint: string;
   readonly method: string;
   readonly attempt: number;
-  readonly httpStatus?: number;
+  readonly httpStatus?: number | undefined;
   readonly elapsedMs: number;
-  readonly phRequestId?: string;
+  readonly phRequestId?: string | undefined;
   readonly outcome: 'ok' | 'wiederholung' | 'aufgegeben';
 }
 
