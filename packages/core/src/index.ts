@@ -56,3 +56,13 @@ export {
   type OffertKonfiguration,
   type Stuetzstelle,
 } from './config/validieren.js';
+
+export {
+  GESPERRTE_PFADE,
+  mergeKonfiguration,
+  type DossierParameter,
+  type EffektiveKonfiguration,
+  type MergeErgebnis,
+  type Preisanpassung,
+  type UeberschreibungsProtokoll,
+} from './config/merge.js';
