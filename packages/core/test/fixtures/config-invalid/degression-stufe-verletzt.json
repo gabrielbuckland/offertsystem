@@ -1,0 +1,211 @@
+{
+  "meta": {
+    "schemaVersion": 1,
+    "konfigVersion": "1.0.0-vorlaeufig",
+    "gueltigAb": "2026-08-16",
+    "beschreibung": "NEGATIVFIXTURE — Grenzsatz erreicht den Durchschnittssatz in Stufe 1 (I-19). Erwarteter Code: CFG_TIER_DEGRESSION."
+  },
+  "flaeche": {
+    "alpha": 0.5
+  },
+  "preisanpassung": {
+    "zMin": -0.25,
+    "zMax": 0.25,
+    "begruendungPflicht": true,
+    "begruendungMinLaenge": 10
+  },
+  "anpassungsVorlagen": [
+    {
+      "id": "attikalage",
+      "bezeichnung": "Attikawohnung / Dachgeschoss",
+      "vorgabefaktor": 0.1,
+      "begruendungVorschlag": "Attikalage mit erhoehter Aussichtsqualitaet und privater Dachterrasse."
+    },
+    {
+      "id": "erdgeschoss_gartensitzplatz",
+      "bezeichnung": "Erdgeschoss mit Gartensitzplatz",
+      "vorgabefaktor": 0.05,
+      "begruendungVorschlag": "Erdgeschosswohnung mit exklusiv nutzbarem Gartensitzplatz."
+    },
+    {
+      "id": "erdgeschoss_einsehbar",
+      "bezeichnung": "Erdgeschoss, stark einsehbar",
+      "vorgabefaktor": -0.05,
+      "begruendungVorschlag": "Erdgeschosslage mit eingeschraenkter Privatsphaere gegenueber dem Aussenraum."
+    },
+    {
+      "id": "laermexposition",
+      "bezeichnung": "Laermexposition Strassenseite",
+      "vorgabefaktor": -0.1,
+      "begruendungVorschlag": "Ausrichtung zur Hauptverkehrsachse mit erhoehter Laermbelastung."
+    },
+    {
+      "id": "aussicht_frei",
+      "bezeichnung": "Freie Aussichtslage",
+      "vorgabefaktor": 0.08,
+      "begruendungVorschlag": "Unverbaubare Aussichtslage in bevorzugter Ausrichtung."
+    },
+    {
+      "id": "nordausrichtung",
+      "bezeichnung": "Nordausrichtung ohne Besonnung",
+      "vorgabefaktor": -0.06,
+      "begruendungVorschlag": "Nordausrichtung mit geringer direkter Besonnung der Hauptwohnraeume."
+    },
+    {
+      "id": "kein_aussenraum",
+      "bezeichnung": "Ohne Balkon oder Terrasse",
+      "vorgabefaktor": -0.08,
+      "begruendungVorschlag": "Einheit ohne privaten Aussenraum."
+    }
+  ],
+  "aufwandfaktoren": {
+    "lage_gesamt": {
+      "bezeichnung": "Gesamtlage (PriceHubble-Lagescore)",
+      "quelle": "lagescore",
+      "quellSchluessel": "location",
+      "strategie": "minmax",
+      "min": 1,
+      "max": 0,
+      "gewicht": 0.4
+    },
+    "innenausbau_qualitaet": {
+      "bezeichnung": "Qualitaet des Innenausbaus",
+      "quelle": "manuell",
+      "quellSchluessel": "innenausbau_qualitaet",
+      "strategie": "minmax",
+      "min": 1,
+      "max": 6,
+      "gewicht": 0.25,
+      "skala": {
+        "form": "ordinal",
+        "stufen": [
+          {
+            "wert": 1,
+            "bezeichnung": "einfacher Standard"
+          },
+          {
+            "wert": 2,
+            "bezeichnung": "Standard"
+          },
+          {
+            "wert": 3,
+            "bezeichnung": "gehoben"
+          },
+          {
+            "wert": 4,
+            "bezeichnung": "hochwertig"
+          },
+          {
+            "wert": 5,
+            "bezeichnung": "exklusiv"
+          },
+          {
+            "wert": 6,
+            "bezeichnung": "Luxus"
+          }
+        ]
+      }
+    },
+    "preissegment": {
+      "bezeichnung": "Preissegment (flaechengewichteter mittlerer Quadratmeterpreis)",
+      "quelle": "abgeleitet",
+      "quellSchluessel": "mittlererQuadratmeterpreis",
+      "strategie": "minmax",
+      "min": 600000,
+      "max": 1800000,
+      "gewicht": 0.2
+    },
+    "projektumfang": {
+      "bezeichnung": "Projektumfang (Anzahl Einheiten)",
+      "quelle": "abgeleitet",
+      "quellSchluessel": "einheitenzahl",
+      "strategie": "minmax",
+      "min": 4,
+      "max": 36,
+      "gewicht": 0.15
+    }
+  },
+  "honorar": {
+    "stuetzstellen": [
+      {
+        "v": 0,
+        "hMin": 3000000,
+        "hMax": 4000000
+      },
+      {
+        "v": 500000000,
+        "hMin": 11250000,
+        "hMax": 5000000
+      },
+      {
+        "v": 1000000000,
+        "hMin": 19500000,
+        "hMax": 26000000
+      },
+      {
+        "v": 2500000000,
+        "hMin": 37500000,
+        "hMax": 50000000
+      },
+      {
+        "v": 5000000000,
+        "hMin": 60000000,
+        "hMax": 80000000
+      },
+      {
+        "v": 10000000000,
+        "hMin": 93750000,
+        "hMax": 125000000
+      },
+      {
+        "v": 20000000000,
+        "hMin": 150000000,
+        "hMax": 200000000
+      }
+    ],
+    "skalierung": {
+      "form": "linear",
+      "gMin": 0.85,
+      "gMax": 1.15
+    }
+  },
+  "dossierDefaults": {
+    "flaecheInnen": null,
+    "flaecheAussen": null,
+    "stockwerk": null,
+    "energielabel": null,
+    "zustandsbewertungen": {},
+    "qualitaetsbewertungen": {}
+  },
+  "api": {
+    "baseUrl": "https://api.pricehubble.com",
+    "endpunkte": {
+      "login": "/auth/login/credentials",
+      "dossierGet": "/api/v1/dossiers/{dossierId}",
+      "dossierUpdate": "/api/v1/dossiers/{dossierId}",
+      "dossierValuation": "/api/v1/dossiers/{dossierId}/valuation",
+      "locationScores": "/api/v1/location/scores"
+    },
+    "timeoutMs": 10000,
+    "timeoutValuationMs": 20000,
+    "gesamtbudgetMs": 45000,
+    "retry": {
+      "maxVersuche": 3,
+      "startBackoffMs": 500,
+      "backoffFaktor": 2,
+      "maxBackoffMs": 8000,
+      "jitter": "voll",
+      "retryAfterBeachten": true,
+      "retryAfterMaxSekunden": 60,
+      "retryStatuscodes": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ]
+    },
+    "tokenGueltigkeitMin": 720,
+    "tokenSicherheitsmargeMin": 30
+  }
+}
