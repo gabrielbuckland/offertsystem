@@ -9,7 +9,15 @@
  */
 import type { Adresse } from '../../src/domain/adresse.js';
 import { gewicht, quadratmeter, quadratmeterAbNull, rappen, score } from '../../src/domain/geld.js';
-import { faktorId, lagescoreName, wohnungstypId } from '../../src/domain/ids.js';
+import { einheitId, faktorId, lagescoreName, liegenschaftId, wohnungsnummer, wohnungstypId } from '../../src/domain/ids.js';
+import { erzeugeLiegenschaft, type Liegenschaft } from '../../src/domain/liegenschaft.js';
+import type { ZuAbschlag } from '../../src/domain/zuabschlag.js';
+import {
+  bereiteEingabeAuf,
+  type EingangsArgumente,
+  type PipelineEingang,
+} from '../../src/pipeline/stufe1-eingabe.js';
+import type { VermarkterFaktoren } from '../../src/pipeline/beschaffer.js';
 import type { FaktorId, LagescoreName } from '../../src/domain/ids.js';
 import type { FaktorParameter, Konfiguration } from '../../src/config/typen.js';
 import type { Score } from '../../src/domain/geld.js';
@@ -169,4 +177,82 @@ export function standardKonfiguration(): Konfiguration {
       skalierung: { form: 'linear', gMin: 0.85, gMax: 1.15 },
     },
   };
+}
+
+/**
+ * Liegenschaft mit einem Wohnungstyp (3.5 Zimmer) und vier Einheiten A-01..A-04.
+ * Alle Einheiten tragen die Referenzflaechen und keine Anpassungen — damit ist die
+ * Referenztreue I-05 an diesem Fixture unmittelbar pruefbar.
+ */
+export function liegenschaftFixture(): Liegenschaft {
+  const typ = {
+    id: wohnungstypId('T1'),
+    zimmerzahl: 3.5,
+    parametrisierung: parametrisierungFixture(),
+  };
+  const einheiten = ['A-01', 'A-02', 'A-03', 'A-04'].map((nummer, index) => ({
+    id: einheitId(`E-${index + 1}`),
+    wohnungsnummer: wohnungsnummer(nummer),
+    wohnungstypId: typ.id,
+    flaecheInnen: quadratmeter(92.5),
+    flaecheAussen: quadratmeterAbNull(0),
+    stockwerk: index,
+    parkplaetze: 1,
+    anpassungen: [] as readonly ZuAbschlag[],
+  }));
+  const erzeugt = erzeugeLiegenschaft({
+    id: liegenschaftId('L-1'),
+    adresse: adresseFixture(),
+    baujahr: 2025,
+    grundstuecksflaeche: quadratmeter(800),
+    wohnungstypen: [typ],
+    einheiten,
+  });
+  if (!erzeugt.ok) throw new Error('Fixture-Liegenschaft ist ungueltig');
+  return erzeugt.wert;
+}
+
+export interface EingangsFixtureOptionen {
+  readonly liegenschaft?: Liegenschaft;
+  readonly bewertungen?: readonly Referenzbewertung[];
+  readonly lagescores?: Lagescores;
+  readonly vermarkterFaktoren?: VermarkterFaktoren;
+  readonly konfiguration?: Konfiguration;
+  readonly zeitstempel?: string;
+  /** Kurzname fuer `bewertungsbuendelVollstaendig` (US-15). */
+  readonly vollstaendig?: boolean;
+}
+
+export function eingangsArgumente(
+  optionen: EingangsFixtureOptionen = {},
+): EingangsArgumente {
+  const liegenschaft = optionen.liegenschaft ?? liegenschaftFixture();
+  const bewertungen = optionen.bewertungen ?? [referenzbewertungFixture('T1')];
+  /**
+   * Ohne ausdrueckliche Angabe wird die Vollstaendigkeit aus den Daten abgeleitet,
+   * nicht auf `true` gesetzt: Ein Buendel, dem eine Bewertung fehlt, IST
+   * unvollstaendig. Eine feste Vorgabe `true` liesse ein Fixture behaupten, der
+   * Abruf sei vollstaendig gewesen, waehrend ihm Bewertungen fehlen — genau die
+   * Aussage, die US-15 und I-24 unterbinden sollen.
+   */
+  const abgedeckt = new Set(bewertungen.map((b) => b.wohnungstypId as string));
+  return {
+    liegenschaft,
+    bewertungen,
+    bewertungsbuendelVollstaendig:
+      optionen.vollstaendig ?? liegenschaft.wohnungstypen.every((t) => abgedeckt.has(t.id)),
+    lagescores: optionen.lagescores
+      ?? lagescoresFixture(new Map([[lagescoreName('location'), score(0.8)]])),
+    vermarkterFaktoren: optionen.vermarkterFaktoren
+      ?? { werte: new Map([[faktorId('innenausbau_qualitaet'), 3]]) },
+    konfiguration: optionen.konfiguration ?? standardKonfiguration(),
+    zeitstempel: optionen.zeitstempel ?? '2026-08-16T10:00:00.000Z',
+  };
+}
+
+/** Stufe-1-Ergebnis des Standardfixtures; Eingang der Stufen 2 und folgende. */
+export function pipelineEingang(optionen: EingangsFixtureOptionen = {}): PipelineEingang {
+  const r = bereiteEingabeAuf(eingangsArgumente(optionen));
+  if (!r.ok) throw new Error(`Stufe 1 des Fixtures schlug fehl: ${r.fehler.code}`);
+  return r.wert;
 }
