@@ -51,7 +51,14 @@ const STATUS = {
 } as const;
 
 export class HttpClient {
-  public constructor(private readonly abh: HttpClientAbhaengigkeiten) {}
+  private readonly abh: HttpClientAbhaengigkeiten;
+
+  // Feldzuweisung statt Parametereigenschaft: `node --experimental-strip-types`
+  // (PE-09) uebersetzt nicht, es entfernt nur Typen — Parametereigenschaften
+  // haetten eine Codeerzeugung verlangt und sind dort nicht zulaessig.
+  public constructor(abh: HttpClientAbhaengigkeiten) {
+    this.abh = abh;
+  }
 
   public async fuehreAus(anfrage: AnfrageBeschreibung): Promise<HttpErgebnis> {
     const { konfiguration, uhr, zufall, protokoll, fetchImpl } = this.abh;

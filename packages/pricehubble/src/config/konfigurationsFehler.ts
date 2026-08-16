@@ -8,10 +8,13 @@
 export class KonfigurationsFehler extends Error {
   public override readonly name = 'KonfigurationsFehler';
 
-  public constructor(
-    public readonly schluessel: string,
-    grund: string,
-  ) {
+  public readonly schluessel: string;
+
+  // Feldzuweisung statt Parametereigenschaft: `node --experimental-strip-types`
+  // (PE-09) uebersetzt nicht, es entfernt nur Typen — Parametereigenschaften
+  // haetten eine Codeerzeugung verlangt und sind dort nicht zulaessig.
+  public constructor(schluessel: string, grund: string) {
     super(`Die Verbindung zu PriceHubble ist nicht eingerichtet: ${schluessel} — ${grund}`);
+    this.schluessel = schluessel;
   }
 }

@@ -59,7 +59,14 @@ type Zwischenergebnis<T> =
 const BEWERTUNGSVERSUCHE = 2;
 
 export class PriceHubbleAdapter implements ValuationProvider {
-  public constructor(private readonly abh: AdapterAbhaengigkeiten) {}
+  private readonly abh: AdapterAbhaengigkeiten;
+
+  // Feldzuweisung statt Parametereigenschaft: `node --experimental-strip-types`
+  // (PE-09) uebersetzt nicht, es entfernt nur Typen — Parametereigenschaften
+  // haetten eine Codeerzeugung verlangt und sind dort nicht zulaessig.
+  public constructor(abh: AdapterAbhaengigkeiten) {
+    this.abh = abh;
+  }
 
   public async holeLagescores(adresse: Adresse): Promise<Result<Lagescores, ProviderFehler>> {
     const { konfiguration, dossierId, uhr } = this.abh;

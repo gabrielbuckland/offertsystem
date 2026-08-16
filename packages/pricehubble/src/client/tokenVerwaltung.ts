@@ -42,7 +42,14 @@ export class TokenVerwaltung {
   private gueltigBisMs = 0;
   private laufenderLogin: Promise<TokenErgebnis> | undefined;
 
-  public constructor(private readonly abh: TokenVerwaltungAbhaengigkeiten) {}
+  private readonly abh: TokenVerwaltungAbhaengigkeiten;
+
+  // Feldzuweisung statt Parametereigenschaft: `node --experimental-strip-types`
+  // (PE-09) uebersetzt nicht, es entfernt nur Typen — Parametereigenschaften
+  // haetten eine Codeerzeugung verlangt und sind dort nicht zulaessig.
+  public constructor(abh: TokenVerwaltungAbhaengigkeiten) {
+    this.abh = abh;
+  }
 
   public async holeToken(): Promise<TokenErgebnis> {
     const { uhr } = this.abh;

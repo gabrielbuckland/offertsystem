@@ -20,7 +20,7 @@
     "test:coverage": "vitest run --coverage && node --experimental-strip-types tools/coverage-zeiger.ts",
     "test": "npm run lint && npm run typecheck && npm run test:unit",
     "verify": "npm run lint && npm run check:deps && npm run typecheck && npm run test:unit && npm run test:contract",
-    "test:record": "node --experimental-strip-types tools/record-fixtures.ts",
+    "test:record": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/record-fixtures.ts",
     "eval:config": "npm run typecheck && node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/config-validation.ts"
   },
   "devDependencies": {

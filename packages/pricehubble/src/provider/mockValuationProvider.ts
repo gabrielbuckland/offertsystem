@@ -45,7 +45,14 @@ const MOCK_SCORES: ReadonlyArray<readonly [string, number]> = [
 const MOCK_RAPPEN_JE_QM = 1_200_000;
 
 export class MockValuationProvider implements ValuationProvider {
-  public constructor(private readonly einstellungen: MockEinstellungen = {}) {}
+  private readonly einstellungen: MockEinstellungen;
+
+  // Feldzuweisung statt Parametereigenschaft: `node --experimental-strip-types`
+  // (PE-09) uebersetzt nicht, es entfernt nur Typen — Parametereigenschaften
+  // haetten eine Codeerzeugung verlangt und sind dort nicht zulaessig.
+  public constructor(einstellungen: MockEinstellungen = {}) {
+    this.einstellungen = einstellungen;
+  }
 
   public async bewerteWohnungstypen(
     anfragen: readonly BewertungsAnfrage[],
