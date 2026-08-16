@@ -1,7 +1,34 @@
 /*
- * Einziges Stylesheet der Offerte: Bildschirmdarstellung und `@media print` in
- * derselben Datei (AK-2.1 — ein Renderpfad, keine zweite Vorlage).
+ * Einziges Stylesheet der Offerte. Bildschirmdarstellung und `@media print` stehen in
+ * DERSELBEN Datei: Zwei Dateien waeren zwei Darstellungen, und die Zusage «PDF und HTML
+ * zeigen dieselben Zahlen» (AK-2.1) haenge dann an der Disziplin beim Nachziehen.
  *
- * Diese Fassung ist der Platzhalter aus Aufgabe 1: Das Wurzellayout bindet die Datei
- * ein, damit die Anwendung startbar ist. Die Regeln schreibt Aufgabe 9.
+ * Bildschirmdarstellung zweckmaessig und lesbar, keine gestalterische Ausarbeitung.
  */
+.offerte { max-width: 60rem; margin: 0 auto; font-family: system-ui, sans-serif; }
+.herkunfts-block { border-left: 4px solid; padding-left: 1rem; margin: 1.5rem 0; }
+.herkunfts-block[data-herkunft='pricehubble']        { border-color: #1f4e79; }
+.herkunfts-block[data-herkunft='local-derivation']   { border-color: #4a4a4a; }
+.herkunfts-block[data-herkunft='marketer-adjustment']{ border-color: #8a5a00; }
+.herkunfts-block[data-herkunft='local-calculation']  { border-color: #1f6b3a; }
+.herkunfts-block__quelle { font-variant: small-caps; letter-spacing: .04em; }
+.herkunfts-wert { display: inline-flex; gap: .5rem; align-items: baseline; }
+.herkunfts-wert__quelle { font-variant: small-caps; color: #444; }
+.anzeigeinformation::before { content: 'Anzeigeinformation: '; font-weight: 600; }
+.offerte__fusszeile { font-size: .8rem; color: #444; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ccc; padding: .35rem .5rem; text-align: left; }
+
+@media print {
+  @page { size: A4 portrait; margin: 18mm 15mm 20mm 15mm; }
+  .bedienelement, nav, button { display: none; }
+  .einheit-zeile, .herkunfts-block, .typ { break-inside: avoid; }
+  thead { display: table-header-group; }
+  /* Die Herkunft darf im Schwarzweissdruck nicht allein farblich getragen werden
+     (AK-2.4): Beschriftung und Rahmenmuster tragen sie zusaetzlich. */
+  .herkunfts-block[data-herkunft='pricehubble']        { border-left-style: solid; }
+  .herkunfts-block[data-herkunft='local-derivation']   { border-left-style: dashed; }
+  .herkunfts-block[data-herkunft='marketer-adjustment']{ border-left-style: double; }
+  .herkunfts-block[data-herkunft='local-calculation']  { border-left-style: dotted; }
+  .offerte__fusszeile { position: running(fuss); }
+}
