@@ -49,6 +49,16 @@ describe('schreibeArtefakt', () => {
   });
 });
 
+describe('Kodierung je Dateiendung', () => {
+  it('schreibt PDF-Dateien in latin1, damit die Byteversaetze stimmen', () => {
+    const wurzel = mkdtempSync(join(tmpdir(), 'eval-'));
+    const kopf = bildeKopf('probe', 'config/company-defaults.json', 1);
+    const inhalt = '%PDF-1.4\nBruecke mit Umlaut: \u00fc\n%%EOF\n';
+    const verzeichnis = schreibeArtefakt(wurzel, kopf, { 'a.pdf': inhalt });
+    expect(readFileSync(join(verzeichnis, 'a.pdf')).length).toBe(inhalt.length);
+  });
+});
+
 describe('alsCsv', () => {
   it('maskiert Trennzeichen und Anfuehrungszeichen', () => {
     const csv = alsCsv(['a', 'b'], [{ a: 'x;y', b: 'er sagte "ja"' }]);

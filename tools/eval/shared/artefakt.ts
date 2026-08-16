@@ -73,7 +73,11 @@ export function schreibeArtefakt(
   // Sortierte Reihenfolge: Zwei Laeufe mit gleichem Inhalt erzeugen dieselbe Abfolge
   // von Schreibvorgaengen (I-14).
   for (const name of Object.keys(dateien).sort()) {
-    writeFileSync(join(verzeichnis, name), dateien[name] ?? '', 'utf8');
+    // PDF in latin1: Der PDF-Schreiber berechnet die Byteversaetze der
+    // Kreuzreferenztabelle in latin1; unter utf8 belegten Umlaute zwei Bytes und die
+    // Versaetze zeigten ins Leere.
+    const kodierung: BufferEncoding = name.endsWith('.pdf') ? 'latin1' : 'utf8';
+    writeFileSync(join(verzeichnis, name), dateien[name] ?? '', kodierung);
   }
   writeFileSync(
     join(ablage, 'latest.json'),
@@ -108,13 +112,14 @@ export function sortiereNachSchluessel<T>(
  */
 export function alsCsv(
   spalten: readonly string[],
-  zeilen: readonly Readonly<Record<string, unknown>>[],
+  zeilen: readonly Readonly<Record<string, unknown>>[] | readonly object[],
 ): string {
   const feld = (wert: unknown): string => {
     const s = wert === null || wert === undefined ? '' : String(wert);
     return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const kopf = spalten.map(feld).join(';');
-  const koerper = zeilen.map((z) => spalten.map((s) => feld(z[s])).join(';'));
+  const koerper = zeilen.map((z) =>
+    spalten.map((s) => feld((z as Record<string, unknown>)[s])).join(';'));
   return `${[kopf, ...koerper].join('\n')}\n`;
 }
