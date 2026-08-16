@@ -79,12 +79,30 @@
       "skala": {
         "form": "ordinal",
         "stufen": [
-          { "wert": 1, "bezeichnung": "einfacher Standard" },
-          { "wert": 2, "bezeichnung": "Standard" },
-          { "wert": 3, "bezeichnung": "gehoben" },
-          { "wert": 4, "bezeichnung": "hochwertig" },
-          { "wert": 5, "bezeichnung": "exklusiv" },
-          { "wert": 6, "bezeichnung": "Luxus" }
+          {
+            "wert": 1,
+            "bezeichnung": "einfacher Standard"
+          },
+          {
+            "wert": 2,
+            "bezeichnung": "Standard"
+          },
+          {
+            "wert": 3,
+            "bezeichnung": "gehoben"
+          },
+          {
+            "wert": 4,
+            "bezeichnung": "hochwertig"
+          },
+          {
+            "wert": 5,
+            "bezeichnung": "exklusiv"
+          },
+          {
+            "wert": 6,
+            "bezeichnung": "Luxus"
+          }
         ]
       }
     },
@@ -109,13 +127,41 @@
   },
   "honorar": {
     "stuetzstellen": [
-      { "v": 0, "hMin": 3000000, "hMax": 4000000 },
-      { "v": 500000000, "hMin": 11250000, "hMax": 15000000 },
-      { "v": 1000000000, "hMin": 19500000, "hMax": 26000000 },
-      { "v": 2500000000, "hMin": 37500000, "hMax": 50000000 },
-      { "v": 5000000000, "hMin": 60000000, "hMax": 80000000 },
-      { "v": 10000000000, "hMin": 93750000, "hMax": 125000000 },
-      { "v": 20000000000, "hMin": 150000000, "hMax": 200000000 }
+      {
+        "v": 0,
+        "hMin": 3000000,
+        "hMax": 4000000
+      },
+      {
+        "v": 500000000,
+        "hMin": 11250000,
+        "hMax": 15000000
+      },
+      {
+        "v": 1000000000,
+        "hMin": 19500000,
+        "hMax": 26000000
+      },
+      {
+        "v": 2500000000,
+        "hMin": 37500000,
+        "hMax": 50000000
+      },
+      {
+        "v": 5000000000,
+        "hMin": 60000000,
+        "hMax": 80000000
+      },
+      {
+        "v": 10000000000,
+        "hMin": 93750000,
+        "hMax": 125000000
+      },
+      {
+        "v": 20000000000,
+        "hMin": 150000000,
+        "hMax": 200000000
+      }
     ],
     "skalierung": {
       "form": "linear",
@@ -151,7 +197,13 @@
       "jitter": "voll",
       "retryAfterBeachten": true,
       "retryAfterMaxSekunden": 60,
-      "retryStatuscodes": [429, 500, 502, 503, 504]
+      "retryStatuscodes": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ]
     },
     "tokenGueltigkeitMin": 720,
     "tokenSicherheitsmargeMin": 30

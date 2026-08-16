@@ -12,6 +12,19 @@ import { klone } from '../shared/konfig.ts';
 
 export const RISIKOINDEX_GEWICHT = 0.10;
 
+/**
+ * Die renormalisierten Gewichte werden auf zwoelf Nachkommastellen gerundet. Ohne das
+ * stuende in der Konfigurationsdatei `0.36000000000000004` — eine Zahl, die kein Mensch
+ * so aufgeschrieben haette und die den Eindruck einer Genauigkeit erweckt, die es nicht
+ * gibt. Die Summenbedingung bleibt weit innerhalb der Toleranz aus invariants.json.
+ */
+const RUNDUNGSSTELLEN = 12;
+
+function rundeGewicht(wert: number): number {
+  const faktor = 10 ** RUNDUNGSSTELLEN;
+  return Math.round(wert * faktor) / faktor;
+}
+
 export const RISIKOINDEX = {
   bezeichnung: 'Risikoindex (Marktvolatilitaet der Region)',
   quelle: 'manuell',
@@ -32,7 +45,7 @@ export function erweitereUmRisikoindex(basisRoh: unknown): unknown {
   const skala = 1 - RISIKOINDEX_GEWICHT;
   for (const [id] of sortiereNachSchluessel(roh.aufwandfaktoren)) {
     const faktor = roh.aufwandfaktoren[id];
-    if (faktor !== undefined) faktor.gewicht *= skala;
+    if (faktor !== undefined) faktor.gewicht = rundeGewicht(faktor.gewicht * skala);
   }
   roh.aufwandfaktoren['risikoindex'] = { ...RISIKOINDEX };
   roh.meta = {
