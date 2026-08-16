@@ -12,6 +12,25 @@ const KEINE_RELATIVEN_PAKETPFADE = {
   message: 'Pakete werden ausschliesslich ueber @offert/* importiert.',
 };
 
+// Produktivcode des Kerns darf nicht aus `test/` importieren.
+//
+// Der Plan formulierte das Verbot als `['../*', '../../*']`. Das trifft die
+// Absicht nicht: `no-restricted-imports` wertet `group` mit gitignore-Semantik
+// aus, wo `../*` das *Verzeichnis* `../..` und damit den gesamten Paketinhalt
+// erfasst — auch den voellig regulaeren Weg `test/**` -> `src/**`, den jeder
+// Kerntest geht. Die Kante ueber die Paketgrenze deckt ohnehin
+// KEINE_RELATIVEN_PAKETPFADE ab; hier bleibt die eine Kante zu verbieten, die
+// R1 wirklich meint: src/ zieht Testcode herein.
+//
+// Dateibezogen formuliert (Endungsmuster statt Verzeichnismuster), weil sich
+// unterhalb eines ausgeschlossenen *Verzeichnisses* keine Datei wieder
+// aufnehmen liesse — die Ausnahme aus PE-10 waere sonst wirkungslos.
+const KEIN_TESTCODE_IN_SRC = [
+  '../**/test/**/*.ts', '../**/test/**/*.tsx',
+  '../**/test/**/*.js', '../**/test/**/*.mjs',
+  '../**/test/**/*.json',
+];
+
 export default tseslint.config(
   {
     ignores: [
@@ -73,8 +92,8 @@ export default tseslint.config(
                    + 'die Konfiguration wird ihm uebergeben (NFA-04, I-21, E-26).',
           },
           {
-            group: ['../*', '../../*'],
-            message: 'Kein Import ueber Paketgrenzen per Relativpfad.',
+            group: KEIN_TESTCODE_IN_SRC,
+            message: 'Produktivcode des Kerns importiert nicht aus test/.',
           },
           KEINE_RELATIVEN_PAKETPFADE,
         ],
@@ -175,16 +194,9 @@ export default tseslint.config(
             message: 'Der Kern liest nicht selbst vom Dateisystem (NFA-04, I-21, E-26).',
           },
           {
-            // Dateibezogen formuliert, nicht verzeichnisbezogen: `no-restricted-imports`
-            // wertet `group` mit gitignore-Semantik aus, und dort laesst sich eine
-            // Datei nicht wieder aufnehmen, wenn ein *Verzeichnis* darueber
-            // ausgeschlossen ist. `../*` schliesst aber genau das aus — naemlich
-            // `../..` als Verzeichnis —, weshalb die Ausnahme in der
-            // verzeichnisbezogenen Fassung wirkungslos blieb. Die Endungsmuster
-            // schliessen nur Dateien aus; erst dadurch greift der negierte Eintrag.
-            group: ['../**/*.ts', '../**/*.tsx', '../**/*.js', '../**/*.mjs',
-                    '../**/*.json', '!../../test/property/invariants.json'],
-            message: 'Kein Import ueber Paketgrenzen per Relativpfad. Einzige Ausnahme: '
+            // Der negierte Eintrag hebt das Verbot fuer genau diese eine Datei auf.
+            group: [...KEIN_TESTCODE_IN_SRC, '!../../test/property/invariants.json'],
+            message: 'Produktivcode des Kerns importiert nicht aus test/. Einzige Ausnahme: '
                    + 'die Invariantendefinitionen unter test/property/ (E-17, PE-10).',
           },
           KEINE_RELATIVEN_PAKETPFADE,
