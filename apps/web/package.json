@@ -1,0 +1,14 @@
+{
+  "name": "@offert/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Zusammenbauschicht: Konfiguration laden, Provider einsetzen, Pipeline aufrufen",
+  "main": "./src/server/index.ts",
+  "types": "./src/server/index.ts",
+  "dependencies": {
+    "@offert/core": "*",
+    "@offert/offer": "*",
+    "@offert/pricehubble": "*"
+  }
+}
