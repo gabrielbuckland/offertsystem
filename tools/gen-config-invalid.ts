@@ -14,14 +14,19 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { RohKonfiguration } from '../packages/core/src/index.ts';
+import type { CfgFehlerCode, RohKonfiguration } from '../packages/core/src/index.ts';
 
 const QUELLE = 'config/company-defaults.json';
 const ZIEL = 'packages/core/test/fixtures/config-invalid';
 
 export interface NegativEintrag {
   readonly datei: string;
-  readonly code: string;
+  /**
+   * Als `CfgFehlerCode` getypt, nicht als `string`: Ein Tippfehler im erwarteten
+   * Code waere sonst erst im Auswertungslauf als Fehlschlag sichtbar — und dort
+   * nicht von einem echten Validierungsmangel zu unterscheiden.
+   */
+  readonly code: CfgFehlerCode;
   readonly verletzung: string;
   readonly mutation: (konfiguration: RohKonfiguration) => void;
 }

@@ -56,3 +56,26 @@ und zwar vor dem ersten Test.
 Zahlenwerte sind **vorlaeufig** und vom Auftraggeber zu bestaetigen; die Herleitung
 steht in `config/README.md`. Der Ladepfad prueft in drei Ebenen und weist eine
 verletzende Konfiguration zurueck, bevor gerechnet wird.
+
+## Nachweisartefakte
+
+| Befehl | Artefakt | Wofuer |
+|---|---|---|
+| `npm run eval:config` | `artifacts/config/<zeitstempel>/config-validation.json` plus `artifacts/config/latest.json` | Positivlauf je Pruefebene und Negativmatrix (Variante → erwarteter Code → tatsaechlicher Code) |
+| `npm run test:coverage` | `artifacts/coverage/coverage-summary.json` plus `artifacts/coverage/latest.json` | Testabdeckung |
+| — | `docs/testdoku/boundary-negativfall.md` | protokollierter Nachweis, dass die Architekturregel scharf ist |
+| — | `packages/core/test/fixtures/config-invalid/negativmatrix.md` | Negativmatrix inkl. konstruktiv ausgeschlossener Faelle |
+
+Jedes Artefaktverzeichnis traegt einen `latest.json`-Zeiger auf den juengsten
+Lauf. Der Sammler des Evaluationsplans sucht darueber und nicht ueber ein
+Verzeichnismuster; ohne Zeiger bricht er ab.
+
+Die Erweiterbarkeitsmessung wird **nicht** hier erhoben, sondern im
+Evaluationsplan.
+
+**Hinweis zum Uebersetzungslauf.** `npm run typecheck` erzeugt ausschliesslich
+`.d.ts`, `.d.ts.map` und `.tsbuildinfo` (`emitDeclarationOnly`), wie Spec 01 §4
+es beschreibt. Die Werkzeuge unter `tools/` brauchen keine uebersetzte Fassung
+des Kerns: Sie laufen ueber `node --experimental-strip-types` direkt auf den
+Quellen und loesen die NodeNext-`.js`-Spezifizierer ueber den Haken
+`tools/ts-aufloeser.mjs` auf.
