@@ -23,7 +23,7 @@
     "test:record": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/record-fixtures.ts",
     "build": "npm run build --workspace @offert/web",
     "dev": "npm run dev --workspace @offert/web",
-    "pdf:smoke": "node --experimental-strip-types tools/pdf-smoke.ts",
+    "pdf:smoke": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/pdf-smoke.ts",
     "eval:config": "npm run typecheck && node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/config-validation.ts"
   },
   "devDependencies": {

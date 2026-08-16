@@ -54,3 +54,6 @@ export {
 
 export { HerkunftsBlock, HerkunftsWert } from './template/HerkunftsWert.js';
 export { OfferteDokument } from './template/OfferteDokument.js';
+
+export { druckeOfferte } from './pdf/drucke-offerte.js';
+export type { BrowserFabrik, DruckOptionen } from './pdf/drucke-offerte.js';
