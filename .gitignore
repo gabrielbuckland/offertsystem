@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.next/
+out/
+*.tsbuildinfo
+coverage/
+artifacts/*
+!artifacts/.gitkeep
+.env
+.env.local
+.env.*.local
+data/offerten/*
+!data/offerten/.gitkeep
+.DS_Store
+test-results/
+playwright-report/

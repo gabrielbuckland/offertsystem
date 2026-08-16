@@ -1,0 +1,30 @@
+{
+  "name": "offertsystem",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Interaktives Offertsystem mit dynamischer Immobilienbewertung — Prototyp zur Bachelorarbeit",
+  "engines": { "node": ">=22.6" },
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "check:deps": "node --experimental-strip-types tools/check-deps.ts",
+    "typecheck": "tsc --build && tsc -p tools/tsconfig.json",
+    "test:unit": "vitest run --project core --project pricehubble --project offer --project web --project tools",
+    "test:contract": "vitest run --project contract",
+    "test:coverage": "vitest run --coverage && node --experimental-strip-types tools/coverage-zeiger.ts",
+    "test": "npm run lint && npm run typecheck && npm run test:unit",
+    "verify": "npm run lint && npm run check:deps && npm run typecheck && npm run test:unit && npm run test:contract",
+    "test:record": "node --experimental-strip-types tools/record-fixtures.ts",
+    "eval:config": "npm run typecheck && node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/config-validation.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.9.0",
+    "@types/node": "22.5.0",
+    "@vitest/coverage-v8": "2.0.5",
+    "eslint": "9.9.0",
+    "typescript": "5.5.4",
+    "typescript-eslint": "8.2.0",
+    "vitest": "2.0.5"
+  }
+}
