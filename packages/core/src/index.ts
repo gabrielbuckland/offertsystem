@@ -135,3 +135,11 @@ export type { HonorarErgebnis } from './pipeline/stufe5-honorar.js';
 export { berechne } from './pipeline/berechne.js';
 export type { BerechnungsErgebnis } from './pipeline/berechne.js';
 export { sortiereNachSchluessel } from './util/sortierung.js';
+
+export {
+  SERIALISIERUNGS_VERSION,
+  deserialisiereEingang,
+  deserialisiereKonfiguration,
+  serialisiereEingang,
+  serialisiereKonfiguration,
+} from './pipeline/serialisierung.js';

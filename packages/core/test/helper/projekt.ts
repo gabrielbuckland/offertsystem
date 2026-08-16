@@ -83,7 +83,10 @@ export function lagescoresFixture(
 ): Lagescores {
   const werte = new Map<LagescoreName, Score>();
   const meta = new Map<LagescoreName, LagescoreMeta>();
-  for (const name of LAGESCORE_FIXTURE_NAMEN) {
+  // Einfuegen in Codepoint-Ordnung, nicht in der Reihenfolge der Anbieterdokumentation:
+  // Die Serialisierung (PE-08) sortiert so, und nur wenn das Fixture dieselbe Ordnung
+  // fuehrt, ist der Rundlauf reihenfolgegleich pruefbar (I-14).
+  for (const name of [...LAGESCORE_FIXTURE_NAMEN].sort()) {
     const schluessel = lagescoreName(name);
     const wert = ueberschreibungen.get(schluessel) ?? score(0.5);
     werte.set(schluessel, wert);
