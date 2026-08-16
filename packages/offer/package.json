@@ -10,5 +10,8 @@
     "@offert/core": "*",
     "react": "19.0.0",
     "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "react-dom": "19.0.0"
   }
 }
