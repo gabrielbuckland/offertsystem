@@ -20,6 +20,13 @@ export default defineConfig({
      * rot, obwohl planmaessig nichts vorliegt.
      */
     passWithNoTests: true,
+    /**
+     * Der Testartefakt-Reporter laeuft bei JEDEM Lauf mit. Damit gibt es keinen Pfad,
+     * auf dem ein Testergebnis in den Anhang gelangt, ohne durch `tests.json` gelaufen
+     * zu sein (Spec 06 §8.2). Er steht hier und nicht in der Workspace-Datei, weil
+     * Reporter wurzelweit wirken.
+     */
+    reporters: ['default', './tools/eval/report/vitest-reporter.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary', 'html'],

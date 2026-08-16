@@ -67,7 +67,11 @@ export function schreibeArtefakt(
   kopf: Laufkopf,
   dateien: Readonly<Record<string, string>>,
 ): string {
-  const ablage = join(wurzel, 'artifacts', 'eval', kopf.instrument);
+  // `tests` liegt nach der Abgrenzung in Spec 06 §8 NICHT unter eval/: Dort stehen
+  // ausschliesslich die Ausgaben der Evaluationswerkzeuge, nicht die der Testlaeufe.
+  const ablage = kopf.instrument === 'tests'
+    ? join(wurzel, 'artifacts', 'tests')
+    : join(wurzel, 'artifacts', 'eval', kopf.instrument);
   const verzeichnis = join(ablage, kopf.zeitstempel);
   mkdirSync(verzeichnis, { recursive: true });
   // Sortierte Reihenfolge: Zwei Laeufe mit gleichem Inhalt erzeugen dieselbe Abfolge

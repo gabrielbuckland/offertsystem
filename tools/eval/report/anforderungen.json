@@ -1,0 +1,16 @@
+[
+  { "id": "A-01", "prioritaet": "Must", "wortlaut": "Strukturierte Dateneingabe der Objektmerkmale sowie Definition der Wohnungstypen mit repraesentativer Dossier-Parametrisierung" },
+  { "id": "A-02", "prioritaet": "Must", "wortlaut": "Automatisierter Abruf einer Referenzbewertung je Wohnungstyp ueber die PriceHubble-API" },
+  { "id": "A-03", "prioritaet": "Must", "wortlaut": "Flaechenbasierte Ableitung der Wohnungspreise, Verkaufssumme und Aggregation zum gewichteten Aufwandindikator" },
+  { "id": "A-04", "prioritaet": "Must", "wortlaut": "Mapping von Verkaufssumme und Aufwandindikator auf eine Honorarrange gemaess konfigurierbarer Regeln" },
+  { "id": "A-05", "prioritaet": "Must", "wortlaut": "Generierung einer strukturierten Offerte mit den berechneten Ergebnissen" },
+  { "id": "A-06", "prioritaet": "Must", "wortlaut": "Automatisierte Testabdeckung der Berechnungslogik (Unit- und Integrationstests)" },
+  { "id": "A-07", "prioritaet": "Must", "wortlaut": "Konfigurierbarkeit der Gewichtungsfaktoren ohne Quellcode-Aenderungen" },
+  { "id": "A-08", "prioritaet": "Should", "wortlaut": "Definierte Fehlerbehandlung bei API-Ausfaellen und ungueltigen Antworten" },
+  { "id": "A-09", "prioritaet": "Should", "wortlaut": "Modulare Systemstruktur mit klarer Trennung von Berechnung, API-Adapter und Darstellung" },
+  { "id": "A-10", "prioritaet": "Should", "wortlaut": "Erweiterbarkeit fuer zusaetzliche Aufwandfaktoren ohne Architekturaenderung" },
+  { "id": "A-11", "prioritaet": "Must", "wortlaut": "Export der Offerte als PDF-Dokument aus der HTML-Darstellung" },
+  { "id": "A-12", "prioritaet": "Could", "wortlaut": "Dashboard zur Uebersicht ueber generierte Offerten" },
+  { "id": "A-13", "prioritaet": "Must", "wortlaut": "Transparente Darstellung aller Berechnungsschritte, Eingangsgroessen und Gewichtungen" },
+  { "id": "A-14", "prioritaet": "Must", "wortlaut": "Erfassung dokumentierter Zu- und Abschlaege je Einheit mit Begruendung sowie getrennte Ausweisung von Referenzwert und Anpassungen" }
+]
