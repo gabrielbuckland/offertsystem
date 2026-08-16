@@ -370,3 +370,101 @@ export function normalisierungErgebnis(
     }));
   return { faktoren };
 }
+
+/** Struktur der Szenario-Fixtures aus `test/fixtures/scenarios/` (Spec 06 §3). */
+export interface SzenarioFixture {
+  readonly szenario_id: string;
+  readonly bezeichnung: string;
+  readonly lage: { readonly adresse: string; readonly plz: string; readonly ort: string };
+  readonly wohnungstypen: readonly {
+    readonly typ_id: string; readonly zimmer: number; readonly A_ref_innen: number;
+    readonly A_ref_aussen: number; readonly P_ref_rappen?: number }[];
+  readonly einheiten: readonly {
+    readonly unit_id: string; readonly typ_id: string; readonly A_innen: number;
+    readonly A_aussen: number;
+    readonly anpassungen: readonly { readonly a_i: number; readonly begruendung: string }[] }[];
+  readonly lagescores: Readonly<Record<string, number>>;
+  readonly aufwandfaktoren: Readonly<Record<string, number>>;
+  readonly konfig_ref: string;
+  readonly erwartung_ref: string;
+  readonly lagedaten_herkunft: 'synthetisch' | 'aufgezeichnet';
+  readonly zeitstempel: string;
+}
+
+/**
+ * Bildet ein Szenario-Fixture auf die Berechnungseingabe ab.
+ *
+ * Ein Wohnungstyp ohne `P_ref_rappen` erhaelt bewusst KEINE Referenzbewertung: Genau so
+ * sieht ein Abruf aus, der fuer diesen Typ nichts geliefert hat (S5). Ein Ersatzwert
+ * waere hier die naheliegende und nach I-24 verbotene Abkuerzung.
+ */
+export function szenarioZuEingangsArgumenten(fixture: SzenarioFixture): EingangsArgumente {
+  const teile = fixture.lage.adresse.split(' ');
+  const hausnummer = teile.length > 1 ? teile[teile.length - 1]! : '1';
+  const strasse = teile.length > 1 ? teile.slice(0, -1).join(' ') : fixture.lage.adresse;
+
+  const wohnungstypen = fixture.wohnungstypen.map((t) => ({
+    id: wohnungstypId(t.typ_id),
+    zimmerzahl: t.zimmer,
+    parametrisierung: {
+      ...parametrisierungFixture(),
+      flaecheInnen: quadratmeter(t.A_ref_innen),
+      flaecheAussen: quadratmeterAbNull(t.A_ref_aussen),
+    },
+  }));
+
+  const erzeugt = erzeugeLiegenschaft({
+    id: liegenschaftId(fixture.szenario_id),
+    adresse: { strasse, hausnummer, plz: fixture.lage.plz, ort: fixture.lage.ort },
+    baujahr: 2025,
+    grundstuecksflaeche: quadratmeter(1200),
+    wohnungstypen,
+    einheiten: fixture.einheiten.map((e, index) => ({
+      id: einheitId(`E-${index + 1}`),
+      wohnungsnummer: wohnungsnummer(e.unit_id),
+      wohnungstypId: wohnungstypId(e.typ_id),
+      flaecheInnen: quadratmeter(e.A_innen),
+      flaecheAussen: quadratmeterAbNull(e.A_aussen),
+      stockwerk: index,
+      parkplaetze: 0,
+      anpassungen: e.anpassungen.map((a) => ({
+        faktor: a.a_i, begruendung: a.begruendung, erfassungsform: 'relativ' as const,
+      })),
+    })),
+  });
+  if (!erzeugt.ok) {
+    throw new Error(`Szenario ${fixture.szenario_id} ergibt kein gueltiges Aggregat`);
+  }
+
+  const bewertungen = fixture.wohnungstypen
+    .filter((t) => t.P_ref_rappen !== undefined)
+    .map((t) => ({
+      ...referenzbewertungFixture(t.typ_id),
+      marktwert: rappen(t.P_ref_rappen!),
+      parametrisierungsAbdruck: {
+        ...parametrisierungFixture(),
+        flaecheInnen: quadratmeter(t.A_ref_innen),
+        flaecheAussen: quadratmeterAbNull(t.A_ref_aussen),
+      },
+    }));
+
+  const ueberschreibungen = new Map(
+    Object.entries(fixture.lagescores).map(([name, wert]) => [lagescoreName(name), score(wert)]),
+  );
+  const vermarkterFaktoren = {
+    werte: new Map(
+      Object.entries(fixture.aufwandfaktoren).map(([name, wert]) => [faktorId(name), wert]),
+    ),
+  };
+
+  return {
+    liegenschaft: erzeugt.wert,
+    bewertungen,
+    bewertungsbuendelVollstaendig:
+      bewertungen.length === fixture.wohnungstypen.length,
+    lagescores: lagescoresFixture(ueberschreibungen),
+    vermarkterFaktoren,
+    konfiguration: standardKonfiguration(),
+    zeitstempel: fixture.zeitstempel,
+  };
+}

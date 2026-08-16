@@ -1,0 +1,50 @@
+{
+  "szenario_id": "S5",
+  "bezeichnung": "Randszenario: ein Typ ohne Referenzbewertung, fehlender Aufwandfaktor",
+  "lage": {
+    "adresse": "Hinterdorfstrasse 2",
+    "plz": "6289",
+    "ort": "Hohenrain"
+  },
+  "wohnungstypen": [
+    {
+      "typ_id": "T1",
+      "zimmer": 3.5,
+      "A_ref_innen": 92.5,
+      "A_ref_aussen": 0.0,
+      "P_ref_rappen": 85000000
+    },
+    {
+      "typ_id": "T2",
+      "zimmer": 4.5,
+      "A_ref_innen": 112.0,
+      "A_ref_aussen": 0.0
+    }
+  ],
+  "einheiten": [
+    {
+      "unit_id": "A-01",
+      "typ_id": "T1",
+      "A_innen": 92.5,
+      "A_aussen": 0.0,
+      "anpassungen": []
+    },
+    {
+      "unit_id": "B-01",
+      "typ_id": "T2",
+      "A_innen": 112.0,
+      "A_aussen": 0.0,
+      "anpassungen": []
+    }
+  ],
+  "lagescores": {
+    "location": 0.5
+  },
+  "aufwandfaktoren": {
+    "f_x": 99
+  },
+  "konfig_ref": "config/company-defaults.json",
+  "erwartung_ref": "reference/S5-erwartung.csv",
+  "lagedaten_herkunft": "synthetisch",
+  "zeitstempel": "2026-08-16T10:00:00.000Z"
+}

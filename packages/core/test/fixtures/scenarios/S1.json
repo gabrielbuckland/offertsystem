@@ -1,0 +1,58 @@
+{
+  "szenario_id": "S1",
+  "bezeichnung": "Kleines MFH, laendliche Lage, ein Wohnungstyp, ohne Aussenflaechen",
+  "lage": {
+    "adresse": "Dorfstrasse 4",
+    "plz": "6015",
+    "ort": "Reussbuehl"
+  },
+  "wohnungstypen": [
+    {
+      "typ_id": "T1",
+      "zimmer": 3.5,
+      "A_ref_innen": 92.5,
+      "A_ref_aussen": 0.0,
+      "P_ref_rappen": 85000000
+    }
+  ],
+  "einheiten": [
+    {
+      "unit_id": "A-01",
+      "typ_id": "T1",
+      "A_innen": 92.5,
+      "A_aussen": 0.0,
+      "anpassungen": []
+    },
+    {
+      "unit_id": "A-02",
+      "typ_id": "T1",
+      "A_innen": 92.5,
+      "A_aussen": 0.0,
+      "anpassungen": []
+    },
+    {
+      "unit_id": "A-03",
+      "typ_id": "T1",
+      "A_innen": 92.5,
+      "A_aussen": 0.0,
+      "anpassungen": []
+    },
+    {
+      "unit_id": "A-04",
+      "typ_id": "T1",
+      "A_innen": 92.5,
+      "A_aussen": 0.0,
+      "anpassungen": []
+    }
+  ],
+  "lagescores": {
+    "location": 0.35
+  },
+  "aufwandfaktoren": {
+    "innenausbau_qualitaet": 2
+  },
+  "konfig_ref": "config/company-defaults.json",
+  "erwartung_ref": "reference/S1-erwartung.csv",
+  "lagedaten_herkunft": "synthetisch",
+  "zeitstempel": "2026-08-16T10:00:00.000Z"
+}

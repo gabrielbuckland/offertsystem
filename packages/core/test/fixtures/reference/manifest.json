@@ -45,6 +45,36 @@
       "blatt": "08_degression",
       "csv": "08_degression.csv",
       "sha256": "4c6a50e22f903783799f1b87a13832f578eea600576651d2056ffbdaaab139ec"
+    },
+    {
+      "blatt": "S1-erwartung",
+      "csv": "S1-erwartung.csv",
+      "sha256": "986de8205352b25c8fc1fcf78d0a4c9f98499be87f8571c11bb2c4d97db7cbdd"
+    },
+    {
+      "blatt": "S2-erwartung",
+      "csv": "S2-erwartung.csv",
+      "sha256": "1e435962169c7710c3da24775482c360d0a49d355b8b6b672c60f4e60d2423f7"
+    },
+    {
+      "blatt": "S3-erwartung",
+      "csv": "S3-erwartung.csv",
+      "sha256": "558a6eb639d90f3867249e87348167f16ef9d9c6d4ca051becc8063b5a29dbad"
+    },
+    {
+      "blatt": "S4a-erwartung",
+      "csv": "S4a-erwartung.csv",
+      "sha256": "7ec0dbe11dcae6903d424cb6567c56686e6d5421309f344de919acd4f7ec4774"
+    },
+    {
+      "blatt": "S4b-erwartung",
+      "csv": "S4b-erwartung.csv",
+      "sha256": "78037e8e18db938327c9af6f7bc5f21cba54ea2a4cc579ee9e6fe6e65874174e"
+    },
+    {
+      "blatt": "S5-erwartung",
+      "csv": "S5-erwartung.csv",
+      "sha256": "13fd21a94ef45ac935578589e035d608567bdc08d30eabb277211e9e60d0464f"
     }
   ]
 }

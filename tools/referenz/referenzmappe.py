@@ -319,8 +319,206 @@ def schreibe_manifest(eintraege: list[dict[str, str]]) -> None:
         json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+
+# =============================================================================
+# Szenarien (T2) — Fixtures und unabhaengig gerechnete Erwartungswerte
+# =============================================================================
+# Aufbau je Szenario: Wohnungstypen (Referenzflaechen und Referenzwert), Einheiten
+# (die die Referenzflaechen tragen, damit I-05 unmittelbar beobachtbar bleibt),
+# Lagescores und manuell erfasste Aufwandfaktoren.
+#
+# Die Erwartungswerte entstehen hier auf demselben getrennten Rechenweg wie die
+# Blaetter 01-08: V ueber eq:wohnungspreis und eq:verkaufssumme, D ueber
+# eq:normalisierung und eq:aufwandindikator, die Honorarrange ueber
+# eq:honorar_mapping. Kein Import aus packages/core.
+
+FAKTOREN = [
+    # (id, quelle, quellschluessel, grenzeMin, grenzeMax, gewicht)
+    ("lage_gesamt", "lagescore", "location", 1.0, 0.0, 0.40),
+    ("innenausbau_qualitaet", "manuell", "innenausbau_qualitaet", 1.0, 6.0, 0.25),
+    ("preissegment", "abgeleitet", "mittlererQuadratmeterpreis", 600_000.0, 1_800_000.0, 0.20),
+    ("projektumfang", "abgeleitet", "einheitenzahl", 4.0, 36.0, 0.15),
+]
+
+SZENARIEN = {
+    "S1": {
+        "bezeichnung": "Kleines MFH, laendliche Lage, ein Wohnungstyp, ohne Aussenflaechen",
+        "lage": {"adresse": "Dorfstrasse 4", "plz": "6015", "ort": "Reussbuehl"},
+        "typen": [("T1", 3.5, 92.5, 0.0, 85_000_000)],
+        "einheiten": [("A-01", "T1", []), ("A-02", "T1", []),
+                      ("A-03", "T1", []), ("A-04", "T1", [])],
+        "lagescores": {"location": 0.35},
+        "aufwandfaktoren": {"innenausbau_qualitaet": 2},
+    },
+    "S2": {
+        "bezeichnung": "MFH urbane Lage, zwei Typen, alle Einheiten mit Balkon",
+        "lage": {"adresse": "Bahnhofstrasse 12", "plz": "6003", "ort": "Luzern"},
+        "typen": [("T1", 3.5, 92.5, 12.0, 90_000_000), ("T2", 4.5, 112.0, 16.0, 118_000_000)],
+        "einheiten": [("A-01", "T1", []), ("A-02", "T1", []), ("A-03", "T1", []),
+                      ("B-01", "T2", []), ("B-02", "T2", []), ("B-03", "T2", [])],
+        "lagescores": {"location": 0.78},
+        "aufwandfaktoren": {"innenausbau_qualitaet": 4},
+    },
+    "S3": {
+        "bezeichnung": "MFH stark heterogen, vier Typen, Anpassungen nahe der Spannweite",
+        "lage": {"adresse": "Seestrasse 88", "plz": "6047", "ort": "Kastanienbaum"},
+        "typen": [("T1", 2.5, 61.0, 6.0, 62_000_000), ("T2", 3.5, 92.5, 10.0, 98_000_000),
+                  ("T3", 4.5, 118.0, 18.0, 155_000_000), ("T4", 5.5, 146.0, 34.0, 232_000_000)],
+        "einheiten": [
+            ("A-01", "T1", []),
+            ("A-02", "T2", [(0.20, "Attikalage mit privater Dachterrasse"),
+                            (0.04, "Unverbaubare Aussicht auf den See")]),
+            ("A-03", "T3", [(-0.24, "Laermexposition Hauptverkehrsachse und Nordausrichtung")]),
+            ("A-04", "T4", [(0.15, "Freie Seesicht ueber zwei Geschosse"),
+                            (-0.16, "Erdgeschoss stark einsehbar zur Strasse")]),
+        ],
+        "lagescores": {"location": 0.62},
+        "aufwandfaktoren": {"innenausbau_qualitaet": 5},
+    },
+    "S4a": {
+        "bezeichnung": "Vergleichsprojekt: drei Typen, zwoelf Einheiten",
+        "lage": {"adresse": "Industriestrasse 5", "plz": "6010", "ort": "Kriens"},
+        "typen": [("T1", 3.5, 92.5, 0.0, 85_000_000), ("T2", 4.5, 112.0, 0.0, 105_000_000),
+                  ("T3", 2.5, 64.0, 0.0, 60_000_000)],
+        "einheiten": [(f"{p}-{i:02d}", t, [])
+                      for t, p in (("T1", "A"), ("T2", "B"), ("T3", "C"))
+                      for i in range(1, 5)],
+        "lagescores": {"location": 0.55},
+        "aufwandfaktoren": {"innenausbau_qualitaet": 3},
+    },
+    "S4b": {
+        "bezeichnung": "Grosses MFH ueber zwanzig Einheiten, gleiche Typmischung wie S4a",
+        "lage": {"adresse": "Industriestrasse 5", "plz": "6010", "ort": "Kriens"},
+        "typen": [("T1", 3.5, 92.5, 0.0, 85_000_000), ("T2", 4.5, 112.0, 0.0, 105_000_000),
+                  ("T3", 2.5, 64.0, 0.0, 60_000_000)],
+        "einheiten": [(f"{p}-{i:02d}", t, [])
+                      for t, p in (("T1", "A"), ("T2", "B"), ("T3", "C"))
+                      for i in range(1, 9)],
+        "lagescores": {"location": 0.55},
+        "aufwandfaktoren": {"innenausbau_qualitaet": 3},
+    },
+    "S5": {
+        "bezeichnung": "Randszenario: ein Typ ohne Referenzbewertung, fehlender Aufwandfaktor",
+        "lage": {"adresse": "Hinterdorfstrasse 2", "plz": "6289", "ort": "Hohenrain"},
+        # T2 traegt bewusst KEINEN Referenzwert: der Abruf lieferte fuer diesen Typ nichts.
+        "typen": [("T1", 3.5, 92.5, 0.0, 85_000_000), ("T2", 4.5, 112.0, 0.0, None)],
+        "einheiten": [("A-01", "T1", []), ("B-01", "T2", [])],
+        "lagescores": {"location": 0.5},
+        # `innenausbau_qualitaet` fehlt; zusaetzlich ein Rohwert weit oberhalb der Grenze.
+        "aufwandfaktoren": {"f_x": 99},
+    },
+}
+
+
+def szenario_kennzahlen(name: str):
+    """Rechnet V, D und die Honorarrange eines Szenarios unabhaengig aus."""
+    s = SZENARIEN[name]
+    typen = {t[0]: t for t in s["typen"]}
+
+    positionen = []
+    for unit, typ_id, anpassungen in s["einheiten"]:
+        _, _, innen, aussen, p_ref = typen[typ_id]
+        if p_ref is None:
+            return None  # ohne Referenzbewertung entsteht kein Ergebnis (I-24)
+        a_ref = flaeche(innen, aussen, ALPHA)
+        q_t = p_ref / a_ref
+        a_j = flaeche(innen, aussen, ALPHA)
+        basispreis = q_t * a_j
+        z = sum(f for f, _ in anpassungen)
+        positionen.append((basispreis, a_j, runde_auf_rappen(basispreis * (1 + z))))
+
+    v = sum(p for _, _, p in positionen)
+    m = len(positionen)
+    flaechensumme = sum(a for _, a, _ in positionen)
+    basissumme = sum(b for b, _, _ in positionen)
+    mittlerer_qm = basissumme / flaechensumme
+
+    rohwerte = {
+        "lagescore": s["lagescores"],
+        "manuell": s["aufwandfaktoren"],
+        "abgeleitet": {"einheitenzahl": m, "mittlererQuadratmeterpreis": mittlerer_qm},
+    }
+    d = 0.0
+    for _fid, quelle, schluessel, gmin, gmax, w in FAKTOREN:
+        roh = rohwerte[quelle].get(schluessel)
+        if roh is None:
+            return None  # fehlender Faktor: kein Ergebnis
+        d += w * normalisiere(float(roh), gmin, gmax)
+
+    k, _, basis_min = honorarbasis(v, 1)
+    _, _, basis_max = honorarbasis(v, 2)
+    g = g_von(d)
+    return {
+        "V_rappen": v, "m": m, "D": d, "g_D": g, "k": k,
+        "mittlerer_qm": mittlerer_qm,
+        "H_min_g_rappen": runde_auf_rappen(basis_min * g),
+        "H_max_g_rappen": runde_auf_rappen(basis_max * g),
+    }
+
+
+BLATT_SZENARIO = ["szenario_id", "m", "V_rappen", "D", "g_D", "k",
+                  "mittlerer_qm_preis_rappen", "H_min_g_rappen", "H_max_g_rappen"]
+
+
+def schreibe_szenarien() -> list[dict[str, str]]:
+    """Schreibt Fixture-JSON je Szenario und die Erwartungs-CSV; liefert Manifesteintraege."""
+    ziel_fixtures = WURZEL / "packages" / "core" / "test" / "fixtures" / "scenarios"
+    ziel_fixtures.mkdir(parents=True, exist_ok=True)
+    eintraege = []
+    for name, s in SZENARIEN.items():
+        fixture = {
+            "szenario_id": name,
+            "bezeichnung": s["bezeichnung"],
+            "lage": s["lage"],
+            "wohnungstypen": [
+                {"typ_id": t, "zimmer": z, "A_ref_innen": i, "A_ref_aussen": a,
+                 **({} if p is None else {"P_ref_rappen": p})}
+                for t, z, i, a, p in s["typen"]
+            ],
+            "einheiten": [
+                {"unit_id": u, "typ_id": t,
+                 "A_innen": next(x[2] for x in s["typen"] if x[0] == t),
+                 "A_aussen": next(x[3] for x in s["typen"] if x[0] == t),
+                 "anpassungen": [{"a_i": f, "begruendung": b} for f, b in ang]}
+                for u, t, ang in s["einheiten"]
+            ],
+            "lagescores": s["lagescores"],
+            "aufwandfaktoren": s["aufwandfaktoren"],
+            "konfig_ref": "config/company-defaults.json",
+            "erwartung_ref": f"reference/{name}-erwartung.csv",
+            "lagedaten_herkunft": "synthetisch",
+            "zeitstempel": "2026-08-16T10:00:00.000Z",
+        }
+        (ziel_fixtures / f"{name}.json").write_text(
+            json.dumps(fixture, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+        kennzahlen = szenario_kennzahlen(name)
+        pfad = CSV_ZIEL / f"{name}-erwartung.csv"
+        with pfad.open("w", newline="", encoding="utf-8") as datei:
+            schreiber = csv.writer(datei, lineterminator="\n")
+            schreiber.writerow(BLATT_SZENARIO)
+            if kennzahlen is None:
+                # Kein Ergebnis erwartet; die Zeile haelt das ausdruecklich fest, statt
+                # zu fehlen — eine fehlende Datei waere von einem Versehen nicht zu
+                # unterscheiden.
+                schreiber.writerow([name, len(s["einheiten"]), "", "", "", "", "", "", ""])
+            else:
+                schreiber.writerow([
+                    name, kennzahlen["m"], kennzahlen["V_rappen"], repr(kennzahlen["D"]),
+                    repr(kennzahlen["g_D"]), kennzahlen["k"],
+                    repr(kennzahlen["mittlerer_qm"]),
+                    kennzahlen["H_min_g_rappen"], kennzahlen["H_max_g_rappen"],
+                ])
+        eintraege.append({
+            "blatt": f"{name}-erwartung",
+            "csv": f"{name}-erwartung.csv",
+            "sha256": hashlib.sha256(pfad.read_bytes()).hexdigest(),
+        })
+    return eintraege
+
+
 if __name__ == "__main__":
     schreibe_mappe()
-    schreibe_manifest(schreibe_csv())
+    schreibe_manifest(schreibe_csv() + schreibe_szenarien())
     print(f"Arbeitsmappe: {MAPPE}")
     print(f"CSV und Manifest: {CSV_ZIEL}")

@@ -1,0 +1,102 @@
+{
+  "szenario_id": "S3",
+  "bezeichnung": "MFH stark heterogen, vier Typen, Anpassungen nahe der Spannweite",
+  "lage": {
+    "adresse": "Seestrasse 88",
+    "plz": "6047",
+    "ort": "Kastanienbaum"
+  },
+  "wohnungstypen": [
+    {
+      "typ_id": "T1",
+      "zimmer": 2.5,
+      "A_ref_innen": 61.0,
+      "A_ref_aussen": 6.0,
+      "P_ref_rappen": 62000000
+    },
+    {
+      "typ_id": "T2",
+      "zimmer": 3.5,
+      "A_ref_innen": 92.5,
+      "A_ref_aussen": 10.0,
+      "P_ref_rappen": 98000000
+    },
+    {
+      "typ_id": "T3",
+      "zimmer": 4.5,
+      "A_ref_innen": 118.0,
+      "A_ref_aussen": 18.0,
+      "P_ref_rappen": 155000000
+    },
+    {
+      "typ_id": "T4",
+      "zimmer": 5.5,
+      "A_ref_innen": 146.0,
+      "A_ref_aussen": 34.0,
+      "P_ref_rappen": 232000000
+    }
+  ],
+  "einheiten": [
+    {
+      "unit_id": "A-01",
+      "typ_id": "T1",
+      "A_innen": 61.0,
+      "A_aussen": 6.0,
+      "anpassungen": []
+    },
+    {
+      "unit_id": "A-02",
+      "typ_id": "T2",
+      "A_innen": 92.5,
+      "A_aussen": 10.0,
+      "anpassungen": [
+        {
+          "a_i": 0.2,
+          "begruendung": "Attikalage mit privater Dachterrasse"
+        },
+        {
+          "a_i": 0.04,
+          "begruendung": "Unverbaubare Aussicht auf den See"
+        }
+      ]
+    },
+    {
+      "unit_id": "A-03",
+      "typ_id": "T3",
+      "A_innen": 118.0,
+      "A_aussen": 18.0,
+      "anpassungen": [
+        {
+          "a_i": -0.24,
+          "begruendung": "Laermexposition Hauptverkehrsachse und Nordausrichtung"
+        }
+      ]
+    },
+    {
+      "unit_id": "A-04",
+      "typ_id": "T4",
+      "A_innen": 146.0,
+      "A_aussen": 34.0,
+      "anpassungen": [
+        {
+          "a_i": 0.15,
+          "begruendung": "Freie Seesicht ueber zwei Geschosse"
+        },
+        {
+          "a_i": -0.16,
+          "begruendung": "Erdgeschoss stark einsehbar zur Strasse"
+        }
+      ]
+    }
+  ],
+  "lagescores": {
+    "location": 0.62
+  },
+  "aufwandfaktoren": {
+    "innenausbau_qualitaet": 5
+  },
+  "konfig_ref": "config/company-defaults.json",
+  "erwartung_ref": "reference/S3-erwartung.csv",
+  "lagedaten_herkunft": "synthetisch",
+  "zeitstempel": "2026-08-16T10:00:00.000Z"
+}
