@@ -66,3 +66,24 @@ export {
   type Preisanpassung,
   type UeberschreibungsProtokoll,
 } from './config/merge.js';
+
+export {
+  parseKonfiguration,
+  type KonfigurationsAbbildung,
+} from './config/abbildung.js';
+
+export {
+  type AbleitungsName,
+  type AnpassungsVorlage as KernAnpassungsVorlage,
+  type FaktorParameter,
+  type Faktormenge,
+  type Faktorskala,
+  type FaktorQuelle as KernFaktorQuelle,
+  type Konfiguration,
+  type KonfigurationsMeta,
+  type PreisanpassungsKonfiguration,
+  type Referenzverteilung,
+  type Skalierungsparameter,
+  type StrategieBezeichner as KernStrategieBezeichner,
+  type Stuetzstelle as KernStuetzstelle,
+} from './config/typen.js';
