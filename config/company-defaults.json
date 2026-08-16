@@ -1,9 +1,9 @@
 {
   "meta": {
     "schemaVersion": 1,
-    "konfigVersion": "1.0.0-vorlaeufig",
+    "konfigVersion": "1.0.0-vorlaeufig+risikoindex",
     "gueltigAb": "2026-08-16",
-    "beschreibung": "Firmenweite Berechnungsbasis. VORLAEUFIG — saemtliche Zahlenwerte sind eine begruendete Festlegung des Autors und vom Auftraggeber zu bestaetigen. Herleitung in config/README.md."
+    "beschreibung": "Erweiterungsszenario 6.3: Aufwandfaktor Risikoindex, Gewichte renormalisiert."
   },
   "flaeche": {
     "alpha": 0.5
@@ -66,7 +66,7 @@
       "strategie": "minmax",
       "min": 1,
       "max": 0,
-      "gewicht": 0.4
+      "gewicht": 0.36
     },
     "innenausbau_qualitaet": {
       "bezeichnung": "Qualitaet des Innenausbaus",
@@ -75,7 +75,7 @@
       "strategie": "minmax",
       "min": 1,
       "max": 6,
-      "gewicht": 0.25,
+      "gewicht": 0.225,
       "skala": {
         "form": "ordinal",
         "stufen": [
@@ -113,7 +113,7 @@
       "strategie": "minmax",
       "min": 600000,
       "max": 1800000,
-      "gewicht": 0.2
+      "gewicht": 0.18
     },
     "projektumfang": {
       "bezeichnung": "Projektumfang (Anzahl Einheiten)",
@@ -122,7 +122,16 @@
       "strategie": "minmax",
       "min": 4,
       "max": 36,
-      "gewicht": 0.15
+      "gewicht": 0.135
+    },
+    "risikoindex": {
+      "bezeichnung": "Risikoindex (Marktvolatilitaet der Region)",
+      "quelle": "manuell",
+      "quellSchluessel": "risikoindex",
+      "strategie": "minmax",
+      "min": 1,
+      "max": 6,
+      "gewicht": 0.1
     }
   },
   "honorar": {
