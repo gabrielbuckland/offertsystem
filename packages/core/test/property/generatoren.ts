@@ -29,6 +29,8 @@ export interface EinTypOptionen {
   readonly pRef?: number;
   readonly alpha?: number;
   readonly anpassungen?: readonly ZuAbschlag[];
+  /** Einheitenzahl; die Anpassungen treffen stets nur die erste Einheit. */
+  readonly anzahl?: number;
 }
 
 /**
@@ -61,16 +63,16 @@ export function einTypEinheitenEingang(optionen: EinTypOptionen = {}): PipelineE
     baujahr: 2025,
     grundstuecksflaeche: quadratmeter(800),
     wohnungstypen: [typ],
-    einheiten: [{
-      id: einheitId('E-1'),
-      wohnungsnummer: wohnungsnummer('A-01'),
+    einheiten: Array.from({ length: optionen.anzahl ?? 1 }, (_wert, index) => ({
+      id: einheitId(`E-${index + 1}`),
+      wohnungsnummer: wohnungsnummer(`A-${String(index + 1).padStart(3, '0')}`),
       wohnungstypId: typ.id,
       flaecheInnen: quadratmeterAbNull(innen),
       flaecheAussen: quadratmeterAbNull(aussen),
-      stockwerk: 0,
+      stockwerk: index,
       parkplaetze: 0,
-      anpassungen: optionen.anpassungen ?? [],
-    }],
+      anpassungen: index === 0 ? optionen.anpassungen ?? [] : [],
+    })),
   });
   if (!erzeugt.ok) throw new Error('Generator erzeugte ein ungueltiges Aggregat');
 

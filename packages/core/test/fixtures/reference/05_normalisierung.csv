@@ -1,0 +1,7 @@
+faktor_id,x_roh,x_min,x_max,x_norm
+innen,2.5,0.0,10.0,0.25
+rand_oben,10.0,0.0,10.0,1.0
+rand_unten,0.0,0.0,10.0,0.0
+unterhalb,-5.0,0.0,10.0,0.0
+oberhalb,15.0,0.0,10.0,1.0
+invertiert,0.8,1.0,0.0,0.19999999999999996

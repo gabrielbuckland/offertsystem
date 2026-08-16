@@ -1,0 +1,50 @@
+{
+  "quellmappe": "docs/referenz/referenzberechnung.xlsx",
+  "erzeuger": "tools/referenz/referenzmappe.py",
+  "exportdatum": "2026-08-16",
+  "unabhaengigkeit": "Die Referenzwerte entstehen auf einem zweiten, vom Produktivcode getrennten Rechenweg: Das Erzeugerskript ist Python, importiert nichts aus packages/core und fuehrt die Formeln aus Kapitel 3.3 eigenstaendig. Die Arbeitsmappe traegt dieselben Schritte als Tabellenformel.",
+  "einschraenkung": "Die von Plan P2 Aufgabe 19 geforderte Commit-Reihenfolge (Referenzwerte als Commit A VOR der Implementierung der Stufen, Commit B danach) ist NICHT eingehalten. Die Ausfuehrungsreihenfolge in 00-planentscheide.md Abschnitt F ordnet die Referenzmappe als Schritt 7 nach den Stufen ein (Schritt 5); beide Vorgaben widersprechen sich, und das uebergeordnete Dokument gewinnt. Die Unabhaengigkeit ist damit ueber den getrennten Rechenweg belegt, nicht zusaetzlich ueber die Versionsgeschichte. Wer die zeitliche Unabhaengigkeit beweisen will, muss die Mappe vor der naechsten Modellaenderung erneut erzeugen und den Commit vor der Aenderung setzen.",
+  "commitPaar": null,
+  "blaetter": [
+    {
+      "blatt": "01_flaeche",
+      "csv": "01_flaeche.csv",
+      "sha256": "85104f6794064074398cf4386f8c6e57ed267be901a7fad2670c0ff0f2a723ba"
+    },
+    {
+      "blatt": "02_qm_preis",
+      "csv": "02_qm_preis.csv",
+      "sha256": "0fcd913f33ae1843b671418dd05128ee9760e57c2ada6326a076cb0db7359759"
+    },
+    {
+      "blatt": "03_wohnungspreis",
+      "csv": "03_wohnungspreis.csv",
+      "sha256": "4df0cb29316c6479c8997db45da2fb24dc9face5447bc4f46d14af6e84a3bd02"
+    },
+    {
+      "blatt": "04_verkaufssumme",
+      "csv": "04_verkaufssumme.csv",
+      "sha256": "012023c09931712ec6196d05b42d1ae1fd1eed3c2f48270c7a1a5e8343834e70"
+    },
+    {
+      "blatt": "05_normalisierung",
+      "csv": "05_normalisierung.csv",
+      "sha256": "d3e7a5a190c4343418c5620c64d3276d55980874272c1cff2878a8ee9c145014"
+    },
+    {
+      "blatt": "06_aufwandindikator",
+      "csv": "06_aufwandindikator.csv",
+      "sha256": "f834edbdb8406dbd52ec8e0ccbdd0a154ebc162249ad1253bb51c57160825f26"
+    },
+    {
+      "blatt": "07_honorar_mapping",
+      "csv": "07_honorar_mapping.csv",
+      "sha256": "2e216a40cc274e893fa6d4aaeed3f067525ebb12208b860bf27788e29fb35b25"
+    },
+    {
+      "blatt": "08_degression",
+      "csv": "08_degression.csv",
+      "sha256": "4c6a50e22f903783799f1b87a13832f578eea600576651d2056ffbdaaab139ec"
+    }
+  ]
+}
