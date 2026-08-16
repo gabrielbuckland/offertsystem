@@ -23,7 +23,8 @@
     "paths": {
       "@offert/core": ["packages/core/src/index.ts"],
       "@offert/pricehubble": ["packages/pricehubble/src/index.ts"],
-      "@offert/offer": ["packages/offer/src/index.ts"]
+      "@offert/offer": ["packages/offer/src/index.ts"],
+      "@offert/web": ["apps/web/src/server/index.ts"]
     }
   }
 }
