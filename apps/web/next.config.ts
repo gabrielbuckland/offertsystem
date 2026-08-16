@@ -12,6 +12,9 @@ const config: NextConfig = {
   // `fileURLToPath` statt `.pathname`: Der Ablageort enthaelt Leerzeichen, die in einer
   // file-URL prozentkodiert sind und als Pfad nicht mehr aufloesbar waeren.
   outputFileTracingRoot: fileURLToPath(new URL('../../', import.meta.url)),
+  // Next schreibt in die ihm zugewiesene tsconfig hinein; sie ist deshalb von der
+  // Projektverweis-Konfiguration getrennt (siehe apps/web/tsconfig.next.json).
+  typescript: { tsconfigPath: './tsconfig.next.json' },
   experimental: { typedRoutes: true },
 };
 

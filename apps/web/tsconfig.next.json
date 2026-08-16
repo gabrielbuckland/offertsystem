@@ -1,0 +1,19 @@
+{
+  "//": "Nur fuer den Next.js-Build. Next schreibt in die ihm zugewiesene Konfiguration hinein (jsx: preserve, noEmit, allowJs) — Einstellungen, die mit dem Projektverweis-Aufbau von tsconfig.json unvereinbar sind: `emitDeclarationOnly` und `noEmit` schliessen einander aus, und ohne Deklarationen traegt kein Verweis. Deshalb zwei Dateien statt eines Kompromisses. Verbindlich fuer `npm run typecheck` und die Abhaengigkeitsmatrix bleibt tsconfig.json; diese hier ist reines Build-Zubehoer.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "emitDeclarationOnly": false,
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true,
+    "jsx": "preserve",
+    "allowJs": true,
+    "incremental": true,
+    "esModuleInterop": true
+  },
+  "references": [],
+  "exclude": [
+    "node_modules"
+  ]
+}

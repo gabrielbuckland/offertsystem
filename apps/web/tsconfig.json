@@ -3,7 +3,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "@/*": [
@@ -14,11 +14,7 @@
       {
         "name": "next"
       }
-    ],
-    "allowJs": true,
-    "noEmit": true,
-    "incremental": true,
-    "esModuleInterop": true
+    ]
   },
   "include": [
     "next.config.ts",
@@ -39,8 +35,5 @@
     {
       "path": "../../packages/offer"
     }
-  ],
-  "exclude": [
-    "node_modules"
   ]
 }
