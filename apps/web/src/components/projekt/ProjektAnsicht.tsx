@@ -215,6 +215,7 @@ export function ProjektAnsicht(
       <EinheitenGenerator
         referenzobjekte={projekt.referenzobjekte}
         einheiten={projekt.einheiten}
+        spalten={projekt.anpassungsSpalten}
         aendere={(einheiten) => aendere({ ...projekt, einheiten: [...einheiten] })}
       />
       <AnpassungsSpalten

@@ -8,7 +8,9 @@
  */
 import { useState } from 'react';
 import { erzeugeEinheiten, type Wunsch } from '../../server/einheiten-generator.js';
-import type { ProjektEinheit, Referenzobjekt } from '../../server/projekt-schema.js';
+import type {
+  AnpassungsSpalte, ProjektEinheit, Referenzobjekt,
+} from '../../server/projekt-schema.js';
 import { Button } from '../ui/button.js';
 import { Input } from '../ui/input.js';
 import { Label } from '../ui/label.js';
@@ -16,11 +18,13 @@ import { Label } from '../ui/label.js';
 export interface EinheitenGeneratorProps {
   readonly referenzobjekte: readonly Referenzobjekt[];
   readonly einheiten: readonly ProjektEinheit[];
+  // Neue Einheiten uebernehmen den Vorgabewert jeder Spalte (einheiten-generator.ts).
+  readonly spalten: readonly AnpassungsSpalte[];
   readonly aendere: (einheiten: readonly ProjektEinheit[]) => void;
 }
 
 export function EinheitenGenerator({
-  referenzobjekte, einheiten, aendere,
+  referenzobjekte, einheiten, spalten, aendere,
 }: EinheitenGeneratorProps) {
   const [anzahlen, setAnzahlen] = useState<Record<string, number>>({});
 
@@ -29,7 +33,7 @@ export function EinheitenGenerator({
       .map((r) => ({ referenzobjektId: r.id, anzahl: anzahlen[r.id] ?? 0 }))
       .filter((w) => w.anzahl > 0);
     if (wuensche.length === 0) return;
-    const neue = erzeugeEinheiten(wuensche, referenzobjekte, einheiten);
+    const neue = erzeugeEinheiten(wuensche, referenzobjekte, einheiten, spalten);
     aendere([...einheiten, ...neue]);
     setAnzahlen({});
   }

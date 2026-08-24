@@ -11,6 +11,7 @@
  * Faktorermittlung (Lagescore/Ableitung) hergeleitet, darum reine Anzeige.
  */
 import type { Feldbeschreibung, Faktorformular } from '../../server/faktorformular.js';
+import { entscheideZellenwert } from './zellen-logik.js';
 import { Input } from '../ui/input.js';
 import { Label } from '../ui/label.js';
 import { Select } from '../ui/select.js';
@@ -24,6 +25,21 @@ export interface AufwandfaktorenProps {
   readonly aendere: (werte: Readonly<Record<string, number>>) => void;
 }
 
+/**
+ * `Number('')` ist 0 und `Number.isFinite(0)` wahr — ein geleertes Feld wurde hier bisher
+ * als erfasste Null gemeldet, und der Kern gewichtet eine Null bereitwillig. Dieselbe
+ * Stelle, fuer die `entscheideZellenwert` geschrieben wurde (siehe zellen-logik.ts); die
+ * Lehre stand bisher nur in der Datei, in der der Fehler gemeldet worden war.
+ *
+ * Ein verworfener Entwurf laesst den bisherigen Wert stehen; das Feld ist kontrolliert und
+ * springt darauf zurueck. Das ist die gewollte Wirkung: lieber der alte Wert als eine
+ * erfundene Null.
+ */
+function meldeGueltige(entwurf: string, aendere: (wert: number) => void): void {
+  const entscheid = entscheideZellenwert(entwurf);
+  if (entscheid.art === 'uebernehmen') aendere(entscheid.wert);
+}
+
 function OrdinalFeld(
   { feld, wert, aendere }: {
     readonly feld: Feldbeschreibung;
@@ -35,7 +51,7 @@ function OrdinalFeld(
     <Select
       id={`faktor-${feld.faktorId}`}
       value={wert ?? ''}
-      onChange={(e) => aendere(Number(e.target.value))}
+      onChange={(e) => meldeGueltige(e.target.value, aendere)}
     >
       <option value="" disabled>Bitte auswählen</option>
       {feld.stufen?.map((stufe) => (
@@ -61,7 +77,7 @@ function ZahlFeld(
       min={feld.untergrenze}
       max={feld.obergrenze}
       value={wert ?? ''}
-      onChange={(e) => aendere(Number(e.target.value))}
+      onChange={(e) => meldeGueltige(e.target.value, aendere)}
     />
   );
 }

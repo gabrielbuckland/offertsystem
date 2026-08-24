@@ -17,8 +17,16 @@ describe('vorbelegteSpalten', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('uebernimmt den Vorgabefaktor der Vorlage als Vorgabewert', () => {
+  // Erwartung verschaerft, nicht abgeschwaecht: Zuvor pruefte dieser Fall nur, dass der
+  // Vorgabewert ueberhaupt eine Zahl ist. Seit der Vorgabewert in jede neu erzeugte
+  // Einheit uebernommen wird (einheiten-generator.ts), ist entscheidend, WELCHE Zahl:
+  // Truege eine vorbelegte Spalte den `vorgabefaktor` der Vorlage, erhielte jede Einheit
+  // alle sieben Anpassungen gleichzeitig, ausgewiesen als Entscheidung des Vermarkters —
+  // der Herkunftsfehler, den anpassungsvorlagen.ts ausdruecklich ausschliesst.
+  it('startet den Vorgabewert neutral, statt den Vorgabefaktor der Vorlage zu setzen', () => {
     const spalten = vorbelegteSpalten(standardKonfiguration());
-    expect(spalten.every((s) => Number.isFinite(s.vorgabewert))).toBe(true);
+    const vorlagenFaktoren = standardKonfiguration().anpassungsVorlagen.map((v) => v.vorgabefaktor);
+    expect(vorlagenFaktoren.some((f) => f !== 0)).toBe(true);
+    expect(spalten.every((s) => s.vorgabewert === 0)).toBe(true);
   });
 });

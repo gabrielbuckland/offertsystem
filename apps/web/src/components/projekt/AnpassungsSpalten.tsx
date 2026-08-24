@@ -26,6 +26,10 @@ import { Select } from '../ui/select.js';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../ui/table.js';
+import { ZellenEingabe } from './ZellenEingabe.js';
+import {
+  faktorZuProzent, frankenZuRappen, prozentZuFaktor, rappenZuFranken,
+} from './zellen-logik.js';
 
 export interface AnpassungsSpaltenProps {
   readonly spalten: readonly AnpassungsSpalte[];
@@ -64,7 +68,10 @@ export function AnpassungsSpalten({ spalten, aendere, entferneSpalte }: Anpassun
   function fuegeHinzu() {
     aendere([...spalten, {
       id: naechsteId.current!(),
-      bezeichnung: '',
+      // Nicht leer: `anpassungsSpalteSchema` verlangt `min(1)`, eine namenlose Spalte
+      // liesse also jedes PUT mit 422 scheitern, bis ein Name getippt ist — sichtbar als
+      // «Änderung konnte nicht gespeichert werden» nach JEDEM «Spalte hinzufügen».
+      bezeichnung: 'Neue Spalte',
       erfassungsform: 'relativ',
       vorgabewert: 0,
     }]);
@@ -111,11 +118,30 @@ export function AnpassungsSpalten({ spalten, aendere, entferneSpalte }: Anpassun
                   </Select>
                 </TableCell>
                 <TableCell>
-                  <Input
-                    type="number"
-                    value={s.vorgabewert}
-                    onChange={(e) => aktualisiere(s.id, { vorgabewert: Number(e.target.value) })}
-                  />
+                  <div className="flex items-center gap-1">
+                    {/*
+                      Angezeigt und erfasst wird die Einheit, in der ein Mensch denkt —
+                      Prozent bei 'relativ', Franken bei 'absolut' —, gespeichert die des
+                      Kerns (Faktor bzw. Rappen). GENAU wie in `EinheitenTabelle`: Der
+                      Vorgabewert wird von dort in dieselbe Groesse uebernommen
+                      (einheiten-generator.ts), zwei verschiedene Skalen fuer dieselbe
+                      Groesse waeren der Fehler, der schon einmal den Faktor 100
+                      verursacht hat.
+                    */}
+                    <ZellenEingabe
+                      wert={s.erfassungsform === 'relativ'
+                        ? faktorZuProzent(s.vorgabewert)
+                        : rappenZuFranken(s.vorgabewert)}
+                      aendere={(eingabe) => aktualisiere(s.id, {
+                        vorgabewert: s.erfassungsform === 'relativ'
+                          ? prozentZuFaktor(eingabe)
+                          : frankenZuRappen(eingabe),
+                      })}
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      {s.erfassungsform === 'relativ' ? '%' : 'CHF'}
+                    </span>
+                  </div>
                 </TableCell>
                 <TableCell>
                   <Button type="button" variant="outline" onClick={() => entferneSpalte(s.id)}>

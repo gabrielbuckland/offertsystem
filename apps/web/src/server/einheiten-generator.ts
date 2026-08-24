@@ -17,11 +17,30 @@
  * Kennungen aus der Zeit vor diesem Fix (`E-W-001`) matchen das neue Muster nicht und zaehlen
  * als 0 — der Zaehler beginnt dann bei 1, ohne mit ihnen zu kollidieren.
  */
-import type { ProjektEinheit, Referenzobjekt } from './projekt-schema.js';
+import type { AnpassungsSpalte, ProjektEinheit, Referenzobjekt } from './projekt-schema.js';
 
 export interface Wunsch {
   readonly referenzobjektId: string;
   readonly anzahl: number;
+}
+
+/**
+ * Der Vorgabewert einer Spalte ist ihre Antwort auf «was gilt hier ueblicherweise» und
+ * wird beim Anlegen einer Einheit uebernommen — sonst waere er ein Bedienelement ohne
+ * Wirkung. Er traegt dieselbe Groesse wie `spaltenwerte` selbst (Faktor bei 'relativ',
+ * Rappen bei 'absolut'), die Uebernahme ist deshalb eine Kopie und keine Umrechnung.
+ *
+ * Ein Vorgabewert von 0 wird NICHT eingetragen: `projiziere` ueberspringt ihn ohnehin,
+ * und eine Null im Artefakt sieht aus wie eine erfasste Entscheidung, ist aber keine.
+ */
+function vorbelegteSpaltenwerte(
+  spalten: readonly AnpassungsSpalte[],
+): Record<string, number> {
+  const werte: Record<string, number> = {};
+  for (const s of spalten) {
+    if (s.vorgabewert !== 0) werte[s.id] = s.vorgabewert;
+  }
+  return werte;
 }
 
 function hoechsteId(vorhandene: readonly ProjektEinheit[]): number {
@@ -35,6 +54,7 @@ export function erzeugeEinheiten(
   wuensche: readonly Wunsch[],
   referenzobjekte: readonly Referenzobjekt[],
   vorhandene: readonly ProjektEinheit[],
+  spalten: readonly AnpassungsSpalte[],
 ): readonly ProjektEinheit[] {
   const belegteNummern = new Set(vorhandene.map((e) => e.wohnungsnummer));
   const belegteIds = new Set(vorhandene.map((e) => e.id));
@@ -69,7 +89,7 @@ export function erzeugeEinheiten(
         flaecheInnen: 0,
         flaecheAussen: 0,
         stockwerk: 0,
-        spaltenwerte: {},
+        spaltenwerte: vorbelegteSpaltenwerte(spalten),
         manuelleAnpassungen: [],
       });
     }

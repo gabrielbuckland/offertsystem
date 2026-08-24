@@ -21,10 +21,15 @@ interface ErfassterInput {
   readonly value: unknown;
   readonly onChange: (e: { target: { value: string } }) => void;
 }
+interface ErfassteZelle {
+  readonly wert: number;
+  readonly aendere: (wert: number) => void;
+}
 
 const erfasst = vi.hoisted(() => ({
   buttons: [] as ErfassterButton[],
   inputs: [] as ErfassterInput[],
+  zellen: [] as ErfassteZelle[],
 }));
 
 vi.mock('../../../src/components/ui/button.js', () => ({
@@ -41,6 +46,12 @@ vi.mock('../../../src/components/ui/input.js', () => ({
 }));
 vi.mock('../../../src/components/ui/select.js', () => ({
   Select: () => null,
+}));
+vi.mock('../../../src/components/projekt/ZellenEingabe.js', () => ({
+  ZellenEingabe: (props: ErfassteZelle) => {
+    erfasst.zellen.push(props);
+    return null;
+  },
 }));
 
 import { AnpassungsSpalten, erzeugeSpaltenIdFolge } from '../../../src/components/projekt/AnpassungsSpalten.js';
@@ -134,5 +145,67 @@ describe('AnpassungsSpalten — freigewordene Kennungen werden nicht wiederverwe
     expect(ersteZugeteilte).not.toBe('S-2');
     expect(zweiteZugeteilte).not.toBe(ersteZugeteilte);
     expect(zweiteZugeteilte).not.toBe('S-2');
+  });
+});
+
+/**
+ * Der Vorgabewert war ein Bedienelement ohne Wirkung und trug den Einheitenfehler bereits
+ * angelegt in sich: erfasst als roher Faktor bzw. als Rappen, waehrend dieselbe Groesse
+ * einen Block weiter unten als Prozent bzw. Franken erfasst wird — und ohne Einheit im
+ * Kolonnenkopf. Genau die Konstellation, aus der der Faktor-100-Fehler entstanden ist.
+ */
+describe('AnpassungsSpalten — Vorgabewert in der Einheit des Menschen', () => {
+  function mitVorgabewert(
+    erfassungsform: AnpassungsSpalte['erfassungsform'], vorgabewert: number,
+  ) {
+    erfasst.zellen.length = 0;
+    const aendere = vi.fn();
+    renderToStaticMarkup(
+      <AnpassungsSpalten
+        spalten={[{
+          id: 'S-1', bezeichnung: 'Aussicht', erfassungsform, vorgabewert,
+        }]}
+        aendere={aendere}
+        entferneSpalte={vi.fn()}
+      />,
+    );
+    return { aendere, zelle: erfasst.zellen[0]! };
+  }
+
+  it('zeigt einen relativen Vorgabewert als Prozentzahl', () => {
+    expect(mitVorgabewert('relativ', 0.05).zelle.wert).toBe(5);
+  });
+
+  it('speichert eine eingetippte Prozentzahl als Faktor', () => {
+    const { aendere, zelle } = mitVorgabewert('relativ', 0);
+    zelle.aendere(8);
+    expect(aendere).toHaveBeenCalledWith([expect.objectContaining({ vorgabewert: 0.08 })]);
+  });
+
+  it('zeigt einen absoluten Vorgabewert in Franken', () => {
+    expect(mitVorgabewert('absolut', 250_000).zelle.wert).toBe(2500);
+  });
+
+  it('speichert eingetippte Franken als Rappen', () => {
+    const { aendere, zelle } = mitVorgabewert('absolut', 0);
+    zelle.aendere(2500);
+    expect(aendere).toHaveBeenCalledWith([expect.objectContaining({ vorgabewert: 250_000 })]);
+  });
+});
+
+describe('AnpassungsSpalten — eine neue Spalte ist sofort speicherbar', () => {
+  it('gibt einer neuen Spalte eine Bezeichnung, statt sie leer zu lassen', () => {
+    erfasst.buttons.length = 0;
+    const aendere = vi.fn();
+    renderToStaticMarkup(
+      <AnpassungsSpalten spalten={[]} aendere={aendere} entferneSpalte={vi.fn()} />);
+
+    erfasst.buttons.find((b) => b.children === 'Spalte hinzufügen')!.onClick();
+
+    const neu = (aendere.mock.calls[0]![0] as readonly AnpassungsSpalte[]).at(-1)!;
+    // `anpassungsSpalteSchema` verlangt `min(1)`: Eine leere Bezeichnung liess jedes PUT
+    // mit 422 scheitern und meldete dem Vermarkter nach JEDEM Hinzufuegen, die Aenderung
+    // habe nicht gespeichert werden koennen.
+    expect(neu.bezeichnung.trim().length).toBeGreaterThan(0);
   });
 });

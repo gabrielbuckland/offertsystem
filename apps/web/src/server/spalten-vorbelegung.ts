@@ -8,6 +8,16 @@
  * `Anpassungsvorlage` fuehrt kein Feld `bezeichnung` (siehe anpassungsvorlagen.ts) —
  * `begruendungVorschlag` ist der einzige lesbare Text der Vorlage und wird ohnehin zur
  * `begruendung` jeder aus dieser Spalte abgeleiteten Position (projektion.ts).
+ *
+ * Vorbelegt wird der SPALTENSCHNITT, nicht der Wert: `vorgabewert` startet neutral bei 0.
+ * Der Vorgabewert einer Spalte wird in jede neu erzeugte Einheit uebernommen
+ * (einheiten-generator.ts). Truege er den `vorgabefaktor` der Vorlage, erhielte jede
+ * Einheit auf einen Schlag alle sieben Anpassungen — «Attikalage» und «Erdgeschoss» und
+ * «Laermexposition» zugleich — und die Offerte wiese sie als Entscheidung des Vermarkters
+ * aus. Genau das schliesst anpassungsvorlagen.ts aus: Vorlagen werden VORGESCHLAGEN, ein
+ * automatisch gesetzter Zu-/Abschlag waere ein Herkunftsfehler und die Musterform des
+ * Automation Bias. Der Faktor der Vorlage bleibt der Weg ueber `uebernehmeVorlage`, also
+ * eine Handlung des Vermarkters.
  */
 import type { Konfiguration } from '@offert/core';
 import { leseVorlagen } from './anpassungsvorlagen.js';
@@ -18,6 +28,6 @@ export function vorbelegteSpalten(k: Konfiguration): readonly AnpassungsSpalte[]
     id: `S-${i + 1}`,
     bezeichnung: v.begruendungVorschlag,
     erfassungsform: 'relativ' as const,
-    vorgabewert: v.vorgabefaktor,
+    vorgabewert: 0,
   }));
 }
