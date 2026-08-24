@@ -19,6 +19,7 @@ import { Referenzobjekte } from './Referenzobjekte.js';
 import { EinheitenGenerator } from './EinheitenGenerator.js';
 import { AnpassungsSpalten } from './AnpassungsSpalten.js';
 import { EinheitenTabelle, type Preis } from './EinheitenTabelle.js';
+import { entferneSpaltenwert } from './spaltenwerte-kaskade.js';
 import { Aufwandfaktoren } from './Aufwandfaktoren.js';
 import { Aggregatleiste } from './Aggregatleiste.js';
 
@@ -206,14 +207,11 @@ export function ProjektAnsicht(
         entferneSpalte={(id) => aendere({
           ...projekt,
           anpassungsSpalten: projekt.anpassungsSpalten.filter((s) => s.id !== id),
-          // Kaskade (Kommentar in AnpassungsSpalten.tsx): eine entfernte Spalte darf
-          // ihren Wert nicht in `spaltenwerte` ueberleben, sonst lebte er bei einer
-          // spaeter wiederverwendeten Spalten-ID unbeabsichtigt wieder auf.
-          einheiten: projekt.einheiten.map((einheit) => {
-            if (!(id in einheit.spaltenwerte)) return einheit;
-            const { [id]: _entfernt, ...rest } = einheit.spaltenwerte;
-            return { ...einheit, spaltenwerte: rest };
-          }),
+          // Kaskade ausgelagert und direkt getestet (`spaltenwerte-kaskade.test.ts`):
+          // eine entfernte Spalte darf ihren Wert nicht in `spaltenwerte` ueberleben,
+          // sonst lebte er bei einer spaeter wiederverwendeten Spalten-ID
+          // unbeabsichtigt wieder auf (Kommentar in AnpassungsSpalten.tsx).
+          einheiten: [...entferneSpaltenwert(projekt.einheiten, id)],
         })}
       />
       <EinheitenTabelle
