@@ -41,4 +41,17 @@ describe('Next.js-Geruest (PE-19, PE-13)', () => {
     };
     expect(basis.compilerOptions?.paths?.['@/*']).toBeUndefined();
   });
+
+  it('deklariert Tailwind und TanStack Table und bindet ein Stylesheet ein', () => {
+    const manifest = JSON.parse(
+      readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+    ) as { dependencies: Record<string, string>; devDependencies?: Record<string, string> };
+    const alle = { ...manifest.dependencies, ...manifest.devDependencies };
+
+    expect(alle['tailwindcss']).toBeDefined();
+    expect(alle['@tanstack/react-table']).toBeDefined();
+
+    const layout = readFileSync(new URL('../src/app/layout.tsx', import.meta.url), 'utf8');
+    expect(layout).toContain('globals.css');
+  });
 });

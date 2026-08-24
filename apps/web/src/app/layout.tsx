@@ -1,3 +1,4 @@
+import './globals.css';
 import '@offert/offer/src/template/offerte.css';
 
 export const metadata = { title: 'Offertsystem' };
