@@ -9,9 +9,16 @@
  * Wird eine Spalte entfernt, muessen die zugehoerigen `spaltenwerte` aus allen Einheiten
  * verschwinden — sonst truege das Artefakt Werte ohne Spalte, die die Projektion
  * stillschweigend ignoriert und die bei Wiederverwendung derselben Spalten-ID
- * unbeabsichtigt wieder auflebten. `aendere` traegt deshalb die entfernte Spalten-ID
- * mit, damit der Aufrufer (Task 12) beide Aenderungen gemeinsam anwenden kann.
+ * unbeabsichtigt wieder auflebten.
+ *
+ * `entferneSpalte` ist deshalb ein EIGENER Pflicht-Rueckruf, nicht ein optionales
+ * zweites Argument von `aendere`: TypeScript ist in der Parameterzahl kontravariant,
+ * ein Aufrufer, der `aendere={(neue) => setSpalten(neue)}` schreibt, wuerde ein
+ * optionales Argument typkorrekt verschlucken und die Kaskade stillschweigend
+ * auslassen. Ein eigener Pflicht-Rueckruf macht das Weglassen an der JSX-Aufrufstelle
+ * zu einem Kompilierfehler.
  */
+import { useRef } from 'react';
 import type { AnpassungsSpalte } from '../../server/projekt-schema.js';
 import { Button } from '../ui/button.js';
 import { Input } from '../ui/input.js';
@@ -22,36 +29,52 @@ import {
 
 export interface AnpassungsSpaltenProps {
   readonly spalten: readonly AnpassungsSpalte[];
-  readonly aendere: (spalten: readonly AnpassungsSpalte[], entfernteSpalteId?: string) => void;
+  readonly aendere: (spalten: readonly AnpassungsSpalte[]) => void;
+  readonly entferneSpalte: (id: string) => void;
 }
 
-function neueSpalte(vorhandene: readonly AnpassungsSpalte[]): AnpassungsSpalte {
-  const hoechste = vorhandene.reduce((max, s) => {
+/**
+ * Reine Zaehlerfabrik: einmal pro Komponenteninstanz erzeugt (siehe `useRef` unten) und
+ * danach nur inkrementiert, nie aus der aktuellen Spaltenliste neu abgeleitet. Eine
+ * waehrend der Sitzung entfernte Kennung wird dadurch nicht sofort wiederverwendet —
+ * sonst erbte eine neue Spalte ueber dieselbe ID unbeabsichtigt die `spaltenwerte`
+ * der entfernten (siehe Kommentar oben).
+ */
+export function erzeugeSpaltenIdFolge(vorhandene: readonly AnpassungsSpalte[]): () => string {
+  let hoechste = vorhandene.reduce((max, s) => {
     const treffer = /^S-(\d+)$/.exec(s.id);
     return treffer === null ? max : Math.max(max, Number(treffer[1]));
   }, 0);
-  return {
-    id: `S-${hoechste + 1}`,
-    bezeichnung: '',
-    erfassungsform: 'relativ',
-    vorgabewert: 0,
+  return () => {
+    hoechste += 1;
+    return `S-${hoechste}`;
   };
 }
 
-export function AnpassungsSpalten({ spalten, aendere }: AnpassungsSpaltenProps) {
+export function AnpassungsSpalten({ spalten, aendere, entferneSpalte }: AnpassungsSpaltenProps) {
+  const naechsteId = useRef<(() => string) | undefined>(undefined);
+  if (naechsteId.current === undefined) {
+    naechsteId.current = erzeugeSpaltenIdFolge(spalten);
+  }
+
   function aktualisiere(id: string, patch: Partial<AnpassungsSpalte>) {
     aendere(spalten.map((s) => (s.id === id ? { ...s, ...patch } : s)));
   }
 
-  function entferne(id: string) {
-    aendere(spalten.filter((s) => s.id !== id), id);
+  function fuegeHinzu() {
+    aendere([...spalten, {
+      id: naechsteId.current!(),
+      bezeichnung: '',
+      erfassungsform: 'relativ',
+      vorgabewert: 0,
+    }]);
   }
 
   return (
     <section className="mb-8">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-lg font-medium">Zu-/Abschläge — Spalten</h2>
-        <Button type="button" onClick={() => aendere([...spalten, neueSpalte(spalten)])}>
+        <Button type="button" onClick={fuegeHinzu}>
           Spalte hinzufügen
         </Button>
       </div>
@@ -95,7 +118,7 @@ export function AnpassungsSpalten({ spalten, aendere }: AnpassungsSpaltenProps) 
                   />
                 </TableCell>
                 <TableCell>
-                  <Button type="button" variant="outline" onClick={() => entferne(s.id)}>
+                  <Button type="button" variant="outline" onClick={() => entferneSpalte(s.id)}>
                     entfernen
                   </Button>
                 </TableCell>
