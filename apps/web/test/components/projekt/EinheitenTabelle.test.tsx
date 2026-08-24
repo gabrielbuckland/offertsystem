@@ -19,12 +19,14 @@ const EINHEITEN = [{
   flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1,
   spaltenwerte: {}, manuelleAnpassungen: [],
 }];
+const BEGRUENDUNG_MIN_LAENGE = 10;
 
 describe('EinheitenTabelle', () => {
   it('fuehrt je konfigurierter Spalte eine Tabellenspalte', () => {
     const html = renderToStaticMarkup(
       <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS}
-                        preise={{}} aendere={() => undefined} />);
+                        preise={{}} begruendungMinLaenge={BEGRUENDUNG_MIN_LAENGE}
+                        aendere={() => undefined} />);
     expect(html).toContain('Zuschlag Etage');
     expect(html).toContain('Aussicht');
   });
@@ -33,6 +35,7 @@ describe('EinheitenTabelle', () => {
     const html = renderToStaticMarkup(
       <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS}
                         preise={{ 'E-1': { basispreis: 100_000_00, preis: 105_000_00 } }}
+                        begruendungMinLaenge={BEGRUENDUNG_MIN_LAENGE}
                         aendere={() => undefined} />);
     expect(html).toContain('105');
   });
@@ -40,7 +43,8 @@ describe('EinheitenTabelle', () => {
   it('weist einen noch nicht berechneten Preis aus, statt null zu zeigen', () => {
     const html = renderToStaticMarkup(
       <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS}
-                        preise={{}} aendere={() => undefined} />);
+                        preise={{}} begruendungMinLaenge={BEGRUENDUNG_MIN_LAENGE}
+                        aendere={() => undefined} />);
     expect(html).toContain('—');
   });
 
@@ -55,7 +59,8 @@ describe('EinheitenTabelle', () => {
     }];
     const html = renderToStaticMarkup(
       <EinheitenTabelle einheiten={mitPositionen} spalten={SPALTEN} referenzobjekte={REFS}
-                        preise={{}} aendere={() => undefined} />);
+                        preise={{}} begruendungMinLaenge={BEGRUENDUNG_MIN_LAENGE}
+                        aendere={() => undefined} />);
     expect(html).toContain('Balkonlage');
     expect(html).toContain('Lärmimmission');
     expect(html).toContain('2 Positionen');
@@ -65,8 +70,33 @@ describe('EinheitenTabelle', () => {
     () => {
       const html = renderToStaticMarkup(
         <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS}
-                          preise={{}} aendere={() => undefined} />);
+                          preise={{}} begruendungMinLaenge={BEGRUENDUNG_MIN_LAENGE}
+                          aendere={() => undefined} />);
       expect(html).toContain('Begründung');
       expect(html).toContain('Position hinzufügen');
+    });
+
+  it('zeigt einen gespeicherten Faktor einer relativen Spalte als Prozentzahl, nicht als '
+    + 'Faktor — sonst waere "5" im Feld ein Faktor von 5 statt 5%', () => {
+      const mitFaktor = [{
+        id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
+        flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1,
+        spaltenwerte: { 'S-1': 0.05 }, manuelleAnpassungen: [],
+      }];
+      const html = renderToStaticMarkup(
+        <EinheitenTabelle einheiten={mitFaktor} spalten={SPALTEN} referenzobjekte={REFS}
+                          preise={{}} begruendungMinLaenge={BEGRUENDUNG_MIN_LAENGE}
+                          aendere={() => undefined} />);
+      expect(html).toContain('value="5"');
+      expect(html).not.toContain('value="0.05"');
+    });
+
+  it('zeigt die vom Aufrufer konfigurierte Mindestlaenge der Begruendung, nicht eine feste Zahl',
+    () => {
+      const html = renderToStaticMarkup(
+        <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS}
+                          preise={{}} begruendungMinLaenge={17}
+                          aendere={() => undefined} />);
+      expect(html).toContain('17 Zeichen');
     });
 });

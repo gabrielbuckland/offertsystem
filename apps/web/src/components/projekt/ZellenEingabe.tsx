@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Input } from '../ui/input.js';
+import { entscheideZellenwert } from './zellen-logik.js';
 
 export interface ZellenEingabeProps {
   readonly wert: number;
@@ -25,8 +26,15 @@ export function ZellenEingabe({ wert, aendere }: ZellenEingabeProps) {
       value={entwurf}
       onChange={(e) => setzeEntwurf(e.target.value)}
       onBlur={() => {
-        const zahl = Number(entwurf);
-        aendere(Number.isFinite(zahl) ? zahl : 0);
+        const entscheid = entscheideZellenwert(entwurf);
+        // Ein geleertes oder nicht parsierbares Feld verwirft statt eine 0 zu erfinden
+        // (Task-11-Review, Finding 1) — der Entwurf springt auf den bisherigen Wert
+        // zurueck, es wird nichts gemeldet.
+        if (entscheid.art === 'verwerfen') {
+          setzeEntwurf(String(wert));
+          return;
+        }
+        aendere(entscheid.wert);
       }}
     />
   );

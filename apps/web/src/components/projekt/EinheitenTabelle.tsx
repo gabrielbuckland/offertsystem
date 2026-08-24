@@ -10,7 +10,7 @@ import { useState } from 'react';
 import {
   createColumnHelper, flexRender, getCoreRowModel, useReactTable,
 } from '@tanstack/react-table';
-import { formatiereAggregat } from '@offert/offer/src/format/de-ch.js';
+import { formatiereAggregat, formatiereProzent } from '@offert/offer/src/format/de-ch.js';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../ui/table.js';
@@ -18,6 +18,7 @@ import { Button } from '../ui/button.js';
 import { Input } from '../ui/input.js';
 import { Select } from '../ui/select.js';
 import { ZellenEingabe } from './ZellenEingabe.js';
+import { faktorZuProzent, istBegruendungGueltig, prozentZuFaktor } from './zellen-logik.js';
 import type {
   AnpassungsSpalte, ProjektEinheit, Referenzobjekt,
 } from '../../server/projekt-schema.js';
@@ -29,6 +30,10 @@ export interface EinheitenTabelleProps {
   readonly spalten: readonly AnpassungsSpalte[];
   readonly referenzobjekte: readonly Referenzobjekt[];
   readonly preise: Readonly<Record<string, Preis>>;
+  // Von der Konfiguration des Aufrufers durchgereicht (`preisanpassung.begruendungMinLaenge`),
+  // nicht hier fest verdrahtet — sonst entstuende neben `erfassungsSchema` ein zweiter,
+  // driftender Regelort fuer dieselbe Mindestlaenge (Task-11-Review, Finding 3).
+  readonly begruendungMinLaenge: number;
   readonly aendere: (einheiten: readonly ProjektEinheit[]) => void;
 }
 
@@ -42,20 +47,27 @@ type ManuelleAnpassung = ProjektEinheit['manuelleAnpassungen'][number];
  * Mindestlaenge, die leere Begruendung waere sonst ein zweites, stilles Regelwerk).
  */
 function ManuelleAnpassungenZelle(
-  { anpassungen, aendere }: {
+  { anpassungen, begruendungMinLaenge, aendere }: {
     readonly anpassungen: readonly ManuelleAnpassung[];
+    readonly begruendungMinLaenge: number;
     readonly aendere: (anpassungen: readonly ManuelleAnpassung[]) => void;
   },
 ) {
   const [erfassungsform, setzeErfassungsform] = useState<ManuelleAnpassung['erfassungsform']>('relativ');
+  // Wie bei den Spaltenzellen zeigt und erfasst das Feld bei 'relativ' eine Prozentzahl;
+  // gespeichert wird der Faktor. Ohne diese Umrechnung waere eine hier eingetippte "5" im
+  // Kern ein Faktor von 5 statt 0.05 — derselbe Fehler wie bei den Anpassungsspalten
+  // (Task-11-Review, Finding 2), nur unbeobachtet, weil kein Kolonnenkopf ihn ankuendigt.
   const [wert, setzeWert] = useState('0');
   const [begruendung, setzeBegruendung] = useState('');
 
+  const begruendungGueltig = istBegruendungGueltig(begruendung, begruendungMinLaenge);
+
   function hinzufuegen() {
     const zahl = Number(wert);
-    const bereinigt = begruendung.trim();
-    if (bereinigt.length === 0 || !Number.isFinite(zahl)) return;
-    aendere([...anpassungen, { erfassungsform, wert: zahl, begruendung: bereinigt }]);
+    if (!begruendungGueltig || !Number.isFinite(zahl)) return;
+    const gespeichert = erfassungsform === 'relativ' ? prozentZuFaktor(zahl) : zahl;
+    aendere([...anpassungen, { erfassungsform, wert: gespeichert, begruendung: begruendung.trim() }]);
     setzeWert('0');
     setzeBegruendung('');
   }
@@ -68,7 +80,7 @@ function ManuelleAnpassungenZelle(
       {anpassungen.map((a, i) => (
         <div key={`${a.begruendung}-${i}`} className="flex items-center gap-1 text-xs">
           <span className="grow">
-            {a.erfassungsform === 'absolut' ? formatiereAggregat(a.wert) : `${a.wert * 100}%`}
+            {a.erfassungsform === 'absolut' ? formatiereAggregat(a.wert) : formatiereProzent(a.wert)}
             {' — '}{a.begruendung}
           </span>
           <Button
@@ -89,7 +101,7 @@ function ManuelleAnpassungenZelle(
             setzeErfassungsform(e.target.value as ManuelleAnpassung['erfassungsform'])
           )}
         >
-          <option value="relativ">relativ</option>
+          <option value="relativ">relativ (%)</option>
           <option value="absolut">Franken</option>
         </Select>
         <Input
@@ -104,10 +116,13 @@ function ManuelleAnpassungenZelle(
           value={begruendung}
           onChange={(e) => setzeBegruendung(e.target.value)}
         />
+        <span className="text-xs text-muted-foreground">
+          Mindestens {begruendungMinLaenge} Zeichen.
+        </span>
         <Button
           type="button"
           className="h-7 text-xs"
-          disabled={begruendung.trim().length === 0}
+          disabled={!begruendungGueltig}
           onClick={hinzufuegen}
         >
           Position hinzufügen
@@ -120,7 +135,9 @@ function ManuelleAnpassungenZelle(
 const spalte = createColumnHelper<ProjektEinheit>();
 
 export function EinheitenTabelle(
-  { einheiten, spalten, referenzobjekte, preise, aendere }: EinheitenTabelleProps,
+  {
+    einheiten, spalten, referenzobjekte, preise, begruendungMinLaenge, aendere,
+  }: EinheitenTabelleProps,
 ) {
   /** Ersetzt genau eine Einheit; die uebrigen bleiben referenzgleich. */
   function setze(index: number, naechste: ProjektEinheit): void {
@@ -156,15 +173,26 @@ export function EinheitenTabelle(
     ...spalten.map((s) => spalte.display({
       id: s.id,
       header: s.erfassungsform === 'absolut' ? `${s.bezeichnung} (CHF)` : `${s.bezeichnung} (%)`,
-      cell: (info) => (
-        <ZellenEingabe
-          wert={info.row.original.spaltenwerte[s.id] ?? 0}
-          aendere={(wert) => setze(info.row.index, {
-            ...info.row.original,
-            spaltenwerte: { ...info.row.original.spaltenwerte, [s.id]: wert },
-          })}
-        />
-      ),
+      cell: (info) => {
+        const roh = info.row.original.spaltenwerte[s.id] ?? 0;
+        // "(%)" im Kolonnenkopf muss stimmen: `projektion.ts` nimmt `spaltenwerte`
+        // unveraendert als Faktor, gespeichert bleibt also 0.05 — angezeigt/erfasst wird
+        // 5 (Task-11-Review, Finding 2). `absolut`-Spalten sind Franken und bleiben
+        // unskaliert.
+        const angezeigt = s.erfassungsform === 'relativ' ? faktorZuProzent(roh) : roh;
+        return (
+          <ZellenEingabe
+            wert={angezeigt}
+            aendere={(eingabe) => setze(info.row.index, {
+              ...info.row.original,
+              spaltenwerte: {
+                ...info.row.original.spaltenwerte,
+                [s.id]: s.erfassungsform === 'relativ' ? prozentZuFaktor(eingabe) : eingabe,
+              },
+            })}
+          />
+        );
+      },
     })),
     spalte.display({
       id: 'manuelleAnpassungen',
@@ -172,6 +200,7 @@ export function EinheitenTabelle(
       cell: (info) => (
         <ManuelleAnpassungenZelle
           anpassungen={info.row.original.manuelleAnpassungen}
+          begruendungMinLaenge={begruendungMinLaenge}
           aendere={(manuelleAnpassungen) => setze(info.row.index, {
             ...info.row.original,
             manuelleAnpassungen: manuelleAnpassungen as ManuelleAnpassung[],
