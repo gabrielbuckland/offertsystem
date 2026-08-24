@@ -21,6 +21,7 @@ import {
   formatiereProzent,
   formatiereScore,
   formatiereZimmerzahl,
+  mitFesterTrennung,
 } from '../../src/format/de-ch.js';
 
 /** U+2019, die von `de-CH` verwendete Tausendertrennung. */
@@ -38,9 +39,62 @@ describe('Betragsformatierung', () => {
     expect(formatiereBetrag(84_512_345)).toBe(`CHF${NBSP}845${T}123.45`);
   });
 
-  it('setzt Tausender- und Dezimaltrennung nicht selbst', () => {
+  it('macht keine Ersetzung im fertigen String', () => {
+    // Die Tausendertrennung wird auf Teile-Ebene gesetzt (`mitFesterTrennung`), nicht
+    // durch Suchen und Ersetzen im schon formatierten Text.
     const quelle = readFileSync(new URL('../../src/format/de-ch.ts', import.meta.url), 'utf8');
     expect(quelle).not.toMatch(/\.replace\(/);
+  });
+});
+
+/**
+ * ICU liefert fuer `de-CH` je nach Laufzeit ein anderes Tausenderzeichen: Node 22 setzt
+ * U+2019, Chromium 151 den ASCII-Apostroph U+0027. Dieselben Formatierer laufen auf
+ * beiden Seiten — serverseitig fuer Druck und erste Auslieferung, im Browser fuer die
+ * Client-Komponenten. Ungebunden hiesse das eine Hydratationsabweichung bei jedem
+ * Seitenaufbau und denselben Betrag mit verschiedenen Trennzeichen auf Bildschirm und im
+ * PDF, waehrend NFA-13/P-06 einheitliche Schweizer Notation behaupten.
+ *
+ * Pruefbar ohne zweite Laufzeit, weil die Festlegung eine eigene Funktion ueber
+ * `Intl.NumberFormatPart[]` ist: Der Test reicht die FREMDE Trennung herein.
+ */
+describe('Tausendertrennung ist laufzeitunabhaengig festgelegt', () => {
+  it('ersetzt eine abweichende Trennung der Laufzeit durch die feste', () => {
+    const teileWieChromium: Intl.NumberFormatPart[] = [
+      { type: 'currency', value: 'CHF' },
+      { type: 'literal', value: NBSP },
+      { type: 'integer', value: '1' },
+      { type: 'group', value: "'" },
+      { type: 'integer', value: '250' },
+      { type: 'group', value: "'" },
+      { type: 'integer', value: '000' },
+    ];
+    expect(mitFesterTrennung(teileWieChromium)).toBe(`CHF${NBSP}1${T}250${T}000`);
+  });
+
+  it('laesst alle uebrigen Teile unveraendert, auch Dezimaltrennung und Vorzeichen', () => {
+    const teile: Intl.NumberFormatPart[] = [
+      { type: 'minusSign', value: '-' },
+      { type: 'integer', value: '845' },
+      { type: 'group', value: "'" },
+      { type: 'integer', value: '123' },
+      { type: 'decimal', value: '.' },
+      { type: 'fraction', value: '45' },
+    ];
+    expect(mitFesterTrennung(teile)).toBe(`-845${T}123.45`);
+  });
+
+  it('gibt fuer jeden Formatierer dieselbe Trennung aus, nie den ASCII-Apostroph', () => {
+    for (const text of [
+      formatiereAggregat(125_000_000),
+      formatiereBetrag(84_512_345),
+      formatiereFlaeche(12_345.6),
+      formatiereScore(12_345),
+      formatiereZimmerzahl(1_234.5),
+    ]) {
+      expect(text).toContain(T);
+      expect(text).not.toContain("'");
+    }
   });
 });
 

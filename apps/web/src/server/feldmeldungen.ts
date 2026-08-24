@@ -51,8 +51,12 @@ function standardtext(feldpfad: string, issue: z.ZodIssue, k: Konfiguration): st
     case 'hausnummer':
     case 'ort':
     case 'name':
-    case 'referenznummer':
       return 'Dieses Feld ist ein Pflichtfeld.';
+    // UUID statt Freitext (Spec 05 §8, projekt-schema.ts): eine leere Eingabe UND ein
+    // falsch geformter Wert muessen dieselbe feldverankerte Meldung ergeben, keinen
+    // unbehandelten Fehler nach dem Berechnungslauf.
+    case 'projektId':
+      return 'Die Projekt-Kennung muss eine gueltige UUID sein.';
     default:
       return 'Der erfasste Wert ist an dieser Stelle nicht zulässig.';
   }

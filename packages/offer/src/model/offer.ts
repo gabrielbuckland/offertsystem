@@ -24,13 +24,16 @@ const rappenGenau = z.number().finite();               // ungerundeter Zwischenw
 const quadratmeter = z.number().finite().positive();
 
 /**
- * Erster Bereich der Offerte. Fuehrt ausschliesslich die Referenznummer: Sie ist die
- * lesbare Kennung in Dateiname, Uebersicht und Druckkopf. Kundenname und Kontaktangaben
- * sind bewusst nicht Bestandteil des Prototyps -- er berechnet den Kalkulationsteil und
- * adressiert keinen Empfaenger.
+ * Erster Bereich der Offerte. Fuehrt die Kennung des erzeugenden Projekts (Spec 05 §8),
+ * keine Referenznummer: Ein Projekt kann mehrere Offerten hervorbringen, `projektId` ist
+ * also keine Dublette von `offertId`, sondern haelt die Herkunft nachvollziehbar. Ein
+ * Projekt identifiziert sich gegenueber Menschen ueber Adresse und Datum (Spec 05 §2) —
+ * beides steht bereits in `property` bzw. `metadata.erstelltAm`. Kundenname und
+ * Kontaktangaben sind bewusst nicht Bestandteil des Prototyps -- er berechnet den
+ * Kalkulationsteil und adressiert keinen Empfaenger.
  */
 export const projectDataSchema = z.object({
-  referenznummer: z.string().min(1),
+  projektId: z.string().uuid(),
 }).strict();
 
 export const propertyDataSchema = z.object({
@@ -150,7 +153,7 @@ export const aggregateValuesSchema = z.object({
 
 export const offerMetadataSchema = z.object({
   offertId: z.string().min(1),
-  referenznummer: z.string().min(1),
+  projektId: z.string().uuid(),
   erstelltAm: z.string().min(1),                       // ISO-8601, aus apps/web (E-29)
   bewertungsversion: z.array(z.object({
     typeId: z.string().min(1),

@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { FaktorParameter, Faktormenge, FaktorId, Gewicht, Konfiguration } from '@offert/core';
-import { Schritt6Aufwandfaktoren } from '../../src/components/schritte/Schritt6Aufwandfaktoren.js';
+import { Aufwandfaktoren } from '../../src/components/projekt/Aufwandfaktoren.js';
 import { baueFaktorformular, pruefeFaktorwerte } from '../../src/server/faktorformular.js';
 import { standardKonfiguration } from '../bau/offerte-bauer.js';
 
@@ -123,8 +123,7 @@ describe('Stufenbeschriftungen erreichen die Maske (AK-3.7, PE-05)', () => {
       },
     }));
     const html = renderToStaticMarkup(
-      <Schritt6Aufwandfaktoren formular={formular} werte={{}} rohwerte={{}}
-                               meldungen={[]} aendere={() => undefined} />);
+      <Aufwandfaktoren formular={formular} werte={{}} aendere={() => undefined} />);
     expect(html).toContain('sehr gut');
     expect(html).toContain('sanierungsbeduerftig');
     expect(html).toContain('<select');
@@ -145,7 +144,7 @@ describe('Kein Faktorbezeichner im Code der Erfassung (I-13)', () => {
   it('nennt in Formularbeschreibung und Komponente keinen einzelnen Faktorbezeichner', () => {
     const wurzel = fileURLToPath(new URL('../../../..', import.meta.url));
     for (const datei of ['apps/web/src/server/faktorformular.ts',
-                         'apps/web/src/components/schritte/Schritt6Aufwandfaktoren.tsx']) {
+                         'apps/web/src/components/projekt/Aufwandfaktoren.tsx']) {
       const quelle = readFileSync(`${wurzel}${datei}`, 'utf8');
       for (const verboten of ['lage_gesamt', 'objektzustand', 'projektumfang',
                               'preissegment', 'vermarktung']) {

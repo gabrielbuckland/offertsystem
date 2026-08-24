@@ -41,4 +41,29 @@ describe('Next.js-Geruest (PE-19, PE-13)', () => {
     };
     expect(basis.compilerOptions?.paths?.['@/*']).toBeUndefined();
   });
+
+  it('deklariert Tailwind und TanStack Table und bindet ein Stylesheet ein', () => {
+    const manifest = JSON.parse(
+      readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+    ) as { dependencies: Record<string, string>; devDependencies?: Record<string, string> };
+    const alle = { ...manifest.dependencies, ...manifest.devDependencies };
+
+    expect(alle['tailwindcss']).toBeDefined();
+    expect(alle['@tanstack/react-table']).toBeDefined();
+
+    const layout = readFileSync(new URL('../src/app/layout.tsx', import.meta.url), 'utf8');
+    expect(layout).toContain('offerte.css');
+  });
+
+  it('haelt Tailwind aus den Offert-Routen heraus (US-10, Spec §7)', () => {
+    // Quellbasierte Pruefung, kein Rendering: sie pinnt die Strukturentscheidung
+    // (Wurzellayout ohne, Gruppenlayout mit globals.css), nicht das gerenderte Ergebnis.
+    const wurzel = readFileSync(new URL('../src/app/layout.tsx', import.meta.url), 'utf8');
+    expect(wurzel).not.toContain('globals.css');
+
+    const anwendung = readFileSync(
+      new URL('../src/app/(anwendung)/layout.tsx', import.meta.url), 'utf8',
+    );
+    expect(anwendung).toContain('globals.css');
+  });
 });

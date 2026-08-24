@@ -28,7 +28,10 @@ const parametrisierung = {
 };
 
 const erfassung = {
-  projekt: { referenznummer: 'A-2026-BEISPIEL' },
+  // Feste UUID statt einer erfundenen Referenznummer (Spec 05 §8): `erfassungsSchema`
+  // verlangt seit dem Projektumbau eine echte UUID (Task 13, Review-Fund 1). Fest statt
+  // erzeugt, damit das Beispiel reproduzierbar bleibt (US-13).
+  projekt: { projektId: '00000000-0000-4000-8000-00000000a5a5' },
   liegenschaft: {
     adresse: { strasse: 'Dorfstrasse', hausnummer: '4', plz: '6015', ort: 'Reussbuehl' },
   },

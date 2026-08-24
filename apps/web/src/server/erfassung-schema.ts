@@ -57,11 +57,16 @@ export function erfassungsSchema(k: Konfiguration) {
   });
 
   return z.object({
-    // Projektangaben: nur die lesbare Kennung. Kundenname und Kontaktangaben sind nicht
-    // Gegenstand des Prototyps -- er berechnet den Kalkulationsteil, adressiert aber
-    // keinen Empfaenger.
+    // Projektangaben: nur die Kennung des erzeugenden Projekts (Spec 05 §8). Kundenname
+    // und Kontaktangaben sind nicht Gegenstand des Prototyps -- er berechnet den
+    // Kalkulationsteil, adressiert aber keinen Empfaenger. UUID, nicht blosser Freitext:
+    // `projekt-schema.ts` fuehrt die Projekt-Id als `z.string().uuid()` (Spec 05 §8), und
+    // `packages/offer` verlangt dieselbe Form (offer.ts). Eine laxere Fassung hier liesse
+    // eine Eingabe durch, die erst nach dem vollstaendigen Berechnungslauf in `baueOfferte`
+    // an `offerSchema.parse` scheiterte -- ein unbehandelter Fehler statt einer
+    // feldverankerten Meldung.
     projekt: z.object({
-      referenznummer: z.string().trim().min(1),
+      projektId: z.string().uuid(),
     }).strict(),
     liegenschaft: z.object({
       adresse: z.object({

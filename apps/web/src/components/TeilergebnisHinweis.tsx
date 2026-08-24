@@ -18,7 +18,7 @@ export function TeilergebnisHinweis({ buendel }: { buendel: BewertungsBuendel })
       </p>
       <p>Es wurde keine Offerte erzeugt.</p>
       <p className="bedienelement">
-        <a href="/erfassung">Bewertungsabruf wiederholen</a>
+        <a href="/projekte">Bewertungsabruf wiederholen</a>
       </p>
     </section>
   );

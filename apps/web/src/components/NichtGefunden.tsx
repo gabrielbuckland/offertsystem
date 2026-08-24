@@ -10,7 +10,7 @@ export function NichtGefunden({ id }: { id: string }) {
         Die angeforderte Offerte ist nicht vorhanden (Kennung {id}). Möglicherweise wurde
         das zugehörige JSON-Artefakt aus dem Ablageverzeichnis entfernt.
       </p>
-      <p><a href="/dashboard">Zurück zur Übersicht</a></p>
+      <p><a href="/projekte">Zurück zur Übersicht</a></p>
     </main>
   );
 }

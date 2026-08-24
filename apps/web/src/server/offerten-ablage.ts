@@ -22,7 +22,6 @@ import { offerSchema, type Offer } from '@offert/offer/src/model/offer.js';
 
 export interface ListenEintrag {
   readonly offertId: string;
-  readonly referenznummer: string;
 
   readonly liegenschaft: string;
   readonly erstelltAm: string;
@@ -45,14 +44,17 @@ function normalisiere(text: string): string {
 /**
  * Zeitstempel voran, damit die lexikografische Sortierung der chronologischen entspricht.
  * Der Dateiname ist Bequemlichkeit, kein Datentraeger: Alle darin enthaltenen Angaben
- * stehen auch im Dokument.
+ * stehen auch im Dokument. Die Referenznummer entfaellt als Namensbestandteil (Spec 05
+ * §2/§8): Ein Projekt identifiziert sich ueber Adresse und Datum, und die ersten acht
+ * Zeichen der `offertId` genuegen, um mehrere Offerten desselben Projekts am selben Tag
+ * zu unterscheiden.
  */
 export function dateinameFuer(offerte: Offer): string {
   const stempel = offerte.metadata.erstelltAm.slice(0, 16).replace(/[-:]/g, '')
     .replace(/^(\d{8})T(\d{4})$/, (_, d: string, t: string) =>
       `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}T${t}`);
   const kurz = normalisiere(offerte.property.adresse.strasse);
-  return `${stempel}_${offerte.metadata.referenznummer}_${kurz}.json`;
+  return `${stempel}_${kurz}_${offerte.metadata.offertId.slice(0, 8)}.json`;
 }
 
 export async function legeOfferteAb(offerte: Offer, verzeichnis: string): Promise<string> {
@@ -97,7 +99,7 @@ export async function listeOfferten(verzeichnis: string): Promise<readonly Liste
     const ergebnis = offerSchema.safeParse(JSON.parse(inhalt));
     if (!ergebnis.success) {
       liste.push({
-        offertId: datei, referenznummer: datei, liegenschaft: '—',
+        offertId: datei, liegenschaft: '—',
         erstelltAm: datei.slice(0, 16), fehlerhaft: true, datei,
       });
       continue;
@@ -105,7 +107,6 @@ export async function listeOfferten(verzeichnis: string): Promise<readonly Liste
     const o = ergebnis.data;
     liste.push({
       offertId: o.metadata.offertId,
-      referenznummer: o.metadata.referenznummer,
       liegenschaft: `${o.property.adresse.strasse} ${o.property.adresse.hausnummer}, `
         + `${o.property.adresse.plz} ${o.property.adresse.ort}`,
       erstelltAm: o.metadata.erstelltAm,

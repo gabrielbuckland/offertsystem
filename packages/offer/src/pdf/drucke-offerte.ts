@@ -16,7 +16,9 @@ import { chromium } from 'playwright';
 export interface DruckOptionen {
   readonly basisUrl: string;
   readonly offertId: string;
-  readonly referenznummer?: string;
+  /** Fusszeile: Adresse und Erstelldatum identifizieren das Projekt (Spec 05 §2). */
+  readonly adresse?: string;
+  readonly erstelltAm?: string;
 }
 
 export type BrowserFabrik = () => Promise<{
@@ -30,6 +32,21 @@ export type BrowserFabrik = () => Promise<{
 }>;
 
 const standardFabrik: BrowserFabrik = () => chromium.launch() as ReturnType<BrowserFabrik>;
+
+/**
+ * Chromium rendert `footerTemplate` als HTML, nicht als Text. Adresse und Erstelldatum
+ * sind Freitext aus dem Erfassungsschema (nur `plz` ist ziffernbeschraenkt) — ohne
+ * Escaping koennte ein `<` oder `&` in einer Strassenbezeichnung die Fusszeile
+ * verstuemmeln oder Markup einschleusen.
+ */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 export async function druckeOfferte(
   optionen: DruckOptionen,
@@ -53,7 +70,9 @@ export async function druckeOfferte(
       footerTemplate:
         '<div style="font-size:8pt;width:100%;padding:0 15mm;display:flex;'
         + 'justify-content:space-between;">'
-        + `<span>${optionen.referenznummer ?? optionen.offertId}</span>`
+        + `<span>${optionen.adresse !== undefined && optionen.erstelltAm !== undefined
+          ? escapeHtml(`${optionen.adresse} · ${optionen.erstelltAm.slice(0, 10)}`)
+          : escapeHtml(optionen.offertId)}</span>`
         + '<span class="pageNumber"></span>/<span class="totalPages"></span></div>',
     });
   } finally {

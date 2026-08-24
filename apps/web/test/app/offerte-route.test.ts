@@ -31,7 +31,7 @@ afterEach(() => {
 
 function beispielErfassung(): Record<string, unknown> {
   return {
-    projekt: { referenznummer: 'A-2026-014' },
+    projekt: { projektId: '11111111-1111-4111-8111-111111111111' },
     liegenschaft: {
       adresse: { strasse: 'Musterstrasse', hausnummer: '1', plz: '6000', ort: 'Luzern' },
     },
@@ -77,6 +77,19 @@ describe('POST /api/offerte', () => {
     expect(antwort.status).toBe(422);
     const koerper = await jsonVon(antwort);
     expect(Array.isArray(koerper['meldungen'])).toBe(true);
+    expect(await readdir(ablage)).toEqual([]);
+  });
+
+  it('weist eine nicht als UUID geformte Projekt-Kennung feldverankert zurueck, statt '
+    + 'nach dem Berechnungslauf unbehandelt zu scheitern', async () => {
+    const kaputt = beispielErfassung();
+    kaputt['projekt'] = { projektId: 'A-2026-014' };
+    const antwort = await POST(anfrageMit(kaputt));
+    expect(antwort.status).toBe(422);
+    const koerper = await jsonVon(antwort);
+    const meldungen = koerper['meldungen'] as { feldpfad: string; text: string }[];
+    expect(Array.isArray(meldungen)).toBe(true);
+    expect(meldungen.some((m) => m.feldpfad === 'projekt.projektId')).toBe(true);
     expect(await readdir(ablage)).toEqual([]);
   });
 

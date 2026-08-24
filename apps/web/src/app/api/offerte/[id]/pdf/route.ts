@@ -21,10 +21,13 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       { status: 404, headers: { 'content-type': 'text/plain; charset=utf-8' } },
     );
   }
+  const adresse = `${offerte.property.adresse.strasse} ${offerte.property.adresse.hausnummer}, `
+    + `${offerte.property.adresse.plz} ${offerte.property.adresse.ort}`;
   const pdf = await druckeOfferte({
     basisUrl: process.env['APP_BASE_URL'] ?? 'http://localhost:3000',
     offertId: id,
-    referenznummer: offerte.metadata.referenznummer,
+    adresse,
+    erstelltAm: offerte.metadata.erstelltAm,
   });
   return new Response(pdf, {
     headers: {

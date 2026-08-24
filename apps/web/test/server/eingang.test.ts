@@ -18,7 +18,7 @@ const PROVIDER_FEHLER: ProviderFehler = {
 };
 
 const BEISPIEL_ERFASSUNG = {
-  projekt: { referenznummer: 'A-2026-014' },
+  projekt: { projektId: 'A-2026-014' },
   liegenschaft: {
     adresse: { strasse: 'Musterstrasse', hausnummer: '1', plz: '6000', ort: 'Luzern' },
   },

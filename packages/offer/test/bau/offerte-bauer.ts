@@ -25,7 +25,7 @@ const PRUEFSUMME = 'a'.repeat(64);
 
 const VORLAGE: VeraenderbareOfferte = {
   project: {
-    referenznummer: 'A-2026-014',
+    projektId: '11111111-1111-4111-8111-111111111111',
   },
   property: {
     adresse: { strasse: 'Musterstrasse', hausnummer: '1', plz: '6000', ort: 'Luzern' },
@@ -222,7 +222,7 @@ const VORLAGE: VeraenderbareOfferte = {
   },
   metadata: {
     offertId: 'A-2026-014',
-    referenznummer: 'A-2026-014',
+    projektId: '11111111-1111-4111-8111-111111111111',
     erstelltAm: '2026-08-16T14:32:00.000Z',
     bewertungsversion: [
       { typeId: 'T-3.5', bewertungsdatum: '2026-08-16', konfidenzklasse: 'good' },
