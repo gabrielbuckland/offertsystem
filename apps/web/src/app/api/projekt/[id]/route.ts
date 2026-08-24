@@ -15,7 +15,18 @@ export async function PUT(anfrage: Request, kontext: Kontext): Promise<Response>
     return Response.json({ fehler: { text: laufzeit.meldungen.join(' ') } }, { status: 500 });
   }
   const { id } = await kontext.params;
-  const geprueft = projektSchema.safeParse(await anfrage.json());
+  // `anfrage.json()` wirft bei einem nicht parsierbaren Rumpf, BEVOR `safeParse` laeuft.
+  // Ohne diesen Fang traege ein abgebrochener oder verstuemmelter Sendevorgang eine 500
+  // aus, obwohl er dieselbe Aussage macht wie ein schemawidriger Stand: Der gesendete
+  // Projektstand ist ungueltig — das ist ein 422 (I-24).
+  let roh: unknown;
+  try {
+    roh = await anfrage.json();
+  } catch {
+    return Response.json(
+      { fehler: { text: 'Der Projektstand ist ungültig.' } }, { status: 422 });
+  }
+  const geprueft = projektSchema.safeParse(roh);
   if (!geprueft.success || geprueft.data.id !== id) {
     return Response.json(
       { fehler: { text: 'Der Projektstand ist ungültig.' } }, { status: 422 });

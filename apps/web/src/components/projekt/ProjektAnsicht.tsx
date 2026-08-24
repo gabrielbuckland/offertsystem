@@ -22,6 +22,7 @@ import { EinheitenTabelle, type Preis } from './EinheitenTabelle.js';
 import { entferneSpaltenwert } from './spaltenwerte-kaskade.js';
 import { Aufwandfaktoren } from './Aufwandfaktoren.js';
 import { Aggregatleiste } from './Aggregatleiste.js';
+import { leseRumpf } from './antwort-rumpf.js';
 
 export interface ProjektAnsichtProps {
   readonly projekt: Projekt;
@@ -82,7 +83,7 @@ export function ProjektAnsicht(
     setAbrufLaeuft(true);
     try {
       const antwort = await fetch(`/api/projekt/${projekt.id}/bewertung`, { method: 'POST' });
-      const rumpf = await antwort.json() as BewertungsAntwort;
+      const rumpf = await leseRumpf<BewertungsAntwort>(antwort);
       if (!antwort.ok || rumpf.projekt === undefined) {
         setAbrufMeldung(rumpf.fehler?.text ?? 'Die Bewertungen konnten nicht bezogen werden.');
         return;
@@ -97,6 +98,11 @@ export function ProjektAnsicht(
             + 'Bewertung vor. Die übrigen Bewertungen wurden übernommen.',
         );
       }
+    } catch {
+      // Ohne diesen Fang blieb die Schaltflaeche wirkungslos: Wirft die Route einen
+      // unbehandelten Fehler, antwortet Next mit HTML, `antwort.json()` scheitert, und die
+      // abgelehnte Zusage entkommt aus `void rufeAb()` — sichtbar nur in der Konsole.
+      setAbrufMeldung('Die Bewertungen konnten nicht bezogen werden.');
     } finally {
       setAbrufLaeuft(false);
     }
@@ -116,7 +122,7 @@ export function ProjektAnsicht(
       async (p: Projekt) => {
         try {
           const antwort = await fetch(`/api/projekt/${p.id}/berechnung`, { method: 'POST' });
-          const rumpf = await antwort.json() as BerechnungsAntwort;
+          const rumpf = await leseRumpf<BerechnungsAntwort>(antwort);
           if (!antwort.ok) {
             setBerechnungsFehler(rumpf.fehler?.text ?? 'Die Berechnung ist fehlgeschlagen.');
             setAggregate(OHNE_AGGREGATE);
@@ -165,12 +171,14 @@ export function ProjektAnsicht(
     setOfferteLaeuft(true);
     try {
       const antwort = await fetch(`/api/projekt/${projekt.id}/offerte`, { method: 'POST' });
-      const rumpf = await antwort.json() as OfferteAntwort;
+      const rumpf = await leseRumpf<OfferteAntwort>(antwort);
       if (!antwort.ok || rumpf.offertId === undefined) {
         setOfferteFehler(rumpf.fehler?.text ?? 'Die Offerte konnte nicht erzeugt werden.');
         return;
       }
       router.push(`/offerte/${rumpf.offertId}` as Route);
+    } catch {
+      setOfferteFehler('Die Offerte konnte nicht erzeugt werden.');
     } finally {
       setOfferteLaeuft(false);
     }
