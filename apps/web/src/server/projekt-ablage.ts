@@ -50,7 +50,7 @@ async function schreibeAtomar(ziel: string, inhalt: string): Promise<void> {
   }
 }
 
-export async function speichereProjekt(projekt: Projekt, verzeichnis: string): Promise<void> {
+export async function speichereProjekt(projekt: Projekt, verzeichnis: string): Promise<Projekt> {
   const geprueft = projektSchema.parse({
     ...projekt,
     meta: { ...projekt.meta, geaendertAm: jetzt() },
@@ -60,6 +60,7 @@ export async function speichereProjekt(projekt: Projekt, verzeichnis: string): P
     join(verzeichnis, `${geprueft.id}.json`),
     `${JSON.stringify(geprueft, null, 2)}\n`,
   );
+  return geprueft;
 }
 
 export async function legeProjektAn(adresse: Adresse, verzeichnis: string): Promise<Projekt> {

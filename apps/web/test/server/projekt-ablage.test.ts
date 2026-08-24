@@ -26,6 +26,14 @@ describe('Projektablage', () => {
     expect((await ladeProjekt(p.id, v)).aufwandfaktoren).toEqual({ innenausbau_qualitaet: 3 });
   });
 
+  it('gibt genau den Stand zurueck, der auch auf der Platte landet', async () => {
+    const v = await verzeichnis();
+    const p = await legeProjektAn(ADRESSE, v);
+    const zurueckgegeben = await speichereProjekt(
+      { ...p, aufwandfaktoren: { innenausbau_qualitaet: 3 } }, v);
+    expect(zurueckgegeben).toEqual(await ladeProjekt(p.id, v));
+  });
+
   it('fuehrt geaendertAm nach, laesst erstelltAm unangetastet', async () => {
     const v = await verzeichnis();
     const p = await legeProjektAn(ADRESSE, v);

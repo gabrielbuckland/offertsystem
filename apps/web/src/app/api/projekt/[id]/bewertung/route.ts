@@ -57,10 +57,24 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
       };
     }),
   };
-  await speichereProjekt(aktualisiert, projekteVerzeichnis);
+  // `beschaffe` hat bereits Provider-Kontingent verbraucht (NFA-12, I-27): Ein
+  // Schreibfehler hier darf nicht stillschweigend durchfallen, sonst erfaehrt der
+  // Vermarkter nicht, dass Credits verbraucht wurden, ohne dass etwas festgehalten ist.
+  let gespeichert;
+  try {
+    gespeichert = await speichereProjekt(aktualisiert, projekteVerzeichnis);
+  } catch {
+    return Response.json({
+      fehler: {
+        text: 'Die Bewertung wurde bezogen — dabei wurde Guthaben beim Anbieter '
+          + 'verbraucht —, konnte aber nicht gespeichert werden. Der Abruf muss '
+          + 'wiederholt werden.',
+      },
+    }, { status: 500 });
+  }
 
   return Response.json({
-    projekt: aktualisiert,
+    projekt: gespeichert,
     vollstaendig: buendel.vollstaendig,
     fehlgeschlagenerTyp: buendel.vollstaendig ? undefined : buendel.fehlgeschlagenerTyp,
   }, { status: 200 });
