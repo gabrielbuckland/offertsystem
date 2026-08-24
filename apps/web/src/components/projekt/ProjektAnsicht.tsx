@@ -64,13 +64,10 @@ const OHNE_AGGREGATE: Aggregate = {
   preise: {}, verkaufssumme: undefined, honorarMin: undefined, honorarMax: undefined,
 };
 
-const BERECHNUNGS_ENTPRELLUNG_MS = 400;
-
 export function ProjektAnsicht(
   { projekt: anfang, faktorformular, begruendungMinLaenge }: ProjektAnsichtProps,
 ) {
   const router = useRouter();
-  const { projekt, aendere, speichernLaeuft, speichernFehler } = verwendeProjekt(anfang);
   const [abrufMeldung, setAbrufMeldung] = useState<string | undefined>(undefined);
   const [abrufLaeuft, setAbrufLaeuft] = useState(false);
   const [aggregate, setAggregate] = useState<Aggregate>(OHNE_AGGREGATE);
@@ -155,16 +152,27 @@ export function ProjektAnsicht(
     );
   }
 
-  const berechnungsZeitgeber = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  /**
+   * Die Berechnung haengt am ERFOLG des Speicherns, sie laeuft nicht daneben her.
+   *
+   * `POST /berechnung` liest das Projekt von der Platte (`ladeProjekt`). Ein eigener
+   * Zeitgeber auf `[projekt]` startete parallel zum Speicher-Zeitgeber und rechnete
+   * deshalb gegen den Stand, den das gleichzeitige PUT gerade erst schrieb oder noch
+   * nicht geschrieben hatte. Sichtbar wurde das als Preis, der die letzte Aenderung
+   * ueberspringt und erst bei der uebernaechsten nachzieht — und, schwerer, als Offerte,
+   * die etwas anderes ausweist als der Bildschirm zeigte. Eine laengere Entprellung
+   * haette das Fenster nur verkleinert, nicht geschlossen.
+   */
+  const { projekt, aendere, speichernLaeuft, speichernFehler } = verwendeProjekt(
+    anfang,
+    (gespeichert) => { berechnungsWarteschlange.current?.stelleEin(gespeichert); },
+  );
+
+  // Einmalig beim Betreten der Seite: Der geladene Stand liegt bereits auf der Platte, es
+  // gibt also kein Speichern, an das sich diese erste Berechnung haengen koennte.
   useEffect(() => {
-    if (berechnungsZeitgeber.current !== undefined) clearTimeout(berechnungsZeitgeber.current);
-    berechnungsZeitgeber.current = setTimeout(() => {
-      berechnungsWarteschlange.current?.stelleEin(projekt);
-    }, BERECHNUNGS_ENTPRELLUNG_MS);
-    return () => {
-      if (berechnungsZeitgeber.current !== undefined) clearTimeout(berechnungsZeitgeber.current);
-    };
-  }, [projekt]);
+    berechnungsWarteschlange.current?.stelleEin(anfang);
+  }, [anfang]);
 
   async function erzeugeOfferte() {
     setOfferteFehler(undefined);

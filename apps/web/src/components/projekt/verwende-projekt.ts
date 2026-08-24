@@ -13,6 +13,17 @@ export interface Speicherwarteschlange {
 export interface WarteschlangenBeobachter {
   readonly aufStatusWechsel: (speichernLaeuft: boolean) => void;
   readonly aufFehler: (fehlgeschlagen: boolean) => void;
+  /**
+   * Wird nach einem ERFOLGREICHEN Sendevorgang mit genau dem Stand aufgerufen, der
+   * gesendet wurde. Damit laesst sich Nachgelagertes an das Speichern KETTEN, statt es
+   * parallel dazu zu starten.
+   *
+   * Nur bei Erfolg: Ist das PUT fehlgeschlagen, traegt die Platte den Stand nicht, den
+   * der Bildschirm zeigt. Eine Berechnung darauf ergaebe Zahlen zu einem Stand, den der
+   * Server nie gesehen hat — der Speicherfehler bleibt stehen und ist die richtige
+   * Auskunft.
+   */
+  readonly aufErfolg?: (projekt: Projekt) => void;
 }
 
 /**
@@ -42,7 +53,10 @@ export function baueSpeicherwarteschlange(
     laeuft = true;
     beobachter.aufStatusWechsel(true);
     void sende(projekt)
-      .then((ok) => beobachter.aufFehler(!ok))
+      .then((ok) => {
+        beobachter.aufFehler(!ok);
+        if (ok) beobachter.aufErfolg?.(projekt);
+      })
       .catch(() => beobachter.aufFehler(true))
       .finally(() => {
         const naechstes = ausstehend;
@@ -90,12 +104,20 @@ async function schreibeUeberPut(projekt: Projekt): Promise<boolean> {
  * fehlgeschlagenen Speicherversuch sichtbar — ohne diese Rueckmeldung verlöre der
  * Vermarkter Aenderungen, ohne es zu merken, was schlimmer ist als gar kein
  * automatisches Speichern (Design-Spec §2).
+ *
+ * `aufGespeichert` meldet den geschriebenen Stand. Wer nach dem Speichern etwas tun muss,
+ * das den Stand VON DER PLATTE liest, haengt sich hier an, statt einen eigenen Zeitgeber
+ * parallel laufen zu lassen.
  */
-export function verwendeProjekt(anfang: Projekt) {
+export function verwendeProjekt(anfang: Projekt, aufGespeichert?: (projekt: Projekt) => void) {
   const [projekt, setzeProjekt] = useState(anfang);
   const [speichernLaeuft, setzeSpeichern] = useState(false);
   const [speichernFehler, setzeSpeichernFehler] = useState<string | undefined>(undefined);
   const zeitgeber = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // Die Warteschlange entsteht genau einmal und schliesst damit ueber den Rueckruf des
+  // ERSTEN Rendervorgangs. Der Umweg ueber die Referenz haelt sie am jeweils aktuellen.
+  const rueckruf = useRef(aufGespeichert);
+  rueckruf.current = aufGespeichert;
   const warteschlange = useRef<Speicherwarteschlange | undefined>(undefined);
   if (warteschlange.current === undefined) {
     warteschlange.current = baueSpeicherwarteschlange(schreibeUeberPut, {
@@ -106,6 +128,7 @@ export function verwendeProjekt(anfang: Projekt) {
             + 'und Eingabe erneut auslösen.'
           : undefined,
       ),
+      aufErfolg: (gespeichert) => rueckruf.current?.(gespeichert),
     });
   }
 

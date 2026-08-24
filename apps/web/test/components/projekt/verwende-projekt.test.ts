@@ -91,3 +91,102 @@ describe('baueSpeicherwarteschlange', () => {
     expect(sende).toHaveBeenNthCalledWith(2, { id: 'p1', markierung: 3 });
   });
 });
+
+/**
+ * Der Fehler, den diese Suite festnagelt: Die Neuberechnung lief auf einem EIGENEN
+ * Zeitgeber, der aus derselben Zustandsaenderung startete wie das Speichern.
+ * `POST /berechnung` liest das Projekt von der Platte — die Berechnung rechnete also
+ * gegen den Stand, den das gleichzeitige PUT gerade erst schrieb oder noch gar nicht
+ * geschrieben hatte.
+ *
+ * Nachgestellt wird die Verkettung so, wie `ProjektAnsicht` sie verdrahtet: Der Rueckruf
+ * `aufErfolg` der Speicher-Warteschlange stellt in die Berechnungs-Warteschlange ein.
+ * Das PUT wird BEWUSST erst aufgeloest, nachdem der alte Zeitgeber laengst gefeuert
+ * haette; genau in diesem Fenster darf keine Berechnung stattgefunden haben.
+ */
+describe('Berechnung ist an das Speichern gekettet, nicht daneben gestartet', () => {
+  function verdrahtet() {
+    const put = steuerbar<boolean>();
+    const gesendet: unknown[] = [];
+    const berechnet: unknown[] = [];
+    const speichern = baueSpeicherwarteschlange(
+      (p) => { gesendet.push(p); return put.versprechen; },
+      {
+        aufStatusWechsel: vi.fn(),
+        aufFehler: vi.fn(),
+        aufErfolg: (gespeichert) => { berechnet.push(gespeichert); },
+      },
+    );
+    return { put, gesendet, berechnet, speichern };
+  }
+
+  it('rechnet nicht, solange das PUT desselben Standes noch unterwegs ist', async () => {
+    const { put, gesendet, berechnet, speichern } = verdrahtet();
+
+    speichern.stelleEin({ id: 'p1', markierung: 'alt' } as never);
+    // Das Fenster, in dem der frueher parallel laufende Zeitgeber gefeuert haette.
+    await leeren();
+    expect(gesendet).toHaveLength(1);
+    expect(berechnet).toEqual([]);
+
+    put.aufloesen(true);
+    await leeren();
+    expect(berechnet).toEqual([{ id: 'p1', markierung: 'alt' }]);
+  });
+
+  it('rechnet gegen den NEUEREN Stand, wenn waehrend des PUT weiter geaendert wurde', async () => {
+    const zweites = steuerbar<boolean>();
+    const put = steuerbar<boolean>();
+    const berechnet: unknown[] = [];
+    const sende = vi.fn()
+      .mockReturnValueOnce(put.versprechen)
+      .mockReturnValueOnce(zweites.versprechen);
+    const speichern = baueSpeicherwarteschlange(sende, {
+      aufStatusWechsel: vi.fn(),
+      aufFehler: vi.fn(),
+      aufErfolg: (gespeichert) => { berechnet.push(gespeichert); },
+    });
+
+    speichern.stelleEin({ id: 'p1', markierung: 'alt' } as never);
+    speichern.stelleEin({ id: 'p1', markierung: 'neu' } as never);
+
+    put.aufloesen(true);
+    await leeren();
+    zweites.aufloesen(true);
+    await leeren();
+
+    // Entscheidend ist der LETZTE Lauf: Er gehoert zum neuesten Stand und lief erst,
+    // nachdem dessen PUT beantwortet war.
+    expect(berechnet.at(-1)).toEqual({ id: 'p1', markierung: 'neu' });
+    expect(berechnet).toHaveLength(2);
+  });
+
+  it('rechnet gar nicht, wenn das Speichern fehlschlaegt', async () => {
+    // Sonst zeigte die Oberflaeche Zahlen zu einem Stand, den der Server nie gesehen hat.
+    const berechnet: unknown[] = [];
+    const speichern = baueSpeicherwarteschlange(vi.fn().mockResolvedValue(false), {
+      aufStatusWechsel: vi.fn(),
+      aufFehler: vi.fn(),
+      aufErfolg: (gespeichert) => { berechnet.push(gespeichert); },
+    });
+
+    speichern.stelleEin({ id: 'p1' } as never);
+    await leeren();
+
+    expect(berechnet).toEqual([]);
+  });
+
+  it('rechnet gar nicht, wenn das Speichern wirft', async () => {
+    const berechnet: unknown[] = [];
+    const speichern = baueSpeicherwarteschlange(vi.fn().mockRejectedValue(new Error('Netz')), {
+      aufStatusWechsel: vi.fn(),
+      aufFehler: vi.fn(),
+      aufErfolg: (gespeichert) => { berechnet.push(gespeichert); },
+    });
+
+    speichern.stelleEin({ id: 'p1' } as never);
+    await leeren();
+
+    expect(berechnet).toEqual([]);
+  });
+});
