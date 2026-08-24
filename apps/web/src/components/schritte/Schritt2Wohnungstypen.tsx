@@ -13,6 +13,8 @@ export interface Schritt2Props {
   readonly wohnungstypen: readonly Record<string, unknown>[];
   readonly meldungen: readonly Feldmeldung[];
   readonly setze: (pfad: string, wert: unknown) => void;
+  readonly ergaenze: () => void;
+  readonly entferne: (index: number) => void;
 }
 
 /** Feldliste aus RepraesentativeParametrisierung; verbindlich und abschliessend (E-28). */
@@ -27,10 +29,15 @@ const PARAMETER: readonly (readonly [string, string, 'text' | 'number' | 'checkb
   ['heizungsart', 'Heizungsart', 'text'],
 ];
 
-export function Schritt2Wohnungstypen({ wohnungstypen, meldungen, setze }: Schritt2Props) {
+export function Schritt2Wohnungstypen(
+  { wohnungstypen, meldungen, setze, ergaenze, entferne }: Schritt2Props,
+) {
   return (
     <section>
       <h2>Wohnungstypen</h2>
+      {wohnungstypen.length === 0 && (
+        <p>Noch kein Wohnungstyp erfasst. Je vorkommender Zimmerzahl wird genau einer angelegt.</p>
+      )}
       {wohnungstypen.map((typ, ti) => {
         const parametrisierung = (typ['parametrisierung'] ?? {}) as Record<string, unknown>;
         return (
@@ -60,9 +67,11 @@ export function Schritt2Wohnungstypen({ wohnungstypen, meldungen, setze }: Schri
                 </div>
               );
             })}
+            <button type="button" onClick={() => entferne(ti)}>Wohnungstyp entfernen</button>
           </fieldset>
         );
       })}
+      <button type="button" onClick={ergaenze}>Wohnungstyp hinzufügen</button>
     </section>
   );
 }

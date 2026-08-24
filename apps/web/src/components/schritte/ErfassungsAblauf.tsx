@@ -67,7 +67,9 @@ export function ErfassungsAblauf({ anfangszustand, formular, vorlagen }: Erfassu
       )}
       {zustand.aktiverSchritt === 2 && (
         <Schritt2Wohnungstypen wohnungstypen={zustand.wohnungstypen}
-                               meldungen={zustand.meldungen} setze={setze} />
+                               meldungen={zustand.meldungen} setze={setze}
+                               ergaenze={() => sende({ art: 'typHinzu' })}
+                               entferne={(index) => sende({ art: 'typEntfernen', index })} />
       )}
       {zustand.aktiverSchritt === 3 && (
         <Schritt3Bewertungsabruf zustand={zustand} rufeAb={() => undefined} />

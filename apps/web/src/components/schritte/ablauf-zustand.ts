@@ -51,6 +51,8 @@ export type Aktion =
   | { art: 'zurueck' }
   | { art: 'springe'; ziel: Schrittnummer }
   | { art: 'setze'; pfad: string; wert: unknown }
+  | { art: 'typHinzu' }
+  | { art: 'typEntfernen'; index: number }
   | { art: 'einheitHinzu' }
   | { art: 'einheitEntfernen'; index: number }
   | { art: 'bewertungenEingetroffen'; buendel: BewertungsBuendel; lagescores: Lagescores };
@@ -65,6 +67,36 @@ const PFADE_JE_SCHRITT: Readonly<Record<Schrittnummer, readonly string[]>> = {
   6: ['aufwandfaktoren'],
   7: [],
 };
+
+/**
+ * Neuer Wohnungstyp mit leerer Parametrisierung. Die Felder entsprechen der
+ * verbindlichen Liste aus RepraesentativeParametrisierung (E-28); befuellt werden sie
+ * in Schritt 2.
+ *
+ * Der Bezeichner wird fortlaufend vergeben und NICHT aus der Zimmerzahl abgeleitet,
+ * obwohl die Fixtures diese Schreibweise fuehren: Die Zimmerzahl ist in Schritt 2
+ * aenderbar, und ein mitwanderneder Bezeichner risse die in Schritt 4 gesetzten
+ * Typbezuege der Einheiten. Die Regel `je Zimmerzahl genau ein Wohnungstyp` haengt am
+ * Wert, nicht am Bezeichner, und wird von der Erfassungspruefung durchgesetzt.
+ *
+ * Vergeben wird oberhalb des hoechsten bereits benutzten Zaehlers, damit ein Bezeichner
+ * nach dem Entfernen eines Typs nicht erneut vergeben wird.
+ */
+function leererWohnungstyp(vorhandene: readonly Record<string, unknown>[]): Record<string, unknown> {
+  const hoechste = vorhandene.reduce((max, typ) => {
+    const treffer = /^T(\d+)$/.exec(String(typ['id'] ?? ''));
+    return treffer === null ? max : Math.max(max, Number(treffer[1]));
+  }, 0);
+  return {
+    id: `T${hoechste + 1}`,
+    zimmerzahl: 0,
+    parametrisierung: {
+      flaecheInnen: 0, flaecheAussen: 0, stockwerk: 0, energielabel: '',
+      zustandsbewertungen: {}, qualitaetsbewertungen: {},
+      anzahlBadezimmer: 0, lift: false, baujahr: 0, heizungsart: '',
+    },
+  };
+}
 
 function leereEinheit(): Record<string, unknown> {
   return {
@@ -116,6 +148,10 @@ export function reduziere(z: AblaufZustand, a: Aktion): AblaufZustand {
   switch (a.art) {
     case 'setze':
       return { ...setzeAmPfad(z, a.pfad, a.wert), blockade: undefined, hinweis: undefined };
+    case 'typHinzu':
+      return { ...z, wohnungstypen: [...z.wohnungstypen, leererWohnungstyp(z.wohnungstypen)] };
+    case 'typEntfernen':
+      return { ...z, wohnungstypen: z.wohnungstypen.filter((_, i) => i !== a.index) };
     case 'einheitHinzu':
       return { ...z, einheiten: [...z.einheiten, leereEinheit()] };
     case 'einheitEntfernen':

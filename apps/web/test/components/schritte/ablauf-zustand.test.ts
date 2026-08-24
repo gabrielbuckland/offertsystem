@@ -121,3 +121,46 @@ describe('Einheitenliste', () => {
     expect(nachher.hinweis).toBeUndefined();
   });
 });
+
+describe('Wohnungstypen anlegen und entfernen', () => {
+  // Regression: Der Startzustand fuehrt eine leere Typliste, Schritt 2 rendert nur
+  // vorhandene Eintraege, und es gab keine Aktion zum Anlegen. Die Erfassung war damit
+  // ab Schritt 2 unpassierbar -- die Validierung meldete einen offenen Punkt, zu dem
+  // die Oberflaeche kein Feld anbot.
+  it('legt aus einer leeren Liste einen Wohnungstyp an', () => {
+    const leer: AblaufZustand = { ...basiszustand(), wohnungstypen: [], einheiten: [] };
+    const danach = reduziere(leer, { art: 'typHinzu' });
+
+    expect(danach.wohnungstypen).toHaveLength(1);
+    const typ = danach.wohnungstypen[0]!;
+    expect(String(typ['id'])).not.toBe('');
+    expect(typ['parametrisierung']).toBeDefined();
+  });
+
+  it('vergibt bei mehreren Typen unterschiedliche Bezeichner', () => {
+    const leer: AblaufZustand = { ...basiszustand(), wohnungstypen: [], einheiten: [] };
+    const zwei = reduziere(reduziere(leer, { art: 'typHinzu' }), { art: 'typHinzu' });
+    const bezeichner = zwei.wohnungstypen.map((typ) => String(typ['id']));
+
+    expect(new Set(bezeichner).size).toBe(2);
+  });
+
+  it('vergibt nach dem Entfernen keinen bereits vergebenen Bezeichner erneut', () => {
+    const leer: AblaufZustand = { ...basiszustand(), wohnungstypen: [], einheiten: [] };
+    const zwei = reduziere(reduziere(leer, { art: 'typHinzu' }), { art: 'typHinzu' });
+    const ohneErsten = reduziere(zwei, { art: 'typEntfernen', index: 0 });
+    const wieder = reduziere(ohneErsten, { art: 'typHinzu' });
+
+    expect(wieder.wohnungstypen).toHaveLength(2);
+    const bezeichner = wieder.wohnungstypen.map((typ) => String(typ['id']));
+    expect(new Set(bezeichner).size).toBe(2);
+  });
+
+  it('entfernt den Wohnungstyp am angegebenen Index', () => {
+    const zustand = basiszustand();
+    const danach = reduziere(zustand, { art: 'typEntfernen', index: 0 });
+
+    expect(danach.wohnungstypen).toHaveLength(0);
+  });
+});
+

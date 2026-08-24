@@ -4,7 +4,59 @@
  * Zugangsdaten, bricht der Start ab. I-24 und NFA-10 verbieten, ohne
  * Referenzbewertung ein Ergebnis zu erzeugen; ein stiller Rueckfall auf Mock-
  * oder Fixture-Daten im Live-Betrieb waere in der Offerte nicht erkennbar.
+ *
+ * Die Vorgabepfade werden gegen die Wurzel des Arbeitsbereichs aufgeloest, nicht
+ * gegen `process.cwd()`. Grund: `next dev` laeuft mit `apps/web` als
+ * Arbeitsverzeichnis. Relative Vorgaben zeigten dadurch auf
+ * `apps/web/config/company-defaults.json` und `apps/web/data/offerten` -- die
+ * Erfassung brach mit CFG_SCHEMA_TYPE ab, und Offerten waeren im Paket der
+ * Zugriffsschicht statt in der Ablage des Arbeitsbereichs gelandet. Die
+ * Werkzeuge unter `tools/` leiten ihre Wurzel seit jeher aus `import.meta.url`
+ * ab; die Zugriffsschicht tut es damit genauso.
  */
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+/**
+ * Sucht aufwaerts nach der Wurzel des Arbeitsbereichs. Kennzeichen ist eine
+ * `package.json`, die `workspaces` deklariert -- dieselbe Datei, die npm als
+ * Wurzel behandelt. Gesucht wird ab dem Ort dieses Moduls; unter dem gebauten
+ * Next-Server liegt das innerhalb von `apps/web`, sodass der Aufstieg dieselbe
+ * Wurzel findet.
+ */
+function findeArbeitsbereichsWurzel(start: string): string | undefined {
+  let verzeichnis = start;
+  for (;;) {
+    const manifest = join(verzeichnis, 'package.json');
+    if (existsSync(manifest)) {
+      try {
+        const roh = JSON.parse(readFileSync(manifest, 'utf8')) as { workspaces?: unknown };
+        if (roh.workspaces !== undefined) return verzeichnis;
+      } catch {
+        // Unlesbares Manifest ist kein Grund abzubrechen; der Aufstieg geht weiter.
+      }
+    }
+    const oben = dirname(verzeichnis);
+    if (oben === verzeichnis) return undefined;
+    verzeichnis = oben;
+  }
+}
+
+const WURZEL =
+  findeArbeitsbereichsWurzel(dirname(fileURLToPath(import.meta.url)))
+  ?? findeArbeitsbereichsWurzel(process.cwd())
+  ?? process.cwd();
+
+/**
+ * Absolute Pfade bleiben unveraendert. Relative Angaben -- die Vorgaben ebenso
+ * wie eine relativ gesetzte Umgebungsvariable -- werden gegen die Wurzel des
+ * Arbeitsbereichs aufgeloest, damit derselbe Wert unabhaengig davon gilt, aus
+ * welchem Verzeichnis der Prozess gestartet wurde.
+ */
+function anWurzel(pfad: string): string {
+  return isAbsolute(pfad) ? pfad : resolve(WURZEL, pfad);
+}
 
 export type ProviderSchalter = 'mock' | 'fixture' | 'pricehubble';
 
@@ -49,8 +101,10 @@ export function leseUmgebung(
 
   const umgebung: Umgebung = {
     valuationProvider: rohSchalter,
-    companyDefaultsPfad: nichtLeer(quelle['COMPANY_DEFAULTS_PATH']) ?? './config/company-defaults.json',
-    offertenVerzeichnis: nichtLeer(quelle['OFFERTEN_VERZEICHNIS']) ?? './data/offerten',
+    companyDefaultsPfad: anWurzel(
+      nichtLeer(quelle['COMPANY_DEFAULTS_PATH']) ?? 'config/company-defaults.json',
+    ),
+    offertenVerzeichnis: anWurzel(nichtLeer(quelle['OFFERTEN_VERZEICHNIS']) ?? 'data/offerten'),
     phBaseUrl: nichtLeer(quelle['PH_BASE_URL']),
     phUsername: nichtLeer(quelle['PH_USERNAME']),
     phPassword: nichtLeer(quelle['PH_PASSWORD']),
