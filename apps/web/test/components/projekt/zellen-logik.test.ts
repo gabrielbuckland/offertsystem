@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  entscheideZellenwert, faktorZuProzent, istBegruendungGueltig, prozentZuFaktor,
+  entscheideZellenwert, faktorZuProzent, frankenZuRappen, istBegruendungGueltig,
+  prozentZuFaktor, rappenZuFranken,
 } from '../../../src/components/projekt/zellen-logik.js';
 
 describe('entscheideZellenwert', () => {
@@ -35,6 +36,26 @@ describe('faktorZuProzent / prozentZuFaktor', () => {
 
   it('rechnet eine eingegebene Prozentzahl auf den erwarteten Faktor', () => {
     expect(prozentZuFaktor(5)).toBe(0.05);
+  });
+});
+
+describe('frankenZuRappen / rappenZuFranken', () => {
+  it('rechnet einen gespeicherten Rappenbetrag verlustfrei in Franken hin und zurueck', () => {
+    expect(rappenZuFranken(1_000_000)).toBe(10_000);
+    expect(frankenZuRappen(rappenZuFranken(1_000_000))).toBe(1_000_000);
+  });
+
+  it('rundet einen gebrochenen Frankenbetrag auf ganze Rappen, statt zu kuerzen', () => {
+    expect(frankenZuRappen(10.5)).toBe(1050);
+    expect(Number.isInteger(frankenZuRappen(10.5))).toBe(true);
+  });
+
+  it('produziert einen Rappenbetrag, der hundertmal groesser ist als der eingegebene '
+    + 'Frankenbetrag — nicht gleich gross (der urspruengliche Fehler: CHF 10000 wurden '
+    + 'als 10000 Rappen statt als 1000000 Rappen abgelegt)', () => {
+    const eingegebeneFranken = 10_000;
+    expect(frankenZuRappen(eingegebeneFranken)).toBe(eingegebeneFranken * 100);
+    expect(frankenZuRappen(eingegebeneFranken)).not.toBe(eingegebeneFranken);
   });
 });
 

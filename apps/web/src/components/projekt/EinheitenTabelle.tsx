@@ -18,7 +18,9 @@ import { Button } from '../ui/button.js';
 import { Input } from '../ui/input.js';
 import { Select } from '../ui/select.js';
 import { ZellenEingabe } from './ZellenEingabe.js';
-import { faktorZuProzent, istBegruendungGueltig, prozentZuFaktor } from './zellen-logik.js';
+import {
+  faktorZuProzent, frankenZuRappen, istBegruendungGueltig, prozentZuFaktor, rappenZuFranken,
+} from './zellen-logik.js';
 import type {
   AnpassungsSpalte, ProjektEinheit, Referenzobjekt,
 } from '../../server/projekt-schema.js';
@@ -54,10 +56,13 @@ function ManuelleAnpassungenZelle(
   },
 ) {
   const [erfassungsform, setzeErfassungsform] = useState<ManuelleAnpassung['erfassungsform']>('relativ');
-  // Wie bei den Spaltenzellen zeigt und erfasst das Feld bei 'relativ' eine Prozentzahl;
-  // gespeichert wird der Faktor. Ohne diese Umrechnung waere eine hier eingetippte "5" im
-  // Kern ein Faktor von 5 statt 0.05 — derselbe Fehler wie bei den Anpassungsspalten
-  // (Task-11-Review, Finding 2), nur unbeobachtet, weil kein Kolonnenkopf ihn ankuendigt.
+  // Das Feld zeigt und erfasst die Einheit, in der ein Mensch tatsaechlich denkt —
+  // Prozent bei 'relativ', Franken bei 'absolut' — gespeichert wird immer die Einheit
+  // des Kerns (Faktor bzw. Rappen). Ohne diese Umrechnung waere eine hier eingetippte "5"
+  // bei 'relativ' ein Faktor von 5 statt 0.05, und ein eingetipptes "10000" bei 'absolut'
+  // 100 Rappen statt CHF 10'000 (Task-11-Review, Finding 2 und Fix Round 2 — derselbe
+  // Fehler wie bei den Anpassungsspalten, hier nur unbeobachtet, weil kein Kolonnenkopf
+  // ihn ankuendigt).
   const [wert, setzeWert] = useState('0');
   const [begruendung, setzeBegruendung] = useState('');
 
@@ -66,7 +71,7 @@ function ManuelleAnpassungenZelle(
   function hinzufuegen() {
     const zahl = Number(wert);
     if (!begruendungGueltig || !Number.isFinite(zahl)) return;
-    const gespeichert = erfassungsform === 'relativ' ? prozentZuFaktor(zahl) : zahl;
+    const gespeichert = erfassungsform === 'relativ' ? prozentZuFaktor(zahl) : frankenZuRappen(zahl);
     aendere([...anpassungen, { erfassungsform, wert: gespeichert, begruendung: begruendung.trim() }]);
     setzeWert('0');
     setzeBegruendung('');
@@ -175,11 +180,16 @@ export function EinheitenTabelle(
       header: s.erfassungsform === 'absolut' ? `${s.bezeichnung} (CHF)` : `${s.bezeichnung} (%)`,
       cell: (info) => {
         const roh = info.row.original.spaltenwerte[s.id] ?? 0;
-        // "(%)" im Kolonnenkopf muss stimmen: `projektion.ts` nimmt `spaltenwerte`
-        // unveraendert als Faktor, gespeichert bleibt also 0.05 — angezeigt/erfasst wird
-        // 5 (Task-11-Review, Finding 2). `absolut`-Spalten sind Franken und bleiben
-        // unskaliert.
-        const angezeigt = s.erfassungsform === 'relativ' ? faktorZuProzent(roh) : roh;
+        // Die Kolonnenkopf-Einheit muss stimmen, denn `spaltenwerte` fuehrt die Rohgroesse
+        // des Kerns unveraendert weiter: "(%)" -> `projektion.ts` nimmt den Wert direkt als
+        // Faktor (gespeichert bleibt 0.05, angezeigt/erfasst wird 5); "(CHF)" -> der Wert
+        // ist Rappen wie `erfassterBetrag` (`erfassung-schema.ts`), angezeigt/erfasst wird
+        // also Franken. Beide Kolonnentypen hatten denselben Fehler — nur bei den
+        // Franken-Spalten stand er faelschlich als Absicht im Kommentar (Task-11-Review,
+        // Finding 2 vs. Fix Round 2).
+        const angezeigt = s.erfassungsform === 'relativ'
+          ? faktorZuProzent(roh)
+          : rappenZuFranken(roh);
         return (
           <ZellenEingabe
             wert={angezeigt}
@@ -187,7 +197,9 @@ export function EinheitenTabelle(
               ...info.row.original,
               spaltenwerte: {
                 ...info.row.original.spaltenwerte,
-                [s.id]: s.erfassungsform === 'relativ' ? prozentZuFaktor(eingabe) : eingabe,
+                [s.id]: s.erfassungsform === 'relativ'
+                  ? prozentZuFaktor(eingabe)
+                  : frankenZuRappen(eingabe),
               },
             })}
           />

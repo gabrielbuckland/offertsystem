@@ -91,6 +91,21 @@ describe('EinheitenTabelle', () => {
       expect(html).not.toContain('value="0.05"');
     });
 
+  it('zeigt einen gespeicherten Rappenbetrag einer Franken-Spalte als Frankenbetrag, nicht '
+    + 'unskaliert — sonst waeren eingegebene CHF 10\'000 im Kern 100 Rappen = CHF 100', () => {
+      const mitRappen = [{
+        id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
+        flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1,
+        spaltenwerte: { 'S-2': 1_000_000 }, manuelleAnpassungen: [],
+      }];
+      const html = renderToStaticMarkup(
+        <EinheitenTabelle einheiten={mitRappen} spalten={SPALTEN} referenzobjekte={REFS}
+                          preise={{}} begruendungMinLaenge={BEGRUENDUNG_MIN_LAENGE}
+                          aendere={() => undefined} />);
+      expect(html).toContain('value="10000"');
+      expect(html).not.toContain('value="1000000"');
+    });
+
   it('zeigt die vom Aufrufer konfigurierte Mindestlaenge der Begruendung, nicht eine feste Zahl',
     () => {
       const html = renderToStaticMarkup(

@@ -48,6 +48,31 @@ export function prozentZuFaktor(prozent: number): number {
 }
 
 /**
+ * Rappen -> Franken fuer die Anzeige. Kehrbild von `frankenZuRappen`.
+ *
+ * `basispreis` (Stufe 2 des Kerns) und `erfassterBetrag`/absolute `spaltenwerte` fuehren
+ * Rappen (`erfassung-schema.ts`: `erfassterBetrag: z.number().int()`) — eine Kolonne, die
+ * "(CHF)" beschriftet und den Rappen-Wert unskaliert anzeigt, ist um den Faktor 100 zu
+ * klein/gross. Genau derselbe Fehler wie bei den Prozentspalten, nur bei Franken statt
+ * Prozent (Task-11-Review, Fix Round 2).
+ */
+export function rappenZuFranken(rappen: number): number {
+  return rappen / 100;
+}
+
+/**
+ * Franken -> Rappen fuer die Ablage.
+ *
+ * `Math.round` statt Kuerzen: `erfassterBetrag` ist ganzzahlig (`z.number().int()`), eine
+ * nicht gerundete Kommazahl faellt sonst spaeter bei der Schemapruefung durch. Explizit
+ * gerundet statt auf Gleitkomma-Zufall verlassen (19.99 * 100 === 1998.9999999999998 in
+ * IEEE 754 — `Math.round` faengt das ab).
+ */
+export function frankenZuRappen(franken: number): number {
+  return Math.round(franken * 100);
+}
+
+/**
  * Ob eine manuelle Position mit dieser Begruendung angelegt werden darf.
  *
  * Spiegelt `erfassungsSchema`s Mindestlaenge (`begruendungMinLaenge`, US-04), statt sie
