@@ -3,8 +3,7 @@
  * technisch und dient nur der Verlinkung — Menschen identifizieren ein Projekt über
  * Adresse und Datum, nicht über die Kennung, darum steht sie nirgends als Text.
  *
- * Ein schemawidriges Artefakt wird GEKENNZEICHNET, nicht teilweise dargestellt (I-24,
- * analog OffertenListe).
+ * Ein schemawidriges Artefakt wird GEKENNZEICHNET, nicht teilweise dargestellt (I-24).
  */
 import Link from 'next/link';
 import type { Route } from 'next';

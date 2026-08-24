@@ -10,8 +10,8 @@ export function ErgebnisDarstellung({ offerte }: { offerte: Offer }) {
     <div className="ergebnis">
       <nav className="bedienelement">
         <a href={`/api/offerte/${offerte.metadata.offertId}/pdf`}>Als PDF exportieren</a>
-        <a href="/erfassung">Zur Korrektur zurückspringen</a>
-        <a href="/dashboard">Übersicht</a>
+        <a href={`/projekte/${offerte.metadata.projektId}`}>Zur Korrektur zurückspringen</a>
+        <a href="/projekte">Übersicht</a>
       </nav>
       <OfferteDokument offerte={offerte} />
     </div>
