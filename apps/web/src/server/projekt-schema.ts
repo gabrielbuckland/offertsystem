@@ -108,6 +108,29 @@ export const projektSchema = z.object({
       }
     }
   }
+
+  // Die Kennung (`id`) ist der Schluessel fuer Basispreis und Anpassungen (projektion.ts)
+  // und darf sich deshalb NICHT ueber die Wohnungsnummer hinweg mit der Nummernpruefung
+  // begnuegen: Eine editierte Wohnungsnummer (Einheitentabelle) laesst die Kennung
+  // unveraendert, ein Generatorlauf koennte trotzdem eine bereits vergebene Kennung
+  // erneut zuteilen (siehe einheiten-generator.ts). Ohne diese eigene Regel wuerde eine
+  // doppelte Kennung die Validierung unbemerkt passieren.
+  const idGesehen = new Map<string, number[]>();
+  p.einheiten.forEach((e, i) => {
+    idGesehen.set(e.id, [...(idGesehen.get(e.id) ?? []), i]);
+  });
+  for (const [id, indizes] of idGesehen) {
+    if (indizes.length > 1) {
+      for (const i of indizes) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['einheiten', i, 'id'],
+          params: { regel: 'EINHEIT_ID_DOPPELT', id },
+          message: 'EINHEIT_ID_DOPPELT',
+        });
+      }
+    }
+  }
 });
 
 export type Projekt = z.infer<typeof projektSchema>;

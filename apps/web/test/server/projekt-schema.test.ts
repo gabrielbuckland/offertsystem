@@ -50,6 +50,15 @@ describe('projektSchema', () => {
     expect(JSON.stringify(ergebnis.error.issues)).toContain('NUMMER_DOPPELT');
   });
 
+  it('weist doppelte Einheiten-Ids zurueck', () => {
+    const p = beispiel();
+    p.einheiten.push({ ...p.einheiten[0]!, wohnungsnummer: 'A-02' });
+    const ergebnis = projektSchema.safeParse(p);
+    expect(ergebnis.success).toBe(false);
+    if (ergebnis.success) return;
+    expect(JSON.stringify(ergebnis.error.issues)).toContain('EINHEIT_ID_DOPPELT');
+  });
+
   it('laesst ein leeres Projekt ohne Einheiten zu', () => {
     const p = beispiel();
     p.einheiten = [];

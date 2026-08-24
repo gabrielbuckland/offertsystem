@@ -5,6 +5,17 @@
  * Zusammensetzung des Projekts fest, danach werden die Flaechen eingetragen. Flaechen
  * starten deshalb bei null und nicht bei einem geratenen Wert — ein Vorgabewert wuerde
  * einen erfassten Wert vortaeuschen.
+ *
+ * Die Kennung (`id`) wird UNABHAENGIG von der Wohnungsnummer vergeben. Die Wohnungsnummer
+ * ist ein vom Nutzer editierbares Anzeigefeld (Einheitentabelle, Task 11); die Kennung ist
+ * hingegen der Schluessel, unter dem Basispreis und Anpassungen gefuehrt werden
+ * (projektion.ts, berechnung/route.ts). Waere die Kennung aus der Nummer abgeleitet, wuerde
+ * eine Umbenennung, die eine Nummer freigibt, plus eine spaetere Neuvergabe derselben Nummer
+ * an eine andere Einheit zwei Einheiten dieselbe Kennung geben — mit stiller
+ * Preisverwechslung als Folge, weil `projektSchema` nur auf die Wohnungsnummer prueft. Der
+ * Zaehler liest deshalb die hoechste bereits vergebene KENNUNG, nicht die Wohnungsnummer.
+ * Kennungen aus der Zeit vor diesem Fix (`E-W-001`) matchen das neue Muster nicht und zaehlen
+ * als 0 — der Zaehler beginnt dann bei 1, ohne mit ihnen zu kollidieren.
  */
 import type { ProjektEinheit, Referenzobjekt } from './projekt-schema.js';
 
@@ -13,28 +24,46 @@ export interface Wunsch {
   readonly anzahl: number;
 }
 
+function hoechsteId(vorhandene: readonly ProjektEinheit[]): number {
+  return vorhandene.reduce((max, e) => {
+    const treffer = /^E-(\d+)$/.exec(e.id);
+    return treffer === null ? max : Math.max(max, Number(treffer[1]));
+  }, 0);
+}
+
 export function erzeugeEinheiten(
   wuensche: readonly Wunsch[],
   referenzobjekte: readonly Referenzobjekt[],
   vorhandene: readonly ProjektEinheit[],
 ): readonly ProjektEinheit[] {
-  const belegt = new Set(vorhandene.map((e) => e.wohnungsnummer));
+  const belegteNummern = new Set(vorhandene.map((e) => e.wohnungsnummer));
+  const belegteIds = new Set(vorhandene.map((e) => e.id));
   const bekannt = new Set(referenzobjekte.map((r) => r.id));
   const neue: ProjektEinheit[] = [];
-  let lauf = vorhandene.length;
+  let laufNummer = vorhandene.length;
+  let laufId = hoechsteId(vorhandene);
 
   for (const wunsch of wuensche) {
     if (!bekannt.has(wunsch.referenzobjektId)) continue;
     for (let i = 0; i < wunsch.anzahl; i += 1) {
-      lauf += 1;
-      let nummer = `W-${String(lauf).padStart(3, '0')}`;
-      while (belegt.has(nummer)) {
-        lauf += 1;
-        nummer = `W-${String(lauf).padStart(3, '0')}`;
+      laufNummer += 1;
+      let nummer = `W-${String(laufNummer).padStart(3, '0')}`;
+      while (belegteNummern.has(nummer)) {
+        laufNummer += 1;
+        nummer = `W-${String(laufNummer).padStart(3, '0')}`;
       }
-      belegt.add(nummer);
+      belegteNummern.add(nummer);
+
+      laufId += 1;
+      let id = `E-${laufId}`;
+      while (belegteIds.has(id)) {
+        laufId += 1;
+        id = `E-${laufId}`;
+      }
+      belegteIds.add(id);
+
       neue.push({
-        id: `E-${nummer}`,
+        id,
         wohnungsnummer: nummer,
         referenzobjektId: wunsch.referenzobjektId,
         flaecheInnen: 0,

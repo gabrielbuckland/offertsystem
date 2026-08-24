@@ -32,4 +32,17 @@ describe('erzeugeEinheiten', () => {
     expect(neue[0]!.flaecheInnen).toBe(0);
     expect(neue[0]!.spaltenwerte).toEqual({});
   });
+
+  it('vergibt eindeutige Ids, auch wenn eine Einheit geloescht und eine andere '
+    + 'umbenannt wurde', () => {
+    // Nutzer loescht die erste Einheit und benennt die verbleibende zweite um (Task 11,
+    // editierbare Wohnungsnummer). Deren Kennung bleibt unveraendert, ihre Nummer ist nun
+    // frei fuer die naechste Generierung — genau dieser Fall liess die alte, aus der
+    // Nummer abgeleitete Kennung mit der neu erzeugten Einheit kollidieren.
+    const erste = erzeugeEinheiten([{ referenzobjektId: 'R-1', anzahl: 2 }], REFS, []);
+    const uebrig = [{ ...erste[1]!, wohnungsnummer: 'PH' }];
+    const weitere = erzeugeEinheiten([{ referenzobjektId: 'R-1', anzahl: 1 }], REFS, uebrig);
+    const alle = [...uebrig, ...weitere];
+    expect(new Set(alle.map((e) => e.id)).size).toBe(alle.length);
+  });
 });
