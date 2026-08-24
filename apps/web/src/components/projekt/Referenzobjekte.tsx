@@ -9,9 +9,11 @@
 import { formatiereAggregat } from '@offert/offer';
 import type { Referenzobjekt } from '../../server/projekt-schema.js';
 import { Button } from '../ui/button.js';
+import { Input } from '../ui/input.js';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../ui/table.js';
+import { ZellenEingabe } from './ZellenEingabe.js';
 
 export interface ReferenzobjekteProps {
   readonly referenzobjekte: readonly Referenzobjekt[];
@@ -26,9 +28,17 @@ function neuesReferenzobjekt(vorhandene: readonly Referenzobjekt[]): Referenzobj
     const treffer = /^R(\d+)$/.exec(r.id);
     return treffer === null ? max : Math.max(max, Number(treffer[1]));
   }, 0);
+  // Die Zimmerzahl unterscheidet die Wohnungstypen, `liegenschaft.ts` weist ein zweites
+  // Referenzobjekt mit derselben Zimmerzahl als ZIMMERZAHL_MEHRFACH zurueck. Ein festes
+  // `1` erzeugte deshalb beim zweiten Objekt einen garantiert ungueltigen Stand, noch
+  // bevor der Vermarkter etwas eingeben konnte. Die naechste freie ganze Zahl ist kein
+  // erfundener Messwert, sondern die Fortschreibung eines Unterscheidungsmerkmals — die
+  // Flaechen bleiben bewusst am Minimum, sie MUESSEN erfasst werden.
+  const naechsteZimmerzahl = Math.min(
+    12, vorhandene.reduce((max, r) => Math.max(max, Math.floor(r.zimmerzahl) + 1), 1));
   return {
     id: `R${hoechste + 1}`,
-    zimmerzahl: 1,
+    zimmerzahl: naechsteZimmerzahl,
     parametrisierung: {
       flaecheInnen: 1, flaecheAussen: 0, stockwerk: 0, energielabel: '',
       zustandsbewertungen: {}, qualitaetsbewertungen: {},
@@ -37,7 +47,37 @@ function neuesReferenzobjekt(vorhandene: readonly Referenzobjekt[]): Referenzobj
   };
 }
 
+/** Ersetzt genau ein Referenzobjekt; die uebrigen bleiben referenzgleich. */
+function ersetze(
+  referenzobjekte: readonly Referenzobjekt[], index: number, naechstes: Referenzobjekt,
+): readonly Referenzobjekt[] {
+  return referenzobjekte.map((r, i) => (i === index ? naechstes : r));
+}
+
+/**
+ * Die Merkmale, die den Wohnungstyp bestimmen, sind an Ort und Stelle editierbar
+ * (Design-Spec §4). Ohne sie liesse sich ueber die Oberflaeche nur EIN Wohnungstyp
+ * fuehren: Jedes weitere Referenzobjekt truege die Vorgaben des ersten, und der Kern
+ * wiese das Paar mit ZIMMERZAHL_MEHRFACH zurueck — das Mehrtypenmodell, auf dem die
+ * ganze Auslegung beruht, waere durch die Oberflaeche nicht erreichbar.
+ *
+ * Bewusst nicht alle zehn Felder der `parametrisierung`: Erfasst wird, was den Typ
+ * unterscheidet und in die Bewertungsanfrage eingeht. Zahlen laufen ueber
+ * `ZellenEingabe`, damit ein geleertes Feld verworfen wird, statt auf 0 zu fallen
+ * (`entscheideZellenwert`) — bei der Zimmerzahl waere die erfundene 0 zudem ein
+ * schemawidriger Wert (`min(1)`).
+ */
 export function Referenzobjekte({ referenzobjekte, aendere, rufeAb }: ReferenzobjekteProps) {
+  function setzeMerkmal(
+    index: number,
+    patch: Partial<Referenzobjekt['parametrisierung']>,
+  ): void {
+    const r = referenzobjekte[index]!;
+    aendere(ersetze(referenzobjekte, index, {
+      ...r, parametrisierung: { ...r.parametrisierung, ...patch },
+    }));
+  }
+
   return (
     <section className="mb-8">
       <div className="mb-3 flex items-center justify-between">
@@ -61,21 +101,48 @@ export function Referenzobjekte({ referenzobjekte, aendere, rufeAb }: Referenzob
           <TableHeader>
             <TableRow>
               <TableHead>Zimmerzahl</TableHead>
-              <TableHead>Wohnfläche</TableHead>
-              <TableHead>Aussenfläche</TableHead>
+              <TableHead>Wohnfläche (m²)</TableHead>
+              <TableHead>Aussenfläche (m²)</TableHead>
               <TableHead>Stockwerk</TableHead>
               <TableHead>Energielabel</TableHead>
               <TableHead>Referenzwert</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {referenzobjekte.map((r) => (
+            {referenzobjekte.map((r, index) => (
               <TableRow key={r.id}>
-                <TableCell>{r.zimmerzahl}</TableCell>
-                <TableCell>{r.parametrisierung.flaecheInnen} m²</TableCell>
-                <TableCell>{r.parametrisierung.flaecheAussen} m²</TableCell>
-                <TableCell>{r.parametrisierung.stockwerk}</TableCell>
-                <TableCell>{r.parametrisierung.energielabel}</TableCell>
+                <TableCell>
+                  <ZellenEingabe
+                    wert={r.zimmerzahl}
+                    aendere={(zimmerzahl) => aendere(
+                      ersetze(referenzobjekte, index, { ...r, zimmerzahl }))}
+                  />
+                </TableCell>
+                <TableCell>
+                  <ZellenEingabe
+                    wert={r.parametrisierung.flaecheInnen}
+                    aendere={(flaecheInnen) => setzeMerkmal(index, { flaecheInnen })}
+                  />
+                </TableCell>
+                <TableCell>
+                  <ZellenEingabe
+                    wert={r.parametrisierung.flaecheAussen}
+                    aendere={(flaecheAussen) => setzeMerkmal(index, { flaecheAussen })}
+                  />
+                </TableCell>
+                <TableCell>
+                  <ZellenEingabe
+                    wert={r.parametrisierung.stockwerk}
+                    aendere={(stockwerk) => setzeMerkmal(index, { stockwerk })}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Input
+                    className="h-8 w-24"
+                    value={r.parametrisierung.energielabel}
+                    onChange={(e) => setzeMerkmal(index, { energielabel: e.target.value })}
+                  />
+                </TableCell>
                 <TableCell>
                   {r.bewertung === undefined ? 'nicht bezogen' : (
                     <>
