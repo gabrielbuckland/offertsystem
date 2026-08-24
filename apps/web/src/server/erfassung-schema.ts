@@ -43,7 +43,6 @@ export function erfassungsSchema(k: Konfiguration) {
     flaecheInnen: flaeche,
     flaecheAussen: z.number().nonnegative(),
     stockwerk: z.number().int(),
-    parkplaetze: z.number().int().nonnegative(),
     anpassungen: z.array(anpassung),
   }).strict().superRefine((e, ctx) => {
     const summe = e.anpassungen.reduce((s, a) => s + a.faktor, 0);
@@ -58,14 +57,11 @@ export function erfassungsSchema(k: Konfiguration) {
   });
 
   return z.object({
-    kunde: z.object({
-      name: z.string().trim().min(1),
+    // Projektangaben: nur die lesbare Kennung. Kundenname und Kontaktangaben sind nicht
+    // Gegenstand des Prototyps -- er berechnet den Kalkulationsteil, adressiert aber
+    // keinen Empfaenger.
+    projekt: z.object({
       referenznummer: z.string().trim().min(1),
-      kontakt: z.object({
-        email: z.string().email().optional(),
-        telefon: z.string().optional(),
-        adresse: z.string().optional(),
-      }).strict(),
     }).strict(),
     liegenschaft: z.object({
       adresse: z.object({
@@ -74,8 +70,6 @@ export function erfassungsSchema(k: Konfiguration) {
         plz: z.string().regex(/^\d{4}$/),
         ort: z.string().trim().min(1),
       }).strict(),
-      baujahr: z.number().int(),
-      grundstuecksflaeche: flaeche,
     }).strict(),
     wohnungstypen: z.array(z.object({
       id: z.string().min(1),

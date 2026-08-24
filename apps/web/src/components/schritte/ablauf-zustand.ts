@@ -34,7 +34,7 @@ export type Schrittnummer = Schrittbeschreibung['nummer'];
 export interface AblaufZustand {
   readonly aktiverSchritt: Schrittnummer;
   readonly konfiguration: Konfiguration;
-  readonly kunde: Record<string, unknown>;
+  readonly projekt: Record<string, unknown>;
   readonly liegenschaft: Record<string, unknown>;
   readonly wohnungstypen: readonly Record<string, unknown>[];
   readonly einheiten: readonly Record<string, unknown>[];
@@ -59,7 +59,7 @@ export type Aktion =
 
 /** Feldpfad-Praefixe je Schritt; reine Zuordnung, keine Fachregel. */
 const PFADE_JE_SCHRITT: Readonly<Record<Schrittnummer, readonly string[]>> = {
-  1: ['kunde', 'liegenschaft'],
+  1: ['projekt', 'liegenschaft'],
   2: ['wohnungstypen'],
   3: [],
   4: ['einheiten'],
@@ -101,7 +101,7 @@ function leererWohnungstyp(vorhandene: readonly Record<string, unknown>[]): Reco
 function leereEinheit(): Record<string, unknown> {
   return {
     wohnungsnummer: '', wohnungstypId: '', flaecheInnen: 0, flaecheAussen: 0,
-    stockwerk: 0, parkplaetze: 0, anpassungen: [],
+    stockwerk: 0, anpassungen: [],
   };
 }
 
@@ -132,7 +132,7 @@ export function meldungenFuerSchritt(
   const praefixe = PFADE_JE_SCHRITT[schritt];
   if (praefixe.length === 0) return [];
   const erfassung = {
-    kunde: zustand.kunde,
+    projekt: zustand.projekt,
     liegenschaft: zustand.liegenschaft,
     wohnungstypen: zustand.wohnungstypen,
     einheiten: zustand.einheiten,

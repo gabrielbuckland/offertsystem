@@ -23,7 +23,7 @@ import { offerSchema, type Offer } from '@offert/offer/src/model/offer.js';
 export interface ListenEintrag {
   readonly offertId: string;
   readonly referenznummer: string;
-  readonly kunde: string;
+
   readonly liegenschaft: string;
   readonly erstelltAm: string;
   readonly verkaufssumme?: number | undefined;
@@ -51,7 +51,7 @@ export function dateinameFuer(offerte: Offer): string {
   const stempel = offerte.metadata.erstelltAm.slice(0, 16).replace(/[-:]/g, '')
     .replace(/^(\d{8})T(\d{4})$/, (_, d: string, t: string) =>
       `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}T${t}`);
-  const kurz = normalisiere(`${offerte.customer.name} ${offerte.property.adresse.strasse}`);
+  const kurz = normalisiere(offerte.property.adresse.strasse);
   return `${stempel}_${offerte.metadata.referenznummer}_${kurz}.json`;
 }
 
@@ -97,7 +97,7 @@ export async function listeOfferten(verzeichnis: string): Promise<readonly Liste
     const ergebnis = offerSchema.safeParse(JSON.parse(inhalt));
     if (!ergebnis.success) {
       liste.push({
-        offertId: datei, referenznummer: datei, kunde: '—', liegenschaft: '—',
+        offertId: datei, referenznummer: datei, liegenschaft: '—',
         erstelltAm: datei.slice(0, 16), fehlerhaft: true, datei,
       });
       continue;
@@ -106,7 +106,6 @@ export async function listeOfferten(verzeichnis: string): Promise<readonly Liste
     liste.push({
       offertId: o.metadata.offertId,
       referenznummer: o.metadata.referenznummer,
-      kunde: o.customer.name,
       liegenschaft: `${o.property.adresse.strasse} ${o.property.adresse.hausnummer}, `
         + `${o.property.adresse.plz} ${o.property.adresse.ort}`,
       erstelltAm: o.metadata.erstelltAm,

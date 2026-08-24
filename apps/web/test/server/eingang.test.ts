@@ -18,11 +18,9 @@ const PROVIDER_FEHLER: ProviderFehler = {
 };
 
 const BEISPIEL_ERFASSUNG = {
-  kunde: { name: 'Muster Immobilien AG', referenznummer: 'A-2026-014', kontakt: {} },
+  projekt: { referenznummer: 'A-2026-014' },
   liegenschaft: {
     adresse: { strasse: 'Musterstrasse', hausnummer: '1', plz: '6000', ort: 'Luzern' },
-    baujahr: 2027,
-    grundstuecksflaeche: 1_250,
   },
   wohnungstypen: [{
     id: 'T-3.5',
@@ -35,7 +33,7 @@ const BEISPIEL_ERFASSUNG = {
   }],
   einheiten: [{
     wohnungsnummer: 'A1.01', wohnungstypId: 'T-3.5', flaecheInnen: 82, flaecheAussen: 12,
-    stockwerk: 1, parkplaetze: 1, anpassungen: [],
+    stockwerk: 1, anpassungen: [],
   }],
   aufwandfaktoren: { innenausbau_qualitaet: 4 },
 } as unknown as Erfassung;

@@ -208,7 +208,6 @@ export interface LiegenschaftFixtureOptionen {
   readonly anpassungenErsteEinheit?: readonly ZuAbschlag[];
   /** Setzt beide Referenzflaechen des Wohnungstyps auf null — provoziert S-04. */
   readonly referenzflaecheNull?: boolean;
-  readonly parkplaetze?: number;
   /** Aussenflaeche fuer Typ UND Einheiten zugleich, damit I-05 haelt. */
   readonly aussenflaeche?: number;
 }
@@ -236,14 +235,11 @@ export function liegenschaftFixture(
     flaecheInnen: quadratmeter(92.5),
     flaecheAussen: quadratmeterAbNull(aussen),
     stockwerk: index,
-    parkplaetze: optionen.parkplaetze ?? 1,
     anpassungen: index === 0 ? optionen.anpassungenErsteEinheit ?? [] : [],
   }));
   const erzeugt = erzeugeLiegenschaft({
     id: liegenschaftId('L-1'),
     adresse: adresseFixture(),
-    baujahr: 2025,
-    grundstuecksflaeche: quadratmeter(800),
     wohnungstypen: [typ],
     einheiten,
   });
@@ -416,8 +412,6 @@ export function szenarioZuEingangsArgumenten(fixture: SzenarioFixture): Eingangs
   const erzeugt = erzeugeLiegenschaft({
     id: liegenschaftId(fixture.szenario_id),
     adresse: { strasse, hausnummer, plz: fixture.lage.plz, ort: fixture.lage.ort },
-    baujahr: 2025,
-    grundstuecksflaeche: quadratmeter(1200),
     wohnungstypen,
     einheiten: fixture.einheiten.map((e, index) => ({
       id: einheitId(`E-${index + 1}`),
@@ -426,7 +420,6 @@ export function szenarioZuEingangsArgumenten(fixture: SzenarioFixture): Eingangs
       flaecheInnen: quadratmeter(e.A_innen),
       flaecheAussen: quadratmeterAbNull(e.A_aussen),
       stockwerk: index,
-      parkplaetze: 0,
       anpassungen: e.anpassungen.map((a) => ({
         faktor: a.a_i, begruendung: a.begruendung, erfassungsform: 'relativ' as const,
       })),

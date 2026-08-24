@@ -69,8 +69,6 @@ export function validiereLiegenschaftEingabe(
   const aggregat = erzeugeLiegenschaft({
     id: liegenschaftId(daten.id),
     adresse: daten.adresse,
-    baujahr: daten.baujahr,
-    grundstuecksflaeche: quadratmeter(daten.grundstuecksflaeche),
     wohnungstypen: daten.wohnungstypen.map((t) => ({
       id: wohnungstypId(t.id),
       zimmerzahl: t.zimmerzahl,
@@ -87,7 +85,6 @@ export function validiereLiegenschaftEingabe(
       flaecheInnen: quadratmeter(e.flaecheInnen),
       flaecheAussen: quadratmeterAbNull(e.flaecheAussen),
       stockwerk: e.stockwerk,
-      parkplaetze: e.parkplaetze,
       anpassungen: e.anpassungen.map((a) =>
         a.erfassterBetrag === undefined
           ? { faktor: a.faktor, begruendung: a.begruendung, erfassungsform: a.erfassungsform }

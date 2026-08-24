@@ -28,15 +28,9 @@ const parametrisierung = {
 };
 
 const erfassung = {
-  kunde: {
-    name: 'Muster Immobilien AG',
-    referenznummer: 'A-2026-BEISPIEL',
-    kontakt: { email: 'kontakt@muster.example' },
-  },
+  projekt: { referenznummer: 'A-2026-BEISPIEL' },
   liegenschaft: {
     adresse: { strasse: 'Dorfstrasse', hausnummer: '4', plz: '6015', ort: 'Reussbuehl' },
-    baujahr: 2025,
-    grundstuecksflaeche: 1200,
   },
   wohnungstypen: [{ id: 'T1', zimmerzahl: 3.5, parametrisierung }],
   einheiten: Array.from({ length: 8 }, (_, i) => ({
@@ -45,7 +39,6 @@ const erfassung = {
     flaecheInnen: 92.5,
     flaecheAussen: 0,
     stockwerk: i,
-    parkplaetze: 0,
     anpassungen: i === 0
       ? [{ faktor: 0.05, erfassungsform: 'relativ',
            begruendung: 'Attikalage mit Dachterrasse.' }]

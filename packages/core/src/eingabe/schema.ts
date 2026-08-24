@@ -43,15 +43,12 @@ export const einheitEingabeSchema = z.object({
   flaecheInnen: z.number().finite().positive(),
   flaecheAussen: z.number().finite().nonnegative(),
   stockwerk: z.number().int(),
-  parkplaetze: z.number().int().nonnegative(),
   anpassungen: z.array(zuAbschlagEingabeSchema),
 });
 
 export const liegenschaftEingabeSchema = z.object({
   id: z.string().min(1),
   adresse: adresseEingabeSchema,
-  baujahr: z.number().int(),
-  grundstuecksflaeche: z.number().finite().positive(),
   wohnungstypen: z.array(wohnungstypEingabeSchema).min(1),
   /**
    * Bewusst OHNE `.min(1)`: Die Regel «mindestens eine Einheit» gehoert dem Aggregat

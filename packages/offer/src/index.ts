@@ -18,7 +18,7 @@ export {
   adjustmentSchema,
   aggregateValuesSchema,
   apartmentTypeDerivationSchema,
-  customerDataSchema,
+  projectDataSchema,
   effortFactorTraceSchema,
   offerMetadataSchema,
   offerSchema,
@@ -30,7 +30,7 @@ export {
 export type {
   Adjustment,
   AggregateValues,
-  CustomerData,
+  ProjectData,
   EffortFactorTrace,
   Offer,
   OfferMetadata,

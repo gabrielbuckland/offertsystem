@@ -94,10 +94,8 @@ function entwurfAus(
   erfassung: Erfassung, optionen: { ohneAnpassungen?: boolean },
 ): LiegenschaftEntwurf {
   return {
-    id: `L-${erfassung.kunde.referenznummer}` as LiegenschaftId,
+    id: `L-${erfassung.projekt.referenznummer}` as LiegenschaftId,
     adresse: erfassung.liegenschaft.adresse,
-    baujahr: erfassung.liegenschaft.baujahr,
-    grundstuecksflaeche: erfassung.liegenschaft.grundstuecksflaeche as Quadratmeter,
     wohnungstypen: erfassung.wohnungstypen.map((t) => ({
       id: t.id as WohnungstypId,
       zimmerzahl: t.zimmerzahl,
@@ -110,7 +108,6 @@ function entwurfAus(
       flaecheInnen: e.flaecheInnen as Quadratmeter,
       flaecheAussen: e.flaecheAussen as Quadratmeter,
       stockwerk: e.stockwerk,
-      parkplaetze: e.parkplaetze,
       // `ohneAnpassungen` dient der Basispreisermittlung (PE-21): b_j ist gerade die
       // Groesse VOR den Anpassungen.
       anpassungen: optionen.ohneAnpassungen === true ? [] : e.anpassungen.map(zuAbschlag),

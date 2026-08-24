@@ -40,15 +40,11 @@ function standardtext(feldpfad: string, issue: z.ZodIssue, k: Konfiguration): st
       return 'Wohnfläche muss grösser als 0 m² sein.';
     case 'flaecheAussen':
       return 'Aussenfläche darf nicht negativ sein.';
-    case 'grundstuecksflaeche':
-      return 'Grundstücksfläche muss grösser als 0 m² sein.';
     case 'plz':
       return 'Postleitzahl besteht aus vier Ziffern.';
     case 'begruendung':
       return 'Die Begründung ist Pflicht und muss mindestens '
         + `${k.preisanpassung.begruendungMinLaenge} Zeichen umfassen.`;
-    case 'parkplaetze':
-      return 'Anzahl Parkplätze muss eine ganze Zahl ab 0 sein.';
     case 'wohnungsnummer':
       return 'Die Wohnungsnummer ist ein Pflichtfeld.';
     case 'strasse':

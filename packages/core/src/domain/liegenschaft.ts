@@ -3,7 +3,6 @@
 // Abbildung (Spec 03 §1.6).
 import type { Adresse } from './adresse.js';
 import type { Einheit } from './einheit.js';
-import type { Quadratmeter } from './geld.js';
 import type { LiegenschaftId } from './ids.js';
 import type { Wohnungstyp } from './wohnungstyp.js';
 import { fehlschlag, ok, type Result } from './result.js';
@@ -13,8 +12,6 @@ declare const gueltig: unique symbol;
 export interface LiegenschaftEntwurf {
   readonly id: LiegenschaftId;
   readonly adresse: Adresse;
-  readonly baujahr: number;
-  readonly grundstuecksflaeche: Quadratmeter;
   readonly wohnungstypen: readonly Wohnungstyp[];
   readonly einheiten: readonly Einheit[];
 }

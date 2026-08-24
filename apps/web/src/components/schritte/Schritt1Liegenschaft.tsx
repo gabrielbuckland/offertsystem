@@ -5,7 +5,7 @@ import { FeldMeldung } from '../FeldMeldung.js';
 import type { Feldmeldung } from '../../server/feldmeldungen.js';
 
 export interface Schritt1Props {
-  readonly kunde: Record<string, unknown>;
+  readonly projekt: Record<string, unknown>;
   readonly liegenschaft: Record<string, unknown>;
   readonly meldungen: readonly Feldmeldung[];
   readonly setze: (pfad: string, wert: unknown) => void;
@@ -18,14 +18,11 @@ interface FeldZeile {
 }
 
 const ZEILEN: readonly FeldZeile[] = [
-  { pfad: 'kunde.name', beschriftung: 'Kunde', art: 'text' },
-  { pfad: 'kunde.referenznummer', beschriftung: 'Referenznummer', art: 'text' },
+  { pfad: 'projekt.referenznummer', beschriftung: 'Referenznummer', art: 'text' },
   { pfad: 'liegenschaft.adresse.strasse', beschriftung: 'Strasse', art: 'text' },
   { pfad: 'liegenschaft.adresse.hausnummer', beschriftung: 'Hausnummer', art: 'text' },
   { pfad: 'liegenschaft.adresse.plz', beschriftung: 'Postleitzahl', art: 'text' },
   { pfad: 'liegenschaft.adresse.ort', beschriftung: 'Ort', art: 'text' },
-  { pfad: 'liegenschaft.baujahr', beschriftung: 'Baujahr', art: 'number' },
-  { pfad: 'liegenschaft.grundstuecksflaeche', beschriftung: 'Grundstücksfläche (m²)', art: 'number' },
 ];
 
 function leseAmPfad(wurzel: Record<string, unknown>, pfad: readonly string[]): unknown {
@@ -37,8 +34,8 @@ function leseAmPfad(wurzel: Record<string, unknown>, pfad: readonly string[]): u
   return knoten;
 }
 
-export function Schritt1Liegenschaft({ kunde, liegenschaft, meldungen, setze }: Schritt1Props) {
-  const wurzel: Record<string, unknown> = { kunde, liegenschaft };
+export function Schritt1Liegenschaft({ projekt, liegenschaft, meldungen, setze }: Schritt1Props) {
+  const wurzel: Record<string, unknown> = { projekt, liegenschaft };
   return (
     <section>
       <h2>Liegenschaftsdaten</h2>

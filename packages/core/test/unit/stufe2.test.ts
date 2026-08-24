@@ -85,12 +85,6 @@ describe('Stufe 2 — berechneVerkaufssumme (eq:flaeche, eq:qm_preis, eq:wohnung
     }
   });
 
-  it('laesst Parkplaetze ohne Preiswirkung (Brief §8)', () => {
-    const ohne = berechneVerkaufssumme(pipelineEingang({ parkplaetze: 0 }));
-    const mit = berechneVerkaufssumme(pipelineEingang({ parkplaetze: 3 }));
-    if (ohne.ok && mit.ok) expect(mit.wert.verkaufssumme).toBe(ohne.wert.verkaufssumme);
-  });
-
   it('bildet A_t_ref und A_j mit demselben alpha (Abnahmekriterium 9)', () => {
     const r = berechneVerkaufssumme(pipelineEingang({ alpha: 0.25, aussenflaeche: 12 }));
     if (r.ok) {

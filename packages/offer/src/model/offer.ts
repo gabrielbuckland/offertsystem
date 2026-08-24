@@ -23,13 +23,13 @@ const rappen = z.number().int().finite();              // ganzzahlig: R1, R2, R3
 const rappenGenau = z.number().finite();               // ungerundeter Zwischenwert
 const quadratmeter = z.number().finite().positive();
 
-export const customerDataSchema = z.object({
-  name: z.string().min(1),
-  kontakt: z.object({
-    email: z.string().email().optional(),
-    telefon: z.string().min(1).optional(),
-    adresse: z.string().min(1).optional(),
-  }).strict(),
+/**
+ * Erster Bereich der Offerte. Fuehrt ausschliesslich die Referenznummer: Sie ist die
+ * lesbare Kennung in Dateiname, Uebersicht und Druckkopf. Kundenname und Kontaktangaben
+ * sind bewusst nicht Bestandteil des Prototyps -- er berechnet den Kalkulationsteil und
+ * adressiert keinen Empfaenger.
+ */
+export const projectDataSchema = z.object({
   referenznummer: z.string().min(1),
 }).strict();
 
@@ -40,8 +40,6 @@ export const propertyDataSchema = z.object({
     plz: z.string().regex(/^\d{4}$/),                  // Schweizer Format, NFA-13
     ort: z.string().min(1),
   }).strict(),
-  baujahr: z.number().int(),
-  grundstuecksflaeche: quadratmeter,
   // I-26: einzeln gefuehrt, keine Verdichtung zu einem Sammelwert
   lagescores: z.array(
     provenancedSchema(
@@ -98,7 +96,6 @@ export const unitDerivationSchema = z.object({
   areaInner: quadratmeter,
   areaOuter: z.number().finite().nonnegative(),
   floor: z.number().int(),
-  parkplaetze: z.number().int().nonnegative(),         // ohne Preiswirkung, Brief §8
   weightedArea: provenancedSchema(quadratmeter, 'local-derivation'),
   basePrice: provenancedSchema(rappenGenau, 'local-derivation'),    // UNGERUNDET
   adjustments: z.array(provenancedSchema(adjustmentSchema, 'marketer-adjustment')),
@@ -178,7 +175,7 @@ export const offerMetadataSchema = z.object({
 }).strict();
 
 export const offerSchema = z.object({
-  customer: customerDataSchema,
+  project: projectDataSchema,
   property: propertyDataSchema,
   derivation: priceDerivationSchema,
   aggregates: aggregateValuesSchema,
@@ -186,7 +183,7 @@ export const offerSchema = z.object({
 }).strict();
 
 export type Offer = z.infer<typeof offerSchema>;
-export type CustomerData = z.infer<typeof customerDataSchema>;
+export type ProjectData = z.infer<typeof projectDataSchema>;
 export type PropertyData = z.infer<typeof propertyDataSchema>;
 export type PriceDerivation = z.infer<typeof priceDerivationSchema>;
 export type AggregateValues = z.infer<typeof aggregateValuesSchema>;

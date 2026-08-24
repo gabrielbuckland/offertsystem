@@ -63,7 +63,7 @@ export async function POST(anfrage: Request): Promise<Response> {
   const offerte = baueOfferte({
     ergebnis: ergebnis.wert,
     liegenschaft: eingang.wert.liegenschaft,
-    kunde: geprueft.data.kunde,
+    projekt: geprueft.data.projekt,
     meta: {
       offertId: meta.offertId,
       erstelltAm: meta.erstelltAm,

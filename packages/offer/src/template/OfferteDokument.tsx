@@ -95,7 +95,6 @@ export function OfferteDokument({ offerte }: { offerte: Offer }) {
       <header className="offerte__kopf">
         <h1>Offerte {offerte.metadata.referenznummer}</h1>
         <p>Erstellt am {formatiereDatum(offerte.metadata.erstelltAm)}</p>
-        <p>{offerte.customer.name}</p>
         <p>
           {offerte.property.adresse.strasse} {offerte.property.adresse.hausnummer},{' '}
           {offerte.property.adresse.plz} {offerte.property.adresse.ort}

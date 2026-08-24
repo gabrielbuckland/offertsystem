@@ -21,13 +21,8 @@ export interface OfferteEingang {
   readonly ergebnis: BerechnungsErgebnis;
   /** Stammt aus der Erfassungsschicht, nicht aus dem Kern (E-20). */
   readonly liegenschaft: Liegenschaft;
-  readonly kunde: {
-    readonly name: string;
-    readonly kontakt: {
-      readonly email?: string | undefined;
-      readonly telefon?: string | undefined;
-      readonly adresse?: string | undefined;
-    };
+  /** Projektangaben aus der Erfassung; nur die lesbare Kennung. */
+  readonly projekt: {
     readonly referenznummer: string;
   };
   /** Erzeugt in apps/web/src/server (E-26, E-29) — hier nur entgegengenommen. */
@@ -87,7 +82,6 @@ function baueEinheiten(e: OfferteEingang): unknown[] {
       areaInner: einheit.flaecheInnen,
       areaOuter: einheit.flaecheAussen,
       floor: einheit.stockwerk,
-      parkplaetze: einheit.parkplaetze,
       weightedArea: herkunft(p.gewichteteFlaeche, 'local-derivation'),
       basePrice: herkunft(p.basispreis, 'local-derivation'),
       adjustments: p.anpassungen.map((a) => herkunft({
@@ -136,11 +130,9 @@ function baueFaktorspuren(e: OfferteEingang): unknown[] {
 export function baueOfferte(e: OfferteEingang): Offer {
   const h = e.ergebnis.honorar;
   const roh = {
-    customer: e.kunde,
+    project: e.projekt,
     property: {
       adresse: e.liegenschaft.adresse,
-      baujahr: e.liegenschaft.baujahr,
-      grundstuecksflaeche: e.liegenschaft.grundstuecksflaeche,
       lagescores: [...e.ergebnis.lagescores.werte].map(([name, wert]) =>
         herkunft({ name: name as string, score: wert as number }, 'pricehubble')),
     },
@@ -164,7 +156,7 @@ export function baueOfferte(e: OfferteEingang): Offer {
     },
     metadata: {
       offertId: e.meta.offertId,
-      referenznummer: e.kunde.referenznummer,
+      referenznummer: e.projekt.referenznummer,
       erstelltAm: e.meta.erstelltAm,
       bewertungsversion: [...e.ergebnis.bewertungen].map(([id, b]) => ({
         typeId: id as string,

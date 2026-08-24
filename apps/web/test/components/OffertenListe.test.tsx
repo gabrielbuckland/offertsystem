@@ -13,7 +13,6 @@ import { baueBeispielOfferte } from '../bau/offerte-bauer.js';
 const BEISPIEL_EINTRAG: ListenEintrag = {
   offertId: 'A-2026-014',
   referenznummer: 'A-2026-014',
-  kunde: 'Muster Immobilien AG',
   liegenschaft: 'Musterstrasse 1, 6000 Luzern',
   erstelltAm: '2026-08-16T14:32:00.000Z',
   verkaufssumme: 279_854_545,
@@ -26,7 +25,6 @@ const BEISPIEL_EINTRAG: ListenEintrag = {
 describe('OffertenListe (A-12, US-13)', () => {
   it('zeigt die geforderten Spalten und die Orientierungshilfen', () => {
     const html = renderToStaticMarkup(<OffertenListe eintraege={[BEISPIEL_EINTRAG]} />);
-    expect(html).toContain('Muster Immobilien AG');
     expect(html).toContain('Musterstrasse 1, 6000 Luzern');
     expect(html).toContain('16.08.2026');
     expect(html).toContain('A-2026-014');

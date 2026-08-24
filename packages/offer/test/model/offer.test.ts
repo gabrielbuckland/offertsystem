@@ -30,7 +30,7 @@ describe('offerSchema — Aufbau der fuenf Bereiche', () => {
 
   it('kennt genau die fuenf Bereiche', () => {
     expect(Object.keys(offerSchema.shape)).toEqual(
-      ['customer', 'property', 'derivation', 'aggregates', 'metadata'],
+      ['project', 'property', 'derivation', 'aggregates', 'metadata'],
     );
   });
 

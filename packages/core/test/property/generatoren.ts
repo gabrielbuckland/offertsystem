@@ -60,8 +60,6 @@ export function einTypEinheitenEingang(optionen: EinTypOptionen = {}): PipelineE
   const erzeugt = erzeugeLiegenschaft({
     id: liegenschaftId('L-1'),
     adresse: adresseFixture(),
-    baujahr: 2025,
-    grundstuecksflaeche: quadratmeter(800),
     wohnungstypen: [typ],
     einheiten: Array.from({ length: optionen.anzahl ?? 1 }, (_wert, index) => ({
       id: einheitId(`E-${index + 1}`),
@@ -70,7 +68,6 @@ export function einTypEinheitenEingang(optionen: EinTypOptionen = {}): PipelineE
       flaecheInnen: quadratmeterAbNull(innen),
       flaecheAussen: quadratmeterAbNull(aussen),
       stockwerk: index,
-      parkplaetze: 0,
       anpassungen: index === 0 ? optionen.anpassungen ?? [] : [],
     })),
   });
@@ -151,14 +148,11 @@ function liegenschaftMitEinheiten(anzahl: number): Liegenschaft {
     flaecheInnen: quadratmeter(92.5),
     flaecheAussen: quadratmeterAbNull(0),
     stockwerk: index,
-    parkplaetze: 0,
     anpassungen: [] as readonly ZuAbschlag[],
   }));
   const erzeugt = erzeugeLiegenschaft({
     id: liegenschaftId('L-1'),
     adresse: adresseFixture(),
-    baujahr: 2025,
-    grundstuecksflaeche: quadratmeter(800),
     wohnungstypen: [typ],
     einheiten,
   });

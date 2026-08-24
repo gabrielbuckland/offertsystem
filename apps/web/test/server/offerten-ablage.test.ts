@@ -45,14 +45,13 @@ function verzeichnis(): Promise<string> {
 describe('Dateinamenskonvention', () => {
   it('bildet den Dateinamen aus Zeitstempel, Referenznummer und Kurzbezeichner', () => {
     expect(dateinameFuer(baueBeispielOfferte())).toBe(
-      '2026-08-16T1432_A-2026-014_muster-immobilien-ag-musterstrasse.json');
+      '2026-08-16T1432_A-2026-014_musterstrasse.json');
   });
 
   it('normalisiert Umlaute und Grossschreibung im Kurzbezeichner', () => {
     const o = baueBeispielOfferte();
-    o.customer.name = 'Müller & Söhne AG';
     o.property.adresse.strasse = 'Zürcherstrasse';
-    expect(dateinameFuer(o)).toContain('_mueller-soehne-ag-zuercherstrasse.json');
+    expect(dateinameFuer(o)).toContain('_zuercherstrasse.json');
   });
 });
 

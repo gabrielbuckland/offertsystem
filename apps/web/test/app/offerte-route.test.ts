@@ -31,11 +31,9 @@ afterEach(() => {
 
 function beispielErfassung(): Record<string, unknown> {
   return {
-    kunde: { name: 'Muster Immobilien AG', referenznummer: 'A-2026-014', kontakt: {} },
+    projekt: { referenznummer: 'A-2026-014' },
     liegenschaft: {
       adresse: { strasse: 'Musterstrasse', hausnummer: '1', plz: '6000', ort: 'Luzern' },
-      baujahr: 2027,
-      grundstuecksflaeche: 1_250,
     },
     wohnungstypen: [{
       id: 'T-3.5', zimmerzahl: 3.5,
@@ -47,7 +45,7 @@ function beispielErfassung(): Record<string, unknown> {
     }],
     einheiten: Array.from({ length: 6 }, (_, i) => ({
       wohnungsnummer: `A${i + 1}.01`, wohnungstypId: 'T-3.5',
-      flaecheInnen: 82, flaecheAussen: 12, stockwerk: i + 1, parkplaetze: 1, anpassungen: [],
+      flaecheInnen: 82, flaecheAussen: 12, stockwerk: i + 1, anpassungen: [],
     })),
     aufwandfaktoren: { innenausbau_qualitaet: 4 },
   };

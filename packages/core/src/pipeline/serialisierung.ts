@@ -126,7 +126,6 @@ export function serialisiereEingang(e: EingangsArgumente): unknown {
     // Ohne die Gueltigkeitsmarke: Sie ist ein Symbol und entsteht beim Einlesen neu (I-02).
     liegenschaft: {
       id: e.liegenschaft.id, adresse: e.liegenschaft.adresse,
-      baujahr: e.liegenschaft.baujahr, grundstuecksflaeche: e.liegenschaft.grundstuecksflaeche,
       wohnungstypen: e.liegenschaft.wohnungstypen, einheiten: e.liegenschaft.einheiten,
     },
     bewertungen: e.bewertungen,

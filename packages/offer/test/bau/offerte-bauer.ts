@@ -24,15 +24,11 @@ export type VeraenderbareOfferte = Veraenderbar<Offer>;
 const PRUEFSUMME = 'a'.repeat(64);
 
 const VORLAGE: VeraenderbareOfferte = {
-  customer: {
-    name: 'Muster Immobilien AG',
-    kontakt: { email: 'kontakt@muster.example', telefon: '041 000 00 00' },
+  project: {
     referenznummer: 'A-2026-014',
   },
   property: {
     adresse: { strasse: 'Musterstrasse', hausnummer: '1', plz: '6000', ort: 'Luzern' },
-    baujahr: 2027,
-    grundstuecksflaeche: 1_250,
     lagescores: [
       { value: { name: 'location', score: 0.72 }, provenance: 'pricehubble' },
       { value: { name: 'noise', score: 0.41 }, provenance: 'pricehubble' },
@@ -106,7 +102,6 @@ const VORLAGE: VeraenderbareOfferte = {
         areaInner: 82,
         areaOuter: 12,
         floor: 1,
-        parkplaetze: 1,
         weightedArea: { value: 88, provenance: 'local-derivation' },
         basePrice: { value: 85_000_000, provenance: 'local-derivation' },
         adjustments: [
@@ -129,7 +124,6 @@ const VORLAGE: VeraenderbareOfferte = {
         areaInner: 82,
         areaOuter: 14,
         floor: 2,
-        parkplaetze: 1,
         weightedArea: { value: 89, provenance: 'local-derivation' },
         basePrice: { value: 85_965_909.09090909, provenance: 'local-derivation' },
         adjustments: [
@@ -152,7 +146,6 @@ const VORLAGE: VeraenderbareOfferte = {
         areaInner: 104,
         areaOuter: 18,
         floor: 3,
-        parkplaetze: 2,
         weightedArea: { value: 113, provenance: 'local-derivation' },
         basePrice: { value: 108_000_000, provenance: 'local-derivation' },
         adjustments: [],

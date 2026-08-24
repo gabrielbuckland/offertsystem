@@ -33,7 +33,7 @@ export function ErfassungsAblauf({ anfangszustand, formular, vorlagen }: Erfassu
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        kunde: zustand.kunde,
+        projekt: zustand.projekt,
         liegenschaft: zustand.liegenschaft,
         wohnungstypen: zustand.wohnungstypen,
         einheiten: zustand.einheiten,
@@ -62,7 +62,7 @@ export function ErfassungsAblauf({ anfangszustand, formular, vorlagen }: Erfassu
       {zustand.hinweis !== undefined && <p role="status" className="hinweis">{zustand.hinweis}</p>}
 
       {zustand.aktiverSchritt === 1 && (
-        <Schritt1Liegenschaft kunde={zustand.kunde} liegenschaft={zustand.liegenschaft}
+        <Schritt1Liegenschaft projekt={zustand.projekt} liegenschaft={zustand.liegenschaft}
                               meldungen={zustand.meldungen} setze={setze} />
       )}
       {zustand.aktiverSchritt === 2 && (

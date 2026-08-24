@@ -13,7 +13,7 @@ export function OffertenListe({ eintraege }: { eintraege: readonly ListenEintrag
   }
   return (
     <table className="offertenliste">
-      <thead><tr><th>Erstellt am</th><th>Referenz</th><th>Kunde</th><th>Liegenschaft</th>
+      <thead><tr><th>Erstellt am</th><th>Referenz</th><th>Liegenschaft</th>
                  <th>Verkaufssumme</th><th>Honorarrange</th><th /></tr></thead>
       <tbody>
         {eintraege.map((e) => (
@@ -31,7 +31,6 @@ export function OffertenListe({ eintraege }: { eintraege: readonly ListenEintrag
               <>
                 <td>{formatiereDatum(e.erstelltAm)}</td>
                 <td>{e.referenznummer}</td>
-                <td>{e.kunde}</td>
                 <td>{e.liegenschaft}</td>
                 <td>{formatiereAggregat(e.verkaufssumme)}</td>
                 <td>{formatiereAggregat(e.honorarMin)} – {formatiereAggregat(e.honorarMax)}</td>

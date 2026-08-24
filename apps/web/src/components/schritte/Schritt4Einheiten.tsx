@@ -18,7 +18,6 @@ const FELDER: readonly (readonly [string, string, 'text' | 'number'])[] = [
   ['flaecheInnen', 'Innenfläche (m²)', 'number'],
   ['flaecheAussen', 'Aussenfläche (m²)', 'number'],
   ['stockwerk', 'Stockwerk', 'number'],
-  ['parkplaetze', 'Parkplätze', 'number'],
 ];
 
 export function Schritt4Einheiten(

@@ -10,15 +10,9 @@ const KONFIG: Konfiguration = standardKonfiguration();
 
 function beispielErfassung() {
   return {
-    kunde: {
-      name: 'Muster Immobilien AG',
-      referenznummer: 'A-2026-014',
-      kontakt: { email: 'kontakt@muster.example' },
-    },
+    projekt: { referenznummer: 'A-2026-014' },
     liegenschaft: {
       adresse: { strasse: 'Musterstrasse', hausnummer: '1', plz: '6000', ort: 'Luzern' },
-      baujahr: 2027,
-      grundstuecksflaeche: 1_250,
     },
     wohnungstypen: [{
       id: 'T-3.5',
@@ -31,9 +25,9 @@ function beispielErfassung() {
     }],
     einheiten: [
       { wohnungsnummer: 'A1.01', wohnungstypId: 'T-3.5', flaecheInnen: 82, flaecheAussen: 12,
-        stockwerk: 1, parkplaetze: 1, anpassungen: [] },
+        stockwerk: 1, anpassungen: [] },
       { wohnungsnummer: 'A2.01', wohnungstypId: 'T-3.5', flaecheInnen: 82, flaecheAussen: 14,
-        stockwerk: 2, parkplaetze: 1, anpassungen: [] },
+        stockwerk: 2, anpassungen: [] },
     ],
     aufwandfaktoren: { innenausbau_qualitaet: 4 },
   };
@@ -70,7 +64,7 @@ describe('Pflichtpruefungen laufen vor dem Bewertungsabruf', () => {
 describe('Keine Rohfehler, keine Sammelmeldung (NFA-11)', () => {
   it('reicht keine Zod-Rohausgabe durch', () => {
     const eingabe = beispielErfassung();
-    eingabe.liegenschaft.grundstuecksflaeche = -1;
+    eingabe.einheiten[0]!.flaecheInnen = -1;
     const meldungen = pruefeErfassung(eingabe, KONFIG);
     expect(meldungen.length).toBeGreaterThan(0);
     for (const m of meldungen) {

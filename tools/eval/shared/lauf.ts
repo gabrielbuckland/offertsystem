@@ -86,8 +86,6 @@ export function baueEingang(szenario: Szenario, konfiguration: Konfiguration): E
   const erzeugt = erzeugeLiegenschaft({
     id: szenario.szenario_id as LiegenschaftId,
     adresse: { strasse, hausnummer, plz: szenario.lage.plz, ort: szenario.lage.ort },
-    baujahr: 2025,
-    grundstuecksflaeche: quadratmeter(1200),
     wohnungstypen: szenario.wohnungstypen.map((t) => ({
       id: t.typ_id as WohnungstypId,
       zimmerzahl: t.zimmer,
@@ -100,7 +98,6 @@ export function baueEingang(szenario: Szenario, konfiguration: Konfiguration): E
       flaecheInnen: quadratmeter(e.A_innen),
       flaecheAussen: e.A_aussen as RepraesentativeParametrisierung['flaecheAussen'],
       stockwerk: index,
-      parkplaetze: 0,
       anpassungen: e.anpassungen.map((a) => ({
         faktor: a.a_i, begruendung: a.begruendung, erfassungsform: 'relativ' as const,
       })),

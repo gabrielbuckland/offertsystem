@@ -84,7 +84,6 @@ function einheit(
     flaecheInnen: flaecheInnen as Quadratmeter,
     flaecheAussen: flaecheAussen as Quadratmeter,
     stockwerk,
-    parkplaetze: 1,
     anpassungen,
   };
 }
@@ -109,8 +108,6 @@ export function baueLiegenschaft(optionen: BauOptionen = {}): Liegenschaft {
   const entwurf = {
     id: 'L-2026-014' as LiegenschaftId,
     adresse: { strasse: 'Musterstrasse', hausnummer: '1', plz: '6000', ort: 'Luzern' },
-    baujahr: 2027,
-    grundstuecksflaeche: 1_250 as Quadratmeter,
     wohnungstypen: [
       { id: 'T-3.5' as WohnungstypId, zimmerzahl: 3.5, parametrisierung: parametrisierung(82, 12, 2) },
       { id: 'T-4.5' as WohnungstypId, zimmerzahl: 4.5, parametrisierung: parametrisierung(104, 18, 3) },
@@ -177,9 +174,7 @@ export function baueBerechnungsErgebnis(optionen: BauOptionen = {}): Berechnungs
   return ergebnis.wert;
 }
 
-export const BEISPIEL_KUNDE = {
-  name: 'Muster Immobilien AG',
-  kontakt: { email: 'kontakt@muster.example', telefon: '041 000 00 00' },
+export const BEISPIEL_PROJEKT = {
   referenznummer: 'A-2026-014',
 } as const;
 

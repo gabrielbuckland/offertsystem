@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { baueOfferte, type OfferteEingang } from '../../src/model/baue-offerte.js';
 import {
-  BEISPIEL_KUNDE,
+  BEISPIEL_PROJEKT,
   BEISPIEL_META,
   baueBerechnungsErgebnis,
   baueLiegenschaft,
@@ -12,7 +12,7 @@ function eingang(optionen: { anpassungMitVorlage?: string | undefined } = {}): O
   return {
     ergebnis: baueBerechnungsErgebnis(optionen),
     liegenschaft: baueLiegenschaft(optionen),
-    kunde: BEISPIEL_KUNDE,
+    projekt: BEISPIEL_PROJEKT,
     meta: BEISPIEL_META,
   };
 }

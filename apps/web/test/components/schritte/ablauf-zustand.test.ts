@@ -22,11 +22,9 @@ function basiszustand(): AblaufZustand {
   return {
     aktiverSchritt: 1,
     konfiguration: standardKonfiguration(),
-    kunde: { name: 'Muster Immobilien AG', referenznummer: 'A-2026-014', kontakt: {} },
+    projekt: { referenznummer: 'A-2026-014' },
     liegenschaft: {
       adresse: { strasse: 'Musterstrasse', hausnummer: '1', plz: '6000', ort: 'Luzern' },
-      baujahr: 2027,
-      grundstuecksflaeche: 1_250,
     },
     wohnungstypen: [{
       id: 'T-3.5', zimmerzahl: 3.5,
@@ -38,7 +36,7 @@ function basiszustand(): AblaufZustand {
     }],
     einheiten: [{
       wohnungsnummer: 'A1.01', wohnungstypId: 'T-3.5', flaecheInnen: 82, flaecheAussen: 12,
-      stockwerk: 1, parkplaetze: 1, anpassungen: [],
+      stockwerk: 1, anpassungen: [],
     }],
     aufwandfaktoren: { innenausbau_qualitaet: 4 },
     meldungen: [],
@@ -62,7 +60,6 @@ describe('Uebergang blockiert bei Verletzungen und begruendet die Blockade', () 
   it('blockiert den Uebergang und nennt den Grund', () => {
     const zustand = { ...basiszustand(), liegenschaft: {
       adresse: { strasse: '', hausnummer: '1', plz: '', ort: 'Luzern' },
-      baujahr: 2027, grundstuecksflaeche: 1_250,
     } };
     const naechster = reduziere(zustand, { art: 'weiter' });
     expect(naechster.aktiverSchritt).toBe(1);

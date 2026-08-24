@@ -21,8 +21,6 @@ function entwurf(ueberschreibung: Partial<LiegenschaftEntwurf> = {}): Liegenscha
   return {
     id: liegenschaftId('L-1'),
     adresse: { strasse: 'Bahnhofstrasse', hausnummer: '1', plz: '6003', ort: 'Luzern' },
-    baujahr: 2025,
-    grundstuecksflaeche: quadratmeter(800),
     wohnungstypen: [
       { id: wohnungstypId('T1'), zimmerzahl: 3.5, parametrisierung },
     ],
@@ -30,7 +28,7 @@ function entwurf(ueberschreibung: Partial<LiegenschaftEntwurf> = {}): Liegenscha
       {
         id: einheitId('E-1'), wohnungsnummer: wohnungsnummer('A-01'),
         wohnungstypId: wohnungstypId('T1'), flaecheInnen: quadratmeter(92.5),
-        flaecheAussen: quadratmeterAbNull(0), stockwerk: 1, parkplaetze: 1, anpassungen: [],
+        flaecheAussen: quadratmeterAbNull(0), stockwerk: 1, anpassungen: [],
       },
     ],
     ...ueberschreibung,

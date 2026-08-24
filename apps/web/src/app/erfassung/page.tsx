@@ -21,11 +21,9 @@ export default function ErfassungsSeite() {
   const anfangszustand: AblaufZustand = {
     aktiverSchritt: 1,
     konfiguration,
-    kunde: { name: '', referenznummer: '', kontakt: {} },
+    projekt: { referenznummer: '' },
     liegenschaft: {
       adresse: { strasse: '', hausnummer: '', plz: '', ort: '' },
-      baujahr: new Date().getFullYear(),
-      grundstuecksflaeche: 0,
     },
     wohnungstypen: [],
     einheiten: [],
