@@ -1,6 +1,6 @@
-import { OffertenListe } from '../../components/OffertenListe.js';
-import { verzeichnisAusLaufzeit } from '../../server/laufzeit.js';
-import { listeOfferten } from '../../server/offerten-ablage.js';
+import { OffertenListe } from '../../../components/OffertenListe.js';
+import { verzeichnisAusLaufzeit } from '../../../server/laufzeit.js';
+import { listeOfferten } from '../../../server/offerten-ablage.js';
 
 export const dynamic = 'force-dynamic';
 

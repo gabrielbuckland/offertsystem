@@ -3,11 +3,11 @@
  * der einen Verdrahtung (PE-24) und werden dem Ablauf hineingereicht; die Seite haelt
  * selbst keinen Konfigurationszugriff.
  */
-import { leseVorlagen } from '../../server/anpassungsvorlagen.js';
-import { baueFaktorformular } from '../../server/faktorformular.js';
-import { holeLaufzeit } from '../../server/laufzeit.js';
-import { ErfassungsAblauf } from '../../components/schritte/ErfassungsAblauf.js';
-import type { AblaufZustand } from '../../components/schritte/ablauf-zustand.js';
+import { leseVorlagen } from '../../../server/anpassungsvorlagen.js';
+import { baueFaktorformular } from '../../../server/faktorformular.js';
+import { holeLaufzeit } from '../../../server/laufzeit.js';
+import { ErfassungsAblauf } from '../../../components/schritte/ErfassungsAblauf.js';
+import type { AblaufZustand } from '../../../components/schritte/ablauf-zustand.js';
 
 export const dynamic = 'force-dynamic';
 
