@@ -11,6 +11,8 @@ artifacts/*
 .env.*.local
 data/offerten/*
 !data/offerten/.gitkeep
+data/projekte/*
+!data/projekte/.gitkeep
 .DS_Store
 test-results/
 playwright-report/
