@@ -23,6 +23,14 @@ describe('offerSchema — Rundungsordnung (E-09)', () => {
   });
 });
 
+describe('offerSchema — erster Bereich fuehrt die Projektkennung (Spec 05 §8)', () => {
+  it('fuehrt im ersten Bereich die Kennung des erzeugenden Projekts', () => {
+    const offerte = baueBeispielOfferte();
+    expect(offerte.project.projektId).toMatch(/^[0-9a-f-]{36}$/);
+    expect((offerte.project as Record<string, unknown>)['referenznummer']).toBeUndefined();
+  });
+});
+
 describe('offerSchema — Aufbau der fuenf Bereiche', () => {
   it('nimmt das vollstaendige Beispielobjekt an', () => {
     expect(() => offerSchema.parse(baueBeispielOfferte())).not.toThrow();

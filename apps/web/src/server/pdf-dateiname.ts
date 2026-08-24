@@ -8,7 +8,7 @@
  * laufenden Server pruefbar, und der Handler bleibt der duenne Adapter (Brief §5.1).
  */
 export function dateiname(
-  metadaten: { readonly referenznummer: string; readonly erstelltAm: string },
+  metadaten: { readonly offertId: string; readonly erstelltAm: string },
 ): string {
-  return `${metadaten.referenznummer}_${metadaten.erstelltAm.slice(0, 10)}.pdf`;
+  return `${metadaten.offertId.slice(0, 8)}_${metadaten.erstelltAm.slice(0, 10)}.pdf`;
 }

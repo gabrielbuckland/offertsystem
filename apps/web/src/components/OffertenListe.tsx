@@ -13,7 +13,7 @@ export function OffertenListe({ eintraege }: { eintraege: readonly ListenEintrag
   }
   return (
     <table className="offertenliste">
-      <thead><tr><th>Erstellt am</th><th>Referenz</th><th>Liegenschaft</th>
+      <thead><tr><th>Erstellt am</th><th>Liegenschaft</th>
                  <th>Verkaufssumme</th><th>Honorarrange</th><th /></tr></thead>
       <tbody>
         {eintraege.map((e) => (
@@ -22,7 +22,7 @@ export function OffertenListe({ eintraege }: { eintraege: readonly ListenEintrag
               || e.honorarMin === undefined || e.honorarMax === undefined ? (
               <>
                 <td>{e.erstelltAm}</td>
-                <td colSpan={6}>
+                <td colSpan={5}>
                   Das Artefakt «{e.datei}» entspricht nicht dem Offert-Schema und wird
                   nicht dargestellt.
                 </td>
@@ -30,7 +30,6 @@ export function OffertenListe({ eintraege }: { eintraege: readonly ListenEintrag
             ) : (
               <>
                 <td>{formatiereDatum(e.erstelltAm)}</td>
-                <td>{e.referenznummer}</td>
                 <td>{e.liegenschaft}</td>
                 <td>{formatiereAggregat(e.verkaufssumme)}</td>
                 <td>{formatiereAggregat(e.honorarMin)} – {formatiereAggregat(e.honorarMax)}</td>

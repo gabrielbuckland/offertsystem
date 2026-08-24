@@ -175,7 +175,7 @@ export function baueBerechnungsErgebnis(optionen: BauOptionen = {}): Berechnungs
 }
 
 export const BEISPIEL_PROJEKT = {
-  referenznummer: 'A-2026-014',
+  projektId: '11111111-1111-4111-8111-111111111111',
 } as const;
 
 export const BEISPIEL_META = {

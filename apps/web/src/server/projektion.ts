@@ -131,7 +131,7 @@ export function projiziere(
   return {
     ok: true,
     wert: {
-      projekt: { referenznummer: projekt.id },
+      projekt: { projektId: projekt.id },
       liegenschaft: { adresse: projekt.adresse },
       wohnungstypen: projekt.referenzobjekte.map((r) => ({
         id: r.id, zimmerzahl: r.zimmerzahl, parametrisierung: r.parametrisierung,

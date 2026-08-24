@@ -94,7 +94,7 @@ function entwurfAus(
   erfassung: Erfassung, optionen: { ohneAnpassungen?: boolean },
 ): LiegenschaftEntwurf {
   return {
-    id: `L-${erfassung.projekt.referenznummer}` as LiegenschaftId,
+    id: `L-${erfassung.projekt.projektId}` as LiegenschaftId,
     adresse: erfassung.liegenschaft.adresse,
     wohnungstypen: erfassung.wohnungstypen.map((t) => ({
       id: t.id as WohnungstypId,

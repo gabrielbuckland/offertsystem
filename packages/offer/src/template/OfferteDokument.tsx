@@ -93,12 +93,11 @@ export function OfferteDokument({ offerte }: { offerte: Offer }) {
   return (
     <article className="offerte" data-druck-bereit="true">
       <header className="offerte__kopf">
-        <h1>Offerte {offerte.metadata.referenznummer}</h1>
-        <p>Erstellt am {formatiereDatum(offerte.metadata.erstelltAm)}</p>
-        <p>
-          {offerte.property.adresse.strasse} {offerte.property.adresse.hausnummer},{' '}
+        <h1>
+          Offerte {offerte.property.adresse.strasse} {offerte.property.adresse.hausnummer},{' '}
           {offerte.property.adresse.plz} {offerte.property.adresse.ort}
-        </p>
+        </h1>
+        <p>Erstellt am {formatiereDatum(offerte.metadata.erstelltAm)}</p>
       </header>
 
       <HerkunftsBlock klasse="pricehubble" titel="Bewertungsgrundlage">

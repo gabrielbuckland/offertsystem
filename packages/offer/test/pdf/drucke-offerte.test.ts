@@ -43,6 +43,20 @@ describe('druckeOfferte', () => {
       .rejects.toThrow();
     expect(f.browser.close).toHaveBeenCalled();
   });
+
+  it('escaped eine Adresse mit HTML-Sonderzeichen in der Fusszeile statt sie als Markup zu uebernehmen', async () => {
+    const f = fabrikAttrappe();
+    await druckeOfferte({
+      basisUrl: 'http://x',
+      offertId: 'a',
+      adresse: 'Rue <script>&"Fluss\'strasse</script>',
+      erstelltAm: '2026-08-16T14:32:00.000Z',
+    }, f.starte);
+    const optionen = f.seite.pdf.mock.calls[0]![0] as { footerTemplate: string };
+    expect(optionen.footerTemplate).not.toContain('<script>');
+    expect(optionen.footerTemplate).toContain(
+      'Rue &lt;script&gt;&amp;&quot;Fluss&#39;strasse&lt;/script&gt;');
+  });
 });
 
 describe('Ein Renderpfad (AK-2.1)', () => {

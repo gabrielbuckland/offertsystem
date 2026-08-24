@@ -21,7 +21,7 @@ export default function ErfassungsSeite() {
   const anfangszustand: AblaufZustand = {
     aktiverSchritt: 1,
     konfiguration,
-    projekt: { referenznummer: '' },
+    projekt: { projektId: '' },
     liegenschaft: {
       adresse: { strasse: '', hausnummer: '', plz: '', ort: '' },
     },

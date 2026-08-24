@@ -43,15 +43,15 @@ function verzeichnis(): Promise<string> {
 }
 
 describe('Dateinamenskonvention', () => {
-  it('bildet den Dateinamen aus Zeitstempel, Referenznummer und Kurzbezeichner', () => {
+  it('bildet den Dateinamen aus Zeitstempel, Kurzbezeichner und den ersten acht Zeichen der Offert-Kennung', () => {
     expect(dateinameFuer(baueBeispielOfferte())).toBe(
-      '2026-08-16T1432_A-2026-014_musterstrasse.json');
+      '2026-08-16T1432_musterstrasse_A-2026-0.json');
   });
 
   it('normalisiert Umlaute und Grossschreibung im Kurzbezeichner', () => {
     const o = baueBeispielOfferte();
     o.property.adresse.strasse = 'Zürcherstrasse';
-    expect(dateinameFuer(o)).toContain('_zuercherstrasse.json');
+    expect(dateinameFuer(o)).toContain('_zuercherstrasse_');
   });
 });
 
@@ -103,7 +103,6 @@ describe('Lesen und Auflisten', () => {
       const o = baueBeispielOfferte();
       o.metadata.erstelltAm = `${stempel}:00.000Z`;
       o.metadata.offertId = stempel;
-      o.metadata.referenznummer = `A-2026-${stempel.slice(-5).replace(':', '')}`;
       await legeOfferteAb(o, ziel);
     }
     const liste = await listeOfferten(ziel);

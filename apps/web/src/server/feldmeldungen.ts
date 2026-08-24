@@ -51,7 +51,7 @@ function standardtext(feldpfad: string, issue: z.ZodIssue, k: Konfiguration): st
     case 'hausnummer':
     case 'ort':
     case 'name':
-    case 'referenznummer':
+    case 'projektId':
       return 'Dieses Feld ist ein Pflichtfeld.';
     default:
       return 'Der erfasste Wert ist an dieser Stelle nicht zulässig.';

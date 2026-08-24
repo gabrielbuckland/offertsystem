@@ -18,7 +18,7 @@ interface FeldZeile {
 }
 
 const ZEILEN: readonly FeldZeile[] = [
-  { pfad: 'projekt.referenznummer', beschriftung: 'Referenznummer', art: 'text' },
+  { pfad: 'projekt.projektId', beschriftung: 'Projekt-Kennung', art: 'text' },
   { pfad: 'liegenschaft.adresse.strasse', beschriftung: 'Strasse', art: 'text' },
   { pfad: 'liegenschaft.adresse.hausnummer', beschriftung: 'Hausnummer', art: 'text' },
   { pfad: 'liegenschaft.adresse.plz', beschriftung: 'Postleitzahl', art: 'text' },

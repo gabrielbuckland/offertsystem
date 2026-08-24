@@ -26,7 +26,7 @@ const KONFIG_OHNE_VORLAGEN: Konfiguration = {
 
 function beispielErfassung() {
   return {
-    projekt: { referenznummer: 'A-2026-014' },
+    projekt: { projektId: 'A-2026-014' },
     liegenschaft: {
       adresse: { strasse: 'Musterstrasse', hausnummer: '1', plz: '6000', ort: 'Luzern' },
     },

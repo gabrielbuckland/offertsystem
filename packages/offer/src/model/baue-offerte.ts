@@ -21,9 +21,9 @@ export interface OfferteEingang {
   readonly ergebnis: BerechnungsErgebnis;
   /** Stammt aus der Erfassungsschicht, nicht aus dem Kern (E-20). */
   readonly liegenschaft: Liegenschaft;
-  /** Projektangaben aus der Erfassung; nur die lesbare Kennung. */
+  /** Projektangaben aus der Erfassung; nur die Kennung des erzeugenden Projekts. */
   readonly projekt: {
-    readonly referenznummer: string;
+    readonly projektId: string;
   };
   /** Erzeugt in apps/web/src/server (E-26, E-29) — hier nur entgegengenommen. */
   readonly meta: {
@@ -156,7 +156,7 @@ export function baueOfferte(e: OfferteEingang): Offer {
     },
     metadata: {
       offertId: e.meta.offertId,
-      referenznummer: e.projekt.referenznummer,
+      projektId: e.projekt.projektId,
       erstelltAm: e.meta.erstelltAm,
       bewertungsversion: [...e.ergebnis.bewertungen].map(([id, b]) => ({
         typeId: id as string,

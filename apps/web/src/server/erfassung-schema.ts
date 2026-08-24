@@ -57,11 +57,11 @@ export function erfassungsSchema(k: Konfiguration) {
   });
 
   return z.object({
-    // Projektangaben: nur die lesbare Kennung. Kundenname und Kontaktangaben sind nicht
-    // Gegenstand des Prototyps -- er berechnet den Kalkulationsteil, adressiert aber
-    // keinen Empfaenger.
+    // Projektangaben: nur die Kennung des erzeugenden Projekts (Spec 05 §8). Kundenname
+    // und Kontaktangaben sind nicht Gegenstand des Prototyps -- er berechnet den
+    // Kalkulationsteil, adressiert aber keinen Empfaenger.
     projekt: z.object({
-      referenznummer: z.string().trim().min(1),
+      projektId: z.string().trim().min(1),
     }).strict(),
     liegenschaft: z.object({
       adresse: z.object({

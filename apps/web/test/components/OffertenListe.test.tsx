@@ -12,14 +12,13 @@ import { baueBeispielOfferte } from '../bau/offerte-bauer.js';
 
 const BEISPIEL_EINTRAG: ListenEintrag = {
   offertId: 'A-2026-014',
-  referenznummer: 'A-2026-014',
   liegenschaft: 'Musterstrasse 1, 6000 Luzern',
   erstelltAm: '2026-08-16T14:32:00.000Z',
   verkaufssumme: 279_854_545,
   honorarMin: 5_378_186,
   honorarMax: 8_067_279,
   fehlerhaft: false,
-  datei: '2026-08-16T1432_A-2026-014_muster.json',
+  datei: '2026-08-16T1432_musterstrasse_A-2026-0.json',
 };
 
 describe('OffertenListe (A-12, US-13)', () => {
@@ -27,7 +26,6 @@ describe('OffertenListe (A-12, US-13)', () => {
     const html = renderToStaticMarkup(<OffertenListe eintraege={[BEISPIEL_EINTRAG]} />);
     expect(html).toContain('Musterstrasse 1, 6000 Luzern');
     expect(html).toContain('16.08.2026');
-    expect(html).toContain('A-2026-014');
     expect(html).toContain(formatiereAggregat(BEISPIEL_EINTRAG.verkaufssumme!));
   });
 
