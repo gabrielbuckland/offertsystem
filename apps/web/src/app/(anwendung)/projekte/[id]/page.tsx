@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { baueFaktorformular } from '../../../../server/faktorformular.js';
 import { holeLaufzeit } from '../../../../server/laufzeit.js';
 import { ladeProjekt } from '../../../../server/projekt-ablage.js';
 import { ProjektAnsicht } from '../../../../components/projekt/ProjektAnsicht.js';
@@ -15,5 +16,12 @@ export default async function ProjektSeite({ params }: Props) {
   }
   const projekt = await ladeProjekt(id, laufzeit.wert.projekteVerzeichnis).catch(() => null);
   if (projekt === null) notFound();
-  return <ProjektAnsicht projekt={projekt} />;
+  const { konfiguration } = laufzeit.wert;
+  return (
+    <ProjektAnsicht
+      projekt={projekt}
+      faktorformular={baueFaktorformular(konfiguration)}
+      begruendungMinLaenge={konfiguration.preisanpassung.begruendungMinLaenge}
+    />
+  );
 }
