@@ -27,8 +27,16 @@ export interface ProjektEintrag {
 
 type Adresse = Projekt['adresse'];
 
+// Monoton statt eines blossen `new Date().toISOString()`: Zwei Aufrufe kurz
+// hintereinander (etwa `legeProjektAn` gefolgt von einem sofortigen `speichereProjekt`)
+// koennen auf dieselbe Millisekunde fallen. `geaendertAm` traegt aber die Sortierung
+// der Projektuebersicht (Produkteigenschaft) — ein Gleichstand darf die Reihenfolge
+// nicht dem Dateisystem ueberlassen.
+let letzterZeitpunkt = 0;
+
 function jetzt(): string {
-  return new Date().toISOString();
+  letzterZeitpunkt = Math.max(Date.now(), letzterZeitpunkt + 1);
+  return new Date(letzterZeitpunkt).toISOString();
 }
 
 async function schreibeAtomar(ziel: string, inhalt: string): Promise<void> {
@@ -87,7 +95,21 @@ export async function listeProjekte(verzeichnis: string): Promise<readonly Proje
   const liste: ProjektEintrag[] = [];
   for (const datei of dateien) {
     const inhalt = await fs.readFile(join(verzeichnis, datei), 'utf8');
-    const ergebnis = projektSchema.safeParse(JSON.parse(inhalt));
+    // `JSON.parse` gehoert in denselben Fehlerpfad wie `safeParse`: Ein Datei-Fragment
+    // mit kaputter JSON-Syntax ist ebenso ein schemawidriges Artefakt wie eines mit
+    // gueltiger Syntax und fehlenden Feldern — I-24 kennzeichnet es, statt die ganze
+    // Liste abbrechen zu lassen.
+    let roh: unknown;
+    try {
+      roh = JSON.parse(inhalt);
+    } catch {
+      liste.push({
+        id: datei.replace(/\.json$/, ''), adresse: '—', geaendertAm: '',
+        anzahlEinheiten: 0, fehlerhaft: true, datei,
+      });
+      continue;
+    }
+    const ergebnis = projektSchema.safeParse(roh);
     if (!ergebnis.success) {
       liste.push({
         id: datei.replace(/\.json$/, ''), adresse: '—', geaendertAm: '',

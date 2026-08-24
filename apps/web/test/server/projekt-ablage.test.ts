@@ -43,6 +43,18 @@ describe('Projektablage', () => {
     expect(liste[0]!.fehlerhaft).toBe(true);
   });
 
+  it('kennzeichnet eine Datei mit kaputter JSON-Syntax, statt die ganze Liste abzubrechen', async () => {
+    const v = await verzeichnis();
+    const p = await legeProjektAn(ADRESSE, v);
+    await writeFile(join(v, 'zerstueckelt.json'), '{"schemaVersion":', 'utf8');
+    const liste = await listeProjekte(v);
+    expect(liste).toHaveLength(2);
+    const kaputt = liste.find((e) => e.id === 'zerstueckelt');
+    expect(kaputt?.fehlerhaft).toBe(true);
+    const gueltig = liste.find((e) => e.id === p.id);
+    expect(gueltig?.fehlerhaft).toBe(false);
+  });
+
   it('sortiert die Liste nach Aenderungsdatum absteigend', async () => {
     const v = await verzeichnis();
     const a = await legeProjektAn(ADRESSE, v);
