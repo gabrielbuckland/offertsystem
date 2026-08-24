@@ -31,6 +31,7 @@ export interface Laufzeit {
   readonly fingerabdruck: KonfigurationsFingerabdruck;
   readonly provider: ValuationProvider;
   readonly offertenVerzeichnis: string;
+  readonly projekteVerzeichnis: string;
 }
 
 export type LaufzeitFehler = { readonly ok: false; readonly meldungen: readonly string[] };
@@ -80,6 +81,7 @@ export function holeLaufzeit(
       fingerabdruck: geladen.fingerabdruck,
       provider,
       offertenVerzeichnis: resolve(umgebung.wert.offertenVerzeichnis),
+      projekteVerzeichnis: resolve(umgebung.wert.projekteVerzeichnis),
     },
   };
 }

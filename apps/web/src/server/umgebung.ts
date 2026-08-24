@@ -66,6 +66,7 @@ export interface Umgebung {
   readonly valuationProvider: ProviderSchalter;
   readonly companyDefaultsPfad: string;
   readonly offertenVerzeichnis: string;
+  readonly projekteVerzeichnis: string;
   readonly phBaseUrl: string | undefined;
   readonly phUsername: string | undefined;
   readonly phPassword: string | undefined;
@@ -105,6 +106,7 @@ export function leseUmgebung(
       nichtLeer(quelle['COMPANY_DEFAULTS_PATH']) ?? 'config/company-defaults.json',
     ),
     offertenVerzeichnis: anWurzel(nichtLeer(quelle['OFFERTEN_VERZEICHNIS']) ?? 'data/offerten'),
+    projekteVerzeichnis: anWurzel(nichtLeer(quelle['PROJEKTE_VERZEICHNIS']) ?? 'data/projekte'),
     phBaseUrl: nichtLeer(quelle['PH_BASE_URL']),
     phUsername: nichtLeer(quelle['PH_USERNAME']),
     phPassword: nichtLeer(quelle['PH_PASSWORD']),
