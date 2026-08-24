@@ -27,7 +27,7 @@ interface BewertungsAntwort {
 }
 
 export function ProjektAnsicht({ projekt: anfang }: ProjektAnsichtProps) {
-  const { projekt, aendere, speichernLaeuft } = verwendeProjekt(anfang);
+  const { projekt, aendere, speichernLaeuft, speichernFehler } = verwendeProjekt(anfang);
   const [abrufMeldung, setAbrufMeldung] = useState<string | undefined>(undefined);
   const [abrufLaeuft, setAbrufLaeuft] = useState(false);
 
@@ -64,6 +64,9 @@ export function ProjektAnsicht({ projekt: anfang }: ProjektAnsichtProps) {
           {projekt.adresse.ort}
         </h1>
         {speichernLaeuft && <p className="text-sm text-muted-foreground">Speichert…</p>}
+        {speichernFehler !== undefined && (
+          <p className="text-sm text-red-600" role="alert">{speichernFehler}</p>
+        )}
       </header>
       {abrufMeldung !== undefined && (
         <p className="mb-4 text-sm text-red-600">{abrufMeldung}</p>
