@@ -80,6 +80,19 @@ describe('POST /api/offerte', () => {
     expect(await readdir(ablage)).toEqual([]);
   });
 
+  it('weist eine nicht als UUID geformte Projekt-Kennung feldverankert zurueck, statt '
+    + 'nach dem Berechnungslauf unbehandelt zu scheitern', async () => {
+    const kaputt = beispielErfassung();
+    kaputt['projekt'] = { projektId: 'A-2026-014' };
+    const antwort = await POST(anfrageMit(kaputt));
+    expect(antwort.status).toBe(422);
+    const koerper = await jsonVon(antwort);
+    const meldungen = koerper['meldungen'] as { feldpfad: string; text: string }[];
+    expect(Array.isArray(meldungen)).toBe(true);
+    expect(meldungen.some((m) => m.feldpfad === 'projekt.projektId')).toBe(true);
+    expect(await readdir(ablage)).toEqual([]);
+  });
+
   it('legt bei einem Stufenfehler keine Offerte ab (I-24)', async () => {
     // Ohne den konfigurierten manuellen Aufwandfaktor bricht Stufe 3 mit FAKTOR_FEHLT ab.
     // Das Erfassungsschema laesst die leere Faktormenge zu — die Vollstaendigkeit je
