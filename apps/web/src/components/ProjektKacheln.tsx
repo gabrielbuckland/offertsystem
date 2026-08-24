@@ -27,7 +27,13 @@ export function ProjektKacheln({ eintraege }: ProjektKachelnProps) {
       {eintraege.map((e) => (
         <li key={e.id} className="rounded-lg border border-border p-4">
           {e.fehlerhaft ? (
-            <p className="text-muted-foreground">Projekt nicht lesbar ({e.datei})</p>
+            // `e.datei` bewusst NICHT gezeigt: Der Dateiname traegt die UUID
+            // (`${id}.json`, siehe projekt-ablage.ts) und wuerde die Kennung genau an
+            // der Stelle sichtbar machen, an der die Regel (Spec §2/§3) am ehesten
+            // uebersehen wird.
+            <p className="text-muted-foreground">
+              Projekt nicht lesbar — Datei muss geprueft werden.
+            </p>
           ) : (
             <Link href={`/projekte/${e.id}` as Route} className="block">
               <div className="mb-3 aspect-[4/3] rounded bg-muted" aria-hidden="true" />

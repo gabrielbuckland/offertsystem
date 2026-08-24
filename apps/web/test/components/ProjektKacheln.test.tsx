@@ -8,7 +8,7 @@ const EINTRAG = {
   geaendertAm: '2026-08-24T10:00:00.000Z',
   anzahlEinheiten: 6,
   fehlerhaft: false,
-  datei: '3f1c0d54.json',
+  datei: '3f1c0d54-1a2b-4c3d-8e9f-0a1b2c3d4e5f.json',
 };
 
 describe('ProjektKacheln', () => {
@@ -18,8 +18,10 @@ describe('ProjektKacheln', () => {
     expect(html).toContain(`/projekte/${EINTRAG.id}`);
   });
 
-  it('zeigt die Kennung nirgends an', () => {
-    const html = renderToStaticMarkup(<ProjektKacheln eintraege={[EINTRAG]} />);
+  it('zeigt die Kennung nirgends an — auch nicht in der Fehlerkachel eines '
+    + 'gleichnamigen defekten Projekts', () => {
+    const defekt = { ...EINTRAG, fehlerhaft: true, adresse: '—' };
+    const html = renderToStaticMarkup(<ProjektKacheln eintraege={[EINTRAG, defekt]} />);
     const ohneHrefs = html.replace(/href="[^"]*"/g, '');
     expect(ohneHrefs).not.toContain(EINTRAG.id);
   });
