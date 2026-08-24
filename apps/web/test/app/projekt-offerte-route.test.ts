@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { POST } from '../../src/app/api/projekt/[id]/offerte/route.js';
 import { legeProjektAn, speichereProjekt } from '../../src/server/projekt-ablage.js';
 import { listeOfferten } from '../../src/server/offerten-ablage.js';
+import { standardKonfiguration } from '../bau/offerte-bauer.js';
 
 const ADRESSE = { strasse: 'Seestrasse', hausnummer: '1', plz: '8001', ort: 'Zürich' };
 
@@ -17,7 +18,7 @@ async function projekteUndOffertenVerzeichnis() {
 }
 
 async function vorbereitetesProjekt(projekte: string) {
-  const p = await legeProjektAn(ADRESSE, projekte);
+  const p = await legeProjektAn(ADRESSE, projekte, standardKonfiguration());
   await speichereProjekt({
     ...p,
     referenzobjekte: [{
@@ -74,7 +75,7 @@ describe('POST /api/projekt/[id]/offerte', () => {
 
   it('meldet ein unvollstaendiges Projekt, ohne eine Offerte zu erzeugen', async () => {
     const { projekte, offerten } = await projekteUndOffertenVerzeichnis();
-    const p = await legeProjektAn(ADRESSE, projekte);
+    const p = await legeProjektAn(ADRESSE, projekte, standardKonfiguration());
     const antwort = await POST(
       new Request('http://test', { method: 'POST' }),
       { params: Promise.resolve({ id: p.id }) },

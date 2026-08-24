@@ -20,6 +20,7 @@ export async function POST(anfrage: Request): Promise<Response> {
     return Response.json(
       { fehler: { text: 'Die Adresse ist unvollständig.' } }, { status: 422 });
   }
-  const projekt = await legeProjektAn(geprueft.data, laufzeit.wert.projekteVerzeichnis);
+  const projekt = await legeProjektAn(
+    geprueft.data, laufzeit.wert.projekteVerzeichnis, laufzeit.wert.konfiguration);
   return Response.json({ id: projekt.id }, { status: 201 });
 }

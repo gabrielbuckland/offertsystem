@@ -14,7 +14,9 @@
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs/promises';
 import { join } from 'node:path';
+import type { Konfiguration } from '@offert/core';
 import { projektSchema, SCHEMA_VERSION, type Projekt } from './projekt-schema.js';
+import { vorbelegteSpalten } from './spalten-vorbelegung.js';
 
 export interface ProjektEintrag {
   readonly id: string;
@@ -63,14 +65,23 @@ export async function speichereProjekt(projekt: Projekt, verzeichnis: string): P
   return geprueft;
 }
 
-export async function legeProjektAn(adresse: Adresse, verzeichnis: string): Promise<Projekt> {
+/**
+ * Die Konfiguration ist ein Pflichtargument, kein optionales: Der Spaltenschnitt eines
+ * neuen Projekts ist aus den firmenweiten Vorlagen VORBELEGT (US-04 AK 5, E-25). Waere das
+ * Argument optional, blieben Aufrufer ohne Konfiguration typkorrekt und legten weiterhin
+ * spaltenlose Projekte an — genau der Zustand, in dem `vorbelegteSpalten` zwar existierte,
+ * aber von niemandem ausser seinem eigenen Test aufgerufen wurde.
+ */
+export async function legeProjektAn(
+  adresse: Adresse, verzeichnis: string, konfiguration: Konfiguration,
+): Promise<Projekt> {
   const zeitpunkt = jetzt();
   const projekt = projektSchema.parse({
     schemaVersion: SCHEMA_VERSION,
     id: randomUUID(),
     adresse,
     referenzobjekte: [],
-    anpassungsSpalten: [],
+    anpassungsSpalten: vorbelegteSpalten(konfiguration),
     einheiten: [],
     aufwandfaktoren: {},
     meta: { erstelltAm: zeitpunkt, geaendertAm: zeitpunkt },

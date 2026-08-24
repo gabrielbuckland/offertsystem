@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { POST } from '../../src/app/api/projekt/[id]/bewertung/route.js';
 import { ladeProjekt, legeProjektAn, speichereProjekt } from '../../src/server/projekt-ablage.js';
+import { standardKonfiguration } from '../bau/offerte-bauer.js';
 
 const ADRESSE = { strasse: 'Seestrasse', hausnummer: '1', plz: '8001', ort: 'Zürich' };
 
@@ -13,7 +14,7 @@ describe('POST /api/projekt/[id]/bewertung', () => {
   it('schreibt den bezogenen Referenzwert in das Projekt', async () => {
     const v = await mkdtemp(join(tmpdir(), 'projekte-'));
     process.env['PROJEKTE_VERZEICHNIS'] = v;
-    const p = await legeProjektAn(ADRESSE, v);
+    const p = await legeProjektAn(ADRESSE, v, standardKonfiguration());
     await speichereProjekt({
       ...p,
       referenzobjekte: [{
