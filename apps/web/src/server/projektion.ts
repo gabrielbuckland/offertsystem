@@ -58,10 +58,32 @@ function absolutZuAnpassung(
   };
 }
 
-export function projiziere(projekt: Projekt, basispreise: BasispreiseNachId): ProjektionsErgebnis {
+export function projiziere(
+  projekt: Projekt,
+  basispreise: BasispreiseNachId,
+  optionen: { readonly ohneAnpassungen?: boolean } = {},
+): ProjektionsErgebnis {
   const einheiten: Erfassung['einheiten'][number][] = [];
 
   for (const e of projekt.einheiten) {
+    // Der Basislauf (PE-21) braucht die Anpassungen nicht nur nicht — er darf ihre
+    // Umrechnung gar nicht erst versuchen: Ohne Basispreise wuerde jede absolute
+    // Position mit `fehlenderBasispreis` scheitern, bevor der Lauf die Basispreise
+    // ueberhaupt ermitteln konnte. `zuEingangsArgumenten` leert dieselben Anpassungen
+    // ohnehin ein zweites Mal fuer den Kern; sie hier zu berechnen waere also nicht
+    // nur falsch, sondern auch verlorene Arbeit.
+    if (optionen.ohneAnpassungen === true) {
+      einheiten.push({
+        wohnungsnummer: e.wohnungsnummer,
+        wohnungstypId: e.referenzobjektId,
+        flaecheInnen: e.flaecheInnen,
+        flaecheAussen: e.flaecheAussen,
+        stockwerk: e.stockwerk,
+        anpassungen: [],
+      });
+      continue;
+    }
+
     const anpassungen: Anpassung[] = [];
 
     for (const spalte of projekt.anpassungsSpalten) {

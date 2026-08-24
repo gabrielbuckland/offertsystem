@@ -33,8 +33,11 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
     return Response.json({ unvollstaendig: true }, { status: 200 });
   }
 
-  // Erster Lauf ohne Anpassungen: liefert die Basispreise fuer die Umrechnung.
-  const ohne = projiziere(projekt, {});
+  // Erster Lauf ohne Anpassungen: liefert die Basispreise fuer die Umrechnung. Die
+  // Option ist noetig, nicht nur beabsichtigt — ohne sie versuchte `projiziere` schon
+  // hier, in Franken erfasste Positionen ueber die (noch leeren) Basispreise
+  // umzurechnen, und schluege fehl, bevor der Lauf sie ermitteln konnte.
+  const ohne = projiziere(projekt, {}, { ohneAnpassungen: true });
   if (!ohne.ok) {
     return Response.json({ fehler: { text: ohne.meldung } }, { status: 422 });
   }

@@ -30,7 +30,10 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
       { fehler: { text: 'Es ist kein Referenzobjekt hinterlegt.' } }, { status: 422 });
   }
 
-  const projiziert = projiziere(projekt, {});
+  // Reiner Bewertungsabruf braucht keine Anpassungen; ohne die Option versuchte
+  // `projiziere` unnoetig, in Franken erfasste Positionen ueber leere Basispreise
+  // umzurechnen und schluege dabei fehl (siehe Berechnungsroute).
+  const projiziert = projiziere(projekt, {}, { ohneAnpassungen: true });
   if (!projiziert.ok) {
     return Response.json({ fehler: { text: projiziert.meldung } }, { status: 422 });
   }

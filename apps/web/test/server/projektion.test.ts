@@ -74,4 +74,11 @@ describe('projiziere', () => {
     if (e.ok) return;
     expect(e.meldung).toContain('A-01');
   });
+
+  it('laesst mit ohneAnpassungen auch ohne Basispreise erfolgreich, mit leeren Anpassungen', () => {
+    const e = projiziere(projekt(), {}, { ohneAnpassungen: true });
+    expect(e.ok).toBe(true);
+    if (!e.ok) return;
+    expect(e.wert.einheiten[0]!.anpassungen).toEqual([]);
+  });
 });
