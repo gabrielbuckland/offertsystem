@@ -207,6 +207,7 @@ export interface SzenarienArtefakt {
     readonly ist: { verkaufssumme: number; honorarMin: number; honorarMax: number };
     readonly abweichung: { verkaufssumme: number; honorarMin: number; honorarMax: number };
     readonly stufendiagnose?: Readonly<Record<string, number>>;
+    readonly lagedatenHerkunft?: string;
   }[];
 }
 
@@ -225,7 +226,7 @@ export function p1Szenarien(
     s.stufendiagnose === undefined
       ? '--'
       : latexEscape(Object.entries(s.stufendiagnose).map(([k, v]) => `${k}=${v}`).join('; ')),
-    latexEscape(herkunft[s.id] ?? '--'),
+    latexEscape(s.lagedatenHerkunft ?? herkunft[s.id] ?? '--'),
   ]);
   return hinweiskopf('artifacts/scenarios/<zeitstempel>/szenarien.json') + longtable({
     spalten: ['l', 'r', 'r', 'r', 'r', 'r', 'l', 'p{0.16\\textwidth}', 'l'],
@@ -425,9 +426,9 @@ export interface ManuellArtefakt {
 export function p8Pruefpunkte(manual: ManuellArtefakt | null): string {
   if (manual === null || manual.punkte === undefined || manual.punkte.length === 0) {
     return `${hinweiskopf('artifacts/manual/<datum>/ui.json')
-      }Die manuelle Pruefung der Oberflaeche ist noch nicht durchgefuehrt. Die vorab '
-      + 'festgelegte Pruefpunktliste liegt unter \\texttt{docs/testdoku/manual/'
-      + 'ui-testfaelle.md}; sie ist bewusst vor der Durchfuehrung fixiert.\n\n`;
+      }Die manuelle Pruefung der Oberflaeche ist noch nicht durchgefuehrt. Die vorab `
+      + `festgelegte Pruefpunktliste liegt unter \\texttt{docs/testdoku/manual/`
+      + `ui-testfaelle.md}; sie ist bewusst vor der Durchfuehrung fixiert.\n\n`;
   }
   const zeilen = manual.punkte.map((p) => [
     latexEscape(p.punkt), latexEscape(p.ergebnis), latexEscape(p.datum ?? '--'),

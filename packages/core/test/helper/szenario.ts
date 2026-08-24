@@ -18,6 +18,9 @@ export interface SzenarioErgebnis {
   readonly referenz: { verkaufssumme: number; honorarMin: number; honorarMax: number };
   readonly ist: { verkaufssumme: number; honorarMin: number; honorarMax: number };
   readonly abweichung: { verkaufssumme: number; honorarMin: number; honorarMax: number };
+  // Herkunft der Lagescores aus dem Fixture. Muss ins Artefakt, weil R-01 verlangt, dass
+  // die Szenarientabelle keine empirische Lageabhaengigkeit suggeriert.
+  readonly lagedatenHerkunft: string;
   readonly bestanden: boolean;
   readonly stufendiagnose?: Readonly<Record<string, number>>;
 }
@@ -46,6 +49,7 @@ export function fuehreSzenarioAus(
       id, fehler: lauf.fehler, ergebnisAusgegeben: false, referenz,
       ist: { verkaufssumme: 0, honorarMin: 0, honorarMax: 0 },
       abweichung: { verkaufssumme: 0, honorarMin: 0, honorarMax: 0 },
+      lagedatenHerkunft: fixture.lagedaten_herkunft,
       bestanden: id === 'S5', // S5 erwartet den definierten Abbruch
     };
   }
@@ -65,6 +69,7 @@ export function fuehreSzenarioAus(
 
   return {
     id, ergebnis: lauf.wert, ergebnisAusgegeben: true, referenz, ist, abweichung, bestanden,
+    lagedatenHerkunft: fixture.lagedaten_herkunft,
     // Ursachenanalyse ist Teil des Werkzeugs, nicht Handarbeit im Nachgang (Spec 06 §3).
     ...(bestanden ? {} : { stufendiagnose: stufendiagnose(id, lauf.wert) }),
   };
