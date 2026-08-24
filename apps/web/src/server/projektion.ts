@@ -18,12 +18,47 @@ export type ProjektionsErgebnis =
   | { readonly ok: true; readonly wert: Erfassung }
   | { readonly ok: false; readonly meldung: string };
 
-/** Basispreis je Einheit-Id, ungerundet, aus einem Lauf ohne Anpassungen (PE-21). */
-export type Basispreise = Readonly<Record<string, number>>;
+/**
+ * Basispreis je Einheit-Id, ungerundet, aus einem Lauf ohne Anpassungen (PE-21).
+ *
+ * Der Name traegt den Schluessel bewusst: `betragsumrechnung.ts` fuehrt einen gleichnamigen
+ * Typ, dort aber je Wohnungsnummer geschluesselt. TypeScript unterscheidet strukturell
+ * gleiche `Record<string, number>` nicht, ein falsch geschluesseltes Argument wuerde also
+ * unbemerkt durchgehen und jede Suche stumm ins Leere laufen lassen.
+ */
+export type BasispreiseNachId = Readonly<Record<string, number>>;
 
 type Anpassung = Erfassung['einheiten'][number]['anpassungen'][number];
 
-export function projiziere(projekt: Projekt, basispreise: Basispreise): ProjektionsErgebnis {
+/**
+ * Ein in Franken erfasster Zu-/Abschlag durchlaeuft immer denselben Weg: Basispreis
+ * nachschlagen, umrechnen, Fehler uebersetzen. Spalten- und manuelle Positionen
+ * unterscheiden sich nur in Wert, Begruendung und ob eine Vorlage dahintersteht — daher
+ * ein gemeinsamer Pfad statt zweier driftender Kopien.
+ */
+function absolutZuAnpassung(
+  betrag: number,
+  basispreis: number | undefined,
+  begruendung: string,
+  wohnungsnummer: string,
+  vorlageId?: string,
+): { readonly ok: true; readonly wert: Anpassung } | { readonly ok: false; readonly meldung: string } {
+  if (basispreis === undefined) {
+    return { ok: false, meldung: fehlenderBasispreis(wohnungsnummer) };
+  }
+  const umgerechnet = rechneBetragInFaktor(betrag, basispreis);
+  if (!umgerechnet.ok) {
+    return { ok: false, meldung: `${wohnungsnummer}: ${umgerechnet.meldung}` };
+  }
+  return {
+    ok: true,
+    wert: vorlageId === undefined
+      ? { faktor: umgerechnet.wert, erfassungsform: 'absolut', erfassterBetrag: betrag, begruendung }
+      : { faktor: umgerechnet.wert, erfassungsform: 'absolut', erfassterBetrag: betrag, begruendung, vorlageId },
+  };
+}
+
+export function projiziere(projekt: Projekt, basispreise: BasispreiseNachId): ProjektionsErgebnis {
   const einheiten: Erfassung['einheiten'][number][] = [];
 
   for (const e of projekt.einheiten) {
@@ -43,18 +78,10 @@ export function projiziere(projekt: Projekt, basispreise: Basispreise): Projekti
         });
         continue;
       }
-      const basispreis = basispreise[e.id];
-      if (basispreis === undefined) {
-        return { ok: false, meldung: fehlenderBasispreis(e.wohnungsnummer) };
-      }
-      const umgerechnet = rechneBetragInFaktor(wert, basispreis);
-      if (!umgerechnet.ok) {
-        return { ok: false, meldung: `${e.wohnungsnummer}: ${umgerechnet.meldung}` };
-      }
-      anpassungen.push({
-        faktor: umgerechnet.wert, erfassungsform: 'absolut', erfassterBetrag: wert,
-        begruendung: spalte.bezeichnung, vorlageId: spalte.id,
-      });
+      const ergebnis = absolutZuAnpassung(
+        wert, basispreise[e.id], spalte.bezeichnung, e.wohnungsnummer, spalte.id);
+      if (!ergebnis.ok) return ergebnis;
+      anpassungen.push(ergebnis.wert);
     }
 
     for (const m of e.manuelleAnpassungen) {
@@ -64,18 +91,9 @@ export function projiziere(projekt: Projekt, basispreise: Basispreise): Projekti
         });
         continue;
       }
-      const basispreis = basispreise[e.id];
-      if (basispreis === undefined) {
-        return { ok: false, meldung: fehlenderBasispreis(e.wohnungsnummer) };
-      }
-      const umgerechnet = rechneBetragInFaktor(m.wert, basispreis);
-      if (!umgerechnet.ok) {
-        return { ok: false, meldung: `${e.wohnungsnummer}: ${umgerechnet.meldung}` };
-      }
-      anpassungen.push({
-        faktor: umgerechnet.wert, erfassungsform: 'absolut', erfassterBetrag: m.wert,
-        begruendung: m.begruendung,
-      });
+      const ergebnis = absolutZuAnpassung(m.wert, basispreise[e.id], m.begruendung, e.wohnungsnummer);
+      if (!ergebnis.ok) return ergebnis;
+      anpassungen.push(ergebnis.wert);
     }
 
     einheiten.push({
