@@ -5,9 +5,11 @@
  * Projekt darf Spalten ergaenzen, umbenennen und entfernen; das Excel des Auftraggebers
  * zeigt je Blatt einen anderen Spaltenschnitt.
  *
- * `Anpassungsvorlage` fuehrt kein Feld `bezeichnung` (siehe anpassungsvorlagen.ts) —
- * `begruendungVorschlag` ist der einzige lesbare Text der Vorlage und wird ohnehin zur
- * `begruendung` jeder aus dieser Spalte abgeleiteten Position (projektion.ts).
+ * `Anpassungsvorlage` fuehrt zwei Texte (packages/core/src/config/typen.ts): `bezeichnung`
+ * ist das kurze Etikett fuer die Spaltenkopfzeile, `begruendungVorschlag` der ausformulierte
+ * Satz, der eine Position rechtfertigt. Die Spalte uebernimmt darum `bezeichnung` — der
+ * Satz bleibt dort, wofuer er gedacht ist: als `begruendung` der aus der Spalte abgeleiteten
+ * Position (projektion.ts).
  *
  * Vorbelegt wird der SPALTENSCHNITT, nicht der Wert: `vorgabewert` startet neutral bei 0.
  * Der Vorgabewert einer Spalte wird in jede neu erzeugte Einheit uebernommen
@@ -26,7 +28,7 @@ import type { AnpassungsSpalte } from './projekt-schema.js';
 export function vorbelegteSpalten(k: Konfiguration): readonly AnpassungsSpalte[] {
   return leseVorlagen(k).map((v, i) => ({
     id: `S-${i + 1}`,
-    bezeichnung: v.begruendungVorschlag,
+    bezeichnung: v.bezeichnung,
     erfassungsform: 'relativ' as const,
     vorgabewert: 0,
   }));

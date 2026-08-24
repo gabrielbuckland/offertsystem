@@ -29,4 +29,16 @@ describe('vorbelegteSpalten', () => {
     expect(vorlagenFaktoren.some((f) => f !== 0)).toBe(true);
     expect(spalten.every((s) => s.vorgabewert === 0)).toBe(true);
   });
+
+  // Regression: `bezeichnung` ist das kurze Etikett der Vorlage, nicht der ausformulierte
+  // `begruendungVorschlag`-Satz. Eine Verwechslung faellt am Spaltenkopf nicht sofort auf
+  // (beides ist ein nichtleerer String), darum wird hier explizit auf den Wortlaut geprueft.
+  it('uebernimmt die Vorlagenbezeichnung, nicht den Begruendungsvorschlag', () => {
+    const vorlagen = standardKonfiguration().anpassungsVorlagen;
+    const spalten = vorbelegteSpalten(standardKonfiguration());
+    expect(spalten.map((s) => s.bezeichnung)).toEqual(vorlagen.map((v) => v.bezeichnung));
+    for (const [s, v] of spalten.map((s, i) => [s, vorlagen[i]!] as const)) {
+      expect(s.bezeichnung).not.toBe(v.begruendungVorschlag);
+    }
+  });
 });
