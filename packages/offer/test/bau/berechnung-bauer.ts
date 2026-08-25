@@ -92,6 +92,9 @@ export interface BauOptionen {
    * eine frei erfasste Anpassung — dann traegt sie keine Kennung (PE-07).
    */
   readonly anpassungMitVorlage?: string | undefined;
+  /** Haengt der ersten Anpassung der ersten Einheit eine Regelspur samt Uebersteuerung
+   *  an (Task 6, A-13) — fuer den Nachweis, dass baueOfferte sie durchreicht. */
+  readonly anpassungMitRegelspur?: boolean;
 }
 
 export function baueLiegenschaft(optionen: BauOptionen = {}): Liegenschaft {
@@ -102,6 +105,12 @@ export function baueLiegenschaft(optionen: BauOptionen = {}): Liegenschaft {
     ...(optionen.anpassungMitVorlage === undefined
       ? {}
       : { vorlageId: optionen.anpassungMitVorlage }),
+    ...(optionen.anpassungMitRegelspur === true
+      ? {
+        regel: { merkmal: 'stockwerk', merkmalswert: 2, bereich: 2, regelwert: -0.03 },
+        uebersteuert: true as const,
+      }
+      : {}),
   };
   const entwurf = {
     id: 'L-2026-014' as LiegenschaftId,

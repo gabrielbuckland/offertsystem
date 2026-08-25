@@ -63,26 +63,22 @@ export async function beschaffe(
 }
 
 /**
- * Eigene Funktion statt eines Objektliterals mit bedingtem Spread: Unter
- * `exactOptionalPropertyTypes` traegt ein bedingter Spread den Typ `T | undefined`,
- * und `ZuAbschlag` laesst fuer die optionalen Felder kein `undefined` zu.
+ * Weglassen statt erfinden, fuer jedes der vier dokumentarischen Felder einzeln (I-09,
+ * A-14): derselbe bedingte Spread wie in `projektion.ts` und `baue-offerte.ts`, damit
+ * alle drei Stellen gleich lesen. Mit vier unabhaengig optionalen Feldern waere die
+ * fruehere Fallunterscheidung ueber alle Kombinationen (vormals drei `if`s plus
+ * Fallback fuer zwei Felder) nicht mehr uebersichtlich zu halten.
  */
 function zuAbschlag(a: Erfassung['einheiten'][number]['anpassungen'][number]): ZuAbschlag {
-  const basis = {
+  return {
     faktor: a.faktor,
     begruendung: a.begruendung,
     erfassungsform: a.erfassungsform,
+    ...(a.erfassterBetrag === undefined ? {} : { erfassterBetrag: a.erfassterBetrag as Rappen }),
+    ...(a.vorlageId === undefined ? {} : { vorlageId: a.vorlageId }),
+    ...(a.regel === undefined ? {} : { regel: a.regel }),
+    ...(a.uebersteuert === undefined ? {} : { uebersteuert: a.uebersteuert }),
   };
-  if (a.erfassterBetrag !== undefined && a.vorlageId !== undefined) {
-    return { ...basis, erfassterBetrag: a.erfassterBetrag as Rappen, vorlageId: a.vorlageId };
-  }
-  if (a.erfassterBetrag !== undefined) {
-    return { ...basis, erfassterBetrag: a.erfassterBetrag as Rappen };
-  }
-  if (a.vorlageId !== undefined) {
-    return { ...basis, vorlageId: a.vorlageId };
-  }
-  return basis;
 }
 
 function entwurfAus(

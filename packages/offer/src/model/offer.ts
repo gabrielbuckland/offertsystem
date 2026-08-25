@@ -58,6 +58,17 @@ export const adjustmentSchema = z.object({
   enteredAmount: rappen.optional(),
   justification: z.string().min(1),                    // Pflichtfeld, US-04, I-09
   vorlageId: z.string().min(1).optional(),             // dokumentarisch, Spec 02 §3.4.1
+  /** Nachweis der Regel, aus der der Wert stammt. Rein dokumentarisch, geht in keine
+   *  Formel ein — und erscheint bewusst NICHT im gerenderten Dokument: Die Offerte geht
+   *  an den Eigentuemer, die Preislogik des Vermarkters gehoert nicht hinein. */
+  regel: z.object({
+    merkmal: z.string().min(1),
+    merkmalswert: z.number(),
+    bereich: z.number().int().nonnegative(),
+    regelwert: z.number(),
+  }).strict().optional(),
+  /** Der Vermarkter hat den Regelwert an dieser Einheit uebersteuert. */
+  uebersteuert: z.literal(true).optional(),
 }).strict().refine(
   (a) => (a.enteredAs === 'amount') === (a.enteredAmount !== undefined),
   { message: 'enteredAmount ist genau dann gesetzt, wenn enteredAs = amount' },

@@ -101,7 +101,7 @@ export * from './domain/ids.js';
 export * from './domain/geld.js';
 export * from './domain/result.js';
 export type { Adresse } from './domain/adresse.js';
-export type { ZuAbschlag } from './domain/zuabschlag.js';
+export type { Regelspur, ZuAbschlag } from './domain/zuabschlag.js';
 export type { Einheit } from './domain/einheit.js';
 export type { RepraesentativeParametrisierung, Wohnungstyp } from './domain/wohnungstyp.js';
 export { erzeugeLiegenschaft } from './domain/liegenschaft.js';

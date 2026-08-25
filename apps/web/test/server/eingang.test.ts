@@ -123,6 +123,45 @@ describe('zuEingangsArgumenten (I-02, PE-21)', () => {
     expect(eingang.wert.liegenschaft.einheiten).toHaveLength(1);
   });
 
+  it('reicht Regelspur und Uebersteuerung einer Anpassung unveraendert durch (Task 6, A-13)', async () => {
+    const mitRegelspur = structuredClone(BEISPIEL_ERFASSUNG);
+    (mitRegelspur.einheiten[0]!.anpassungen as unknown[]).push({
+      faktor: 0.05, erfassungsform: 'relativ', begruendung: 'Stockwerklage',
+      regel: { merkmal: 'stockwerk', merkmalswert: 2, bereich: 2, regelwert: 0.05 },
+      uebersteuert: true,
+    });
+    const beschafft = await beschaffe(mitRegelspur, providerAttrappe());
+    expect(beschafft.ok).toBe(true);
+    if (!beschafft.ok) return;
+    const eingang = zuEingangsArgumenten(
+      mitRegelspur, beschafft.wert, standardKonfiguration(), '2026-08-16T14:32:00.000Z');
+    expect(eingang.ok).toBe(true);
+    if (!eingang.ok) return;
+    const anpassung = eingang.wert.liegenschaft.einheiten[0]!.anpassungen[0]!;
+    expect(anpassung.regel).toEqual({
+      merkmal: 'stockwerk', merkmalswert: 2, bereich: 2, regelwert: 0.05,
+    });
+    expect(anpassung.uebersteuert).toBe(true);
+  });
+
+  it('laesst regel weg, wenn nur uebersteuert gesetzt ist — nichts wird erfunden', async () => {
+    const nurUebersteuert = structuredClone(BEISPIEL_ERFASSUNG);
+    (nurUebersteuert.einheiten[0]!.anpassungen as unknown[]).push({
+      faktor: 0.02, erfassungsform: 'relativ', begruendung: 'Manuell uebersteuert',
+      uebersteuert: true,
+    });
+    const beschafft = await beschaffe(nurUebersteuert, providerAttrappe());
+    expect(beschafft.ok).toBe(true);
+    if (!beschafft.ok) return;
+    const eingang = zuEingangsArgumenten(
+      nurUebersteuert, beschafft.wert, standardKonfiguration(), '2026-08-16T14:32:00.000Z');
+    expect(eingang.ok).toBe(true);
+    if (!eingang.ok) return;
+    const anpassung = eingang.wert.liegenschaft.einheiten[0]!.anpassungen[0]!;
+    expect(anpassung.uebersteuert).toBe(true);
+    expect(anpassung).not.toHaveProperty('regel');
+  });
+
   it('laesst mit ohneAnpassungen die Zu- und Abschlaege weg (Basispreis, PE-21)', async () => {
     const mitAnpassung = structuredClone(BEISPIEL_ERFASSUNG);
     (mitAnpassung.einheiten[0]!.anpassungen as unknown[]).push({
