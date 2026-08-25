@@ -16,7 +16,11 @@
 import { useState, type ReactElement } from 'react';
 import { Button } from './button.js';
 import { Input } from './input.js';
-import { naechsteEintraegeNachHinzufuegen } from './schluessel-wert-logik.js';
+import {
+  naechsteEintraegeNachEntfernen,
+  naechsteEintraegeNachHinzufuegen,
+  naechsteEintraegeNachWertaenderung,
+} from './schluessel-wert-logik.js';
 
 export interface SchluesselWertListeProps {
   readonly eintraege: Readonly<Record<string, string>>;
@@ -29,13 +33,14 @@ export function SchluesselWertListe(
   const [neuerSchluessel, setzeNeuenSchluessel] = useState('');
   const [neuerWert, setzeNeuenWert] = useState('');
 
+  // Die drei Entscheidungen stehen als reine Funktionen daneben und sind dort direkt
+  // getestet; hier bleibt nur die Verdrahtung ans Ereignis.
   function aendereWert(schluessel: string, wert: string): void {
-    aendere({ ...eintraege, [schluessel]: wert });
+    aendere(naechsteEintraegeNachWertaenderung(eintraege, schluessel, wert));
   }
 
   function entferneEintrag(schluessel: string): void {
-    const { [schluessel]: _entfernt, ...rest } = eintraege;
-    aendere(rest);
+    aendere(naechsteEintraegeNachEntfernen(eintraege, schluessel));
   }
 
   function fuegeEintragHinzu(): void {
