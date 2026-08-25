@@ -72,6 +72,7 @@ describe('AnpassungsSpalten — Entfernen ist ein eigener Rueckruf', () => {
         spalten={[spalte('S-1', 'Erste'), spalte('S-2', 'Zweite')]}
         aendere={aendere}
         entferneSpalte={entferneSpalte}
+        uebernehmeAufEinheiten={vi.fn()}
       />,
     );
 
@@ -94,6 +95,7 @@ describe('AnpassungsSpalten — Entfernen ist ein eigener Rueckruf', () => {
         spalten={[spalte('S-1', 'Erste')]}
         aendere={aendere}
         entferneSpalte={entferneSpalte}
+        uebernehmeAufEinheiten={vi.fn()}
       />,
     );
 
@@ -115,6 +117,7 @@ describe('AnpassungsSpalten — freigewordene Kennungen werden nicht wiederverwe
         spalten={[spalte('S-1', 'Erste'), spalte('S-2', 'Zweite')]}
         aendere={aendere}
         entferneSpalte={vi.fn()}
+        uebernehmeAufEinheiten={vi.fn()}
       />,
     );
 
@@ -167,6 +170,7 @@ describe('AnpassungsSpalten — Vorgabewert in der Einheit des Menschen', () => 
         }]}
         aendere={aendere}
         entferneSpalte={vi.fn()}
+        uebernehmeAufEinheiten={vi.fn()}
       />,
     );
     return { aendere, zelle: erfasst.zellen[0]! };
@@ -198,7 +202,7 @@ describe('AnpassungsSpalten — eine neue Spalte ist sofort speicherbar', () => 
     erfasst.buttons.length = 0;
     const aendere = vi.fn();
     renderToStaticMarkup(
-      <AnpassungsSpalten spalten={[]} aendere={aendere} entferneSpalte={vi.fn()} />);
+      <AnpassungsSpalten spalten={[]} aendere={aendere} entferneSpalte={vi.fn()} uebernehmeAufEinheiten={vi.fn()} />);
 
     erfasst.buttons.find((b) => b.children === 'Spalte hinzufügen')!.onClick();
 

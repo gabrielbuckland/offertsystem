@@ -23,6 +23,7 @@ import { EinheitenGenerator } from './EinheitenGenerator.js';
 import { AnpassungsSpalten } from './AnpassungsSpalten.js';
 import { EinheitenTabelle } from './EinheitenTabelle.js';
 import { entferneSpaltenwert } from './spaltenwerte-kaskade.js';
+import { uebernehmeVorgabewert } from './vorgabewert-uebernahme.js';
 import { Aufwandfaktoren } from './Aufwandfaktoren.js';
 import { Aggregatleiste } from './Aggregatleiste.js';
 import { Brotkrume } from '../shell/Brotkrume.js';
@@ -201,6 +202,14 @@ export function ProjektAnsicht(
             // unbeabsichtigt wieder auf (Kommentar in AnpassungsSpalten.tsx).
             einheiten: [...entferneSpaltenwert(projekt.einheiten, id)],
           })}
+          uebernehmeAufEinheiten={(spalteId) => {
+            const spalte = projekt.anpassungsSpalten.find((s) => s.id === spalteId);
+            if (spalte === undefined) return;
+            aendere({
+              ...projekt,
+              einheiten: [...uebernehmeVorgabewert(projekt.einheiten, spalte)],
+            });
+          }}
         />
       </section>
       <section className="mb-6 rounded-lg border border-border bg-card p-6">

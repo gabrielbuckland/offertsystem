@@ -10,8 +10,12 @@
  * Darunter die `anzeigeFaktoren`: sie werden nicht erfasst, sondern in der
  * Faktorermittlung (Lagescore/Ableitung) hergeleitet, darum reine Anzeige.
  */
-import type { Feldbeschreibung, Faktorformular } from '../../server/faktorformular.js';
+import { useEffect, useState } from 'react';
+import {
+  pruefeFaktorwerte, type Feldbeschreibung, type Faktorformular,
+} from '../../server/faktorformular.js';
 import { entscheideZellenwert } from './zellen-logik.js';
+import { Hinweis } from '../ui/hinweis.js';
 import { Input } from '../ui/input.js';
 import { Label } from '../ui/label.js';
 import { Select } from '../ui/select.js';
@@ -30,10 +34,6 @@ export interface AufwandfaktorenProps {
  * als erfasste Null gemeldet, und der Kern gewichtet eine Null bereitwillig. Dieselbe
  * Stelle, fuer die `entscheideZellenwert` geschrieben wurde (siehe zellen-logik.ts); die
  * Lehre stand bisher nur in der Datei, in der der Fehler gemeldet worden war.
- *
- * Ein verworfener Entwurf laesst den bisherigen Wert stehen; das Feld ist kontrolliert und
- * springt darauf zurueck. Das ist die gewollte Wirkung: lieber der alte Wert als eine
- * erfundene Null.
  */
 function meldeGueltige(entwurf: string, aendere: (wert: number) => void): void {
   const entscheid = entscheideZellenwert(entwurf);
@@ -47,6 +47,8 @@ function OrdinalFeld(
     readonly aendere: (wert: number) => void;
   },
 ) {
+  // Ein Select hat keinen Tipp-Zwischenzustand — anders als ZahlFeld unten braucht es
+  // darum keinen lokalen Entwurf und bleibt bei `onChange`.
   return (
     <Select
       id={`faktor-${feld.faktorId}`}
@@ -63,6 +65,16 @@ function OrdinalFeld(
   );
 }
 
+/**
+ * Haelt den Eingabewert lokal und meldet ihn erst beim Verlassen des Feldes (Muster
+ * `ZellenEingabe.tsx`). Ohne lokalen Zustand ist das Feld ueber `value={wert ?? ''}`
+ * direkt vom Projektstand kontrolliert: Ein geleertes Feld meldet ueber `onChange` sofort
+ * `entscheideZellenwert('')` -> `verwerfen`, nichts aendert sich am Projektstand, und die
+ * Anzeige springt im selben Tastendruck auf den alten Wert zurueck — ein Feld liesse sich
+ * so nie leeren, um eine neue Zahl zu tippen (docs/offene-punkte-projektansicht.md). Der
+ * Abgleich per useEffect holt Aenderungen nach, die von aussen kommen (z. B. Formular-
+ * Reset).
+ */
 function ZahlFeld(
   { feld, wert, aendere }: {
     readonly feld: Feldbeschreibung;
@@ -70,14 +82,31 @@ function ZahlFeld(
     readonly aendere: (wert: number) => void;
   },
 ) {
+  const [entwurf, setzeEntwurf] = useState(wert === undefined ? '' : String(wert));
+  useEffect(() => {
+    setzeEntwurf(wert === undefined ? '' : String(wert));
+  }, [wert]);
+
   return (
     <Input
       id={`faktor-${feld.faktorId}`}
       type="number"
       min={feld.untergrenze}
       max={feld.obergrenze}
-      value={wert ?? ''}
-      onChange={(e) => meldeGueltige(e.target.value, aendere)}
+      value={entwurf}
+      onChange={(e) => setzeEntwurf(e.target.value)}
+      onBlur={() => {
+        const entscheid = entscheideZellenwert(entwurf);
+        // Ein geleertes oder nicht parsierbares Feld verwirft statt eine Zahl zu
+        // erfinden; der Entwurf springt auf den bisherigen (moeglicherweise weiterhin
+        // fehlenden) Wert zurueck. `pruefeFaktorwerte` zeigt den fehlenden Pflichtwert
+        // dann als Hinweis unter dem Feld.
+        if (entscheid.art === 'verwerfen') {
+          setzeEntwurf(wert === undefined ? '' : String(wert));
+          return;
+        }
+        aendere(entscheid.wert);
+      }}
     />
   );
 }
@@ -85,6 +114,14 @@ function ZahlFeld(
 export function Aufwandfaktoren({ formular, werte, aendere }: AufwandfaktorenProps) {
   function setzeWert(faktorId: string, wert: number) {
     aendere({ ...werte, [faktorId]: wert });
+  }
+
+  // `pruefeFaktorwerte` ist dieselbe reine Pruefung wie serverseitig vor der Berechnung
+  // (server/faktorformular.ts) — hier client-seitig fuer die feldnahe Vorschau genutzt,
+  // nicht als Ersatz fuer die serverseitige Validierung.
+  const meldungen = pruefeFaktorwerte(formular, werte);
+  function meldungFuer(faktorId: string): string | undefined {
+    return meldungen.find((m) => m.feldpfad === `aufwandfaktoren.${faktorId}`)?.text;
   }
 
   return (
@@ -113,6 +150,11 @@ export function Aufwandfaktoren({ formular, werte, aendere }: AufwandfaktorenPro
                   wert={werte[feld.faktorId]}
                   aendere={(wert) => setzeWert(feld.faktorId, wert)}
                 />
+              )}
+              {meldungFuer(feld.faktorId) !== undefined && (
+                <Hinweis art="fehler" className="max-w-xs">
+                  {meldungFuer(feld.faktorId)}
+                </Hinweis>
               )}
             </div>
           ))}

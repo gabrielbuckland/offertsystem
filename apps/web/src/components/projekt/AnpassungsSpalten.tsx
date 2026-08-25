@@ -35,6 +35,9 @@ export interface AnpassungsSpaltenProps {
   readonly spalten: readonly AnpassungsSpalte[];
   readonly aendere: (spalten: readonly AnpassungsSpalte[]) => void;
   readonly entferneSpalte: (id: string) => void;
+  /** Uebertraegt den Vorgabewert der Spalte in alle Einheiten ohne eigenen Wert
+   *  (`uebernehmeVorgabewert`, vom Aufrufer verdrahtet — siehe ProjektAnsicht.tsx). */
+  readonly uebernehmeAufEinheiten: (spalteId: string) => void;
 }
 
 /**
@@ -55,7 +58,9 @@ export function erzeugeSpaltenIdFolge(vorhandene: readonly AnpassungsSpalte[]): 
   };
 }
 
-export function AnpassungsSpalten({ spalten, aendere, entferneSpalte }: AnpassungsSpaltenProps) {
+export function AnpassungsSpalten(
+  { spalten, aendere, entferneSpalte, uebernehmeAufEinheiten }: AnpassungsSpaltenProps,
+) {
   const naechsteId = useRef<(() => string) | undefined>(undefined);
   if (naechsteId.current === undefined) {
     naechsteId.current = erzeugeSpaltenIdFolge(spalten);
@@ -147,9 +152,26 @@ export function AnpassungsSpalten({ spalten, aendere, entferneSpalte }: Anpassun
                       {s.erfassungsform === 'relativ' ? '%' : 'CHF'}
                     </span>
                   </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Wirkt auf neu erzeugte Einheiten.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-1"
+                    onClick={() => uebernehmeAufEinheiten(s.id)}
+                  >
+                    Auf leere Zellen übernehmen
+                  </Button>
                 </TableCell>
                 <TableCell>
-                  <Button type="button" variant="outline" onClick={() => entferneSpalte(s.id)}>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    title="Entfernt die Spalte und ihre Werte aus allen Einheiten."
+                    onClick={() => entferneSpalte(s.id)}
+                  >
                     entfernen
                   </Button>
                 </TableCell>
