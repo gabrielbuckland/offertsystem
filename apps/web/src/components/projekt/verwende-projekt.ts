@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Projekt } from '../../server/projekt-schema.js';
+import { rufeApi } from '../rufe-api.js';
 
 const ENTPRELLUNG_MS = 400;
 
@@ -81,19 +82,16 @@ export function baueSpeicherwarteschlange(
   };
 }
 
-/** Einziger Netzwerkkontakt der Speicherung. `ok` bleibt false bei HTTP-Fehlern UND bei
- *  geworfenen Ausnahmen (Netzausfall) — beides ist fuer die Warteschlange ein Fehlschlag. */
+/** Einziger Netzwerkkontakt der Speicherung, ueber `rufeApi` (Spec §3). `ok` bleibt false
+ *  bei HTTP-Fehlern UND bei geworfenen Ausnahmen (Netzausfall) — beides ist fuer die
+ *  Warteschlange ein Fehlschlag; der Rumpf wird hier nicht gebraucht. */
 async function schreibeUeberPut(projekt: Projekt): Promise<boolean> {
-  try {
-    const antwort = await fetch(`/api/projekt/${projekt.id}`, {
-      method: 'PUT',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(projekt),
-    });
-    return antwort.ok;
-  } catch {
-    return false;
-  }
+  const { ok } = await rufeApi<unknown>(`/api/projekt/${projekt.id}`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(projekt),
+  });
+  return ok;
 }
 
 /**

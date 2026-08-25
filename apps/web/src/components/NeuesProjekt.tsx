@@ -54,6 +54,19 @@ export function NeuesProjekt() {
     router.push(`/projekte/${rumpf.id}` as Route);
   }
 
+  /**
+   * Der Dialog lebt als DOM-Knoten weiter, wenn er geschlossen wird — ohne dieses
+   * Zuruecksetzen zeigte das erneute Oeffnen die zuletzt erfasste Adresse und eine
+   * laengst erledigte Fehlermeldung. «Neues Projekt» beginnt bei leeren Feldern.
+   *
+   * Am `close`-Ereignis des Dialogs statt am «Abbrechen»-Knopf, weil das Dialogelement
+   * sich auch ohne diesen Knopf schliessen laesst (Escape-Taste).
+   */
+  function setzeZurueck() {
+    setAdresse(LEER);
+    setMeldung(undefined);
+  }
+
   return (
     <>
       <Button type="button" onClick={() => dialogRef.current?.showModal()}>
@@ -61,6 +74,7 @@ export function NeuesProjekt() {
       </Button>
       <dialog
         ref={dialogRef}
+        onClose={setzeZurueck}
         aria-label="Neues Projekt"
         className="rounded-lg border border-border bg-background p-6 backdrop:bg-foreground/30"
       >

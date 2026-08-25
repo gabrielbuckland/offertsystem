@@ -86,9 +86,6 @@ export default async function BereichSeite({ params }: Props) {
         { beschriftung: eintrag.titel },
       ]}
       />
-      {/* Alle vier Bereiche fuehren seit Task 16 einen eigenen Feld-Editor (Task 15:
-          HonorarEditor/PreisanpassungEditor; Task 16: FaktorenEditor/DossierEditor) —
-          `Editor` ist deshalb kein optionales Feld mehr. */}
       <EinstellungsEditor
         titel={eintrag.titel}
         zweck={eintrag.zweck}

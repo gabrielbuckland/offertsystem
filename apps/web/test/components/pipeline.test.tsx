@@ -49,5 +49,9 @@ describe('PipelineAnsicht', () => {
     const html = renderToStaticMarkup(
       <PipelineAnsicht stufen={bauePipelineDaten(basis())} modus="projekt" />);
     expect(html).toContain('Einstellungen');
+    // Der Name des Tests verlangt genau das: Im Projektmodus fuehrt die Ansicht KEINEN
+    // Weg in die Konfiguration ausser dem Verweis — sonst bearbeitete der Vermarkter aus
+    // dem Projekt heraus Werte, die auf alle Projekte wirken.
+    expect(html).not.toContain('Bearbeiten');
   });
 });

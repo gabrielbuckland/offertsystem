@@ -26,6 +26,8 @@ import type { ApiErgebnis } from '../../../src/components/rufe-api.js';
 const quelle = readFileSync(
   new URL('../../../src/components/projekt/ProjektAnsicht.tsx', import.meta.url), 'utf8');
 
+const EINHEITEN = [{ id: 'e1', wohnungsnummer: 'A1' }];
+
 describe('Aggregatleiste bei Honorarabbruch — ueber den echten Verarbeitungspfad', () => {
   it('pinnt die Anzeige-Fallback-Verdrahtung in ProjektAnsicht.tsx (rein darstellend)', () => {
     expect(quelle).toMatch(
@@ -50,7 +52,7 @@ describe('Aggregatleiste bei Honorarabbruch — ueber den echten Verarbeitungspf
     };
 
     // Echter Produktionscode (Task 9), keine Handkonstruktion des Stands.
-    const { stand } = verarbeiteBerechnungsAntwort(antwort);
+    const { stand } = verarbeiteBerechnungsAntwort(antwort, EINHEITEN);
     expect(stand.honorarMin).toBeUndefined();
     expect(stand.honorarMax).toBeUndefined();
 

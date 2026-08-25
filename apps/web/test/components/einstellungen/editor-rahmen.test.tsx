@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   baueSpeicherSteuerung, befundeFuerPfad, entwurfGeaendert,
 } from '../../../src/components/einstellungen/verwende-einstellungen.js';
-import { EinstellungsEditor } from '../../../src/components/einstellungen/EinstellungsEditor.js';
+import {
+  EinstellungsEditor, rahmenBefunde,
+} from '../../../src/components/einstellungen/EinstellungsEditor.js';
 
 /** Steuerbares Promise, um eine spaet eintreffende Antwort zu erzwingen — gleiches
  *  Vorgehen wie in verwende-projekt.test.ts. */
@@ -44,6 +46,7 @@ describe('EinstellungsEditor', () => {
         zweck="Testzweck fuer die Rahmenpruefung."
         bereichPraefix="honorar"
         anfang={{}}
+        Editor={() => <></>}
       />,
     );
     expect(html).toContain('Wirkt auf alle Projekte.');
@@ -65,6 +68,33 @@ describe('EinstellungsEditor', () => {
     );
     expect(html).toContain('data-testid="editor-inhalt"');
     expect(html).toContain('wert');
+  });
+
+});
+
+describe('rahmenBefunde (Naht Rahmen <-> Feld-Editor)', () => {
+  const zeile = { pfad: 'honorar.stuetzstellen[1].hMin', text: 'Degression verletzt.' };
+  const wurzel = { pfad: 'honorar', text: 'Der Honorarbereich ist unvollstaendig.' };
+  const ortlos = { pfad: '', text: 'Die Einstellungen konnten nicht gespeichert werden.' };
+  const alle = [zeile, wurzel, ortlos];
+
+  it('zeigt einen zeilenverankerten Befund GENAU EINMAL — beim Editor, nicht im Rahmen', () => {
+    // `befundeFuerPfad` trifft per Praefix. Sammelte der Rahmen weiterhin alles unter
+    // seinem Bereich ein, stuende dieser Befund an der Stuetzstellenzeile UND in der
+    // Rahmenliste: zwei Meldungen fuer ein Problem.
+    expect(befundeFuerPfad(alle, 'honorar.stuetzstellen[1]')).toContain(zeile);
+    expect(rahmenBefunde(alle, ['honorar'])).not.toContain(zeile);
+  });
+
+  it('behaelt die ortlosen Formen im Rahmen: leerer Pfad und Bereichswurzel', () => {
+    expect(rahmenBefunde(alle, ['honorar'])).toEqual([wurzel, ortlos]);
+  });
+
+  it('haelt den leeren Pfad bei mehreren Praefixen trotzdem nur einmal', () => {
+    // «Preisanpassung» deckt drei Wurzeln ab; der frueher noetige Doppel-Filter entfaellt,
+    // weil ueber die Befundliste statt ueber die Praefixe iteriert wird.
+    expect(rahmenBefunde([ortlos], ['flaeche', 'preisanpassung', 'anpassungsVorlagen']))
+      .toEqual([ortlos]);
   });
 });
 

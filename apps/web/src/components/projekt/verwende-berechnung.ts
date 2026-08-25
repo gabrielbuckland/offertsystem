@@ -74,9 +74,14 @@ const OHNE_AGGREGATE: Omit<BerechnungsStand, 'laeuft'> = {
  * Reine Verarbeitung des Antwortrumpfs, ohne Netzwerk und ohne React-Zustand. Vier
  * Faelle: Erfolg (Preise/Aggregate/Herleitung), `unvollstaendig` (I-24, kein Fehler),
  * `honorarAbbruch` (E-04, kein Fehler) und eine fehlgeschlagene Antwort.
+ *
+ * `einheiten` ist der Projektstand, gegen den die Antwort gelesen wird: Der Erfolgsfall
+ * bringt die Einheitenkennung selbst mit, das E-04-Teilergebnis nur die Wohnungsnummer —
+ * die Zuordnung Nummer -> Kennung kann deshalb allein der Client leisten.
  */
 export function verarbeiteBerechnungsAntwort(
   antwort: ApiErgebnis<BerechnungsAntwort>,
+  einheiten: readonly { readonly id: string; readonly wohnungsnummer: string }[],
 ): { readonly stand: Omit<BerechnungsStand, 'laeuft'>; readonly ok: boolean } {
   const { ok, rumpf } = antwort;
 
@@ -96,9 +101,23 @@ export function verarbeiteBerechnungsAntwort(
   }
 
   if (rumpf.honorarAbbruch !== undefined) {
-    // E-04: Kein Eingabefehler. Die Route liefert hier keine separaten Einheitenpreise
-    // mit, deshalb bleibt `preise` leer statt erfunden — Task 9 zeigt das Teilergebnis.
-    return { ok: true, stand: { ...OHNE_AGGREGATE, honorarAbbruch: rumpf.honorarAbbruch } };
+    // E-04: Kein Eingabefehler. Wohnungspreise und D bleiben gueltig, nur die Honorarrange
+    // fehlt — die Preise MUESSEN deshalb sichtbar bleiben (Spec §5). Die Route fuehrt sie
+    // in `honorarAbbruch.positionen`, dort aber nach Wohnungsnummer statt nach
+    // Einheitenkennung (das Offert-Schema kennt nur die Nummer). Den Bezug zur Kennung,
+    // auf die die Tabelle zugreift, stellt allein der Client her — er haelt die Einheiten.
+    // `basispreis` bleibt weg: Das Teilergebnis fuehrt keinen, und ein erfundener waere
+    // eine Zahl ohne Herleitung; diese eine Spalte zeigt «—».
+    const nachNummer = new Map(einheiten.map((e) => [e.wohnungsnummer, e.id]));
+    const teilpreise: Record<string, Preis> = {};
+    for (const position of rumpf.honorarAbbruch.positionen) {
+      const id = nachNummer.get(position.wohnungsnummer);
+      if (id !== undefined) teilpreise[id] = { preis: position.preis };
+    }
+    return {
+      ok: true,
+      stand: { ...OHNE_AGGREGATE, preise: teilpreise, honorarAbbruch: rumpf.honorarAbbruch },
+    };
   }
 
   const preise: Record<string, Preis> = {};
@@ -143,7 +162,7 @@ export function verwendeBerechnung(): {
       async (p: Projekt) => {
         const antwort = await rufeApi<BerechnungsAntwort>(
           `/api/projekt/${p.id}/berechnung`, { method: 'POST' });
-        const { stand: neu, ok } = verarbeiteBerechnungsAntwort(antwort);
+        const { stand: neu, ok } = verarbeiteBerechnungsAntwort(antwort, p.einheiten);
         setStand((vorher) => ({ ...neu, laeuft: vorher.laeuft }));
         return ok;
       },

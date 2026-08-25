@@ -30,13 +30,14 @@
 import { Button } from '../ui/button.js';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card.js';
 import { Hinweis } from '../ui/hinweis.js';
-import { befundeFuerPfad, verwendeEinstellungen, type BereichsEditor } from './verwende-einstellungen.js';
+import { verwendeEinstellungen, type BereichsEditor } from './verwende-einstellungen.js';
 
 export interface EinstellungsEditorProps {
   readonly titel: string;
   readonly zweck: string;
   /**
-   * Konfigurationspfad(e), unter denen dieser Bereich Befunde einsammelt
+   * Wurzelpfad(e) dieses Bereichs im Konfigurationsbaum. Der Rahmen zeigt Befunde
+   * GENAU auf diesen Pfaden; alles darunter verankert der Feld-Editor an seiner Zeile
    * (`befundeFuerPfad`). Ein Bereich kann mehrere Wurzeln umfassen — «Preisanpassung»
    * etwa deckt sowohl `flaeche` als auch `preisanpassung` und `anpassungsVorlagen` ab —
    * deshalb ein String ODER mehrere.
@@ -44,31 +45,32 @@ export interface EinstellungsEditorProps {
   readonly bereichPraefix: string | readonly string[];
   /** Rohe Startkonfiguration (ganzer Baum) — siehe Dateikommentar zur Aufteilung. */
   readonly anfang: Readonly<Record<string, unknown>>;
-  /** Konkreter Feld-Editor des Bereichs (Tasks 15/16). Optional: Solange er noch nicht
-   *  existiert, zeigt der Rahmen sich selbst ohne Formularfelder — das Geruest bleibt
-   *  damit unabhaengig von den konkreten Editoren pruefbar. */
-  readonly Editor?: BereichsEditor;
+  /** Konkreter Feld-Editor des Bereichs (Tasks 15/16). */
+  readonly Editor: BereichsEditor;
 }
 
-/** Doppelte Treffer (v.a. der unanhaengige leere Pfad, der jedes Praefix erfuellt —
- *  siehe `befundeFuerPfad`) faellen bei mehreren Praefixen sonst mehrfach an. */
-function ohneDoppelte(befunde: readonly { readonly pfad: string; readonly text: string }[]) {
-  const gesehen = new Set<string>();
-  return befunde.filter((befund) => {
-    const schluessel = `${befund.pfad} ${befund.text}`;
-    if (gesehen.has(schluessel)) return false;
-    gesehen.add(schluessel);
-    return true;
-  });
+/**
+ * Befunde, die KEIN Feld-Editor an seiner Zeile verankern kann — die Gegenmenge zu
+ * `befundeFuerPfad` (reine Funktion, deshalb ohne DOM pruefbar).
+ *
+ * Seit Tasks 15/16 zeigt jeder Bereichseditor die Befunde seiner Felder selbst, je Zeile
+ * ueber `befundeFuerPfad`. Das ist ein PRAEFIX-Treffer: Ein Befund auf
+ * `honorar.stuetzstellen[1].hMin` erschiene an seiner Zeile UND noch einmal in einer
+ * Sammelliste des Rahmens — der Nutzer laese zwei Probleme, wo eines ist. Dem Rahmen
+ * bleiben genau die zwei ortlosen Formen: der unanhaengige Befund (`pfad === ''`, der
+ * Netz-/500-Fallback aus `verwendeEinstellungen`) und ein Befund auf der Bereichswurzel
+ * selbst, zu der es keine Formularzeile gibt.
+ */
+export function rahmenBefunde<T extends { readonly pfad: string }>(
+  befunde: readonly T[], praefixe: readonly string[],
+): readonly T[] {
+  return befunde.filter((befund) => befund.pfad === '' || praefixe.includes(befund.pfad));
 }
 
 export function EinstellungsEditor({ titel, zweck, bereichPraefix, anfang, Editor }: EinstellungsEditorProps) {
   const zustand = verwendeEinstellungen(anfang);
   const praefixe = typeof bereichPraefix === 'string' ? [bereichPraefix] : bereichPraefix;
-  // Nur Befunde OHNE genauere Feldverankerung: Solange kein konkreter Feld-Editor sie
-  // selbst an ihrer Zeile anzeigt (Tasks 15/16), gilt das fuer alle Befunde des
-  // Bereichs — deshalb hier keine weitere Ausduennung ueber `befundeFuerPfad` hinaus.
-  const bereichsBefunde = ohneDoppelte(praefixe.flatMap((praefix) => befundeFuerPfad(zustand.befunde, praefix)));
+  const bereichsBefunde = rahmenBefunde(zustand.befunde, praefixe);
 
   return (
     <Card>
@@ -77,7 +79,7 @@ export function EinstellungsEditor({ titel, zweck, bereichPraefix, anfang, Edito
         <CardDescription>{zweck}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {Editor !== undefined && <Editor einstellungen={zustand} />}
+        <Editor einstellungen={zustand} />
         {bereichsBefunde.length > 0 && (
           <div className="space-y-2">
             {bereichsBefunde.map((befund, index) => (

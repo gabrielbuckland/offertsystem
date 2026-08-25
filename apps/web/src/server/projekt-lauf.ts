@@ -43,8 +43,9 @@ import { projiziere } from './projektion.js';
  * Anzeigefertiger Fehler, in genau der Form, in der ihn die Routen schon immer
  * ausgegeben haben. Zwei Auspraegungen, weil es zwei Quellen gibt: Stufenfehler des
  * Kerns kommen aus `uebersetzeStufenFehler` als vollstaendiger `AngezeigterFehler` —
- * `adressat` unterscheidet Vermarkter- von Auftraggeberfehlern und traegt
- * `HonorarAbbruch.tsx`s `data-adressat`, `feldpfad` verankert die Meldung am Feld.
+ * `adressat` unterscheidet Vermarkter- von Auftraggeberfehlern (wer den Fehler beheben
+ * kann: der Vermarkter in der Erfassung, der Auftraggeber in der Konfiguration) und
+ * steuert damit die Wortwahl der Meldung; `feldpfad` verankert die Meldung am Feld.
  * Lade-, Projektions- und Beschaffungsfehler fuehren dagegen seit jeher nur einen Text.
  * Ein erzwungener `adressat` fuer diese haette der Antwort ein Feld hinzugefuegt, das sie
  * nie hatte; die Union gibt beide Formen unveraendert weiter.
