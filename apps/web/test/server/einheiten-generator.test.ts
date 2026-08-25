@@ -82,4 +82,15 @@ describe('erzeugeEinheiten — Vorgabewerte der Spalten', () => {
       [{ referenzobjektId: 'R-1', anzahl: 2 }], REFS, [], [spalte('S-1', 0.05)]);
     expect(neue[0]!.spaltenwerte).not.toBe(neue[1]!.spaltenwerte);
   });
+
+  it('belegt eine Spalte mit Regel NICHT vor — sonst truege jede Einheit sofort eine '
+    + 'Uebersteuerung', () => {
+    const spalten: readonly AnpassungsSpalte[] = [{
+      id: 'S-1', bezeichnung: 'Zuschlag Stockwerk', erfassungsform: 'absolut',
+      regel: { merkmal: 'stockwerk', bereiche: [{ unter: 1, wert: 0 }, { wert: 1000000 }] },
+    }];
+    const neue = erzeugeEinheiten(
+      [{ referenzobjektId: 'R-1', anzahl: 1 }], REFS, [], spalten);
+    expect(neue[0]!.spaltenwerte).toEqual({});
+  });
 });

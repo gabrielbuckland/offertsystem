@@ -41,6 +41,13 @@ function vorbelegteSpaltenwerte(
 ): Record<string, number> {
   const werte: Record<string, number> = {};
   for (const s of spalten) {
+    // Eine Spalte mit Regel wird NICHT vorbelegt: Der Spaltenwert ist ab jetzt die
+    // Uebersteuerung der Regel, und eine vorbelegte Uebersteuerung an jeder neuen
+    // Einheit stellte die Regel still, bevor sie je greift. Das Schema schliesst
+    // `regel` und `vorgabewert` zwar bereits gegenseitig aus (`projekt-schema.ts`),
+    // die Bedingung steht trotzdem explizit hier: Sie ist der eigentliche Grund fuer
+    // das Verhalten, nicht ein Nebeneffekt der Schemapruefung.
+    if (s.regel !== undefined) continue;
     if (s.vorgabewert !== undefined && s.vorgabewert !== 0) werte[s.id] = s.vorgabewert;
   }
   return werte;
