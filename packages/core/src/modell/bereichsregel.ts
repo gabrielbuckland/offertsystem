@@ -29,6 +29,21 @@ export interface Bereichstreffer {
   readonly bereich: number;
 }
 
+/**
+ * Normalisiert Rohbereiche (aus Zod-Schema oder serialisierter Kopie) auf `Bereich`.
+ *
+ * Ausschliesslich fuer `exactOptionalPropertyTypes` noetig: `z.number().optional()`
+ * infert `unter?: number | undefined`, waehrend `Bereich.unter` als blosses `unter?:
+ * number` ohne explizites `undefined` im Wertebereich gilt. Einzige Definition dieser
+ * Umformung — Aufrufstellen in `config/abbildung.ts`, `config/ebene3.ts` und
+ * `pipeline/serialisierung.ts` duplizieren sie nicht mehr, sondern rufen sie auf.
+ */
+export function normalisiereBereiche(
+  bereiche: readonly { readonly unter?: number | undefined; readonly wert: number }[],
+): readonly Bereich[] {
+  return bereiche.map((b) => (b.unter === undefined ? { wert: b.wert } : { unter: b.unter, wert: b.wert }));
+}
+
 /** Leeres Ergebnis heisst gueltig; sonst je Befund ein Satz fuer die Fehlermeldung. */
 export function pruefeBereiche(bereiche: readonly Bereich[]): readonly string[] {
   const gruende: string[] = [];

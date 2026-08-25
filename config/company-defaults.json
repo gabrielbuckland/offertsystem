@@ -27,10 +27,10 @@
       "regel": {
         "merkmal": "stockwerk",
         "bereiche": [
-          { "unter": 1, "wert": 0 },
-          { "unter": 2, "wert": 1000000 },
-          { "unter": 3, "wert": 2000000 },
-          { "wert": 3000000 }
+          { "unter": 1, "wert": 860000 },
+          { "unter": 2, "wert": 0 },
+          { "unter": 3, "wert": 860000 },
+          { "wert": 1720000 }
         ]
       }
     },

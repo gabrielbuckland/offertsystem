@@ -10,6 +10,7 @@ import { fehlschlag, ok, type Result } from '../domain/result.js';
 import {
   validiereLiegenschaftEingabe, type EingabeFehler,
 } from '../eingabe/validiere.js';
+import { normalisiereBereiche } from '../modell/bereichsregel.js';
 import type {
   FaktorParameter, Konfiguration, Stuetzstelle,
 } from '../config/typen.js';
@@ -125,19 +126,12 @@ export function deserialisiereKonfiguration(
     }
     stuetzstellen.push({ v: rappen(s.v), hMin: rappen(s.hMin), hMax: rappen(s.hMax) });
   }
-  // exactOptionalPropertyTypes: `regel`/`unter` duerfen im Kerntyp nicht als explizites
-  // `undefined` auftreten, nur als fehlender Schluessel (analog abbildung.ts).
+  // exactOptionalPropertyTypes: `regel` darf im Kerntyp nicht als explizites `undefined`
+  // auftreten, nur als fehlender Schluessel (analog abbildung.ts).
   const anpassungsVorlagen = k.anpassungsVorlagen.map((vorlage) => {
     const { regel, ...rest } = vorlage;
     if (regel === undefined) return rest;
-    return {
-      ...rest,
-      regel: {
-        merkmal: regel.merkmal,
-        bereiche: regel.bereiche.map((b) =>
-          (b.unter === undefined ? { wert: b.wert } : { unter: b.unter, wert: b.wert })),
-      },
-    };
+    return { ...rest, regel: { merkmal: regel.merkmal, bereiche: normalisiereBereiche(regel.bereiche) } };
   });
   return ok({
     meta: k.meta, flaeche: k.flaeche, preisanpassung: k.preisanpassung,

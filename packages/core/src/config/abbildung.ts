@@ -8,6 +8,7 @@ import { validiereKonfiguration } from './validieren.js';
 import { fehlschlag, ok, type Result } from '../domain/result.js';
 import { gewicht, rappen } from '../domain/geld.js';
 import { faktorId, type FaktorId } from '../domain/ids.js';
+import { normalisiereBereiche } from '../modell/bereichsregel.js';
 import type {
   AnpassungsVorlage, FaktorParameter, Faktormenge, Konfiguration, StrategieBezeichner, Stuetzstelle,
 } from './typen.js';
@@ -59,9 +60,9 @@ function bildeFaktorAb(
 }
 
 /**
- * Uebersetzt eine Rohvorlage in den Kerntyp. Ausschliesslich fuer exactOptionalPropertyTypes
- * noetig: Der optionale Restfallwert `unter` und die optionale `regel` duerfen im Kerntyp nicht
- * als explizites `undefined` auftreten, nur als fehlender Schluessel.
+ * Uebersetzt eine Rohvorlage in den Kerntyp. Die optionale `regel` darf im Kerntyp nicht
+ * als explizites `undefined` auftreten, nur als fehlender Schluessel (exactOptionalPropertyTypes);
+ * `normalisiereBereiche` traegt dieselbe Umformung fuer die Bereiche selbst.
  */
 function bildeAnpassungsVorlageAb(
   roh: RohKonfiguration['anpassungsVorlagen'][number],
@@ -70,11 +71,7 @@ function bildeAnpassungsVorlageAb(
   if (regel === undefined) return rest;
   return {
     ...rest,
-    regel: {
-      merkmal: regel.merkmal,
-      bereiche: regel.bereiche.map((b) =>
-        (b.unter === undefined ? { wert: b.wert } : { unter: b.unter, wert: b.wert })),
-    },
+    regel: { merkmal: regel.merkmal, bereiche: normalisiereBereiche(regel.bereiche) },
   };
 }
 

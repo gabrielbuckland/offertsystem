@@ -83,11 +83,34 @@ tragen: Sie bildet den Merkmalswert auf einen Zu-/Abschlag ab, gestaffelt statt
 konstant. Die Vorlage `stockwerklage` ersetzt den bisherigen festen
 Attika-Zuschlag durch eine solche Staffel.
 
-Die Stufengrenzen und -saetze stammen aus `assets/pricing.xlsx`, Blatt
-`Verkaufspreise`, Zeile 4, umgerechnet in Rappen (`erfassungsform: "absolut"`):
-Erdgeschoss und 1. Obergeschoss ohne Zuschlag, ab dem 2. Obergeschoss
-10 000 CHF, ab dem 3. Obergeschoss 20 000 CHF, ab dem 4. Obergeschoss (Restfall)
-30 000 CHF je Einheit. Die Vorlagen `erdgeschoss_gartensitzplatz` und
+Die Stufensaetze stammen aus `assets/pricing.xlsx` **im Bericht-Repository**
+(diese Datei liegt nicht in diesem Repository), Blatt `Verkaufspreise`. Der
+massgebliche Satz steht in Zeile 4 (`N4 = 100`) und ist ein Zuschlag **pro
+Quadratmeter**: Spalte L (`Verkaufspreis pro m²`) summiert unter anderem
+Spalte N zum Quadratmeterpreis auf. Spalte N traegt je Stockwerk ein
+Vielfaches dieses Satzes: Erdgeschoss (Zeilen 6/7) `=$N$4` → 1×, 1.
+Obergeschoss (Zeilen 8/9) leer → 0×, 2. Obergeschoss (Zeilen 10/11) `=$N$4`
+→ 1×, 3. Obergeschoss (Zeile 12) `=$N$4*2` → 2×. Der Nullpunkt der Staffel
+liegt damit beim 1. Obergeschoss und nicht beim Erdgeschoss: Alle
+Referenzbewertungen sind fuer eine «3.5-ZWG mit 86 m² im 1. OG» erhoben: Der
+Quadratmeterpreis der Referenz enthaelt den 1×-Zuschlag bereits, das 1. OG
+ist deshalb der Bezugspunkt ohne weiteren Zuschlag.
+
+Das System kennt keine `erfassungsform: "chf_pro_quadratmeter"` — die
+Abgrenzung des Konzepts laesst nur `relativ` (Faktor auf den Referenzwert)
+und `absolut` (fester Rappenbetrag) zu. Der Quadratmetersatz wird deshalb auf
+der Referenzflaeche der Bewertungen in einen festen Betrag umgerechnet:
+100 CHF/m² × 86 m² = 8600 CHF = 860 000 Rappen; das 2×-Band betraegt
+entsprechend 1 720 000 Rappen. `stockwerk` zaehlt **0-basiert** (Erdgeschoss
+= 0) und bildet damit direkt auf PriceHubbles `floorNumber` ab (siehe
+`dossierBody()` in `packages/pricehubble/src/acl/bewertungMapper.ts`).
+
+Die resultierende Staffel: Erdgeschoss +8600 CHF, 1. Obergeschoss 0 CHF
+(Referenzpunkt), 2. Obergeschoss +8600 CHF, ab dem 3. Obergeschoss (Restfall)
++17 200 CHF. Eine Bereichsregel ist eine Wertetabelle und darf nicht-monotone
+Werte fuehren; das 1. OG als Senke zwischen zwei hoeheren Stockwerken ist
+damit exakt darstellbar, ohne dass der Kern eine Sonderregel fuer diesen
+Fall braucht. Die Vorlagen `erdgeschoss_gartensitzplatz` und
 `erdgeschoss_einsehbar` bleiben unveraendert bestehen: Sie beschreiben
 Eigenschaften der Erdgeschosslage, die die Stockwerkstaffel nicht abbildet.
 

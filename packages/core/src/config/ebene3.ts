@@ -9,7 +9,7 @@
 import { pruefeNettoDegression, pruefeStufenDegression } from './degression.js';
 import { fehler, type KonfigurationsFehler } from './fehlercodes.js';
 import { ABLEITUNGS_NAMEN, BEZEICHNER_MUSTER, LAGESCORE_NAMEN, type RohKonfiguration } from './schema.js';
-import { pruefeBereiche } from '../modell/bereichsregel.js';
+import { normalisiereBereiche, pruefeBereiche } from '../modell/bereichsregel.js';
 
 /**
  * Toleranz der Summenbedingung. Bestandteil der Invariantendefinition I-12
@@ -152,11 +152,7 @@ function pruefeBereichsregeln(konfiguration: RohKonfiguration): KonfigurationsFe
     const regel = vorlage.regel;
     if (regel === undefined) return;
 
-    // exactOptionalPropertyTypes: der optionale Restfallwert `unter` darf im uebergebenen
-    // Bereich nicht als explizites `undefined` auftreten, nur als fehlender Schluessel.
-    const bereiche = regel.bereiche.map((b) =>
-      (b.unter === undefined ? { wert: b.wert } : { unter: b.unter, wert: b.wert }));
-    const gruende: string[] = [...pruefeBereiche(bereiche)];
+    const gruende: string[] = [...pruefeBereiche(normalisiereBereiche(regel.bereiche))];
 
     if (!bekannteMerkmale.has(regel.merkmal)) {
       gruende.push(`Merkmal '${regel.merkmal}' ist nicht deklariert.`);

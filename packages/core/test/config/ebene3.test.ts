@@ -165,4 +165,22 @@ describe('pruefeEbene3 — Bereichsregeln', () => {
     const befunde = pruefeEbene3(mitVorlage({ ...GUELTIG, vorgabefaktor: 0.05 }));
     expect(befunde.some((f) => f.code === 'CFG_BEREICHSREGEL')).toBe(true);
   });
+
+  it('laesst einen absoluten Bereichswert ausserhalb der z-Grenzen zu (Kontrolle zur Stockwerkstaffel)', () => {
+    // Die z-Grenzen (relativ, [-0.25, 0.25]) duerfen einen absoluten Rappenbetrag nicht
+    // sperren; sonst waere die firmenweite Staffel selbst (860'000/1'720'000 Rappen)
+    // ungueltig. Reale Werte der Vorlage `stockwerklage` in company-defaults.json.
+    const befunde = pruefeEbene3(mitVorlage({
+      ...GUELTIG,
+      erfassungsform: 'absolut',
+      regel: {
+        merkmal: 'stockwerk',
+        bereiche: [
+          { unter: 1, wert: 860000 }, { unter: 2, wert: 0 }, { unter: 3, wert: 860000 },
+          { wert: 1720000 },
+        ],
+      },
+    }));
+    expect(befunde.filter((f) => f.code === 'CFG_BEREICHSREGEL')).toEqual([]);
+  });
 });
