@@ -115,6 +115,10 @@ export type { EingabeFehler, PreisanpassungsGrenzen } from './eingabe/validiere.
 export * from './ports/valuation-provider.js';
 export { alleToleranzen, rangeBreiteToleranz, toleranzFuer } from './config/toleranzen.js';
 export type { InvariantenId, Toleranz } from './config/toleranzen.js';
+export {
+  pruefeBereiche, werteBereichsregelAus,
+  type Bereich, type Bereichsregel, type Bereichstreffer,
+} from './modell/bereichsregel.js';
 export { gewichteteFlaeche } from './modell/flaeche.js';
 export { alleStrategien, loeseStrategieAuf } from './modell/normalisierung.js';
 export type { NormalisierterFaktor, Normalisierungsstrategie } from './modell/normalisierung.js';
