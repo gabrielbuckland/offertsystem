@@ -133,7 +133,12 @@ export function EinheitenTabelle(
   });
 
   return (
-    <div className="overflow-x-auto">
+    <div>
+      <h2 className="text-base font-semibold">Einheitentabelle</h2>
+      <p className="mb-3 text-sm text-muted-foreground">
+        Zeigt jede Einheit mit Basispreis und angepasstem Preis nach den Zu-/Abschlägen.
+      </p>
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           {tabelle.getHeaderGroups().map((gruppe) => (
@@ -158,6 +163,7 @@ export function EinheitenTabelle(
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

@@ -35,6 +35,9 @@ export interface AnpassungsSpaltenProps {
   readonly spalten: readonly AnpassungsSpalte[];
   readonly aendere: (spalten: readonly AnpassungsSpalte[]) => void;
   readonly entferneSpalte: (id: string) => void;
+  /** Uebertraegt den Vorgabewert der Spalte in alle Einheiten ohne eigenen Wert
+   *  (`uebernehmeVorgabewert`, vom Aufrufer verdrahtet — siehe ProjektAnsicht.tsx). */
+  readonly uebernehmeAufEinheiten: (spalteId: string) => void;
 }
 
 /**
@@ -55,7 +58,9 @@ export function erzeugeSpaltenIdFolge(vorhandene: readonly AnpassungsSpalte[]): 
   };
 }
 
-export function AnpassungsSpalten({ spalten, aendere, entferneSpalte }: AnpassungsSpaltenProps) {
+export function AnpassungsSpalten(
+  { spalten, aendere, entferneSpalte, uebernehmeAufEinheiten }: AnpassungsSpaltenProps,
+) {
   const naechsteId = useRef<(() => string) | undefined>(undefined);
   if (naechsteId.current === undefined) {
     naechsteId.current = erzeugeSpaltenIdFolge(spalten);
@@ -80,7 +85,12 @@ export function AnpassungsSpalten({ spalten, aendere, entferneSpalte }: Anpassun
   return (
     <section className="mb-8">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-medium">Zu-/Abschläge — Spalten</h2>
+        <div>
+          <h2 className="text-base font-semibold">Zu-/Abschläge — Spalten</h2>
+          <p className="text-sm text-muted-foreground">
+            Definiert Zu- und Abschläge, die je Einheit auf den Referenzwert wirken.
+          </p>
+        </div>
         <Button type="button" onClick={fuegeHinzu}>
           Spalte hinzufügen
         </Button>
@@ -142,9 +152,26 @@ export function AnpassungsSpalten({ spalten, aendere, entferneSpalte }: Anpassun
                       {s.erfassungsform === 'relativ' ? '%' : 'CHF'}
                     </span>
                   </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Wirkt auf neu erzeugte Einheiten.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-1"
+                    onClick={() => uebernehmeAufEinheiten(s.id)}
+                  >
+                    Auf leere Zellen übernehmen
+                  </Button>
                 </TableCell>
                 <TableCell>
-                  <Button type="button" variant="outline" onClick={() => entferneSpalte(s.id)}>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    title="Entfernt die Spalte und ihre Werte aus allen Einheiten."
+                    onClick={() => entferneSpalte(s.id)}
+                  >
                     entfernen
                   </Button>
                 </TableCell>

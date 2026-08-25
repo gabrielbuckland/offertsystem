@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { OffertKonfiguration } from '@offert/core';
 import { baueFaktorformular } from '../../../../server/faktorformular.js';
 import { holeLaufzeit } from '../../../../server/laufzeit.js';
 import { ladeProjekt } from '../../../../server/projekt-ablage.js';
@@ -16,11 +17,15 @@ export default async function ProjektSeite({ params }: Props) {
   }
   const projekt = await ladeProjekt(id, laufzeit.wert.projekteVerzeichnis).catch(() => null);
   if (projekt === null) notFound();
-  const { konfiguration } = laufzeit.wert;
+  const { konfiguration, rohKonfiguration } = laufzeit.wert;
   return (
     <ProjektAnsicht
       projekt={projekt}
       faktorformular={baueFaktorformular(konfiguration)}
+      // Basis der Pipeline-Stufen im Rechenweg-Block (Task 9/7); dieselbe Rohkonfiguration,
+      // aus der `rohKonfiguration` in laufzeit.ts bereits fuer den Konfigurationsabdruck
+      // (PE-04) durch `unknown` geschleust wird — hier symmetrisch zurueckgeschaerft.
+      konfigurationBasis={rohKonfiguration as unknown as OffertKonfiguration}
     />
   );
 }
