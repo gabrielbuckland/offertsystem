@@ -4,7 +4,9 @@
  * `standardkonfiguration.test.ts` garantiert deren Gueltigkeit und darf durch
  * diese Tests nicht beruehrt werden.
  */
-import { copyFileSync, mkdtempSync, readdirSync, readFileSync } from 'node:fs';
+import {
+  copyFileSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import {
@@ -100,6 +102,34 @@ describe('schreibeCompanyDefaults', () => {
       // Erste Sicherung: der Ausgangsstand (10). Zweite Sicherung: der Stand nach dem
       // ersten Schreiben (12), bevor der zweite Schreibvorgang ihn auf 13 aendert.
       expect(minLaengen).toEqual([10, 12]);
+    });
+
+    it('bricht nach hinreichend vielen Kollisionen mit einem Befund ab, statt endlos zu '
+      + 'suchen', async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-02-02T00:00:00.000Z'));
+      const backupVerzeichnis = join(dirname(pfad), 'backups');
+      mkdirSync(backupVerzeichnis, { recursive: true });
+      const basis = '2026-02-02T00-00-00.000Z';
+      // Belegt jeden Zaehlerstand, den `sichereVorversion` bis zu ihrer Obergrenze
+      // (MAX_SICHERUNGS_VERSUCHE = 1000 in der Quelle) versuchen wird — Zaehler 0..1000,
+      // also 1001 Dateien.
+      writeFileSync(join(backupVerzeichnis, `${basis}.json`), '{}');
+      for (let i = 1; i <= 1000; i += 1) {
+        writeFileSync(join(backupVerzeichnis, `${basis}-${i}.json`), '{}');
+      }
+      const vorher = readFileSync(pfad, 'utf8');
+
+      const roh = standardRoh();
+      (roh['preisanpassung'] as Record<string, unknown>)['begruendungMinLaenge'] = 14;
+      const antwort = await schreibeCompanyDefaults(roh, pfad);
+
+      expect(antwort.ok).toBe(false);
+      if (antwort.ok) return;
+      expect(antwort.befunde[0]?.text).toContain('kein freier Name');
+      // Zurueckweisen statt melden: Vor `sichereVorversion` wurde nichts an `pfad`
+      // geschrieben, also bleibt die Datei unangetastet.
+      expect(readFileSync(pfad, 'utf8')).toBe(vorher);
     });
   });
 });
