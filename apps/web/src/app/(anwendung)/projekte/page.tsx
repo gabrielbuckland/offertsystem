@@ -15,9 +15,12 @@ export default async function ProjekteSeite() {
     <main>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Projekte</h1>
-        <NeuesProjekt />
+        {/* Im Leerfall traegt `ProjektKacheln` den Ausloeser ueber `leerAktion` — ein
+            zweiter, gleichzeitig sichtbarer Ausloeser haette doppelte Feld-IDs im
+            <dialog>. */}
+        {eintraege.length > 0 && <NeuesProjekt />}
       </div>
-      <ProjektKacheln eintraege={eintraege} />
+      <ProjektKacheln eintraege={eintraege} leerAktion={<NeuesProjekt />} />
     </main>
   );
 }

@@ -31,4 +31,19 @@ describe('ProjektKacheln', () => {
       <ProjektKacheln eintraege={[{ ...EINTRAG, fehlerhaft: true, adresse: '—' }]} />);
     expect(html).toContain('nicht lesbar');
   });
+
+  it('zeigt ein flaches Icon-Feld statt des leeren Platzhalter-Divs, mit Hover-Kante', () => {
+    const html = renderToStaticMarkup(<ProjektKacheln eintraege={[EINTRAG]} />);
+    expect(html).not.toContain('aspect-[4/3]');
+    expect(html).toContain('aria-hidden="true"');
+    expect(html).toContain('bg-muted');
+    expect(html).toContain('hover:border-primary');
+  });
+
+  it('rendert im Leerfall den LeererZustand-Titel und die uebergebene Aktion', () => {
+    const html = renderToStaticMarkup(
+      <ProjektKacheln eintraege={[]} leerAktion={<button type="button">Neues Projekt</button>} />);
+    expect(html).toContain('Noch kein Projekt angelegt');
+    expect(html).toContain('Neues Projekt');
+  });
 });

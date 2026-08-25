@@ -43,7 +43,7 @@ export function EinheitenGenerator({
       <section className="mb-8">
         <h2 className="mb-3 text-lg font-medium">Einheiten anlegen</h2>
         <p className="text-muted-foreground">
-          Zuerst ein Referenzobjekt anlegen, danach koennen Einheiten erzeugt werden.
+          Zuerst ein Referenzobjekt anlegen, danach können Einheiten erzeugt werden.
         </p>
       </section>
     );
