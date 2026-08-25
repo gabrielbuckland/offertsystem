@@ -80,7 +80,12 @@ export function AnpassungsSpalten({ spalten, aendere, entferneSpalte }: Anpassun
   return (
     <section className="mb-8">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-medium">Zu-/Abschläge — Spalten</h2>
+        <div>
+          <h2 className="text-base font-semibold">Zu-/Abschläge — Spalten</h2>
+          <p className="text-sm text-muted-foreground">
+            Definiert Zu- und Abschläge, die je Einheit auf den Referenzwert wirken.
+          </p>
+        </div>
         <Button type="button" onClick={fuegeHinzu}>
           Spalte hinzufügen
         </Button>

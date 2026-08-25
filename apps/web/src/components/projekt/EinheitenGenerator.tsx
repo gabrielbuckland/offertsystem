@@ -41,8 +41,8 @@ export function EinheitenGenerator({
   if (referenzobjekte.length === 0) {
     return (
       <section className="mb-8">
-        <h2 className="mb-3 text-lg font-medium">Einheiten anlegen</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-base font-semibold">Einheiten anlegen</h2>
+        <p className="mb-3 text-muted-foreground">
           Zuerst ein Referenzobjekt anlegen, danach können Einheiten erzeugt werden.
         </p>
       </section>
@@ -51,7 +51,11 @@ export function EinheitenGenerator({
 
   return (
     <section className="mb-8">
-      <h2 className="mb-3 text-lg font-medium">Einheiten anlegen</h2>
+      <h2 className="text-base font-semibold">Einheiten anlegen</h2>
+      <p className="mb-3 text-sm text-muted-foreground">
+        Erzeugt die Einheiten eines Wohnungstyps anhand von Anzahl und Muster — Grundlage der
+        Einheitentabelle.
+      </p>
       <div className="mb-3 flex flex-wrap items-end gap-4">
         {referenzobjekte.map((r) => (
           <div key={r.id} className="flex flex-col gap-1">

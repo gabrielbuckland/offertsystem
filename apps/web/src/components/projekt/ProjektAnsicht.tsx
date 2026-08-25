@@ -12,6 +12,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
+import type { OffertKonfiguration } from '@offert/core';
+import type { AggregateValues, PriceDerivation } from '@offert/offer/src/model/offer.js';
 import type { Projekt } from '../../server/projekt-schema.js';
 import type { Faktorformular } from '../../server/faktorformular.js';
 import { verwendeProjekt } from './verwende-projekt.js';
@@ -27,10 +29,15 @@ import { Brotkrume } from '../shell/Brotkrume.js';
 import { Hinweis, type HinweisArt } from '../ui/hinweis.js';
 import { StatusZeile } from '../ui/status-zeile.js';
 import { rufeApi } from '../rufe-api.js';
+import { PipelineAnsicht } from '../pipeline/PipelineAnsicht.js';
+import { bauePipelineDaten } from '../pipeline/pipeline-daten.js';
 
 export interface ProjektAnsichtProps {
   readonly projekt: Projekt;
   readonly faktorformular: Faktorformular;
+  /** Basis der Pipeline-Stufen im Rechenweg-Block (Task 7) — dieselbe Konfiguration,
+   *  gegen die auch die Berechnung serverseitig laeuft. */
+  readonly konfigurationBasis: OffertKonfiguration;
 }
 
 interface BewertungsAntwort {
@@ -53,13 +60,14 @@ interface AbrufMeldung {
 }
 
 export function ProjektAnsicht(
-  { projekt: anfang, faktorformular }: ProjektAnsichtProps,
+  { projekt: anfang, faktorformular, konfigurationBasis }: ProjektAnsichtProps,
 ) {
   const router = useRouter();
   const [abrufMeldung, setAbrufMeldung] = useState<AbrufMeldung | undefined>(undefined);
   const [abrufLaeuft, setAbrufLaeuft] = useState(false);
   const [offerteLaeuft, setOfferteLaeuft] = useState(false);
   const [offerteFehler, setOfferteFehler] = useState<string | undefined>(undefined);
+  const [rechenwegOffen, setRechenwegOffen] = useState(false);
 
   async function rufeAb() {
     setAbrufMeldung(undefined);
@@ -126,6 +134,13 @@ export function ProjektAnsicht(
     router.push(`/offerte/${rumpf.offertId}` as Route);
   }
 
+  // `stand.herleitung` traegt in `verwende-berechnung.ts` bewusst `unknown` (keine
+  // React-/Node-Importe dort noetig) — hier, wo sie tatsaechlich verwendet wird, auf die
+  // Offert-Modelltypen geschaerft (type-only Import, keine Laufzeitabhaengigkeit).
+  const herleitung = stand.herleitung as
+    { readonly derivation: PriceDerivation; readonly aggregates: AggregateValues } | undefined;
+  const aufwandindikator = herleitung?.aggregates.effortIndicator.value;
+
   return (
     <main>
       <Brotkrume stufen={[
@@ -146,55 +161,82 @@ export function ProjektAnsicht(
       {abrufMeldung !== undefined && (
         <Hinweis art={abrufMeldung.art} className="mb-4">{abrufMeldung.text}</Hinweis>
       )}
-      <Referenzobjekte
-        referenzobjekte={projekt.referenzobjekte}
-        einheiten={projekt.einheiten}
-        aendere={(referenzobjekte) => aendere({ ...projekt, referenzobjekte: [...referenzobjekte] })}
-        rufeAb={() => { if (!abrufLaeuft) void rufeAb(); }}
-      />
-      <EinheitenGenerator
-        referenzobjekte={projekt.referenzobjekte}
-        einheiten={projekt.einheiten}
-        spalten={projekt.anpassungsSpalten}
-        aendere={(einheiten) => aendere({ ...projekt, einheiten: [...einheiten] })}
-      />
-      <AnpassungsSpalten
-        spalten={projekt.anpassungsSpalten}
-        aendere={(spalten) => aendere({ ...projekt, anpassungsSpalten: [...spalten] })}
-        entferneSpalte={(id) => aendere({
-          ...projekt,
-          anpassungsSpalten: projekt.anpassungsSpalten.filter((s) => s.id !== id),
-          // Kaskade ausgelagert und direkt getestet (`spaltenwerte-kaskade.test.ts`):
-          // eine entfernte Spalte darf ihren Wert nicht in `spaltenwerte` ueberleben,
-          // sonst lebte er bei einer spaeter wiederverwendeten Spalten-ID
-          // unbeabsichtigt wieder auf (Kommentar in AnpassungsSpalten.tsx).
-          einheiten: [...entferneSpaltenwert(projekt.einheiten, id)],
-        })}
-      />
-      <EinheitenTabelle
-        einheiten={projekt.einheiten}
-        spalten={projekt.anpassungsSpalten}
-        referenzobjekte={projekt.referenzobjekte}
-        preise={stand.preise}
-        aendere={(einheiten) => aendere({ ...projekt, einheiten: [...einheiten] })}
-      />
+      <section className="mb-6 rounded-lg border border-border bg-card p-6">
+        <Referenzobjekte
+          referenzobjekte={projekt.referenzobjekte}
+          einheiten={projekt.einheiten}
+          aendere={(referenzobjekte) => aendere({ ...projekt, referenzobjekte: [...referenzobjekte] })}
+          rufeAb={() => { if (!abrufLaeuft) void rufeAb(); }}
+        />
+      </section>
+      <section className="mb-6 rounded-lg border border-border bg-card p-6">
+        <EinheitenGenerator
+          referenzobjekte={projekt.referenzobjekte}
+          einheiten={projekt.einheiten}
+          spalten={projekt.anpassungsSpalten}
+          aendere={(einheiten) => aendere({ ...projekt, einheiten: [...einheiten] })}
+        />
+      </section>
+      <section className="mb-6 rounded-lg border border-border bg-card p-6">
+        <AnpassungsSpalten
+          spalten={projekt.anpassungsSpalten}
+          aendere={(spalten) => aendere({ ...projekt, anpassungsSpalten: [...spalten] })}
+          entferneSpalte={(id) => aendere({
+            ...projekt,
+            anpassungsSpalten: projekt.anpassungsSpalten.filter((s) => s.id !== id),
+            // Kaskade ausgelagert und direkt getestet (`spaltenwerte-kaskade.test.ts`):
+            // eine entfernte Spalte darf ihren Wert nicht in `spaltenwerte` ueberleben,
+            // sonst lebte er bei einer spaeter wiederverwendeten Spalten-ID
+            // unbeabsichtigt wieder auf (Kommentar in AnpassungsSpalten.tsx).
+            einheiten: [...entferneSpaltenwert(projekt.einheiten, id)],
+          })}
+        />
+      </section>
+      <section className="mb-6 rounded-lg border border-border bg-card p-6">
+        <EinheitenTabelle
+          einheiten={projekt.einheiten}
+          spalten={projekt.anpassungsSpalten}
+          referenzobjekte={projekt.referenzobjekte}
+          preise={stand.preise}
+          aendere={(einheiten) => aendere({ ...projekt, einheiten: [...einheiten] })}
+        />
+      </section>
       {stand.fehler !== undefined && (
         <Hinweis art="fehler" className="mt-4">{stand.fehler}</Hinweis>
       )}
-      <Aufwandfaktoren
-        formular={faktorformular}
-        werte={projekt.aufwandfaktoren}
-        aendere={(werte) => aendere({ ...projekt, aufwandfaktoren: { ...werte } })}
-      />
+      <section className="mb-6 rounded-lg border border-border bg-card p-6">
+        <Aufwandfaktoren
+          formular={faktorformular}
+          werte={projekt.aufwandfaktoren}
+          aendere={(werte) => aendere({ ...projekt, aufwandfaktoren: { ...werte } })}
+        />
+      </section>
       {offerteFehler !== undefined && (
         <Hinweis art="fehler" className="mt-4">{offerteFehler}</Hinweis>
+      )}
+      {rechenwegOffen && (
+        <section className="mb-6 rounded-lg border border-border bg-card p-6">
+          <h2 className="mb-3 text-base font-semibold">Rechenweg</h2>
+          <PipelineAnsicht modus="projekt"
+            stufen={bauePipelineDaten(konfigurationBasis, {
+              ...(herleitung === undefined ? {} : { herleitung }),
+            })} />
+        </section>
       )}
       <Aggregatleiste
         verkaufssumme={stand.verkaufssumme}
         honorarMin={stand.honorarMin}
         honorarMax={stand.honorarMax}
+        aufwandindikator={aufwandindikator}
         erzeuge={() => { if (!offerteLaeuft) void erzeugeOfferte(); }}
         laeuft={offerteLaeuft}
+        speichernLaeuft={speichernLaeuft}
+        berechnungLaeuft={stand.laeuft}
+        rechenwegOffen={rechenwegOffen}
+        schalteRechenweg={() => setRechenwegOffen((offen) => !offen)}
+        {...(stand.honorarAbbruch === undefined
+          ? {}
+          : { honorarAbbruchMeldung: stand.honorarAbbruch.meldung })}
       />
     </main>
   );

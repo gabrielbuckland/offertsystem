@@ -90,7 +90,12 @@ export function Referenzobjekte({
   return (
     <section className="mb-8">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-medium">Referenzobjekte</h2>
+        <div>
+          <h2 className="text-base font-semibold">Referenzobjekte</h2>
+          <p className="text-sm text-muted-foreground">
+            Je Wohnungstyp eine Referenzbewertung — sie ist der Ausgangswert der Preisableitung.
+          </p>
+        </div>
         <div className="flex gap-2">
           <Button type="button" variant="outline" onClick={rufeAb}>
             Bewertungen beziehen
