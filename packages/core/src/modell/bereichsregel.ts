@@ -69,8 +69,14 @@ export function pruefeBereiche(bereiche: readonly Bereich[]): readonly string[] 
 }
 
 /**
- * Total: Fuer jede gueltige Staffel und jeden endlichen Merkmalswert entsteht genau ein
+ * Total und fehlerfrei ueber jede Staffel, die pruefeBereiche akzeptiert.
+ *
+ * Fuer jede gueltige Staffel und jeden endlichen Merkmalswert entsteht genau ein
  * Treffer. Der Restfall garantiert das — deshalb ist er Pflicht und kein Komfort.
+ *
+ * Ausserhalb der durch pruefeBereiche definierten Domäne (z. B. leere Staffel oder
+ * fehlender Restfall) ist der Aufruf ein Programmierungsfehler und schlaegt laut fehl,
+ * statt einen falschen Wert zu liefern. pruefeBereiche muss vorher aufgerufen werden.
  */
 export function werteBereichsregelAus(
   regel: Bereichsregel,
@@ -82,6 +88,5 @@ export function werteBereichsregelAus(
       return { wert: b.wert, bereich: i };
     }
   }
-  const letzter = regel.bereiche.length - 1;
-  return { wert: regel.bereiche[letzter]!.wert, bereich: letzter };
+  throw new Error('Die Staffel hat keinen Restfall und kann nicht ausgewertet werden — pruefeBereiche muss aufgerufen werden.');
 }

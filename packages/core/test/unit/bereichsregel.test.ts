@@ -65,4 +65,16 @@ describe('werteBereichsregelAus', () => {
   it('behandelt negative Merkmalswerte wie jeden anderen Wert — Untergeschoss ist kein Sonderfall', () => {
     expect(werteBereichsregelAus(regel, -1)).toEqual({ wert: 0, bereich: 0 });
   });
+
+  it('schlaegt laut fehl bei leerer Staffel, nicht mit TypeError', () => {
+    const leereRegel = { merkmal: 'test', bereiche: [] };
+    expect(() => werteBereichsregelAus(leereRegel, 0)).toThrow(Error);
+    expect(() => werteBereichsregelAus(leereRegel, 0)).toThrow(/Restfall/);
+  });
+
+  it('schlaegt laut fehl bei Staffel ohne Restfall, wenn Merkmalswert groesser als alle Schwellen ist', () => {
+    const ohneRestfallRegel = { merkmal: 'test', bereiche: [{ unter: 1, wert: 100 }, { unter: 2, wert: 200 }] };
+    expect(() => werteBereichsregelAus(ohneRestfallRegel, 3)).toThrow(Error);
+    expect(() => werteBereichsregelAus(ohneRestfallRegel, 3)).toThrow(/Restfall/);
+  });
 });
