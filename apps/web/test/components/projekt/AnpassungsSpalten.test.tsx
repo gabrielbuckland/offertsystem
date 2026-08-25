@@ -202,7 +202,13 @@ describe('AnpassungsSpalten — eine neue Spalte ist sofort speicherbar', () => 
     erfasst.buttons.length = 0;
     const aendere = vi.fn();
     renderToStaticMarkup(
-      <AnpassungsSpalten spalten={[]} aendere={aendere} entferneSpalte={vi.fn()} uebernehmeAufEinheiten={vi.fn()} />);
+      <AnpassungsSpalten
+        spalten={[]}
+        aendere={aendere}
+        entferneSpalte={vi.fn()}
+        uebernehmeAufEinheiten={vi.fn()}
+      />,
+    );
 
     erfasst.buttons.find((b) => b.children === 'Spalte hinzufügen')!.onClick();
 

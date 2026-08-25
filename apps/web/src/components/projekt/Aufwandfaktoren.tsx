@@ -65,6 +65,31 @@ function OrdinalFeld(
   );
 }
 
+export type ZahlfeldEntscheid =
+  | { readonly art: 'uebernehmen'; readonly wert: number }
+  | { readonly art: 'beibehalten'; readonly wert: number | undefined };
+
+/**
+ * Reine Commit-Entscheidung fuer `ZahlFeld` beim Verlassen des Feldes — herausgeloest aus
+ * der Komponente, damit sie ohne DOM/Handler-Attrappen testbar ist (Muster
+ * `zellen-logik.ts`, Task-11-Review Finding). Nutzt `entscheideZellenwert` fuer die
+ * Parse-Regel (dieselbe wie `ZellenEingabe`): ein leerer oder nicht parsierbarer Entwurf
+ * committet nicht, sondern faellt auf den bisherigen — moeglicherweise weiterhin
+ * fehlenden — Wert zurueck, statt eine Zahl zu erfinden.
+ *
+ * Die Feldgrenzen (`untergrenze`/`obergrenze`) sind bewusst NICHT Teil dieser Entscheidung:
+ * ein parsierbarer, aber ausserhalb der Grenzen liegender Wert wird — wie bisher — trotzdem
+ * committet und erst danach ueber `pruefeFaktorwerte`/`Hinweis` sichtbar gemacht. Dieselbe
+ * Aufgabenteilung wie im Rest des Formulars: Parsierung hier, Bereichspruefung dort.
+ */
+export function entscheideZahlfeldCommit(
+  entwurf: string, aktuellerWert: number | undefined,
+): ZahlfeldEntscheid {
+  const entscheid = entscheideZellenwert(entwurf);
+  if (entscheid.art === 'verwerfen') return { art: 'beibehalten', wert: aktuellerWert };
+  return { art: 'uebernehmen', wert: entscheid.wert };
+}
+
 /**
  * Haelt den Eingabewert lokal und meldet ihn erst beim Verlassen des Feldes (Muster
  * `ZellenEingabe.tsx`). Ohne lokalen Zustand ist das Feld ueber `value={wert ?? ''}`
@@ -73,7 +98,8 @@ function OrdinalFeld(
  * Anzeige springt im selben Tastendruck auf den alten Wert zurueck — ein Feld liesse sich
  * so nie leeren, um eine neue Zahl zu tippen (docs/offene-punkte-projektansicht.md). Der
  * Abgleich per useEffect holt Aenderungen nach, die von aussen kommen (z. B. Formular-
- * Reset).
+ * Reset). Die eigentliche Commit-Entscheidung steckt in `entscheideZahlfeldCommit` oben,
+ * hier bleibt nur die React-Verdrahtung.
  */
 function ZahlFeld(
   { feld, wert, aendere }: {
@@ -96,13 +122,9 @@ function ZahlFeld(
       value={entwurf}
       onChange={(e) => setzeEntwurf(e.target.value)}
       onBlur={() => {
-        const entscheid = entscheideZellenwert(entwurf);
-        // Ein geleertes oder nicht parsierbares Feld verwirft statt eine Zahl zu
-        // erfinden; der Entwurf springt auf den bisherigen (moeglicherweise weiterhin
-        // fehlenden) Wert zurueck. `pruefeFaktorwerte` zeigt den fehlenden Pflichtwert
-        // dann als Hinweis unter dem Feld.
-        if (entscheid.art === 'verwerfen') {
-          setzeEntwurf(wert === undefined ? '' : String(wert));
+        const entscheid = entscheideZahlfeldCommit(entwurf, wert);
+        if (entscheid.art === 'beibehalten') {
+          setzeEntwurf(entscheid.wert === undefined ? '' : String(entscheid.wert));
           return;
         }
         aendere(entscheid.wert);
