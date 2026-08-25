@@ -232,8 +232,9 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
                     <TableCell>
                       <div className="space-y-1">
                         <label className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <input
+                          <Input
                             type="checkbox"
+                            className="h-4 w-4"
                             checked={regelAktiv}
                             onChange={(e) => schalteRegel(index, e.target.checked)}
                           />
