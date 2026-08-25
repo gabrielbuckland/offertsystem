@@ -109,7 +109,7 @@ export function Referenzobjekte({
   const naechstes = neuesReferenzobjekt(referenzobjekte);
 
   return (
-    <section className="mb-8">
+    <section>
       <div className="mb-3 flex items-center justify-between">
         <div>
           <h2 className="text-base font-semibold">Referenzobjekte</h2>

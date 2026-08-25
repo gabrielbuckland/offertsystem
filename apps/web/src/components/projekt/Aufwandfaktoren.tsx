@@ -147,7 +147,7 @@ export function Aufwandfaktoren({ formular, werte, aendere }: AufwandfaktorenPro
   }
 
   return (
-    <section className="mb-8">
+    <section>
       <h2 className="text-base font-semibold">Aufwandfaktoren</h2>
       <p className="mb-3 text-sm text-muted-foreground">
         Erfasst die Aufwandfaktoren, aus denen der Aufwandindikator D und die Honorarrange

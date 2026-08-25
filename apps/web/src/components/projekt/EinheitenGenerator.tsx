@@ -40,7 +40,7 @@ export function EinheitenGenerator({
 
   if (referenzobjekte.length === 0) {
     return (
-      <section className="mb-8">
+      <section>
         <h2 className="text-base font-semibold">Einheiten anlegen</h2>
         <p className="mb-3 text-muted-foreground">
           Zuerst ein Referenzobjekt anlegen, danach können Einheiten erzeugt werden.
@@ -50,7 +50,7 @@ export function EinheitenGenerator({
   }
 
   return (
-    <section className="mb-8">
+    <section>
       <h2 className="text-base font-semibold">Einheiten anlegen</h2>
       <p className="mb-3 text-sm text-muted-foreground">
         Erzeugt die Einheiten eines Wohnungstyps anhand von Anzahl und Muster — Grundlage der

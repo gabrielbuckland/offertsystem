@@ -11,9 +11,9 @@
 import { useEffect, useState } from 'react';
 import type { DossierDefaults } from '@offert/core';
 import type { Referenzobjekt } from '../../server/projekt-schema.js';
-import { Button } from '../ui/button.js';
 import { Input } from '../ui/input.js';
 import { Select } from '../ui/select.js';
+import { SchluesselWertListe } from '../ui/schluessel-wert-liste.js';
 import { ZellenEingabe } from './ZellenEingabe.js';
 
 type Parametrisierung = Referenzobjekt['parametrisierung'];
@@ -63,68 +63,6 @@ function TextfeldEntwurf({ wert, aendere }: {
       onChange={(e) => setzeEntwurf(e.target.value)}
       onBlur={() => aendere(entwurf)}
     />
-  );
-}
-
-/** Mini-Tabelle Schluessel/Wert fuer `zustandsbewertungen`/`qualitaetsbewertungen`: beide
- *  sind offene Records (Zod `z.record(z.string())`), die Oberflaeche kann die moeglichen
- *  Schluessel deshalb nicht vorab auflisten. */
-function BewertungsTabelle({ titel, werte, aendere }: {
-  readonly titel: string;
-  readonly werte: Readonly<Record<string, string>>;
-  readonly aendere: (werte: Record<string, string>) => void;
-}) {
-  const [neuerSchluessel, setzeNeuenSchluessel] = useState('');
-  const [neuerWert, setzeNeuenWert] = useState('');
-
-  function uebernehmen() {
-    const schluessel = neuerSchluessel.trim();
-    if (schluessel === '') return;
-    aendere({ ...werte, [schluessel]: neuerWert });
-    setzeNeuenSchluessel('');
-    setzeNeuenWert('');
-  }
-
-  function entfernen(schluessel: string) {
-    const rest = { ...werte };
-    delete rest[schluessel];
-    aendere(rest);
-  }
-
-  return (
-    <div>
-      <h4 className="mb-1 text-sm font-medium">{titel}</h4>
-      <table className="w-full text-sm">
-        <tbody>
-          {Object.entries(werte).map(([schluessel, wert]) => (
-            <tr key={schluessel}>
-              <td className="py-1 pr-2">{schluessel}</td>
-              <td className="py-1 pr-2">{wert}</td>
-              <td className="py-1">
-                <Button type="button" variant="ghost" onClick={() => entfernen(schluessel)}>
-                  entfernen
-                </Button>
-              </td>
-            </tr>
-          ))}
-          <tr>
-            <td className="py-1 pr-2">
-              <Input type="text" className="h-8 w-full" value={neuerSchluessel}
-                     onChange={(e) => setzeNeuenSchluessel(e.target.value)} />
-            </td>
-            <td className="py-1 pr-2">
-              <Input type="text" className="h-8 w-full" value={neuerWert}
-                     onChange={(e) => setzeNeuenWert(e.target.value)} />
-            </td>
-            <td className="py-1">
-              <Button type="button" variant="outline" onClick={uebernehmen}>
-                Eintrag hinzufügen
-              </Button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
   );
 }
 
@@ -191,10 +129,16 @@ export function ParametrisierungsDetail(
           <Herkunftsmarke feld="heizungsart" wert={p.heizungsart} defaults={defaults} />
         </div>
       </div>
-      <BewertungsTabelle titel="Zustandsbewertungen" werte={p.zustandsbewertungen}
-                          aendere={(werte) => aendereRecord('zustandsbewertungen', werte)} />
-      <BewertungsTabelle titel="Qualitätsbewertungen" werte={p.qualitaetsbewertungen}
-                          aendere={(werte) => aendereRecord('qualitaetsbewertungen', werte)} />
+      <div>
+        <h4 className="mb-1 text-sm font-medium">Zustandsbewertungen</h4>
+        <SchluesselWertListe eintraege={p.zustandsbewertungen}
+                              aendere={(werte) => aendereRecord('zustandsbewertungen', werte)} />
+      </div>
+      <div>
+        <h4 className="mb-1 text-sm font-medium">Qualitätsbewertungen</h4>
+        <SchluesselWertListe eintraege={p.qualitaetsbewertungen}
+                              aendere={(werte) => aendereRecord('qualitaetsbewertungen', werte)} />
+      </div>
     </div>
   );
 }

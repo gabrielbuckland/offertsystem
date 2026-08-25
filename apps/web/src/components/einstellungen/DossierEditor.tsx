@@ -8,15 +8,15 @@
  *
  * `zustandsbewertungen`/`qualitaetsbewertungen` sind offene Schluessel-Wert-Listen
  * (`Record<string, string>`), deren Zeilenzahl nicht feststeht — dasselbe Muster wie
- * `ParametrisierungsDetail` (Task 10, `components/projekt/`): hier EIGENSTAENDIG
- * implementiert (keine gemeinsame Datei ueber die Team-A/B-Grenze hinweg), die
- * Duplikation ist laut Brief bewusst in Kauf genommen und wird in Task 19 aufgeloest.
+ * `ParametrisierungsDetail` (Task 10, `components/projekt/`); seit Task 19 gemeinsam in
+ * `components/ui/schluessel-wert-liste.tsx` (`SchluesselWertListe`) implementiert statt
+ * hier eigenstaendig dupliziert.
  */
 import { useEffect, useState, type ReactElement } from 'react';
-import { Button } from '../ui/button.js';
 import { Hinweis } from '../ui/hinweis.js';
 import { Input } from '../ui/input.js';
 import { Label } from '../ui/label.js';
+import { SchluesselWertListe } from '../ui/schluessel-wert-liste.js';
 import { befundeFuerPfad, type BereichsEditorProps } from './verwende-einstellungen.js';
 
 /**
@@ -68,58 +68,6 @@ const LISTEN_FELDER: ReadonlyArray<{ readonly feld: ListenFeld; readonly beschri
   { feld: 'zustandsbewertungen', beschriftung: 'Zustandsbewertungen' },
   { feld: 'qualitaetsbewertungen', beschriftung: 'Qualitätsbewertungen' },
 ];
-
-function KeyWertListe({ eintraege, aendere }: {
-  readonly eintraege: Readonly<Record<string, string>>;
-  readonly aendere: (naechste: Readonly<Record<string, string>>) => void;
-}): ReactElement {
-  const [neuerSchluessel, setzeNeuerSchluessel] = useState('');
-
-  function aendereWert(schluessel: string, wert: string): void {
-    aendere({ ...eintraege, [schluessel]: wert });
-  }
-
-  function entferneEintrag(schluessel: string): void {
-    const { [schluessel]: _entfernt, ...rest } = eintraege;
-    aendere(rest);
-  }
-
-  function fuegeEintragHinzu(): void {
-    const schluessel = neuerSchluessel.trim();
-    if (schluessel.length === 0 || schluessel in eintraege) return;
-    aendere({ ...eintraege, [schluessel]: '' });
-    setzeNeuerSchluessel('');
-  }
-
-  return (
-    <div className="space-y-2">
-      {Object.entries(eintraege).map(([schluessel, wert]) => (
-        <div key={schluessel} className="flex items-center gap-2">
-          <Input value={schluessel} readOnly disabled className="h-8 w-1/3" />
-          <Input
-            value={wert}
-            onChange={(e) => aendereWert(schluessel, e.target.value)}
-            className="h-8 flex-1"
-          />
-          <Button type="button" variant="outline" size="sm" onClick={() => entferneEintrag(schluessel)}>
-            entfernen
-          </Button>
-        </div>
-      ))}
-      <div className="flex items-center gap-2">
-        <Input
-          value={neuerSchluessel}
-          onChange={(e) => setzeNeuerSchluessel(e.target.value)}
-          className="h-8 w-1/3"
-          placeholder="Schlüssel"
-        />
-        <Button type="button" variant="outline" size="sm" onClick={fuegeEintragHinzu}>
-          hinzufügen
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 export function DossierEditor({ einstellungen }: BereichsEditorProps): ReactElement {
   const dossier = einstellungen.entwurf['dossierDefaults'] as DossierDefaultsRoh;
@@ -175,7 +123,7 @@ export function DossierEditor({ einstellungen }: BereichsEditorProps): ReactElem
       {LISTEN_FELDER.map(({ feld, beschriftung }) => (
         <div key={feld} className="space-y-2 rounded-md border border-border p-4">
           <h3 className="text-sm font-semibold">{beschriftung}</h3>
-          <KeyWertListe
+          <SchluesselWertListe
             eintraege={dossier[feld]}
             aendere={(naechste) => schreibeDossier({ [feld]: naechste })}
           />
