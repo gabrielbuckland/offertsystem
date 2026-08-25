@@ -8,16 +8,19 @@ export const dynamic = 'force-dynamic';
 export default async function ProjekteSeite() {
   const laufzeit = holeLaufzeit();
   if (!laufzeit.ok) {
-    return <main className="p-8"><h1>Projekte</h1><p>{laufzeit.meldungen.join(' ')}</p></main>;
+    return <main><h1>Projekte</h1><p>{laufzeit.meldungen.join(' ')}</p></main>;
   }
   const eintraege = await listeProjekte(laufzeit.wert.projekteVerzeichnis);
   return (
-    <main className="p-8">
+    <main>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Projekte</h1>
-        <NeuesProjekt />
+        {/* Im Leerfall traegt `ProjektKacheln` den Ausloeser ueber `leerAktion` — ein
+            zweiter, gleichzeitig sichtbarer Ausloeser haette doppelte Feld-IDs im
+            <dialog>. */}
+        {eintraege.length > 0 && <NeuesProjekt />}
       </div>
-      <ProjektKacheln eintraege={eintraege} />
+      <ProjektKacheln eintraege={eintraege} leerAktion={<NeuesProjekt />} />
     </main>
   );
 }

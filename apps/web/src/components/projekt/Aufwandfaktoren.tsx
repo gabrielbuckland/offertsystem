@@ -10,8 +10,12 @@
  * Darunter die `anzeigeFaktoren`: sie werden nicht erfasst, sondern in der
  * Faktorermittlung (Lagescore/Ableitung) hergeleitet, darum reine Anzeige.
  */
-import type { Feldbeschreibung, Faktorformular } from '../../server/faktorformular.js';
+import { useEffect, useState } from 'react';
+import {
+  pruefeFaktorwerte, type Feldbeschreibung, type Faktorformular,
+} from '../../server/faktorformular.js';
 import { entscheideZellenwert } from './zellen-logik.js';
+import { Hinweis } from '../ui/hinweis.js';
 import { Input } from '../ui/input.js';
 import { Label } from '../ui/label.js';
 import { Select } from '../ui/select.js';
@@ -30,10 +34,6 @@ export interface AufwandfaktorenProps {
  * als erfasste Null gemeldet, und der Kern gewichtet eine Null bereitwillig. Dieselbe
  * Stelle, fuer die `entscheideZellenwert` geschrieben wurde (siehe zellen-logik.ts); die
  * Lehre stand bisher nur in der Datei, in der der Fehler gemeldet worden war.
- *
- * Ein verworfener Entwurf laesst den bisherigen Wert stehen; das Feld ist kontrolliert und
- * springt darauf zurueck. Das ist die gewollte Wirkung: lieber der alte Wert als eine
- * erfundene Null.
  */
 function meldeGueltige(entwurf: string, aendere: (wert: number) => void): void {
   const entscheid = entscheideZellenwert(entwurf);
@@ -47,6 +47,8 @@ function OrdinalFeld(
     readonly aendere: (wert: number) => void;
   },
 ) {
+  // Ein Select hat keinen Tipp-Zwischenzustand — anders als ZahlFeld unten braucht es
+  // darum keinen lokalen Entwurf und bleibt bei `onChange`.
   return (
     <Select
       id={`faktor-${feld.faktorId}`}
@@ -63,6 +65,42 @@ function OrdinalFeld(
   );
 }
 
+export type ZahlfeldEntscheid =
+  | { readonly art: 'uebernehmen'; readonly wert: number }
+  | { readonly art: 'beibehalten'; readonly wert: number | undefined };
+
+/**
+ * Reine Commit-Entscheidung fuer `ZahlFeld` beim Verlassen des Feldes — herausgeloest aus
+ * der Komponente, damit sie ohne DOM/Handler-Attrappen testbar ist (Muster
+ * `zellen-logik.ts`, Task-11-Review Finding). Nutzt `entscheideZellenwert` fuer die
+ * Parse-Regel (dieselbe wie `ZellenEingabe`): ein leerer oder nicht parsierbarer Entwurf
+ * committet nicht, sondern faellt auf den bisherigen — moeglicherweise weiterhin
+ * fehlenden — Wert zurueck, statt eine Zahl zu erfinden.
+ *
+ * Die Feldgrenzen (`untergrenze`/`obergrenze`) sind bewusst NICHT Teil dieser Entscheidung:
+ * ein parsierbarer, aber ausserhalb der Grenzen liegender Wert wird — wie bisher — trotzdem
+ * committet und erst danach ueber `pruefeFaktorwerte`/`Hinweis` sichtbar gemacht. Dieselbe
+ * Aufgabenteilung wie im Rest des Formulars: Parsierung hier, Bereichspruefung dort.
+ */
+export function entscheideZahlfeldCommit(
+  entwurf: string, aktuellerWert: number | undefined,
+): ZahlfeldEntscheid {
+  const entscheid = entscheideZellenwert(entwurf);
+  if (entscheid.art === 'verwerfen') return { art: 'beibehalten', wert: aktuellerWert };
+  return { art: 'uebernehmen', wert: entscheid.wert };
+}
+
+/**
+ * Haelt den Eingabewert lokal und meldet ihn erst beim Verlassen des Feldes (Muster
+ * `ZellenEingabe.tsx`). Ohne lokalen Zustand ist das Feld ueber `value={wert ?? ''}`
+ * direkt vom Projektstand kontrolliert: Ein geleertes Feld meldet ueber `onChange` sofort
+ * `entscheideZellenwert('')` -> `verwerfen`, nichts aendert sich am Projektstand, und die
+ * Anzeige springt im selben Tastendruck auf den alten Wert zurueck — ein Feld liesse sich
+ * so nie leeren, um eine neue Zahl zu tippen (docs/offene-punkte-projektansicht.md). Der
+ * Abgleich per useEffect holt Aenderungen nach, die von aussen kommen (z. B. Formular-
+ * Reset). Die eigentliche Commit-Entscheidung steckt in `entscheideZahlfeldCommit` oben,
+ * hier bleibt nur die React-Verdrahtung.
+ */
 function ZahlFeld(
   { feld, wert, aendere }: {
     readonly feld: Feldbeschreibung;
@@ -70,14 +108,27 @@ function ZahlFeld(
     readonly aendere: (wert: number) => void;
   },
 ) {
+  const [entwurf, setzeEntwurf] = useState(wert === undefined ? '' : String(wert));
+  useEffect(() => {
+    setzeEntwurf(wert === undefined ? '' : String(wert));
+  }, [wert]);
+
   return (
     <Input
       id={`faktor-${feld.faktorId}`}
       type="number"
       min={feld.untergrenze}
       max={feld.obergrenze}
-      value={wert ?? ''}
-      onChange={(e) => meldeGueltige(e.target.value, aendere)}
+      value={entwurf}
+      onChange={(e) => setzeEntwurf(e.target.value)}
+      onBlur={() => {
+        const entscheid = entscheideZahlfeldCommit(entwurf, wert);
+        if (entscheid.art === 'beibehalten') {
+          setzeEntwurf(entscheid.wert === undefined ? '' : String(entscheid.wert));
+          return;
+        }
+        aendere(entscheid.wert);
+      }}
     />
   );
 }
@@ -87,9 +138,21 @@ export function Aufwandfaktoren({ formular, werte, aendere }: AufwandfaktorenPro
     aendere({ ...werte, [faktorId]: wert });
   }
 
+  // `pruefeFaktorwerte` ist dieselbe reine Pruefung wie serverseitig vor der Berechnung
+  // (server/faktorformular.ts) — hier client-seitig fuer die feldnahe Vorschau genutzt,
+  // nicht als Ersatz fuer die serverseitige Validierung.
+  const meldungen = pruefeFaktorwerte(formular, werte);
+  function meldungFuer(faktorId: string): string | undefined {
+    return meldungen.find((m) => m.feldpfad === `aufwandfaktoren.${faktorId}`)?.text;
+  }
+
   return (
-    <section className="mb-8">
-      <h2 className="mb-3 text-lg font-medium">Aufwandfaktoren</h2>
+    <section>
+      <h2 className="text-base font-semibold">Aufwandfaktoren</h2>
+      <p className="mb-3 text-sm text-muted-foreground">
+        Erfasst die Aufwandfaktoren, aus denen der Aufwandindikator D und die Honorarrange
+        abgeleitet werden.
+      </p>
       {formular.felder.length === 0 ? (
         <p className="text-muted-foreground">Keine manuell zu erfassenden Aufwandfaktoren.</p>
       ) : (
@@ -109,6 +172,11 @@ export function Aufwandfaktoren({ formular, werte, aendere }: AufwandfaktorenPro
                   wert={werte[feld.faktorId]}
                   aendere={(wert) => setzeWert(feld.faktorId, wert)}
                 />
+              )}
+              {meldungFuer(feld.faktorId) !== undefined && (
+                <Hinweis art="fehler" className="max-w-xs">
+                  {meldungFuer(feld.faktorId)}
+                </Hinweis>
               )}
             </div>
           ))}

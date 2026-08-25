@@ -24,9 +24,10 @@ describe('ProjektAnsicht — Berechnung ist gekettet, nicht parallel', () => {
 
   it('stellt die Berechnung aus dem Erfolgspfad des Speicherns ein', () => {
     // `verwendeProjekt(anfang, rueckruf)` — der zweite Parameter ist der Erfolgspfad des
-    // PUT (siehe `aufErfolg` in verwende-projekt.ts).
+    // PUT (siehe `aufErfolg` in verwende-projekt.ts). Die Warteschlange selbst lebt seit
+    // Task 8 in `verwende-berechnung.ts`; hier wird nur noch deren `stelleEin` verkettet.
     expect(quelle).toMatch(
-      /verwendeProjekt\(\s*anfang,\s*\(gespeichert\) => \{ berechnungsWarteschlange\.current\?\.stelleEin\(gespeichert\); \},/);
+      /verwendeProjekt\(\s*anfang,\s*\(gespeichert\) => \{ stelleEin\(gespeichert\); \},/);
   });
 
   it('reagiert nicht mehr auf den Projektstand als Effektabhaengigkeit', () => {

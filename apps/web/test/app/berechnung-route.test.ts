@@ -2,6 +2,7 @@ import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { aggregateValuesSchema, priceDerivationSchema } from '@offert/offer/src/model/offer.js';
 import { POST } from '../../src/app/api/projekt/[id]/berechnung/route.js';
 import { legeProjektAn, speichereProjekt } from '../../src/server/projekt-ablage.js';
 import { standardKonfiguration } from '../bau/offerte-bauer.js';
@@ -112,5 +113,36 @@ describe('POST /api/projekt/[id]/berechnung', () => {
       { params: Promise.resolve({ id: '00000000-0000-4000-8000-000000000000' }) },
     );
     expect(antwort.status).toBe(404);
+  });
+
+  it('traegt die Herleitung des Offert-Schemas in der Antwort', async () => {
+    const id = await vorbereitetesProjekt();
+    const antwort = await POST(new Request('http://test', { method: 'POST' }),
+      { params: Promise.resolve({ id }) });
+    expect(antwort.status).toBe(200);
+    const rumpf = await antwort.json() as {
+      verkaufssumme: number; honorarMin: number; honorarMax: number;
+      einheiten: { wohnungsnummer: string; basispreis: number; preis: number }[];
+      herleitung?: {
+        derivation: unknown;
+        aggregates: unknown;
+      };
+    };
+    expect(priceDerivationSchema.safeParse(rumpf.herleitung?.derivation).success).toBe(true);
+    expect(aggregateValuesSchema.safeParse(rumpf.herleitung?.aggregates).success).toBe(true);
+
+    // Der Kern der Zusammenlegung: EIN Datenbild, nicht zwei (NFA-07). Die flachen
+    // Felder der Antwort sind Projektionen derselben Herleitung. Liefen beide je
+    // auseinander, faellt genau diese Zusicherung — ohne sie pruefte der Test nur, dass
+    // ueberhaupt etwas Schemakonformes mitgeschickt wird.
+    const aggregate = aggregateValuesSchema.parse(rumpf.herleitung?.aggregates);
+    expect(aggregate.totalSalesValue.value).toBe(rumpf.verkaufssumme);
+    expect(aggregate.feeRange.value.min).toBe(rumpf.honorarMin);
+    expect(aggregate.feeRange.value.max).toBe(rumpf.honorarMax);
+    const herleitung = priceDerivationSchema.parse(rumpf.herleitung?.derivation);
+    expect(herleitung.units.map((u) => u.unitNumber)).toEqual(
+      rumpf.einheiten.map((e) => e.wohnungsnummer));
+    expect(herleitung.units[0]!.unitPrice.value).toBe(rumpf.einheiten[0]!.preis);
+    expect(herleitung.units[0]!.basePrice.value).toBe(rumpf.einheiten[0]!.basispreis);
   });
 });

@@ -6,13 +6,17 @@
  * Nebenwirkung des Renderns — er verbraucht Anbieter-Guthaben (NFA-12, I-27), das darf
  * nicht beim blossen Anzeigen der Seite geschehen.
  */
+import { Fragment, useState } from 'react';
 import { formatiereAggregat } from '@offert/offer';
+import type { DossierDefaults } from '@offert/core';
 import type { ProjektEinheit, Referenzobjekt } from '../../server/projekt-schema.js';
 import { Button } from '../ui/button.js';
+import { StatusZeile } from '../ui/status-zeile.js';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../ui/table.js';
 import { ZellenEingabe } from './ZellenEingabe.js';
+import { ParametrisierungsDetail } from './ParametrisierungsDetail.js';
 
 export interface ReferenzobjekteProps {
   readonly referenzobjekte: readonly Referenzobjekt[];
@@ -20,13 +24,21 @@ export interface ReferenzobjekteProps {
   // (REFERENZOBJEKT_UNBEKANNT, `projekt-schema.ts`) — die Komponente aendert `einheiten`
   // selbst nicht.
   readonly einheiten: readonly ProjektEinheit[];
+  // Quelle der Herkunftsauszeichnung in der Detailzeile (Task 9: `konfigurationBasis`).
+  readonly dossierDefaults: DossierDefaults;
   readonly aendere: (referenzobjekte: readonly Referenzobjekt[]) => void;
   readonly rufeAb: () => void;
+  readonly abrufLaeuft: boolean;
 }
 
 // Fortlaufend statt zufaellig (wie `T${n}` in ablauf-zustand.ts): Eine UUID entstuende
 // ausserhalb von `apps/web/src/server` und verletzte damit E-29/NFA-06.
-function neuesReferenzobjekt(vorhandene: readonly Referenzobjekt[]): Referenzobjekt {
+//
+// Liefert `undefined`, wenn keine unterscheidbare Zimmerzahl mehr frei ist (Zwoelfergrenze,
+// `docs/offene-punkte-projektansicht.md`): `Math.min(12, ...)` deckelte die naechste Zahl
+// zuvor stillschweigend auf 12, auch wenn 12 schon vergeben war — das erzeugte serverseitig
+// ZIMMERZAHL_MEHRFACH, ohne dass die Oberflaeche das vorher erkennen konnte.
+function neuesReferenzobjekt(vorhandene: readonly Referenzobjekt[]): Referenzobjekt | undefined {
   const hoechste = vorhandene.reduce((max, r) => {
     const treffer = /^R(\d+)$/.exec(r.id);
     return treffer === null ? max : Math.max(max, Number(treffer[1]));
@@ -39,6 +51,7 @@ function neuesReferenzobjekt(vorhandene: readonly Referenzobjekt[]): Referenzobj
   // Flaechen bleiben bewusst am Minimum, sie MUESSEN erfasst werden.
   const naechsteZimmerzahl = Math.min(
     12, vorhandene.reduce((max, r) => Math.max(max, Math.floor(r.zimmerzahl) + 1), 1));
+  if (vorhandene.some((r) => r.zimmerzahl === naechsteZimmerzahl)) return undefined;
   return {
     id: `R${hoechste + 1}`,
     zimmerzahl: naechsteZimmerzahl,
@@ -71,8 +84,12 @@ function ersetze(
  * schemawidriger Wert (`min(1)`).
  */
 export function Referenzobjekte({
-  referenzobjekte, einheiten, aendere, rufeAb,
+  referenzobjekte, einheiten, dossierDefaults, aendere, rufeAb, abrufLaeuft,
 }: ReferenzobjekteProps) {
+  // Genau eine offene Detailzeile — ein zweiter Klick auf «Details» einer anderen Zeile
+  // schliesst die erste, statt die Tabelle beliebig lang werden zu lassen.
+  const [offeneZeile, setzeOffeneZeile] = useState<string | undefined>(undefined);
+
   function setzeMerkmal(
     index: number,
     patch: Partial<Referenzobjekt['parametrisierung']>,
@@ -87,17 +104,36 @@ export function Referenzobjekte({
     return einheiten.filter((e) => e.referenzobjektId === id).length;
   }
 
+  // Wird ausserhalb des Klick-Handlers berechnet, damit die Schaltflaeche VOR dem Klick
+  // schon weiss, ob noch eine unterscheidbare Zimmerzahl frei ist (Zwoelfergrenze).
+  const naechstes = neuesReferenzobjekt(referenzobjekte);
+
   return (
-    <section className="mb-8">
+    <section>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-medium">Referenzobjekte</h2>
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" onClick={rufeAb}>
-            Bewertungen beziehen
-          </Button>
+        <div>
+          <h2 className="text-base font-semibold">Referenzobjekte</h2>
+          <p className="text-sm text-muted-foreground">
+            Je Wohnungstyp eine Referenzbewertung — sie ist der Ausgangswert der Preisableitung.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {abrufLaeuft ? (
+            <StatusZeile text="Bewertungen werden bezogen…" />
+          ) : (
+            <>
+              <span className="text-xs text-muted-foreground">verbraucht API-Guthaben</span>
+              <Button type="button" variant="outline" onClick={rufeAb}>
+                Bewertungen beziehen
+              </Button>
+            </>
+          )}
           <Button
             type="button"
-            onClick={() => aendere([...referenzobjekte, neuesReferenzobjekt(referenzobjekte)])}
+            disabled={naechstes === undefined}
+            title={naechstes === undefined
+              ? 'Alle unterscheidbaren Zimmerzahlen sind vergeben.' : undefined}
+            onClick={() => { if (naechstes !== undefined) aendere([...referenzobjekte, naechstes]); }}
           >
             Referenzobjekt hinzufügen
           </Button>
@@ -114,54 +150,80 @@ export function Referenzobjekte({
               <TableHead>Stockwerk</TableHead>
               <TableHead>Referenzwert</TableHead>
               <TableHead />
+              <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
             {referenzobjekte.map((r, index) => {
               const verwendungen = verwendetVon(r.id);
+              const offen = offeneZeile === r.id;
               return (
-                <TableRow key={r.id}>
-                  <TableCell>
-                    <ZellenEingabe
-                      wert={r.zimmerzahl}
-                      aendere={(zimmerzahl) => aendere(
-                        ersetze(referenzobjekte, index, { ...r, zimmerzahl }))}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <ZellenEingabe
-                      wert={r.parametrisierung.flaecheInnen}
-                      aendere={(flaecheInnen) => setzeMerkmal(index, { flaecheInnen })}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <ZellenEingabe
-                      wert={r.parametrisierung.stockwerk}
-                      aendere={(stockwerk) => setzeMerkmal(index, { stockwerk })}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {r.bewertung === undefined ? 'nicht bezogen' : (
-                      <>
-                        {formatiereAggregat(r.bewertung.wert)} · {r.bewertung.bewertungsdatum} ·
-                        {' '}{r.bewertung.konfidenzklasse}
-                      </>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={verwendungen > 0}
-                      title={verwendungen > 0
-                        ? `Wird von ${verwendungen} Einheit${verwendungen === 1 ? '' : 'en'} verwendet.`
-                        : undefined}
-                      onClick={() => aendere(referenzobjekte.filter((_, i) => i !== index))}
-                    >
-                      entfernen
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                // Fragment statt zweier TableRow-Geschwister direkt im Array: `.map` liefert
+                // sonst zwei Elemente ohne gemeinsamen Schluessel fuer dasselbe Referenzobjekt.
+                <Fragment key={r.id}>
+                  <TableRow>
+                    <TableCell>
+                      <ZellenEingabe
+                        wert={r.zimmerzahl}
+                        aendere={(zimmerzahl) => aendere(
+                          ersetze(referenzobjekte, index, { ...r, zimmerzahl }))}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <ZellenEingabe
+                        wert={r.parametrisierung.flaecheInnen}
+                        aendere={(flaecheInnen) => setzeMerkmal(index, { flaecheInnen })}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <ZellenEingabe
+                        wert={r.parametrisierung.stockwerk}
+                        aendere={(stockwerk) => setzeMerkmal(index, { stockwerk })}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {r.bewertung === undefined ? 'nicht bezogen' : (
+                        <>
+                          {formatiereAggregat(r.bewertung.wert)} · {r.bewertung.bewertungsdatum} ·
+                          {' '}{r.bewertung.konfidenzklasse}
+                        </>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setzeOffeneZeile(offen ? undefined : r.id)}
+                      >
+                        {offen ? 'Details schliessen' : 'Details'}
+                      </Button>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={verwendungen > 0}
+                        title={verwendungen > 0
+                          ? `Wird von ${verwendungen} Einheit${verwendungen === 1 ? '' : 'en'} verwendet.`
+                          : undefined}
+                        onClick={() => aendere(referenzobjekte.filter((_, i) => i !== index))}
+                      >
+                        entfernen
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  {offen && (
+                    <TableRow>
+                      <TableCell colSpan={6}>
+                        <ParametrisierungsDetail
+                          parametrisierung={r.parametrisierung}
+                          dossierDefaults={dossierDefaults}
+                          aendere={(patch) => setzeMerkmal(index, patch)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </Fragment>
               );
             })}
           </TableBody>

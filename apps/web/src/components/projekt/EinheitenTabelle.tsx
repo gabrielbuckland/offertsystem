@@ -22,7 +22,10 @@ import type {
   AnpassungsSpalte, ProjektEinheit, Referenzobjekt,
 } from '../../server/projekt-schema.js';
 
-export interface Preis { readonly basispreis: number; readonly preis: number }
+/** `basispreis` ist optional, weil das E-04-Teilergebnis (`honorarAbbruch.positionen`)
+ *  nur den angepassten Preis je Wohnungsnummer fuehrt. Ein erfundener Basispreis waere
+ *  eine Zahl ohne Rechenweg; fehlt er, bleibt allein diese Spalte auf «—» (I-24). */
+export interface Preis { readonly basispreis?: number; readonly preis: number }
 
 export interface EinheitenTabelleProps {
   readonly einheiten: readonly ProjektEinheit[];
@@ -133,7 +136,12 @@ export function EinheitenTabelle(
   });
 
   return (
-    <div className="overflow-x-auto">
+    <div>
+      <h2 className="text-base font-semibold">Einheitentabelle</h2>
+      <p className="mb-3 text-sm text-muted-foreground">
+        Zeigt jede Einheit mit Basispreis und angepasstem Preis nach den Zu-/Abschlägen.
+      </p>
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           {tabelle.getHeaderGroups().map((gruppe) => (
@@ -158,6 +166,7 @@ export function EinheitenTabelle(
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

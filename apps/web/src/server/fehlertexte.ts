@@ -65,31 +65,32 @@ export const KERN_VORLAGEN: Record<BerechnungsFehlerCode, Vorlage> = {
   GEWICHTSSUMME_UNGUELTIG: (p) => ({
     adressat: 'auftraggeber',
     text: `Die Summe der Faktorgewichte beträgt ${formatiereScore(zahl(p, 'summe'))} `
-      + `statt 1. Betroffene Faktoren: ${liste(p, 'faktorliste')}.`,
+      + `statt 1. Betroffene Faktoren: ${liste(p, 'faktoren')}.`,
   }),
   ANPASSUNG_UNZULAESSIG: (p) => ({
     adressat: 'vermarkter',
     feldpfad: `einheiten.${String(p['wohnungsnummer'])}.anpassungen`,
-    text: p['grund'] === 'modell'
+    text: p['art'] === 'modellgrenze'
       ? `Einheit ${String(p['wohnungsnummer'])}: Die Summe der Anpassungen beträgt `
-        + `${formatiereProzent(zahl(p, 'z'))}. Sie muss grösser als −1 sein (−100 %), `
+        + `${formatiereProzent(zahl(p, 'zSumme'))}. Sie muss grösser als −1 sein (−100 %), `
         + 'da sonst kein positiver Wohnungspreis entsteht.'
       : `Einheit ${String(p['wohnungsnummer'])}: Die Summe der Anpassungen beträgt `
-        + `${formatiereProzent(zahl(p, 'z'))} und liegt ausserhalb des zulässigen `
+        + `${formatiereProzent(zahl(p, 'zSumme'))} und liegt ausserhalb des zulässigen `
         + `Bereichs [${formatiereProzent(zahl(p, 'min'))}, `
-        + `${formatiereProzent(zahl(p, 'max'))}]. Anpassungen: ${liste(p, 'anpassungsliste')}.`,
+        + `${formatiereProzent(zahl(p, 'max'))}]. Anpassungen: ${liste(p, 'anpassungen')}.`,
   }),
   STUFE_ENTARTET: (p) => ({
     adressat: 'auftraggeber',
-    text: `Honorarstufe ${String(p['k'])}: Unter- und Obergrenze der Verkaufssumme sind identisch `
-      + `(${formatiereAggregat(zahl(p, 'wert'))}). Jede Stufe muss ein Intervall `
+    text: `Honorarstufe ${String(p['stufenindex'])}: Unter- und Obergrenze der Verkaufssumme `
+      + `sind identisch (${formatiereAggregat(zahl(p, 'wert'))}). Jede Stufe muss ein Intervall `
       + 'positiver Breite bilden.',
   }),
   VERKAUFSSUMME_AUSSERHALB: (p) => ({
     adressat: 'auftraggeber',
-    text: `Die berechnete Verkaufssumme von ${formatiereAggregat(zahl(p, 'v'))} liegt `
+    text: `Die berechnete Verkaufssumme von ${formatiereAggregat(zahl(p, 'verkaufssumme'))} liegt `
       + 'ausserhalb des konfigurierten Bereichs der Honorarstaffelung '
-      + `(${formatiereAggregat(zahl(p, 'vMin'))} bis ${formatiereAggregat(zahl(p, 'vMax'))}). `
+      + `(${formatiereAggregat(zahl(p, 'bereichVon'))} bis `
+      + `${formatiereAggregat(zahl(p, 'bereichBis'))}). `
       + 'Die Honorarstaffelung ist zu erweitern.',
   }),
 };
@@ -136,18 +137,43 @@ export function uebersetzeAggregatFehler(fehler: readonly AggregatFehler[]): str
   return fehler.map((f) => AGGREGAT_VORLAGEN[f.code](f.parameter)).join(' ');
 }
 
-/** Ladezeitcodes ohne Laufzeitzwilling (E-16). */
+/**
+ * Ladezeitcodes ohne Laufzeitzwilling (E-16).
+ *
+ * Die drei Saetze wurden neu gefasst, weil sie ueber Sachverhalte sprachen, die der Kern
+ * an dieser Stelle gar nicht meldet: eine Stufenliste, die er nie schickt, einen
+ * Faktornamen, den die Schemapruefung nicht kennt, eine letzte Stuetzstelle, die es im
+ * Fehlerfall nicht gibt. Sie lasen dadurch `undefined`/`NaN` — und
+ * `CFG_STRATEGY_UNKNOWN` warf sogar, weil `verfuegbare` ein String ist und `liste`
+ * darauf `.join` aufrief. Jede Vorlage nennt jetzt genau die Groessen, die im
+ * `KonfigurationsFehler` stehen.
+ *
+ * Den Feldanker liefert der `pfad` des Befunds, nicht der Text: Welcher Faktor bzw.
+ * welche Stuetzstelle gemeint ist, steht dort (z. B.
+ * `aufwandfaktoren.lage_gesamt.strategie`). Die Saetze wiederholen ihn nicht.
+ */
 export const KONFIG_VORLAGEN = {
+  // Kern liefert `bezeichner` und `verfuegbare` — letzteres als fertigen String, nicht
+  // als Liste (`validieren.ts`: `issue.options.join(', ')`).
   CFG_STRATEGY_UNKNOWN: (p: Parameter) =>
-    `Aufwandfaktor «${String(p['bezeichnung'])}»: Normalisierungsstrategie `
-    + `«${String(p['bezeichner'])}» ist nicht bekannt. Verfügbar: ${liste(p, 'verfuegbare')}.`,
+    `Normalisierungsstrategie «${String(p['bezeichner'])}» ist nicht bekannt. `
+    + `Verfügbar: ${String(p['verfuegbare'])}.`,
+  // Kern liefert das konkrete Paar (`stufe`, `vorher`, `nachher`), nicht eine Liste
+  // betroffener Stufen. Der Zusatz zur Stufenbreite gibt die Bedingung des Kerns wieder.
   CFG_TIER_ORDER: (p: Parameter) =>
-    'Die konfigurierte Honorarstaffelung ist nicht lückenlos aufsteigend. '
-    + `Betroffene Stufen: ${liste(p, 'stufen')}.`,
-  CFG_TIER_OPEN: (p: Parameter) =>
-    `Die oberste Honorarstufe ${String(p['stufenindex'])} hat oberhalb von `
-    + `${formatiereAggregat(zahl(p, 'letzteStuetzstelle'))} keine abschliessende `
-    + 'Stützstelle. Die Staffelung ist in der Konfiguration zu vervollständigen.',
+    `Die Honorarstaffelung ist nicht streng aufsteigend: Stufe ${String(p['stufe'])} `
+    + `beginnt bei ${formatiereAggregat(zahl(p, 'vorher'))}, die folgende Stützstelle `
+    + `liegt bei ${formatiereAggregat(zahl(p, 'nachher'))}. Jede Stützstelle muss grösser `
+    + 'sein als die vorangehende, sonst hat die Stufe die Breite null.',
+  // Kern liefert nur `anzahl` (< 2). Von einer «obersten Stufe» kann der Text hier nicht
+  // sprechen — es gibt noch keine.
+  CFG_TIER_OPEN: (p: Parameter) => {
+    const anzahl = zahl(p, 'anzahl');
+    return `Die Honorarstaffelung enthält nur ${String(anzahl)} `
+      + `${anzahl === 1 ? 'Stützstelle' : 'Stützstellen'}. Für eine abschliessende `
+      + 'oberste Stufe sind mindestens zwei nötig. Die Staffelung ist in der '
+      + 'Konfiguration zu vervollständigen.';
+  },
 } as const;
 
 export function uebersetzeKonfigFehler(

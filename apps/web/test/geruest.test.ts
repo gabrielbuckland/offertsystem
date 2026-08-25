@@ -67,3 +67,21 @@ describe('Next.js-Geruest (PE-19, PE-13)', () => {
     expect(anwendung).toContain('globals.css');
   });
 });
+
+it('deklariert den vollständigen Tokensatz und keine harten Farben im Button', () => {
+  const css = readFileSync(new URL('../src/app/globals.css', import.meta.url), 'utf8');
+  for (const token of [
+    '--primary', '--primary-foreground', '--destructive', '--destructive-foreground',
+    '--card', '--card-foreground', '--accent', '--accent-foreground',
+    '--secondary', '--secondary-foreground',
+  ]) {
+    expect(css).toContain(`${token}:`);
+  }
+  const button = readFileSync(
+    new URL('../src/components/ui/button.tsx', import.meta.url), 'utf8');
+  // Semantisches Token statt fester Palette: `bg-red-600` war der Umweg, weil es kein
+  // `--destructive` gab (docs/offene-punkte-projektansicht.md).
+  expect(button).not.toContain('bg-red-600');
+  expect(button).toContain('bg-destructive');
+  expect(button).toContain('bg-primary');
+});

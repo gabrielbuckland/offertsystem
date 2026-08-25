@@ -105,4 +105,15 @@ describe('POST /api/offerte', () => {
     const koerper = await jsonVon(antwort);
     expect((koerper['fehler'] as { text: string }).text).toContain('liegt kein Wert vor');
   });
+
+  it('weist einen syntaktisch kaputten Rumpf mit 422 zurueck, nicht mit 500', async () => {
+    const antwort = await POST(new Request('http://test/api/offerte', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{kaputt',
+    }));
+    expect(antwort.status).toBe(422);
+    const koerper = await jsonVon(antwort);
+    expect((koerper['fehler'] as { text?: string } | undefined)?.text).toBeDefined();
+  });
 });
