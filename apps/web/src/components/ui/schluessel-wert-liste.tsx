@@ -13,6 +13,7 @@
  * verloren. Die Komponente kennt keine Domaenenbegriffe (kein "Bewertung", kein
  * "Dossier"): sie bleibt generisch ueber den ihr uebergebenen Record, siehe Brief.
  */
+import { Trash2 } from 'lucide-react';
 import { useState, type ReactElement } from 'react';
 import { Button } from './button.js';
 import { Input } from './input.js';
@@ -61,8 +62,15 @@ export function SchluesselWertListe(
             onChange={(e) => aendereWert(schluessel, e.target.value)}
             className="h-8 flex-1"
           />
-          <Button type="button" variant="outline" size="sm" onClick={() => entferneEintrag(schluessel)}>
-            entfernen
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            aria-label="entfernen"
+            onClick={() => entferneEintrag(schluessel)}
+          >
+            <Trash2 className="size-4" />
           </Button>
         </div>
       ))}

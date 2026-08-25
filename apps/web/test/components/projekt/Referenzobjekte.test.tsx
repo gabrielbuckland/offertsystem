@@ -1,13 +1,17 @@
 /**
  * `renderToStaticMarkup` liefert keine anfassbaren Handler (das Repo hat weder jsdom noch
- * @testing-library/react), darum werden `ZellenEingabe`/`Button` gemockt, um die waehrend
- * eines echten Renderdurchlaufs erzeugten Closures abzufangen und direkt aufzurufen —
- * dasselbe Vorgehen wie in `AnpassungsSpalten.test.tsx`.
+ * @testing-library/react), darum werden `ZellenEingabe`/`Button`/`Select` gemockt, um die
+ * waehrend eines echten Renderdurchlaufs erzeugten Closures abzufangen und direkt
+ * aufzurufen — dasselbe Vorgehen wie in `AnpassungsSpalten.test.tsx`. `Input` und der
+ * native `<dialog>`-Knoten brauchen dafuer keinen Mock: Kein Test hier liest deren Props,
+ * und `showModal`/`close` werden im SSR-Rendering ohnehin nie aufgerufen.
  */
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import type { DossierDefaults } from '@offert/core';
-import type { ProjektEinheit, Referenzobjekt } from '../../../src/server/projekt-schema.js';
+import type {
+  AnpassungsSpalte, ProjektEinheit, Referenzobjekt,
+} from '../../../src/server/projekt-schema.js';
 
 interface ErfassteZelle {
   readonly wert: number;
@@ -18,11 +22,18 @@ interface ErfassterButton {
   readonly disabled?: boolean;
   readonly title?: string;
   readonly onClick: () => void;
+  readonly 'aria-label'?: string;
+}
+interface ErfassteSelect {
+  readonly value: unknown;
+  readonly onChange: (e: { readonly target: { readonly value: string } }) => void;
+  readonly children: unknown;
 }
 
 const erfasst = vi.hoisted(() => ({
   zellen: [] as ErfassteZelle[],
   buttons: [] as ErfassterButton[],
+  selects: [] as ErfassteSelect[],
 }));
 
 vi.mock('../../../src/components/projekt/ZellenEingabe.js', () => ({
@@ -37,22 +48,28 @@ vi.mock('../../../src/components/ui/button.js', () => ({
     return null;
   },
 }));
+vi.mock('../../../src/components/ui/select.js', () => ({
+  Select: (props: ErfassteSelect) => {
+    erfasst.selects.push(props);
+    return null;
+  },
+}));
 
 import { Referenzobjekte } from '../../../src/components/projekt/Referenzobjekte.js';
 
 const R: Referenzobjekt = {
   id: 'R1', zimmerzahl: 3.5,
   parametrisierung: {
-    flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'B',
+    flaecheInnen: 86, flaecheAussen: 19, stockwerk: 0, energielabel: 'B',
     zustandsbewertungen: {}, qualitaetsbewertungen: {},
     anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
   },
 };
 
-// Durchgehend `null`: keine dieser Bestandstests prueft die Herkunftsauszeichnung
-// (`ParametrisierungsDetail.tsx`, eigener Test), ein zufaellig deckungsgleicher
-// firmenweiter Default duerfte hier also nichts an der bisherigen Aussage der
-// Assertions aendern.
+// Leer statt gefuellt: Tests, denen die konkreten Zustands-/Qualitaetswerte egal sind,
+// bekommen mit dieser Fixture ein neutrales `{}` — wo es darauf ankommt (Anlegen-Dialog
+// uebernimmt Zustand/Qualitaet aus `dossierDefaults`), setzt der jeweilige Test seine
+// eigene, gefuellte Fixture (siehe `referenzobjekte-logik.test.ts` fuer die reine Logik).
 const dossierDefaultsLeer: DossierDefaults = {
   flaecheInnen: null, flaecheAussen: null, stockwerk: null, energielabel: null,
   zustandsbewertungen: {}, qualitaetsbewertungen: {},
@@ -60,20 +77,29 @@ const dossierDefaultsLeer: DossierDefaults = {
 
 function zeichne(
   referenzobjekte: readonly Referenzobjekt[],
-  aendere: (r: readonly Referenzobjekt[]) => void,
+  aendere: (referenzobjekte: readonly Referenzobjekt[], einheiten: readonly ProjektEinheit[]) => void,
   einheiten: readonly ProjektEinheit[] = [],
+  spalten: readonly AnpassungsSpalte[] = [],
+  baujahr: number | undefined = undefined,
 ) {
   erfasst.zellen.length = 0;
   erfasst.buttons.length = 0;
+  erfasst.selects.length = 0;
   return renderToStaticMarkup(
     <Referenzobjekte
       referenzobjekte={referenzobjekte}
       einheiten={einheiten}
+      spalten={spalten}
       dossierDefaults={dossierDefaultsLeer}
+      baujahr={baujahr}
       aendere={aendere}
       rufeAb={() => undefined}
       abrufLaeuft={false}
     />);
+}
+
+function hinzufuegenKnopf() {
+  return erfasst.buttons.find((b) => b.children === 'Referenzobjekt hinzufügen')!;
 }
 
 describe('Referenzobjekte — Anzeige', () => {
@@ -82,14 +108,21 @@ describe('Referenzobjekte — Anzeige', () => {
     expect(html).toContain('nicht bezogen');
   });
 
-  it('zeigt Bewertungsdatum und Konfidenz, wenn ein Wert vorliegt', () => {
+  it('zeigt beim Referenzwert nur die Zahl, kein Datum und keine Konfidenzklasse', () => {
     const html = zeichne(
       [{ ...R, bewertung: { wert: 85_000_000, bewertungsdatum: '2026-08-16', konfidenzklasse: 'good' } }],
       () => undefined);
-    expect(html).toContain('2026-08-16');
-    expect(html).toContain('good');
+    expect(html).not.toContain('2026-08-16');
+    expect(html).not.toContain('good');
+  });
+
+  it('zeigt keine Stockwerk-Spalte — sie ist bei einem Referenzobjekt immer 0', () => {
+    const html = zeichne([R], () => undefined);
+    expect(html).not.toContain('Stockwerk');
   });
 });
+
+const KEINE_EINHEITEN: readonly ProjektEinheit[] = [];
 
 /**
  * Diese Suite haelt die Eigenschaft fest, ohne die das Mehrtypenmodell durch die
@@ -98,16 +131,16 @@ describe('Referenzobjekte — Anzeige', () => {
  * (ZIMMERZAHL_MEHRFACH, `packages/core/src/domain/liegenschaft.ts`).
  */
 describe('Referenzobjekte — typbestimmende Merkmale sind editierbar', () => {
-  it('bindet Zimmerzahl, Wohnflaeche und Stockwerk als Zahleneingaben', () => {
+  it('bindet Zimmerzahl und Wohnflaeche als Zahleneingaben (kein Stockwerk mehr)', () => {
     zeichne([R], () => undefined);
-    expect(erfasst.zellen.map((z) => z.wert)).toEqual([3.5, 86, 1]);
+    expect(erfasst.zellen.map((z) => z.wert)).toEqual([3.5, 86]);
   });
 
-  it('meldet eine geaenderte Zimmerzahl als vollstaendige Liste', () => {
+  it('meldet eine geaenderte Zimmerzahl als vollstaendige Liste, Einheiten unveraendert', () => {
     const aendere = vi.fn();
     zeichne([R], aendere);
     erfasst.zellen[0]!.aendere(4.5);
-    expect(aendere).toHaveBeenCalledWith([{ ...R, zimmerzahl: 4.5 }]);
+    expect(aendere).toHaveBeenCalledWith([{ ...R, zimmerzahl: 4.5 }], KEINE_EINHEITEN);
   });
 
   it('meldet eine geaenderte Wohnflaeche in der Parametrisierung', () => {
@@ -115,86 +148,99 @@ describe('Referenzobjekte — typbestimmende Merkmale sind editierbar', () => {
     zeichne([R], aendere);
     erfasst.zellen[1]!.aendere(92);
     expect(aendere).toHaveBeenCalledWith(
-      [{ ...R, parametrisierung: { ...R.parametrisierung, flaecheInnen: 92 } }]);
+      [{ ...R, parametrisierung: { ...R.parametrisierung, flaecheInnen: 92 } }], KEINE_EINHEITEN);
   });
 
   it('aendert nur die angefasste Zeile, die uebrigen bleiben referenzgleich', () => {
     const zweites: Referenzobjekt = { ...R, id: 'R2', zimmerzahl: 4.5 };
     const aendere = vi.fn();
     zeichne([R, zweites], aendere);
-    erfasst.zellen[3]!.aendere(5.5);
+    erfasst.zellen[2]!.aendere(5.5);
     const neu = aendere.mock.calls[0]![0] as readonly Referenzobjekt[];
     expect(neu[0]).toBe(R);
     expect(neu[1]!.zimmerzahl).toBe(5.5);
   });
 });
 
-describe('Referenzobjekte — ein zweites Objekt ist ohne Nacharbeit gueltig', () => {
-  it('vergibt einem neuen Referenzobjekt eine noch nicht belegte Zimmerzahl', () => {
-    const aendere = vi.fn();
-    zeichne([R], aendere);
-    erfasst.buttons.find((b) => b.children === 'Referenzobjekt hinzufügen')!.onClick();
-    const neu = aendere.mock.calls[0]![0] as readonly Referenzobjekt[];
-    expect(neu).toHaveLength(2);
-    // Ein festes `1` kollidierte hier nicht, wohl aber beim naechsten Objekt — die
-    // Fortschreibung haelt die Zimmerzahlen ueber beliebig viele Objekte verschieden.
-    expect(new Set(neu.map((r) => r.zimmerzahl)).size).toBe(2);
-    expect(neu[1]!.id).toBe('R2');
+/**
+ * Anlegen laeuft ueber den Dialog (Rueckmeldung Auftraggeber): Zimmerzahl kommt aus einem
+ * `Select` mit den Schweizer Halbschritten 1..6 statt aus einer berechneten naechsten
+ * ganzen Zahl, Wohnflaeche aus einem Zahlenfeld — beides muss der Vermarkter bewusst
+ * eintragen, statt eine erratene 1 m² nachtraeglich zu korrigieren.
+ */
+describe('Referenzobjekte — Anlegen ueber den Dialog', () => {
+  it('bietet ein optionales Feld fuer die Anzahl Wohnungen — dieser Typ entfaellt sonst '
+    + 'nicht den separaten, vorgelagerten Nacherfassen-Block', () => {
+    const html = zeichne([], () => undefined);
+    expect(html).toContain('Anzahl Wohnungen (optional)');
   });
 
-  it('kollidiert auch beim dritten Objekt nicht', () => {
-    const zwei = [R, { ...R, id: 'R2', zimmerzahl: 4 }];
+  it('bietet die elf Halbschritte 1..6 an, wenn noch nichts erfasst ist', () => {
+    zeichne([], () => undefined);
+    hinzufuegenKnopf().onClick();
+    const optionen = (erfasst.selects[0]!.children as { readonly props: { readonly value: number } }[])
+      .map((o) => o.props.value);
+    expect(optionen).toEqual([1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6]);
+  });
+
+  it('bietet eine bereits vergebene Zimmerzahl nicht erneut an', () => {
+    zeichne([R], () => undefined);
+    hinzufuegenKnopf().onClick();
+    const optionen = (erfasst.selects[0]!.children as { readonly props: { readonly value: number } }[])
+      .map((o) => o.props.value);
+    expect(optionen).not.toContain(3.5);
+    expect(optionen).toHaveLength(10);
+  });
+
+  // Die eigentliche Verknuepfung "gewaehlte Zimmerzahl + eingetragene Wohnflaeche ergeben
+  // genau dieses Referenzobjekt" ist reine Logik ohne React-Zustand und steht deshalb in
+  // `referenzobjekte-logik.test.ts` (`neuesReferenzobjekt`): `renderToStaticMarkup`
+  // haengt keine echten State-Updates aneinander, ein Select-onChange gefolgt von einem
+  // Input-onChange und erst dann einem Klick liesse sich hier nicht ehrlich simulieren —
+  // die drei Handler stammen alle aus demselben, einmaligen Renderdurchlauf und wuerden
+  // sonst weiterhin den Ausgangszustand sehen (kein Ersatz fuer eine echte Re-Render-Kette).
+  it('sperrt «Hinzufügen» im Dialog, solange nichts eingetragen ist, und ruehrt «aendere» nicht an', () => {
     const aendere = vi.fn();
-    zeichne(zwei, aendere);
-    erfasst.buttons.find((b) => b.children === 'Referenzobjekt hinzufügen')!.onClick();
-    const neu = aendere.mock.calls[0]![0] as readonly Referenzobjekt[];
-    expect(new Set(neu.map((r) => r.zimmerzahl)).size).toBe(3);
+    zeichne([], aendere);
+    hinzufuegenKnopf().onClick();
+    const hinzufuegenImDialog = erfasst.buttons.find((b) => b.children === 'Hinzufügen')!;
+    expect(hinzufuegenImDialog.disabled).toBe(true);
+    hinzufuegenImDialog.onClick();
+    expect(aendere).not.toHaveBeenCalled();
   });
 });
 
-// Obere Grenze aus dem Schema (`zimmerzahl: z.number().min(1).max(12)`,
-// `projekt-schema.ts`) — dieselbe Zahl deckelt `naechsteZimmerzahl` in
-// `neuesReferenzobjekt` (`Math.min(12, …)`, Referenzobjekte.tsx). Aus dem Code gelesen,
-// nicht frei erfunden: ein hier abweichender Wert prüfte eine andere Grenze als die
-// implementierte.
-const OBERE_ZIMMERZAHL_GRENZE = 12;
-
 /**
- * Die Zwoelfergrenze (`docs/offene-punkte-projektansicht.md`): Sind bereits alle
- * unterscheidbaren Zimmerzahlen 1..12 vergeben, deckelt `Math.min(12, …)` die naechste
- * Zahl weiterhin auf 12 — ohne die Kollisionspruefung waere das serverseitig ein
- * garantiertes ZIMMERZAHL_MEHRFACH gewesen, unsichtbar bis zum Speicherversuch.
+ * Sind alle elf Halbschritte vergeben, gibt es keine unterscheidbare Zimmerzahl mehr —
+ * anders als die fruehere, auf ganze Zahlen bis 12 offene Zaehlung kann das jetzt
+ * tatsaechlich vorkommen (elf Referenzobjekte reichen), und der Dialog selbst kann dann
+ * gar nicht mehr sinnvoll geoeffnet werden.
  */
-describe('Referenzobjekte — Zwoelfergrenze', () => {
+describe('Referenzobjekte — alle Zimmerzahlen vergeben', () => {
   function volleBelegung(): readonly Referenzobjekt[] {
-    return Array.from({ length: OBERE_ZIMMERZAHL_GRENZE }, (_, i) => ({
-      ...R, id: `R${i + 1}`, zimmerzahl: i + 1,
+    return [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6].map((zimmerzahl, i) => ({
+      ...R, id: `R${i + 1}`, zimmerzahl,
     }));
   }
 
   it('sperrt "Referenzobjekt hinzufügen" mit Begruendung, wenn alle Zimmerzahlen vergeben sind', () => {
     const aendere = vi.fn();
     zeichne(volleBelegung(), aendere);
-    const knopf = erfasst.buttons.find((b) => b.children === 'Referenzobjekt hinzufügen')!;
+    const knopf = hinzufuegenKnopf();
     expect(knopf.disabled).toBe(true);
     expect(knopf.title).toBe('Alle unterscheidbaren Zimmerzahlen sind vergeben.');
-    knopf.onClick();
-    expect(aendere).not.toHaveBeenCalled();
   });
 
-  it('bleibt nutzbar, solange eine Zimmerzahl frei ist (eine Luecke in der Belegung)', () => {
-    // Elf von zwoelf vergeben, keine Luecke am oberen Ende: ohne die Kollisionspruefung
-    // deckelte `Math.min(12, …)` trotzdem korrekt auf die freie 12 — dieser Fall bleibt
-    // also der Kontrollfall fuer den unveraenderten Normalpfad.
-    const fastVoll = volleBelegung().filter((r) => r.zimmerzahl !== OBERE_ZIMMERZAHL_GRENZE);
+  it('bleibt nutzbar, solange ein Halbschritt frei ist (eine Luecke in der Belegung), '
+    + 'und bietet genau diese Luecke im Dialog an', () => {
+    const fastVoll = volleBelegung().filter((r) => r.zimmerzahl !== 6);
     const aendere = vi.fn();
     zeichne(fastVoll, aendere);
-    const knopf = erfasst.buttons.find((b) => b.children === 'Referenzobjekt hinzufügen')!;
-    expect(knopf.disabled).toBeFalsy();
-    knopf.onClick();
-    const neu = aendere.mock.calls[0]![0] as readonly Referenzobjekt[];
-    expect(neu).toHaveLength(OBERE_ZIMMERZAHL_GRENZE);
-    expect(neu[neu.length - 1]!.zimmerzahl).toBe(OBERE_ZIMMERZAHL_GRENZE);
+    expect(hinzufuegenKnopf().disabled).toBeFalsy();
+    hinzufuegenKnopf().onClick();
+    const optionen = (erfasst.selects[0]!.children as { readonly props: { readonly value: number } }[])
+      .map((o) => o.props.value);
+    expect(optionen).toEqual([6]);
   });
 });
 
@@ -205,15 +251,15 @@ describe('Referenzobjekte — Zwoelfergrenze', () => {
  */
 describe('Referenzobjekte — Loeschung', () => {
   function entfernenKnopf() {
-    return erfasst.buttons.find((b) => b.children === 'entfernen')!;
+    return erfasst.buttons.find((b) => b['aria-label'] === 'entfernen')!;
   }
 
-  it('entfernt ein unbenutztes Referenzobjekt', () => {
+  it('entfernt ein unbenutztes Referenzobjekt, Einheiten unveraendert', () => {
     const aendere = vi.fn();
     zeichne([R], aendere, []);
     expect(entfernenKnopf().disabled).toBeFalsy();
     entfernenKnopf().onClick();
-    expect(aendere).toHaveBeenCalledWith([]);
+    expect(aendere).toHaveBeenCalledWith([], KEINE_EINHEITEN);
   });
 
   it('sperrt die Loeschung, solange eine Einheit das Referenzobjekt verwendet', () => {

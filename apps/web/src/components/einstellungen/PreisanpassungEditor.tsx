@@ -11,6 +11,7 @@
  * Begruendungspflicht ist eine fachliche Vorgabe (Spec §6), kein einstellbarer Wert —
  * ein Eingabefeld dafuer wuerde eine Wahlmoeglichkeit vortaeuschen, die es nicht gibt.
  */
+import { Trash2 } from 'lucide-react';
 import { Fragment, type ReactElement } from 'react';
 import { faktorZuProzent, prozentZuFaktor } from '../projekt/zellen-logik.js';
 import { ZellenEingabe } from '../projekt/ZellenEingabe.js';
@@ -182,8 +183,15 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
                       />
                     </TableCell>
                     <TableCell>
-                      <Button type="button" variant="destructive" size="sm" onClick={() => entferneVorlage(index)}>
-                        entfernen
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        aria-label="entfernen"
+                        onClick={() => entferneVorlage(index)}
+                      >
+                        <Trash2 className="size-4" />
                       </Button>
                     </TableCell>
                   </TableRow>

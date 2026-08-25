@@ -1,41 +1,87 @@
 import type { OffertKonfiguration } from '@offert/core';
-import { bauePipelineDaten } from '../../../components/pipeline/pipeline-daten.js';
-import { PipelineAnsicht } from '../../../components/pipeline/PipelineAnsicht.js';
+import { Fragment } from 'react';
+import { EinstellungsEditor } from '../../../components/einstellungen/EinstellungsEditor.js';
 import { Brotkrume } from '../../../components/shell/Brotkrume.js';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card.js';
 import { holeLaufzeit } from '../../../server/laufzeit.js';
+import { BEREICHE, type Bereich } from './bereiche.js';
 
 export const dynamic = 'force-dynamic';
+
+/**
+ * Reihenfolge der Pipeline-Stufen (US-09/A-10) fuer die Uebersicht: Stufe 3
+ * (Normalisierung) und Stufe 4 (Gewichtung) teilen sich einen Bereich (`faktoren`) — ein
+ * Faktor traegt Min/Max UND Gewicht in einem Editor, siehe `FaktorenEditor`. Zwei
+ * eingebettete Editoren fuer denselben Bereich haetten zwei unabhaengige Entwuerfe zur
+ * Folge (`EinstellungsEditor`-Dateikommentar); deshalb genau EIN Editor pro Bereich,
+ * mit dem Stufenlabel, das er inhaltlich abdeckt.
+ */
+const PIPELINE_REIHENFOLGE: ReadonlyArray<{ readonly stufenLabel: string; readonly bereich: Bereich }> = [
+  { stufenLabel: 'Stufe 1 · Eingabe', bereich: 'dossier' },
+  { stufenLabel: 'Stufe 2 · Verkaufssumme', bereich: 'preisanpassung' },
+  { stufenLabel: 'Stufe 3–4 · Normalisierung & Gewichtung', bereich: 'faktoren' },
+  { stufenLabel: 'Stufe 5 · Honorar', bereich: 'honorar' },
+];
 
 export default async function EinstellungenSeite() {
   const laufzeit = holeLaufzeit();
   if (!laufzeit.ok) {
     return <main><h1>Einstellungen</h1><p>{laufzeit.meldungen.join(' ')}</p></main>;
   }
-  // `rohKonfiguration` ist typerhalten dieselbe `OffertKonfiguration`, die der Lader
-  // validiert hat (laufzeit.ts baut sie ueber `as unknown as Record<string, unknown>`
-  // ab) — der Rueckweg spiegelt das (PE-01: die Pruefung, nicht diese Seite, buergt
-  // fuer die Form).
-  const basis = laufzeit.wert.rohKonfiguration as unknown as OffertKonfiguration;
-  const api = basis.api;
+  const rohKonfiguration = laufzeit.wert.rohKonfiguration;
+  // Typerhalten dieselbe `OffertKonfiguration`, die der Lader validiert hat
+  // (laufzeit.ts baut sie ueber `as unknown as Record<string, unknown>` ab) — der
+  // Rueckweg spiegelt das (PE-01: die Pruefung, nicht diese Seite, buergt fuer die Form).
+  const api = (rohKonfiguration as unknown as OffertKonfiguration).api;
 
   return (
     <main>
       <Brotkrume stufen={[{ beschriftung: 'Einstellungen' }]} />
       <h1 className="mb-6 text-2xl font-semibold">Einstellungen</h1>
-      <PipelineAnsicht modus="konfiguration" stufen={bauePipelineDaten(basis)} />
+
+      {/* Untereinander statt nebeneinander (Rueckmeldung Auftraggeber): Jede Stufe der
+          Berechnungs-Pipeline ist hier direkt inline editierbar — kein Umweg mehr ueber
+          eine separate Editor-Seite. Die Reihenfolge folgt der Pipeline, ein Pfeil nach
+          unten haelt den Fluss sichtbar. */}
+      <div className="flex flex-col gap-4">
+        {PIPELINE_REIHENFOLGE.map((eintrag, index) => {
+          const bereich = BEREICHE[eintrag.bereich];
+          return (
+            <Fragment key={eintrag.bereich}>
+              {index > 0 && (
+                <span aria-hidden="true" className="text-center text-muted-foreground">
+                  ↓
+                </span>
+              )}
+              <div>
+                <p className="mb-2 text-sm font-medium text-muted-foreground">{eintrag.stufenLabel}</p>
+                <EinstellungsEditor
+                  titel={bereich.titel}
+                  zweck={bereich.zweck}
+                  bereichPraefix={bereich.praefix}
+                  anfang={rohKonfiguration}
+                  Editor={bereich.Editor}
+                />
+              </div>
+            </Fragment>
+          );
+        })}
+      </div>
 
       {/* Rollentrennung (US-08, Spec §6): Die API-Anbindung ist Betriebsparameter, kein
           Einstellungswert des Auftraggebers. Lesend statt editierbar, weil eine falsch
           gesetzte Basis-URL oder ein zu knapper Timeout nicht durch die Editor-Validierung
           abgefangen wird, sondern erst beim naechsten PriceHubble-Aufruf durchschlaegt —
-          das Risiko bleibt bei der IT, die die Konfigurationsdatei direkt pflegt. */}
+          das Risiko bleibt bei der IT, die die Konfigurationsdatei direkt pflegt.
+          `cursor-not-allowed` markiert die Werte bewusst als nicht editierbar — im
+          Unterschied zu den echten Eingabefeldern der Pipeline-Karten oben, die denselben
+          Zeilenaufbau (dt/dd) verwenden koennten, aber tatsaechliche Formularelemente sind. */}
       <Card className="mt-8">
         <CardHeader>
           <CardTitle>Technische Parameter (API)</CardTitle>
         </CardHeader>
         <CardContent>
-          <dl className="space-y-1 text-sm">
+          <dl className="cursor-not-allowed space-y-1 text-sm">
             <div className="flex items-baseline justify-between gap-2">
               <dt className="text-muted-foreground">Basis-URL</dt>
               <dd className="tabular-nums">{api.baseUrl}</dd>

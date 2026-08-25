@@ -16,8 +16,8 @@
 .herkunfts-wert__quelle { font-variant: small-caps; color: #444; }
 .anzeigeinformation::before { content: 'Anzeigeinformation: '; font-weight: 600; }
 .offerte__fusszeile { font-size: .8rem; color: #444; }
-table { border-collapse: collapse; width: 100%; }
-th, td { border: 1px solid #ccc; padding: .35rem .5rem; text-align: left; }
+.offerte table { border-collapse: collapse; width: 100%; }
+.offerte th, .offerte td { border: 1px solid #ccc; padding: .35rem .5rem; text-align: left; }
 
 @media print {
   @page { size: A4 portrait; margin: 18mm 15mm 20mm 15mm; }

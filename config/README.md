@@ -156,6 +156,14 @@ Bruno-Collection belegt nur einen Teil der Felder; fuer die uebrigen sind die
 exakten PriceHubble-Feldnamen und Wertemengen unbelegt. Das ist eine offene
 Nachweisluecke, die erst mit der Fixture-Aufzeichnung schliessbar ist.
 
+`zustandsbewertungen`/`qualitaetsbewertungen` tragen seit der Rueckmeldung des
+Auftraggebers einen festen Wert: Da es sich ausschliesslich um Neubauprojekte
+handelt, gilt firmenweit `"Neu / kürzlich modernisiert": "3"` (Zustand) sowie
+`"Gesamteindruck": "gehoben"` (Qualitaet) — beide Merkmale muessen deshalb nicht
+mehr je Referenzobjekt erfasst werden. Schluessel und Wertform sind, wie oben
+beschrieben, weiterhin unbelegt gegen die echte PriceHubble-API; die genaue
+Schreibweise stammt vom Auftraggeber, nicht aus einer Fixture-Aufzeichnung.
+
 ## Offene Punkte fuer den Auftraggeber
 
 1. Saemtliche Zahlenwerte, insbesondere die Zielsaetze 3.0 % → 1.0 %, die

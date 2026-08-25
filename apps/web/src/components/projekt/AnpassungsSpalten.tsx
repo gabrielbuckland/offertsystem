@@ -18,6 +18,7 @@
  * auslassen. Ein eigener Pflicht-Rueckruf macht das Weglassen an der JSX-Aufrufstelle
  * zu einem Kompilierfehler.
  */
+import { Trash2 } from 'lucide-react';
 import { useRef } from 'react';
 import type { AnpassungsSpalte } from '../../server/projekt-schema.js';
 import { Button } from '../ui/button.js';
@@ -168,11 +169,14 @@ export function AnpassungsSpalten(
                 <TableCell>
                   <Button
                     type="button"
-                    variant="destructive"
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
                     title="Entfernt die Spalte und ihre Werte aus allen Einheiten."
+                    aria-label="entfernen"
                     onClick={() => entferneSpalte(s.id)}
                   >
-                    entfernen
+                    <Trash2 className="size-4" />
                   </Button>
                 </TableCell>
               </TableRow>

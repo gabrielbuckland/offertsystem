@@ -76,7 +76,10 @@ export function NeuesProjekt() {
         ref={dialogRef}
         onClose={setzeZurueck}
         aria-label="Neues Projekt"
-        className="rounded-lg border border-border bg-background p-6 backdrop:bg-foreground/30"
+        // `m-auto` haelt die Zentrierung explizit: Tailwinds Preflight setzt `margin: 0`
+        // auf praktisch jedes Element und ueberschreibt damit die UA-Voreinstellung
+        // `dialog:modal { margin: auto }`, die ein natives `<dialog>` sonst zentriert.
+        className="m-auto rounded-lg border border-border bg-background p-6 backdrop:bg-foreground/30"
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-1.5">

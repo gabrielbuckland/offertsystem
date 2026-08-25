@@ -16,6 +16,7 @@ import type { AnpassungsSpalte } from '../../../src/server/projekt-schema.js';
 interface ErfassterButton {
   readonly children: unknown;
   readonly onClick: () => void;
+  readonly 'aria-label'?: string;
 }
 interface ErfassterInput {
   readonly value: unknown;
@@ -76,7 +77,7 @@ describe('AnpassungsSpalten — Entfernen ist ein eigener Rueckruf', () => {
       />,
     );
 
-    const entfernenButtons = erfasst.buttons.filter((b) => b.children === 'entfernen');
+    const entfernenButtons = erfasst.buttons.filter((b) => b['aria-label'] === 'entfernen');
     expect(entfernenButtons).toHaveLength(2);
 
     entfernenButtons[1]!.onClick();

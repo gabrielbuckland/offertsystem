@@ -64,6 +64,13 @@ export const projektSchema = z.object({
     plz: z.string().regex(/^\d{4}$/),
     ort: z.string().trim().min(1),
   }).strict(),
+  // Merkmal des GANZEN Neubau-Projekts, nicht je Referenzobjekt (Rueckmeldung
+  // Auftraggeber) — optional, damit bereits abgelegte Projekte ohne dieses Feld
+  // gueltig bleiben (I-24 gilt hier fuers Schema selbst: fehlend ist kein Fehler).
+  // `Referenzobjekte.tsx` schreibt eine Aenderung in JEDES Referenzobjekt
+  // (`parametrisierung.baujahr`) — dort steht das Feld weiterhin, weil
+  // `RepraesentativeParametrisierung` (packages/core) es je Wohnungstyp fuehrt.
+  baujahr: z.number().int().optional(),
   referenzobjekte: z.array(referenzobjektSchema),
   anpassungsSpalten: z.array(anpassungsSpalteSchema),
   einheiten: z.array(einheitSchema),

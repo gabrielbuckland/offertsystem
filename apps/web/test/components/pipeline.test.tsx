@@ -39,19 +39,16 @@ describe('bauePipelineDaten', () => {
 });
 
 describe('PipelineAnsicht', () => {
-  it('verlinkt im Konfigurationsmodus jede Stufe auf ihren Editor', () => {
+  it('verweist je Stufe dezent auf die Einstellungen, ohne dort direkt zu bearbeiten', () => {
     const html = renderToStaticMarkup(
-      <PipelineAnsicht stufen={bauePipelineDaten(basis())} modus="konfiguration" />);
+      <PipelineAnsicht stufen={bauePipelineDaten(basis())} />);
     expect(html).toContain('href="/einstellungen/honorar"');
     expect(html).toContain('href="/einstellungen/faktoren"');
-  });
-  it('zeigt im Projektmodus keine Editor-Schaltflaechen, aber den Einstellungs-Verweis', () => {
-    const html = renderToStaticMarkup(
-      <PipelineAnsicht stufen={bauePipelineDaten(basis())} modus="projekt" />);
     expect(html).toContain('Einstellungen');
-    // Der Name des Tests verlangt genau das: Im Projektmodus fuehrt die Ansicht KEINEN
-    // Weg in die Konfiguration ausser dem Verweis — sonst bearbeitete der Vermarkter aus
-    // dem Projekt heraus Werte, die auf alle Projekte wirken.
+    // Die Projektseite fuehrt KEINEN Weg in die Konfiguration ausser dem Verweis — sonst
+    // bearbeitete der Vermarkter aus dem Projekt heraus Werte, die auf alle Projekte
+    // wirken. Die Einstellungen-Uebersicht selbst bettet die Editoren inzwischen direkt
+    // ein (`einstellungen/page.tsx`), statt ueber diese Komponente dorthin zu verlinken.
     expect(html).not.toContain('Bearbeiten');
   });
 });

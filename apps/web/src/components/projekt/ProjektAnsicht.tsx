@@ -2,8 +2,22 @@
 
 /**
  * Client-Klammer der Detailseite (Design-Spec §4): Kopf mit Adresse, darunter die
- * Bloecke Referenzobjekte, Einheiten anlegen, Zu-/Abschlaege, Einheitentabelle und
- * darunter Verkaufssumme/Aufwandfaktoren/Honorarrange mit der Offert-Schaltflaeche.
+ * Bloecke Basisinformationen, Referenzobjekte, Zu-/Abschlaege, Einheitentabelle (mit dem
+ * Nacherfassen-Block direkt darunter) und darunter Verkaufssumme/Aufwandfaktoren/
+ * Honorarrange mit der Offert-Schaltflaeche.
+ *
+ * `EinheitenGenerator` stand frueher als eigener, vorgelagerter Block VOR den
+ * Zu-/Abschlaegen (die einzige Art, Einheiten anzulegen). Seit der Anlegen-Dialog in
+ * `Referenzobjekte.tsx` die Anzahl Wohnungen eines NEUEN Typs gleich mit abfragt,
+ * braucht es diesen ersten Schritt nicht mehr separat — `EinheitenGenerator` bleibt nur
+ * noch fuer das Nacherfassen weiterer Wohnungen eines BESTEHENDEN Typs und sitzt deshalb
+ * jetzt direkt unter der Einheitentabelle, deren Bestand er ergaenzt (Rueckmeldung
+ * Auftraggeber).
+ *
+ * `ProjektBasisinformationen` haelt das Baujahr EINMAL fuers ganze Projekt (Rueckmeldung
+ * Auftraggeber: bei einem Neubauprojekt hat jede Wohnung dasselbe Baujahr) — eine
+ * Aenderung dort schreibt den Wert hier in JEDES Referenzobjekt
+ * (`parametrisierung.baujahr`), statt dass ihn jemand zehnmal einzeln eintraegt.
  *
  * Der Projektstand lebt genau einmal (`verwendeProjekt`) — jeder Block aendert nur
  * seinen Ausschnitt und ruft dafuer `aendere` mit dem VOLLEN Projekt auf, damit die
@@ -18,6 +32,7 @@ import type { Projekt } from '../../server/projekt-schema.js';
 import type { Faktorformular } from '../../server/faktorformular.js';
 import { verwendeProjekt } from './verwende-projekt.js';
 import { verwendeBerechnung } from './verwende-berechnung.js';
+import { ProjektBasisinformationen } from './ProjektBasisinformationen.js';
 import { Referenzobjekte } from './Referenzobjekte.js';
 import { EinheitenGenerator } from './EinheitenGenerator.js';
 import { AnpassungsSpalten } from './AnpassungsSpalten.js';
@@ -172,21 +187,29 @@ export function ProjektAnsicht(
         <Hinweis art={abrufMeldung.art} className="mb-4">{abrufMeldung.text}</Hinweis>
       )}
       <section className="mb-6 rounded-lg border border-border bg-card p-6">
-        <Referenzobjekte
-          referenzobjekte={projekt.referenzobjekte}
-          einheiten={projekt.einheiten}
-          dossierDefaults={konfigurationBasis.dossierDefaults}
-          aendere={(referenzobjekte) => aendere({ ...projekt, referenzobjekte: [...referenzobjekte] })}
-          rufeAb={() => { if (!abrufLaeuft) void rufeAb(); }}
-          abrufLaeuft={abrufLaeuft}
+        <ProjektBasisinformationen
+          baujahr={projekt.baujahr}
+          aendere={(baujahr) => aendere({
+            ...projekt,
+            baujahr,
+            referenzobjekte: projekt.referenzobjekte.map((r) => ({
+              ...r, parametrisierung: { ...r.parametrisierung, baujahr },
+            })),
+          })}
         />
       </section>
       <section className="mb-6 rounded-lg border border-border bg-card p-6">
-        <EinheitenGenerator
+        <Referenzobjekte
           referenzobjekte={projekt.referenzobjekte}
           einheiten={projekt.einheiten}
           spalten={projekt.anpassungsSpalten}
-          aendere={(einheiten) => aendere({ ...projekt, einheiten: [...einheiten] })}
+          dossierDefaults={konfigurationBasis.dossierDefaults}
+          baujahr={projekt.baujahr}
+          aendere={(referenzobjekte, einheiten) => aendere({
+            ...projekt, referenzobjekte: [...referenzobjekte], einheiten: [...einheiten],
+          })}
+          rufeAb={() => { if (!abrufLaeuft) void rufeAb(); }}
+          abrufLaeuft={abrufLaeuft}
         />
       </section>
       <section className="mb-6 rounded-lg border border-border bg-card p-6">
@@ -221,6 +244,14 @@ export function ProjektAnsicht(
           aendere={(einheiten) => aendere({ ...projekt, einheiten: [...einheiten] })}
         />
       </section>
+      <section className="mb-6 rounded-lg border border-border bg-card p-6">
+        <EinheitenGenerator
+          referenzobjekte={projekt.referenzobjekte}
+          einheiten={projekt.einheiten}
+          spalten={projekt.anpassungsSpalten}
+          aendere={(einheiten) => aendere({ ...projekt, einheiten: [...einheiten] })}
+        />
+      </section>
       {stand.fehler !== undefined && (
         <Hinweis art="fehler" className="mt-4">{stand.fehler}</Hinweis>
       )}
@@ -237,7 +268,7 @@ export function ProjektAnsicht(
       {rechenwegOffen && (
         <section className="mb-6 rounded-lg border border-border bg-card p-6">
           <h2 className="mb-3 text-base font-semibold">Rechenweg</h2>
-          <PipelineAnsicht modus="projekt"
+          <PipelineAnsicht
             stufen={bauePipelineDaten(konfigurationBasis, {
               ...(herleitung === undefined ? {} : { herleitung }),
             })} />

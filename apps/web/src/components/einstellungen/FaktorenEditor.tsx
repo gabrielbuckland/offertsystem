@@ -11,6 +11,7 @@
  * die neun gueltigen `lagescore`-Quellschluessel (PriceHubble, I-26) erscheinen deshalb
  * NUR als Platzhaltertext einer Eingabe, nie in einer Verzweigung des Codes.
  */
+import { Trash2 } from 'lucide-react';
 import { Fragment, useState, type ReactElement } from 'react';
 import { faktorZuProzent, prozentZuFaktor } from '../projekt/zellen-logik.js';
 import { ZellenEingabe } from '../projekt/ZellenEingabe.js';
@@ -18,6 +19,7 @@ import { Button } from '../ui/button.js';
 import { Hinweis } from '../ui/hinweis.js';
 import { Input } from '../ui/input.js';
 import { Label } from '../ui/label.js';
+import { Slider } from '../ui/slider.js';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../ui/table.js';
@@ -161,6 +163,18 @@ export function FaktorenEditor({ einstellungen }: BereichsEditorProps): ReactEle
                     wert={faktorZuProzent(faktor.gewicht)}
                     aendere={(wert) => aendereFaktor(schluessel, { gewicht: prozentZuFaktor(wert) })}
                   />
+                  {/* Ein Anteil an der Gewichtssumme ist ein beschraenkter, kontinuierlich
+                      verstellbarer Wert (0..100 %) — der Schieberegler ergaenzt das
+                      Zahlenfeld um den passenden Ziehsinn, ersetzt es aber nicht: ein
+                      exakter Prozentwert (z. B. 33.33 %) laesst sich am Regler kaum treffen. */}
+                  <Slider
+                    min={0}
+                    max={100}
+                    step={0.01}
+                    value={faktorZuProzent(faktor.gewicht)}
+                    onChange={(e) => aendereFaktor(schluessel, { gewicht: prozentZuFaktor(Number(e.target.value)) })}
+                    aria-label={`Gewicht ${faktor.bezeichnung} in Prozent`}
+                  />
                 </div>
               </div>
               {faktor.quelle === 'lagescore' && (
@@ -204,11 +218,13 @@ export function FaktorenEditor({ einstellungen }: BereichsEditorProps): ReactEle
                           <TableCell>
                             <Button
                               type="button"
-                              variant="outline"
-                              size="sm"
+                              variant="ghost"
+                              size="icon"
+                              className="size-8"
+                              aria-label="entfernen"
                               onClick={() => entferneStufe(schluessel, index)}
                             >
-                              entfernen
+                              <Trash2 className="size-4" />
                             </Button>
                           </TableCell>
                         </TableRow>

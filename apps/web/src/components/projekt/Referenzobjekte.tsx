@@ -5,62 +5,66 @@
  * ihren bezogenen Bewertungen. Der Abruf ist ein eigener Klick (`rufeAb`), keine
  * Nebenwirkung des Renderns — er verbraucht Anbieter-Guthaben (NFA-12, I-27), das darf
  * nicht beim blossen Anzeigen der Seite geschehen.
+ *
+ * Der Anlegen-Dialog fragt neben Zimmerzahl und Wohnflaeche optional auch gleich die
+ * Anzahl Wohnungen dieses Typs ab und erzeugt sie ueber `erzeugeEinheiten` mit (Rueck-
+ * meldung Auftraggeber: der separate, vorgelagerte Block "Einheiten anlegen" entfaellt
+ * dafuer als ERSTER Schritt). `aendere` traegt deshalb BEIDE Arrays auf einmal statt nur
+ * `referenzobjekte`: Ein zweiter, unabhaengiger Aufruf gegen `einheiten` liefe im selben
+ * Tick gegen den noch alten `projekt`-Stand der aufrufenden Seite und liesse den
+ * jeweils anderen Aufruf verschwinden (React batcht State-Updates, es gibt zwischen den
+ * beiden keinen Re-Render). `EinheitenGenerator` bleibt daneben bestehen, jetzt aber
+ * unterhalb der Einheitentabelle — fuer das Nacherfassen weiterer Wohnungen eines
+ * bereits bestehenden Typs.
+ *
+ * KEINE aufklappbare Detailzeile mehr (Rueckmeldung Auftraggeber, ehemals
+ * `ParametrisierungsDetail.tsx`, entfernt): Baujahr gilt jetzt PROJEKTWEIT
+ * (`ProjektBasisinformationen.tsx`) statt je Referenzobjekt; Zustand und Qualitaet
+ * gelten bei Neubauprojekten firmenweit als feststehend
+ * (`dossierDefaults.zustandsbewertungen`/`.qualitaetsbewertungen`, s. `config/README.md`);
+ * Energielabel, Anzahl Badezimmer, Lift und
+ * Heizungsart bleiben bei ihren Platzhaltern, weil PriceHubble sie nicht als
+ * Pflichtfelder fuehrt (Rueckmeldung Auftraggeber). `dossierDefaults` bleibt deshalb
+ * eine Prop dieser Komponente — nicht mehr fuer eine Herkunftsauszeichnung, sondern als
+ * Quelle von Zustand/Qualitaet fuer neu angelegte Referenzobjekte (`fuegeHinzu`).
  */
-import { Fragment, useState } from 'react';
+import { Trash2 } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { formatiereAggregat } from '@offert/offer';
 import type { DossierDefaults } from '@offert/core';
-import type { ProjektEinheit, Referenzobjekt } from '../../server/projekt-schema.js';
+import { erzeugeEinheiten } from '../../server/einheiten-generator.js';
+import type { AnpassungsSpalte, ProjektEinheit, Referenzobjekt } from '../../server/projekt-schema.js';
 import { Button } from '../ui/button.js';
+import { Input } from '../ui/input.js';
+import { Label } from '../ui/label.js';
+import { Select } from '../ui/select.js';
 import { StatusZeile } from '../ui/status-zeile.js';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../ui/table.js';
+import {
+  anzahlWohnungenAusEntwurf, naechsteId, neuesReferenzobjekt, verfuegbareZimmerzahlen,
+} from './referenzobjekte-logik.js';
+import { entscheideZellenwert } from './zellen-logik.js';
 import { ZellenEingabe } from './ZellenEingabe.js';
-import { ParametrisierungsDetail } from './ParametrisierungsDetail.js';
 
 export interface ReferenzobjekteProps {
   readonly referenzobjekte: readonly Referenzobjekt[];
-  // Nur um eine Loeschung zu sperren, die eine Einheit ohne Typ zurueckliesse
-  // (REFERENZOBJEKT_UNBEKANNT, `projekt-schema.ts`) — die Komponente aendert `einheiten`
-  // selbst nicht.
   readonly einheiten: readonly ProjektEinheit[];
-  // Quelle der Herkunftsauszeichnung in der Detailzeile (Task 9: `konfigurationBasis`).
+  // Vorbelegung neu erzeugter Einheiten (Task 10, `einheiten-generator.ts`) — dieselbe
+  // Rolle wie in `EinheitenGenerator`.
+  readonly spalten: readonly AnpassungsSpalte[];
+  // Quelle von Zustand/Qualitaet neuer Referenzobjekte (`fuegeHinzu`), s. Dateikommentar.
   readonly dossierDefaults: DossierDefaults;
-  readonly aendere: (referenzobjekte: readonly Referenzobjekt[]) => void;
+  // Projektweites Baujahr (`ProjektBasisinformationen.tsx`) — `undefined`, solange es
+  // noch nicht erfasst ist; ein neues Referenzobjekt bekommt dann 0 (derselbe
+  // Platzhalter wie zuvor, kein erfundenes Baujahr).
+  readonly baujahr: number | undefined;
+  readonly aendere: (
+    referenzobjekte: readonly Referenzobjekt[], einheiten: readonly ProjektEinheit[],
+  ) => void;
   readonly rufeAb: () => void;
   readonly abrufLaeuft: boolean;
-}
-
-// Fortlaufend statt zufaellig (wie `T${n}` in ablauf-zustand.ts): Eine UUID entstuende
-// ausserhalb von `apps/web/src/server` und verletzte damit E-29/NFA-06.
-//
-// Liefert `undefined`, wenn keine unterscheidbare Zimmerzahl mehr frei ist (Zwoelfergrenze,
-// `docs/offene-punkte-projektansicht.md`): `Math.min(12, ...)` deckelte die naechste Zahl
-// zuvor stillschweigend auf 12, auch wenn 12 schon vergeben war — das erzeugte serverseitig
-// ZIMMERZAHL_MEHRFACH, ohne dass die Oberflaeche das vorher erkennen konnte.
-function neuesReferenzobjekt(vorhandene: readonly Referenzobjekt[]): Referenzobjekt | undefined {
-  const hoechste = vorhandene.reduce((max, r) => {
-    const treffer = /^R(\d+)$/.exec(r.id);
-    return treffer === null ? max : Math.max(max, Number(treffer[1]));
-  }, 0);
-  // Die Zimmerzahl unterscheidet die Wohnungstypen, `liegenschaft.ts` weist ein zweites
-  // Referenzobjekt mit derselben Zimmerzahl als ZIMMERZAHL_MEHRFACH zurueck. Ein festes
-  // `1` erzeugte deshalb beim zweiten Objekt einen garantiert ungueltigen Stand, noch
-  // bevor der Vermarkter etwas eingeben konnte. Die naechste freie ganze Zahl ist kein
-  // erfundener Messwert, sondern die Fortschreibung eines Unterscheidungsmerkmals — die
-  // Flaechen bleiben bewusst am Minimum, sie MUESSEN erfasst werden.
-  const naechsteZimmerzahl = Math.min(
-    12, vorhandene.reduce((max, r) => Math.max(max, Math.floor(r.zimmerzahl) + 1), 1));
-  if (vorhandene.some((r) => r.zimmerzahl === naechsteZimmerzahl)) return undefined;
-  return {
-    id: `R${hoechste + 1}`,
-    zimmerzahl: naechsteZimmerzahl,
-    parametrisierung: {
-      flaecheInnen: 1, flaecheAussen: 0, stockwerk: 0, energielabel: '',
-      zustandsbewertungen: {}, qualitaetsbewertungen: {},
-      anzahlBadezimmer: 0, lift: false, baujahr: 0, heizungsart: '',
-    },
-  };
 }
 
 /** Ersetzt genau ein Referenzobjekt; die uebrigen bleiben referenzgleich. */
@@ -77,18 +81,20 @@ function ersetze(
  * wiese das Paar mit ZIMMERZAHL_MEHRFACH zurueck — das Mehrtypenmodell, auf dem die
  * ganze Auslegung beruht, waere durch die Oberflaeche nicht erreichbar.
  *
- * Bewusst nicht alle zehn Felder der `parametrisierung`: Erfasst wird, was den Typ
- * unterscheidet und in die Bewertungsanfrage eingeht. Zahlen laufen ueber
+ * Bewusst nicht alle zehn Felder der `parametrisierung`, und ohne Stockwerk (das bei
+ * einem Referenzobjekt immer 0 ist, s. o.): Erfasst wird in der Hauptzeile nur, was den
+ * Typ unterscheidet und in die Bewertungsanfrage eingeht. Zahlen laufen ueber
  * `ZellenEingabe`, damit ein geleertes Feld verworfen wird, statt auf 0 zu fallen
  * (`entscheideZellenwert`) — bei der Zimmerzahl waere die erfundene 0 zudem ein
  * schemawidriger Wert (`min(1)`).
  */
 export function Referenzobjekte({
-  referenzobjekte, einheiten, dossierDefaults, aendere, rufeAb, abrufLaeuft,
+  referenzobjekte, einheiten, spalten, dossierDefaults, baujahr, aendere, rufeAb, abrufLaeuft,
 }: ReferenzobjekteProps) {
-  // Genau eine offene Detailzeile — ein zweiter Klick auf «Details» einer anderen Zeile
-  // schliesst die erste, statt die Tabelle beliebig lang werden zu lassen.
-  const [offeneZeile, setzeOffeneZeile] = useState<string | undefined>(undefined);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [entwurfZimmerzahl, setzeEntwurfZimmerzahl] = useState<number | undefined>(undefined);
+  const [entwurfWohnflaeche, setzeEntwurfWohnflaeche] = useState('');
+  const [entwurfAnzahl, setzeEntwurfAnzahl] = useState('');
 
   function setzeMerkmal(
     index: number,
@@ -97,7 +103,7 @@ export function Referenzobjekte({
     const r = referenzobjekte[index]!;
     aendere(ersetze(referenzobjekte, index, {
       ...r, parametrisierung: { ...r.parametrisierung, ...patch },
-    }));
+    }), einheiten);
   }
 
   function verwendetVon(id: string): number {
@@ -105,8 +111,35 @@ export function Referenzobjekte({
   }
 
   // Wird ausserhalb des Klick-Handlers berechnet, damit die Schaltflaeche VOR dem Klick
-  // schon weiss, ob noch eine unterscheidbare Zimmerzahl frei ist (Zwoelfergrenze).
-  const naechstes = neuesReferenzobjekt(referenzobjekte);
+  // schon weiss, ob noch eine unterscheidbare Zimmerzahl frei ist.
+  const optionen = verfuegbareZimmerzahlen(referenzobjekte);
+
+  function oeffneDialog(): void {
+    setzeEntwurfZimmerzahl(optionen[0]);
+    setzeEntwurfWohnflaeche('');
+    setzeEntwurfAnzahl('');
+    dialogRef.current?.showModal();
+  }
+
+  const wohnflaecheEntscheid = entscheideZellenwert(entwurfWohnflaeche);
+  const wohnflaecheGueltig = wohnflaecheEntscheid.art === 'uebernehmen' && wohnflaecheEntscheid.wert > 0;
+
+  function fuegeHinzu(): void {
+    if (entwurfZimmerzahl === undefined || wohnflaecheEntscheid.art !== 'uebernehmen'
+      || wohnflaecheEntscheid.wert <= 0) return;
+    const neues = neuesReferenzobjekt(
+      entwurfZimmerzahl, wohnflaecheEntscheid.wert, naechsteId(referenzobjekte), baujahr ?? 0,
+      dossierDefaults.zustandsbewertungen, dossierDefaults.qualitaetsbewertungen);
+    const naechsteReferenzobjekte = [...referenzobjekte, neues];
+    const anzahl = anzahlWohnungenAusEntwurf(entwurfAnzahl);
+    // `erzeugeEinheiten` erkennt eine Wunsch-`referenzobjektId` nur, wenn sie in der
+    // uebergebenen Referenzobjekt-Liste steht — deshalb `naechsteReferenzobjekte`
+    // (mit `neues`), nicht das alte `referenzobjekte`.
+    const neueEinheiten = anzahl === 0 ? [] : erzeugeEinheiten(
+      [{ referenzobjektId: neues.id, anzahl }], naechsteReferenzobjekte, einheiten, spalten);
+    aendere(naechsteReferenzobjekte, [...einheiten, ...neueEinheiten]);
+    dialogRef.current?.close();
+  }
 
   return (
     <section>
@@ -130,104 +163,124 @@ export function Referenzobjekte({
           )}
           <Button
             type="button"
-            disabled={naechstes === undefined}
-            title={naechstes === undefined
+            disabled={optionen.length === 0}
+            title={optionen.length === 0
               ? 'Alle unterscheidbaren Zimmerzahlen sind vergeben.' : undefined}
-            onClick={() => { if (naechstes !== undefined) aendere([...referenzobjekte, naechstes]); }}
+            onClick={oeffneDialog}
           >
             Referenzobjekt hinzufügen
           </Button>
         </div>
       </div>
+      <dialog
+        ref={dialogRef}
+        aria-label="Referenzobjekt hinzufügen"
+        // `m-auto` haelt die Zentrierung explizit: Tailwinds Preflight setzt `margin: 0`
+        // auf praktisch jedes Element und ueberschreibt damit die UA-Voreinstellung
+        // `dialog:modal { margin: auto }`, die ein natives `<dialog>` sonst zentriert
+        // (der Effekt betrifft `NeuesProjekt.tsx`s Dialog ebenso, dort mitkorrigiert).
+        className="m-auto rounded-lg border border-border bg-background p-6 backdrop:bg-foreground/30"
+      >
+        <div className="grid gap-4">
+          <div className="grid gap-1.5">
+            <Label htmlFor="referenzobjekt-zimmerzahl">Zimmerzahl</Label>
+            <Select
+              id="referenzobjekt-zimmerzahl"
+              value={entwurfZimmerzahl ?? ''}
+              onChange={(e) => setzeEntwurfZimmerzahl(Number(e.target.value))}
+            >
+              {optionen.map((z) => (
+                <option key={z} value={z}>{z} Zimmer</option>
+              ))}
+            </Select>
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="referenzobjekt-wohnflaeche">Wohnfläche (m²)</Label>
+            <Input
+              id="referenzobjekt-wohnflaeche"
+              type="number"
+              value={entwurfWohnflaeche}
+              onChange={(e) => setzeEntwurfWohnflaeche(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="referenzobjekt-anzahl">Anzahl Wohnungen (optional)</Label>
+            <Input
+              id="referenzobjekt-anzahl"
+              type="number"
+              min={0}
+              step={1}
+              placeholder="0"
+              value={entwurfAnzahl}
+              onChange={(e) => setzeEntwurfAnzahl(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="mt-6 flex justify-end gap-3">
+          <Button type="button" variant="outline" onClick={() => dialogRef.current?.close()}>
+            Abbrechen
+          </Button>
+          <Button type="button" onClick={fuegeHinzu} disabled={!wohnflaecheGueltig}>
+            Hinzufügen
+          </Button>
+        </div>
+      </dialog>
       {referenzobjekte.length === 0 ? (
         <p className="text-muted-foreground">Noch kein Referenzobjekt erfasst.</p>
       ) : (
+        <div className="overflow-hidden rounded-md border border-border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Zimmerzahl</TableHead>
               <TableHead>Wohnfläche (m²)</TableHead>
-              <TableHead>Stockwerk</TableHead>
               <TableHead>Referenzwert</TableHead>
-              <TableHead />
               <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
             {referenzobjekte.map((r, index) => {
               const verwendungen = verwendetVon(r.id);
-              const offen = offeneZeile === r.id;
               return (
-                // Fragment statt zweier TableRow-Geschwister direkt im Array: `.map` liefert
-                // sonst zwei Elemente ohne gemeinsamen Schluessel fuer dasselbe Referenzobjekt.
-                <Fragment key={r.id}>
-                  <TableRow>
-                    <TableCell>
-                      <ZellenEingabe
-                        wert={r.zimmerzahl}
-                        aendere={(zimmerzahl) => aendere(
-                          ersetze(referenzobjekte, index, { ...r, zimmerzahl }))}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <ZellenEingabe
-                        wert={r.parametrisierung.flaecheInnen}
-                        aendere={(flaecheInnen) => setzeMerkmal(index, { flaecheInnen })}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <ZellenEingabe
-                        wert={r.parametrisierung.stockwerk}
-                        aendere={(stockwerk) => setzeMerkmal(index, { stockwerk })}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {r.bewertung === undefined ? 'nicht bezogen' : (
-                        <>
-                          {formatiereAggregat(r.bewertung.wert)} · {r.bewertung.bewertungsdatum} ·
-                          {' '}{r.bewertung.konfidenzklasse}
-                        </>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => setzeOffeneZeile(offen ? undefined : r.id)}
-                      >
-                        {offen ? 'Details schliessen' : 'Details'}
-                      </Button>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={verwendungen > 0}
-                        title={verwendungen > 0
-                          ? `Wird von ${verwendungen} Einheit${verwendungen === 1 ? '' : 'en'} verwendet.`
-                          : undefined}
-                        onClick={() => aendere(referenzobjekte.filter((_, i) => i !== index))}
-                      >
-                        entfernen
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                  {offen && (
-                    <TableRow>
-                      <TableCell colSpan={6}>
-                        <ParametrisierungsDetail
-                          parametrisierung={r.parametrisierung}
-                          dossierDefaults={dossierDefaults}
-                          aendere={(patch) => setzeMerkmal(index, patch)}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </Fragment>
+                <TableRow key={r.id}>
+                  <TableCell>
+                    <ZellenEingabe
+                      wert={r.zimmerzahl}
+                      aendere={(zimmerzahl) => aendere(
+                        ersetze(referenzobjekte, index, { ...r, zimmerzahl }), einheiten)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <ZellenEingabe
+                      wert={r.parametrisierung.flaecheInnen}
+                      aendere={(flaecheInnen) => setzeMerkmal(index, { flaecheInnen })}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {r.bewertung === undefined ? 'nicht bezogen' : formatiereAggregat(r.bewertung.wert)}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      disabled={verwendungen > 0}
+                      title={verwendungen > 0
+                        ? `Wird von ${verwendungen} Einheit${verwendungen === 1 ? '' : 'en'} verwendet.`
+                        : undefined}
+                      aria-label="entfernen"
+                      onClick={() => aendere(referenzobjekte.filter((_, i) => i !== index), einheiten)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
               );
             })}
           </TableBody>
         </Table>
+        </div>
       )}
     </section>
   );

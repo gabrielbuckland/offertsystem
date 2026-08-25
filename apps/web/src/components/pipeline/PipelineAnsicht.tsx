@@ -1,10 +1,12 @@
 /**
  * Zustandslose Kartenreihe der fuenf Berechnungsstufen (US-09/A-10). Das Skelett — fuenf
- * Karten, Pfeile dazwischen — ist fix; jede Karteninhalt kommt ausschliesslich aus
- * `bauePipelineDaten`, das ueber die Konfiguration bzw. eine Herleitung iteriert. Im Modus
- * `konfiguration` (Einstellungsbereich) fuehrt jede Karte in ihren Editor; im Modus `projekt`
- * (Projektseite) zeigen dieselben Karten die Zwischenwerte des Projekts und verweisen nur
- * dezent auf die Einstellungen. Rein darstellend: kein State, kein `'use client'`.
+ * Karten, Pfeile dazwischen — ist fix; jeder Karteninhalt kommt ausschliesslich aus
+ * `bauePipelineDaten`, das ueber die Konfiguration bzw. eine Herleitung iteriert. Diese
+ * Ansicht dient nur der Projektseite (Zwischenwerte des laufenden Projekts, dezenter
+ * Verweis auf die Einstellungen); die Einstellungen-Uebersicht selbst bettet seit der
+ * Zusammenlegung (Rueckmeldung Auftraggeber) die echten Bereichs-Editoren direkt und
+ * untereinander ein (`einstellungen/page.tsx`), statt hierueber auf sie zu verlinken.
+ * Rein darstellend: kein State, kein `'use client'`.
  */
 import type { Route } from 'next';
 import Link from 'next/link';
@@ -13,10 +15,9 @@ import type { PipelineStufe } from './pipeline-daten.js';
 
 export interface PipelineAnsichtProps {
   readonly stufen: readonly PipelineStufe[];
-  readonly modus: 'konfiguration' | 'projekt';
 }
 
-function PipelineKarte({ stufe, modus }: { readonly stufe: PipelineStufe; readonly modus: 'konfiguration' | 'projekt' }) {
+function PipelineKarte({ stufe }: { readonly stufe: PipelineStufe }) {
   return (
     <div className="min-w-56 rounded-lg border border-border bg-card p-3">
       <p className="mb-2 font-medium">
@@ -56,21 +57,15 @@ function PipelineKarte({ stufe, modus }: { readonly stufe: PipelineStufe; readon
         </div>
       )}
       <div className="mt-3 border-t border-border pt-2 text-sm">
-        {modus === 'konfiguration' ? (
-          <Link href={stufe.editorPfad as Route} className="text-primary">
-            Bearbeiten
-          </Link>
-        ) : (
-          <Link href={stufe.editorPfad as Route} className="text-muted-foreground">
-            Parameter in Einstellungen
-          </Link>
-        )}
+        <Link href={stufe.editorPfad as Route} className="text-muted-foreground">
+          Parameter in Einstellungen
+        </Link>
       </div>
     </div>
   );
 }
 
-export function PipelineAnsicht({ stufen, modus }: PipelineAnsichtProps) {
+export function PipelineAnsicht({ stufen }: PipelineAnsichtProps) {
   return (
     <div className="flex items-center gap-2 overflow-x-auto">
       {stufen.map((stufe, index) => (
@@ -80,7 +75,7 @@ export function PipelineAnsicht({ stufen, modus }: PipelineAnsichtProps) {
               →
             </span>
           )}
-          <PipelineKarte stufe={stufe} modus={modus} />
+          <PipelineKarte stufe={stufe} />
         </Fragment>
       ))}
     </div>

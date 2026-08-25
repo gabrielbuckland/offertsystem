@@ -174,8 +174,12 @@
     "flaecheAussen": null,
     "stockwerk": null,
     "energielabel": null,
-    "zustandsbewertungen": {},
-    "qualitaetsbewertungen": {}
+    "zustandsbewertungen": {
+      "Neu / kürzlich modernisiert": "3"
+    },
+    "qualitaetsbewertungen": {
+      "Gesamteindruck": "gehoben"
+    }
   },
   "api": {
     "baseUrl": "https://api.pricehubble.com",

@@ -9,6 +9,7 @@
 import {
   createColumnHelper, flexRender, getCoreRowModel, useReactTable,
 } from '@tanstack/react-table';
+import { Trash2 } from 'lucide-react';
 import { formatiereAggregat } from '@offert/offer/src/format/de-ch.js';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -120,10 +121,13 @@ export function EinheitenTabelle(
       cell: (info) => (
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
+          size="icon"
+          className="size-8"
+          aria-label="entfernen"
           onClick={() => aendere(einheiten.filter((_, i) => i !== info.row.index))}
         >
-          entfernen
+          <Trash2 className="size-4" />
         </Button>
       ),
     }),
@@ -141,7 +145,7 @@ export function EinheitenTabelle(
       <p className="mb-3 text-sm text-muted-foreground">
         Zeigt jede Einheit mit Basispreis und angepasstem Preis nach den Zu-/Abschlägen.
       </p>
-      <div className="overflow-x-auto">
+      <div className="overflow-hidden rounded-md border border-border">
       <Table>
         <TableHeader>
           {tabelle.getHeaderGroups().map((gruppe) => (

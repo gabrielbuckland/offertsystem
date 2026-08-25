@@ -8,6 +8,7 @@
  * `honorar.stuetzstellen[i].<feld>` zurueck und wird hier an genau dieser Zeile verankert
  * (`befundeFuerPfad`), statt in einer Sammelliste unterzugehen (Spec §6).
  */
+import { Trash2 } from 'lucide-react';
 import { Fragment, type ReactElement } from 'react';
 import { frankenZuRappen, rappenZuFranken } from '../projekt/zellen-logik.js';
 import { ZellenEingabe } from '../projekt/ZellenEingabe.js';
@@ -105,8 +106,15 @@ export function HonorarEditor({ einstellungen }: BereichsEditorProps): ReactElem
                     />
                   </TableCell>
                   <TableCell>
-                    <Button type="button" variant="outline" size="sm" onClick={() => entferneStuetzstelle(index)}>
-                      entfernen
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      aria-label="entfernen"
+                      onClick={() => entferneStuetzstelle(index)}
+                    >
+                      <Trash2 className="size-4" />
                     </Button>
                   </TableCell>
                 </TableRow>

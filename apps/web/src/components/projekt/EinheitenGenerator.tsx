@@ -5,6 +5,12 @@
  * Ruft `erzeugeEinheiten` auf und haengt das Ergebnis an die vorhandenen Einheiten an —
  * die Erzeugung selbst ist reine Funktion (Task 10), dieser Block liefert nur die
  * Eingabe der Anzahl je Referenzobjekt.
+ *
+ * Nacherfassen, nicht Ersterfassung: Beim Anlegen eines NEUEN Referenzobjekts fragt
+ * dessen Dialog (`Referenzobjekte.tsx`) die Anzahl Wohnungen bereits mit ab und erzeugt
+ * sie selbst. Dieser Block bleibt fuer den Fall, dass spaeter weitere Wohnungen eines
+ * BEREITS bestehenden Typs dazukommen — deshalb unter der Einheitentabelle statt davor
+ * (Rueckmeldung Auftraggeber).
  */
 import { useState } from 'react';
 import { erzeugeEinheiten, type Wunsch } from '../../server/einheiten-generator.js';
@@ -41,7 +47,7 @@ export function EinheitenGenerator({
   if (referenzobjekte.length === 0) {
     return (
       <section>
-        <h2 className="text-base font-semibold">Einheiten anlegen</h2>
+        <h2 className="text-base font-semibold">Wohnung nacherfassen</h2>
         <p className="mb-3 text-muted-foreground">
           Zuerst ein Referenzobjekt anlegen, danach können Einheiten erzeugt werden.
         </p>
@@ -51,10 +57,9 @@ export function EinheitenGenerator({
 
   return (
     <section>
-      <h2 className="text-base font-semibold">Einheiten anlegen</h2>
+      <h2 className="text-base font-semibold">Wohnung nacherfassen</h2>
       <p className="mb-3 text-sm text-muted-foreground">
-        Erzeugt die Einheiten eines Wohnungstyps anhand von Anzahl und Muster — Grundlage der
-        Einheitentabelle.
+        Ergänzt die Einheitentabelle um weitere Wohnungen eines bestehenden Wohnungstyps.
       </p>
       <div className="mb-3 flex flex-wrap items-end gap-4">
         {referenzobjekte.map((r) => (
@@ -75,7 +80,7 @@ export function EinheitenGenerator({
           </div>
         ))}
       </div>
-      <Button type="button" onClick={anlegen}>Einheiten anlegen</Button>
+      <Button type="button" onClick={anlegen}>Wohnungen nacherfassen</Button>
     </section>
   );
 }
