@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
+import { DossierEditor } from '../../../../components/einstellungen/DossierEditor.js';
 import { EinstellungsEditor } from '../../../../components/einstellungen/EinstellungsEditor.js';
+import { FaktorenEditor } from '../../../../components/einstellungen/FaktorenEditor.js';
 import { HonorarEditor } from '../../../../components/einstellungen/HonorarEditor.js';
 import { PreisanpassungEditor } from '../../../../components/einstellungen/PreisanpassungEditor.js';
 import { Brotkrume } from '../../../../components/shell/Brotkrume.js';
@@ -29,6 +31,7 @@ const BEREICHE = {
     titel: 'Dossier-Voreinstellungen',
     zweck: 'Voreinstellungen fuer neue Projekte — leer lassen heisst: keine Vorgabe.',
     praefix: 'dossierDefaults',
+    Editor: DossierEditor,
   },
   preisanpassung: {
     titel: 'Preisanpassung & Vorlagen',
@@ -42,6 +45,7 @@ const BEREICHE = {
     zweck: 'Normalisierung, Gewichtung und Herkunft der Faktoren, aus denen sich der '
       + 'Aufwandindikator D ergibt.',
     praefix: 'aufwandfaktoren',
+    Editor: FaktorenEditor,
   },
   honorar: {
     titel: 'Honorar',
@@ -50,7 +54,7 @@ const BEREICHE = {
     Editor: HonorarEditor,
   },
 } as const satisfies Record<string, {
-  titel: string; zweck: string; praefix: string | readonly string[]; Editor?: BereichsEditor;
+  titel: string; zweck: string; praefix: string | readonly string[]; Editor: BereichsEditor;
 }>;
 
 type Bereich = keyof typeof BEREICHE;
@@ -82,16 +86,15 @@ export default async function BereichSeite({ params }: Props) {
         { beschriftung: eintrag.titel },
       ]}
       />
-      {/* Task 16 liefert die verbleibenden bereichsspezifischen Formularfelder
-          (FaktorenEditor, DossierEditor) ueber dieselbe `Editor`-Prop. Bis dahin zeigt
-          der Rahmen sich dort ohne Formularfelder — er bleibt damit unabhaengig von den
-          konkreten Editoren pruefbar. */}
+      {/* Alle vier Bereiche fuehren seit Task 16 einen eigenen Feld-Editor (Task 15:
+          HonorarEditor/PreisanpassungEditor; Task 16: FaktorenEditor/DossierEditor) —
+          `Editor` ist deshalb kein optionales Feld mehr. */}
       <EinstellungsEditor
         titel={eintrag.titel}
         zweck={eintrag.zweck}
         bereichPraefix={eintrag.praefix}
         anfang={laufzeit.wert.rohKonfiguration}
-        {...('Editor' in eintrag ? { Editor: eintrag.Editor } : {})}
+        Editor={eintrag.Editor}
       />
     </main>
   );
