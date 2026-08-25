@@ -13,16 +13,20 @@
  */
 import { Trash2 } from 'lucide-react';
 import { Fragment, type ReactElement } from 'react';
+import type { Bereichsregel, Merkmal } from '@offert/core';
 import { faktorZuProzent, prozentZuFaktor } from '../projekt/zellen-logik.js';
 import { ZellenEingabe } from '../projekt/ZellenEingabe.js';
 import { Button } from '../ui/button.js';
 import { Input } from '../ui/input.js';
 import { Label } from '../ui/label.js';
 import { Hinweis } from '../ui/hinweis.js';
+import { Select } from '../ui/select.js';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../ui/table.js';
 import { befundeFuerPfad, type BereichsEditorProps } from './verwende-einstellungen.js';
+import { BereichsregelEditor } from './BereichsregelEditor.js';
+import { MerkmalEditor } from './MerkmalEditor.js';
 
 interface FlaecheRoh {
   readonly alpha: number;
@@ -39,8 +43,14 @@ interface VorlageRoh {
   readonly id: string;
   readonly bezeichnung: string;
   readonly vorgabefaktor: number;
+  readonly erfassungsform: 'relativ' | 'absolut';
   readonly begruendungVorschlag: string;
+  /** Traegt die Vorlage eine Regel, ist `vorgabefaktor` zwingend 0 (Ebene 3) — die
+   *  Eingabe dafuer wird deshalb ausgeblendet statt nur deaktiviert. */
+  readonly regel?: Bereichsregel;
 }
+
+const SPALTENANZAHL = 6;
 
 /** Kleinbuchstaben, Nicht-Alphanumerisches zu `_` — wie bei bestehenden Vorlagen-IDs
  *  in der Konfiguration (z. B. `erdgeschoss_gartensitzplatz`). */
@@ -52,8 +62,11 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
   const flaeche = einstellungen.entwurf['flaeche'] as FlaecheRoh;
   const preisanpassung = einstellungen.entwurf['preisanpassung'] as PreisanpassungRoh;
   const vorlagen = einstellungen.entwurf['anpassungsVorlagen'] as readonly VorlageRoh[];
+  const merkmale = einstellungen.entwurf['merkmale'] as readonly Merkmal[];
 
-  function schreibe(teilbaum: Partial<Record<'flaeche' | 'preisanpassung' | 'anpassungsVorlagen', unknown>>): void {
+  function schreibe(
+    teilbaum: Partial<Record<'flaeche' | 'preisanpassung' | 'anpassungsVorlagen' | 'merkmale', unknown>>,
+  ): void {
     einstellungen.aendere({ ...einstellungen.entwurf, ...teilbaum });
   }
 
@@ -63,6 +76,10 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
 
   function aenderePreisanpassung(feld: 'zMin' | 'zMax' | 'begruendungMinLaenge', wert: number): void {
     schreibe({ preisanpassung: { ...preisanpassung, [feld]: wert } });
+  }
+
+  function aendereMerkmale(naechste: readonly Merkmal[]): void {
+    schreibe({ merkmale: naechste });
   }
 
   function aendereVorlage(index: number, naechste: Partial<VorlageRoh>): void {
@@ -80,8 +97,36 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
     schreibe({
       anpassungsVorlagen: [
         ...vorlagen,
-        { id: ableiteVorlagenId(bezeichnung), bezeichnung, vorgabefaktor: 0, begruendungVorschlag: '' },
+        {
+          id: ableiteVorlagenId(bezeichnung), bezeichnung, vorgabefaktor: 0,
+          erfassungsform: 'relativ', begruendungVorschlag: '',
+        },
       ],
+    });
+  }
+
+  function aendereRegel(index: number, regel: Bereichsregel): void {
+    schreibe({ anpassungsVorlagen: vorlagen.map((v, i) => (i === index ? { ...v, regel } : v)) });
+  }
+
+  /**
+   * Schaltet die Regel je Vorlage EIN/AUS statt sie ueber `aendereVorlage` (blosses
+   * Merge-Patch) zu setzen: Ein Merge kann das Feld `regel` setzen, aber nicht wieder
+   * entfernen — und bei aktiver Regel muss `vorgabefaktor` zwingend 0 sein (Ebene 3),
+   * sonst weist die Konfiguration die Vorlage als «Regel und Vorgabewert nebeneinander»
+   * zurueck.
+   */
+  function schalteRegel(index: number, aktiv: boolean): void {
+    schreibe({
+      anpassungsVorlagen: vorlagen.map((v, i) => {
+        if (i !== index) return v;
+        if (!aktiv) {
+          const { regel: _entfernt, ...ohneRegel } = v;
+          return ohneRegel;
+        }
+        const regel: Bereichsregel = { merkmal: merkmale[0]?.id ?? '', bereiche: [{ wert: 0 }] };
+        return { ...v, vorgabefaktor: 0, regel };
+      }),
     });
   }
 
@@ -137,6 +182,8 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
         ))}
       </section>
 
+      <MerkmalEditor merkmale={merkmale} aendere={aendereMerkmale} />
+
       <section className="space-y-2 rounded-md border border-border p-4">
         <h3 className="text-sm font-semibold">Vorlagen</h3>
         <Table>
@@ -144,7 +191,8 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
             <TableRow>
               <TableHead>ID</TableHead>
               <TableHead>Bezeichnung</TableHead>
-              <TableHead>Vorgabefaktor (%)</TableHead>
+              <TableHead>Erfassungsform</TableHead>
+              <TableHead>Vorgabefaktor (%) / Regel</TableHead>
               <TableHead>Begründungsvorschlag</TableHead>
               <TableHead />
             </TableRow>
@@ -152,6 +200,7 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
           <TableBody>
             {vorlagen.map((vorlage, index) => {
               const zeilenBefunde = befundeFuerPfad(einstellungen.befunde, `anpassungsVorlagen[${index}]`);
+              const regelAktiv = vorlage.regel !== undefined;
               return (
                 // Index statt `id` als Key: zwei frisch hinzugefuegte, noch unbenannte
                 // Vorlagen tragen kurzzeitig dieselbe abgeleitete ID.
@@ -170,10 +219,36 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
                       />
                     </TableCell>
                     <TableCell>
-                      <ZellenEingabe
-                        wert={faktorZuProzent(vorlage.vorgabefaktor)}
-                        aendere={(wert) => aendereVorlage(index, { vorgabefaktor: prozentZuFaktor(wert) })}
-                      />
+                      <Select
+                        value={vorlage.erfassungsform}
+                        onChange={(e) => aendereVorlage(
+                          index, { erfassungsform: e.target.value as VorlageRoh['erfassungsform'] },
+                        )}
+                      >
+                        <option value="relativ">relativ</option>
+                        <option value="absolut">Franken</option>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <label className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <input
+                            type="checkbox"
+                            checked={regelAktiv}
+                            onChange={(e) => schalteRegel(index, e.target.checked)}
+                          />
+                          Regel verwenden
+                        </label>
+                        {/* Bei aktiver Regel bestimmt die Staffel den Wert — die Eingabe
+                            wird ausgeblendet statt nur gesperrt, sonst weist Ebene 3 die
+                            Konfiguration ab («Regel und Vorgabewert nebeneinander»). */}
+                        {!regelAktiv && (
+                          <ZellenEingabe
+                            wert={faktorZuProzent(vorlage.vorgabefaktor)}
+                            aendere={(wert) => aendereVorlage(index, { vorgabefaktor: prozentZuFaktor(wert) })}
+                          />
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Input
@@ -195,9 +270,21 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
                       </Button>
                     </TableCell>
                   </TableRow>
+                  {regelAktiv && vorlage.regel !== undefined && (
+                    <TableRow>
+                      <TableCell colSpan={SPALTENANZAHL} className="pt-0">
+                        <BereichsregelEditor
+                          regel={vorlage.regel}
+                          merkmale={merkmale}
+                          erfassungsform={vorlage.erfassungsform}
+                          aendere={(regel) => aendereRegel(index, regel)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )}
                   {zeilenBefunde.length > 0 && (
                     <TableRow>
-                      <TableCell colSpan={5} className="space-y-2 pt-0">
+                      <TableCell colSpan={SPALTENANZAHL} className="space-y-2 pt-0">
                         {zeilenBefunde.map((befund, i) => (
                           <Hinweis key={`${befund.pfad}-${i}`} art="fehler">{befund.text}</Hinweis>
                         ))}
