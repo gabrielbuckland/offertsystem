@@ -65,31 +65,32 @@ export const KERN_VORLAGEN: Record<BerechnungsFehlerCode, Vorlage> = {
   GEWICHTSSUMME_UNGUELTIG: (p) => ({
     adressat: 'auftraggeber',
     text: `Die Summe der Faktorgewichte beträgt ${formatiereScore(zahl(p, 'summe'))} `
-      + `statt 1. Betroffene Faktoren: ${liste(p, 'faktorliste')}.`,
+      + `statt 1. Betroffene Faktoren: ${liste(p, 'faktoren')}.`,
   }),
   ANPASSUNG_UNZULAESSIG: (p) => ({
     adressat: 'vermarkter',
     feldpfad: `einheiten.${String(p['wohnungsnummer'])}.anpassungen`,
-    text: p['grund'] === 'modell'
+    text: p['art'] === 'modellgrenze'
       ? `Einheit ${String(p['wohnungsnummer'])}: Die Summe der Anpassungen beträgt `
-        + `${formatiereProzent(zahl(p, 'z'))}. Sie muss grösser als −1 sein (−100 %), `
+        + `${formatiereProzent(zahl(p, 'zSumme'))}. Sie muss grösser als −1 sein (−100 %), `
         + 'da sonst kein positiver Wohnungspreis entsteht.'
       : `Einheit ${String(p['wohnungsnummer'])}: Die Summe der Anpassungen beträgt `
-        + `${formatiereProzent(zahl(p, 'z'))} und liegt ausserhalb des zulässigen `
+        + `${formatiereProzent(zahl(p, 'zSumme'))} und liegt ausserhalb des zulässigen `
         + `Bereichs [${formatiereProzent(zahl(p, 'min'))}, `
-        + `${formatiereProzent(zahl(p, 'max'))}]. Anpassungen: ${liste(p, 'anpassungsliste')}.`,
+        + `${formatiereProzent(zahl(p, 'max'))}]. Anpassungen: ${liste(p, 'anpassungen')}.`,
   }),
   STUFE_ENTARTET: (p) => ({
     adressat: 'auftraggeber',
-    text: `Honorarstufe ${String(p['k'])}: Unter- und Obergrenze der Verkaufssumme sind identisch `
-      + `(${formatiereAggregat(zahl(p, 'wert'))}). Jede Stufe muss ein Intervall `
+    text: `Honorarstufe ${String(p['stufenindex'])}: Unter- und Obergrenze der Verkaufssumme `
+      + `sind identisch (${formatiereAggregat(zahl(p, 'wert'))}). Jede Stufe muss ein Intervall `
       + 'positiver Breite bilden.',
   }),
   VERKAUFSSUMME_AUSSERHALB: (p) => ({
     adressat: 'auftraggeber',
-    text: `Die berechnete Verkaufssumme von ${formatiereAggregat(zahl(p, 'v'))} liegt `
+    text: `Die berechnete Verkaufssumme von ${formatiereAggregat(zahl(p, 'verkaufssumme'))} liegt `
       + 'ausserhalb des konfigurierten Bereichs der Honorarstaffelung '
-      + `(${formatiereAggregat(zahl(p, 'vMin'))} bis ${formatiereAggregat(zahl(p, 'vMax'))}). `
+      + `(${formatiereAggregat(zahl(p, 'bereichVon'))} bis `
+      + `${formatiereAggregat(zahl(p, 'bereichBis'))}). `
       + 'Die Honorarstaffelung ist zu erweitern.',
   }),
 };
