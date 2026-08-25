@@ -22,8 +22,9 @@ function projekt(): Projekt {
     einheiten: [{
       id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
       flaecheInnen: 86, flaecheAussen: 19,
-      spaltenwerte: { 'S-1': 0.05, 'S-2': 10_000 },
+      spaltenwerte: { 'S-1': 0.05, 'S-2': 10_000 }, merkmalswerte: {},
     }],
+    merkmale: [],
     aufwandfaktoren: { innenausbau_qualitaet: 3 },
     meta: { erstelltAm: '2026-08-24T10:00:00.000Z', geaendertAm: '2026-08-24T10:00:00.000Z' },
   };

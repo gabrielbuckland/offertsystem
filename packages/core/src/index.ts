@@ -116,8 +116,11 @@ export type { EingabeFehler, PreisanpassungsGrenzen } from './eingabe/validiere.
 export * from './ports/valuation-provider.js';
 export { alleToleranzen, rangeBreiteToleranz, toleranzFuer } from './config/toleranzen.js';
 export type { InvariantenId, Toleranz } from './config/toleranzen.js';
+// `normalisiereBereiche` ist oeffentlich, weil sie an JEDER Stelle gebraucht wird, die eine
+// Staffel prueft: sie bringt die von Zod inferierte Optionalitaet auf die Domainform, im
+// Kern ebenso wie in der Web-Schicht.
 export {
-  pruefeBereiche, werteBereichsregelAus,
+  pruefeBereiche, werteBereichsregelAus, normalisiereBereiche,
   type Bereich, type Bereichsregel, type Bereichstreffer,
 } from './modell/bereichsregel.js';
 export { gewichteteFlaeche } from './modell/flaeche.js';

@@ -32,7 +32,7 @@ const REFS = [{
 const EINHEITEN = [{
   id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
   flaecheInnen: 86, flaecheAussen: 19,
-  spaltenwerte: {},
+  spaltenwerte: {}, merkmalswerte: {},
 }];
 
 describe('EinheitenTabelle', () => {
@@ -74,7 +74,7 @@ describe('EinheitenTabelle', () => {
       const mitFaktor = [{
         id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
         flaecheInnen: 86, flaecheAussen: 19,
-        spaltenwerte: { 'S-1': 0.05 },
+        spaltenwerte: { 'S-1': 0.05 }, merkmalswerte: {},
       }];
       const html = renderToStaticMarkup(
         <EinheitenTabelle einheiten={mitFaktor} spalten={SPALTEN} referenzobjekte={REFS}
@@ -88,7 +88,7 @@ describe('EinheitenTabelle', () => {
       const mitRappen = [{
         id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
         flaecheInnen: 86, flaecheAussen: 19,
-        spaltenwerte: { 'S-2': 1_000_000 },
+        spaltenwerte: { 'S-2': 1_000_000 }, merkmalswerte: {},
       }];
       const html = renderToStaticMarkup(
         <EinheitenTabelle einheiten={mitRappen} spalten={SPALTEN} referenzobjekte={REFS}

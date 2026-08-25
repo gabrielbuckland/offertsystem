@@ -140,9 +140,11 @@ export function AnpassungsSpalten(
                       verursacht hat.
                     */}
                     <ZellenEingabe
+                      // `?? 0`: Eine Spalte mit `regel` hat keinen Vorgabewert (schliesst
+                      // sich im Schema aus); 0 ist hier der neutrale Anzeigewert.
                       wert={s.erfassungsform === 'relativ'
-                        ? faktorZuProzent(s.vorgabewert)
-                        : rappenZuFranken(s.vorgabewert)}
+                        ? faktorZuProzent(s.vorgabewert ?? 0)
+                        : rappenZuFranken(s.vorgabewert ?? 0)}
                       aendere={(eingabe) => aktualisiere(s.id, {
                         vorgabewert: s.erfassungsform === 'relativ'
                           ? prozentZuFaktor(eingabe)

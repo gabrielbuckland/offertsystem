@@ -266,7 +266,7 @@ describe('Referenzobjekte — Loeschung', () => {
     const aendere = vi.fn();
     const einheit: ProjektEinheit = {
       id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: R.id,
-      flaecheInnen: 60, flaecheAussen: 0, spaltenwerte: {},
+      flaecheInnen: 60, flaecheAussen: 0, spaltenwerte: {}, merkmalswerte: {},
     };
     zeichne([R], aendere, [einheit]);
     expect(entfernenKnopf().disabled).toBe(true);
