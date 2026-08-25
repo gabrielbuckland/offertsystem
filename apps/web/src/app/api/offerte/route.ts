@@ -26,7 +26,16 @@ export async function POST(anfrage: Request): Promise<Response> {
   }
   const { konfiguration, fingerabdruck, provider, offertenVerzeichnis } = laufzeit.wert;
 
-  const roh: unknown = await anfrage.json();
+  // Ein syntaktisch kaputter Rumpf ist ein Eingabefehler (422), kein Serverfehler —
+  // dieselbe Fehlerklasse wie in der PUT-Route, dort bereits behoben
+  // (docs/offene-punkte-projektansicht.md).
+  let roh: unknown;
+  try {
+    roh = await anfrage.json();
+  } catch {
+    return Response.json(
+      { fehler: { text: 'Der Anfrageinhalt ist kein gültiges JSON.' } }, { status: 422 });
+  }
   const geprueft = erfassungsSchema(konfiguration).safeParse(roh);
   if (!geprueft.success) {
     return Response.json(
