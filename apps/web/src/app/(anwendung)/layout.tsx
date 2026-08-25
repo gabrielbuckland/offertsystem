@@ -1,11 +1,9 @@
 import '../globals.css';
+import { AppShell } from '../../components/shell/AppShell.js';
 
-/**
- * Gruppen-Layout ohne eigenes `<html>`/`<body>` (das bleibt im Wurzellayout). Grenzt
- * Tailwind auf die Anwendungsrouten ein: die Offert-Routen ausserhalb dieser Gruppe
- * bleiben beim eigenstaendigen Druck-Stylesheet aus `packages/offer`, ohne Tailwinds
- * Preflight-Reset (US-10, Spec §7).
- */
+// Tailwind bewusst auf diese Gruppe begrenzt: Die Offert-Routen ausserhalb von
+// (anwendung) behalten ihr eigenstaendiges Druck-Stylesheet aus `packages/offer` und
+// duerfen Tailwinds Preflight-Reset nicht abbekommen (US-10).
 export default function AnwendungsLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <AppShell>{children}</AppShell>;
 }

@@ -23,6 +23,7 @@ import { entferneSpaltenwert } from './spaltenwerte-kaskade.js';
 import { Aufwandfaktoren } from './Aufwandfaktoren.js';
 import { Aggregatleiste } from './Aggregatleiste.js';
 import { leseRumpf } from './antwort-rumpf.js';
+import { Brotkrume } from '../shell/Brotkrume.js';
 
 export interface ProjektAnsichtProps {
   readonly projekt: Projekt;
@@ -192,7 +193,12 @@ export function ProjektAnsicht(
   }
 
   return (
-    <main className="p-8">
+    <main>
+      <Brotkrume stufen={[
+        { beschriftung: 'Projekte', href: '/projekte' },
+        { beschriftung: `${projekt.adresse.strasse} ${projekt.adresse.hausnummer}, `
+          + `${projekt.adresse.plz} ${projekt.adresse.ort}` },
+      ]} />
       <header className="mb-6">
         <h1 className="text-2xl font-semibold">
           {projekt.adresse.strasse} {projekt.adresse.hausnummer}, {projekt.adresse.plz}{' '}

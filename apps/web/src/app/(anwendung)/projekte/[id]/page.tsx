@@ -12,7 +12,7 @@ export default async function ProjektSeite({ params }: Props) {
   const { id } = await params;
   const laufzeit = holeLaufzeit();
   if (!laufzeit.ok) {
-    return <main className="p-8"><h1>Projekt</h1><p>{laufzeit.meldungen.join(' ')}</p></main>;
+    return <main><h1>Projekt</h1><p>{laufzeit.meldungen.join(' ')}</p></main>;
   }
   const projekt = await ladeProjekt(id, laufzeit.wert.projekteVerzeichnis).catch(() => null);
   if (projekt === null) notFound();
