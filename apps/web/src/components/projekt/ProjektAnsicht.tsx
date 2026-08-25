@@ -165,8 +165,10 @@ export function ProjektAnsicht(
         <Referenzobjekte
           referenzobjekte={projekt.referenzobjekte}
           einheiten={projekt.einheiten}
+          dossierDefaults={konfigurationBasis.dossierDefaults}
           aendere={(referenzobjekte) => aendere({ ...projekt, referenzobjekte: [...referenzobjekte] })}
           rufeAb={() => { if (!abrufLaeuft) void rufeAb(); }}
+          abrufLaeuft={abrufLaeuft}
         />
       </section>
       <section className="mb-6 rounded-lg border border-border bg-card p-6">
