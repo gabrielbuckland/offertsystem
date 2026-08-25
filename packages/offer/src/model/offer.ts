@@ -98,7 +98,6 @@ export const unitDerivationSchema = z.object({
   typeId: z.string().min(1),
   areaInner: quadratmeter,
   areaOuter: z.number().finite().nonnegative(),
-  floor: z.number().int(),
   weightedArea: provenancedSchema(quadratmeter, 'local-derivation'),
   basePrice: provenancedSchema(rappenGenau, 'local-derivation'),    // UNGERUNDET
   adjustments: z.array(provenancedSchema(adjustmentSchema, 'marketer-adjustment')),

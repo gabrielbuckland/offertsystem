@@ -74,7 +74,6 @@ function einheit(
   typ: string,
   flaecheInnen: number,
   flaecheAussen: number,
-  stockwerk: number,
   anpassungen: readonly ZuAbschlag[],
 ): Einheit {
   return {
@@ -83,7 +82,6 @@ function einheit(
     wohnungstypId: typ as WohnungstypId,
     flaecheInnen: flaecheInnen as Quadratmeter,
     flaecheAussen: flaecheAussen as Quadratmeter,
-    stockwerk,
     anpassungen,
   };
 }
@@ -113,15 +111,15 @@ export function baueLiegenschaft(optionen: BauOptionen = {}): Liegenschaft {
       { id: 'T-4.5' as WohnungstypId, zimmerzahl: 4.5, parametrisierung: parametrisierung(104, 18, 3) },
     ],
     einheiten: [
-      einheit('A1.01', 'T-3.5', 82, 12, 1, [ersteAnpassung]),
-      einheit('A2.01', 'T-3.5', 82, 14, 2, [{
+      einheit('A1.01', 'T-3.5', 82, 12, [ersteAnpassung]),
+      einheit('A2.01', 'T-3.5', 82, 14, [{
         faktor: 0.04,
         begruendung: 'Seesicht ab dem zweiten Obergeschoss',
         erfassungsform: 'absolut',
         erfassterBetrag: rappen(3_438_636),
       }]),
-      einheit('A3.01', 'T-4.5', 104, 18, 3, []),
-      einheit('A4.01', 'T-4.5', 104, 18, 4, []),
+      einheit('A3.01', 'T-4.5', 104, 18, []),
+      einheit('A4.01', 'T-4.5', 104, 18, []),
     ],
   };
   const erzeugt = erzeugeLiegenschaft(entwurf);

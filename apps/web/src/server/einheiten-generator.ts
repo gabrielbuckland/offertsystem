@@ -88,7 +88,6 @@ export function erzeugeEinheiten(
         referenzobjektId: wunsch.referenzobjektId,
         flaecheInnen: 0,
         flaecheAussen: 0,
-        stockwerk: 0,
         spaltenwerte: vorbelegteSpaltenwerte(spalten),
       });
     }

@@ -81,7 +81,6 @@ function baueEinheiten(e: OfferteEingang): unknown[] {
       typeId: p.wohnungstypId as string,
       areaInner: einheit.flaecheInnen,
       areaOuter: einheit.flaecheAussen,
-      floor: einheit.stockwerk,
       weightedArea: herkunft(p.gewichteteFlaeche, 'local-derivation'),
       basePrice: herkunft(p.basispreis, 'local-derivation'),
       adjustments: p.anpassungen.map((a) => herkunft({

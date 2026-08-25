@@ -41,7 +41,6 @@ const erfassung = {
     wohnungstypId: 'T1',
     flaecheInnen: 92.5,
     flaecheAussen: 0,
-    stockwerk: i,
     anpassungen: i === 0
       ? [{ faktor: 0.05, erfassungsform: 'relativ',
            begruendung: 'Attikalage mit Dachterrasse.' }]

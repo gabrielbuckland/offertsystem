@@ -40,7 +40,6 @@ function beispielErfassung() {
     }],
     einheiten: [{
       wohnungsnummer: 'A1.01', wohnungstypId: 'T-3.5', flaecheInnen: 82, flaecheAussen: 12,
-      stockwerk: 1,
       anpassungen: [] as unknown[],
     }],
     aufwandfaktoren: { innenausbau_qualitaet: 4 },

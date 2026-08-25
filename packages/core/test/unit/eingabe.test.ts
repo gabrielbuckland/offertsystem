@@ -17,7 +17,7 @@ function roh(anpassungen: unknown[] = []): unknown {
     wohnungstypen: [{ id: 'T1', zimmerzahl: 3.5, parametrisierung }],
     einheiten: [{
       id: 'E-1', wohnungsnummer: 'A-01', wohnungstypId: 'T1',
-      flaecheInnen: 92.5, flaecheAussen: 0, stockwerk: 1, anpassungen,
+      flaecheInnen: 92.5, flaecheAussen: 0, anpassungen,
     }],
   };
 }
@@ -107,7 +107,7 @@ describe('Eingabevalidierung — einzige Stelle mit Plausibilitaetsgrenzen (I-02
     const basis = roh() as Record<string, unknown>;
     const r = validiereLiegenschaftEingabe(
       { ...basis, einheiten: [{ id: 'E-1', wohnungsnummer: 'A-01', wohnungstypId: 'T1',
-        flaecheInnen: 0, flaecheAussen: 0, stockwerk: 1, anpassungen: [] }] },
+        flaecheInnen: 0, flaecheAussen: 0, anpassungen: [] }] },
       grenzen);
     expect(r.ok).toBe(false);
   });

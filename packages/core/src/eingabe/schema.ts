@@ -42,7 +42,6 @@ export const einheitEingabeSchema = z.object({
   wohnungstypId: z.string().min(1),
   flaecheInnen: z.number().finite().positive(),
   flaecheAussen: z.number().finite().nonnegative(),
-  stockwerk: z.number().int(),
   anpassungen: z.array(zuAbschlagEingabeSchema),
 });
 

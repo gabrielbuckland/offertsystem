@@ -28,7 +28,7 @@ function entwurf(ueberschreibung: Partial<LiegenschaftEntwurf> = {}): Liegenscha
       {
         id: einheitId('E-1'), wohnungsnummer: wohnungsnummer('A-01'),
         wohnungstypId: wohnungstypId('T1'), flaecheInnen: quadratmeter(92.5),
-        flaecheAussen: quadratmeterAbNull(0), stockwerk: 1, anpassungen: [],
+        flaecheAussen: quadratmeterAbNull(0), anpassungen: [],
       },
     ],
     ...ueberschreibung,

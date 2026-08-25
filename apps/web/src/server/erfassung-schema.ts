@@ -42,7 +42,6 @@ export function erfassungsSchema(k: Konfiguration) {
     wohnungstypId: z.string().min(1),
     flaecheInnen: flaeche,
     flaecheAussen: z.number().nonnegative(),
-    stockwerk: z.number().int(),
     anpassungen: z.array(anpassung),
   }).strict().superRefine((e, ctx) => {
     const summe = e.anpassungen.reduce((s, a) => s + a.faktor, 0);

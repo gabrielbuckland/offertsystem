@@ -31,7 +31,7 @@ const REFS = [{
 }];
 const EINHEITEN = [{
   id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
-  flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1,
+  flaecheInnen: 86, flaecheAussen: 19,
   spaltenwerte: {},
 }];
 
@@ -42,6 +42,16 @@ describe('EinheitenTabelle', () => {
                         preise={{}} aendere={() => undefined} />);
     expect(html).toContain('Zuschlag Etage');
     expect(html).toContain('Aussicht');
+  });
+
+  // Gegenprobe zur Regel eine Zeile darueber: Die Tabelle fuehrt KEIN fest verdrahtetes
+  // Merkmal mehr. Die Stockwerklage war genau so eines — ohne Formelwirkung, nur
+  // Ablesegrundlage — und ist heute eine konfigurierbare Anpassungsspalte.
+  it('fuehrt keine fest verdrahtete Stockwerk-Spalte', () => {
+    const html = renderToStaticMarkup(
+      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS}
+                        preise={{}} aendere={() => undefined} />);
+    expect(html).not.toContain('Stockwerk');
   });
 
   it('zeigt den berechneten Preis, sobald er vorliegt', () => {
@@ -63,7 +73,7 @@ describe('EinheitenTabelle', () => {
     + 'Faktor — sonst waere "5" im Feld ein Faktor von 5 statt 5%', () => {
       const mitFaktor = [{
         id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
-        flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1,
+        flaecheInnen: 86, flaecheAussen: 19,
         spaltenwerte: { 'S-1': 0.05 },
       }];
       const html = renderToStaticMarkup(
@@ -77,7 +87,7 @@ describe('EinheitenTabelle', () => {
     + 'unskaliert — sonst waeren eingegebene CHF 10\'000 im Kern 100 Rappen = CHF 100', () => {
       const mitRappen = [{
         id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
-        flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1,
+        flaecheInnen: 86, flaecheAussen: 19,
         spaltenwerte: { 'S-2': 1_000_000 },
       }];
       const html = renderToStaticMarkup(

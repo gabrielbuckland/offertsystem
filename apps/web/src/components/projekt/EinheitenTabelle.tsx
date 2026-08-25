@@ -49,7 +49,7 @@ export function EinheitenTabelle(
   }
 
   const zahlenspalte = (
-    schluessel: 'flaecheInnen' | 'flaecheAussen' | 'stockwerk', kopf: string,
+    schluessel: 'flaecheInnen' | 'flaecheAussen', kopf: string,
   ) => spalte.accessor(schluessel, {
     header: kopf,
     cell: (info) => (
@@ -71,11 +71,17 @@ export function EinheitenTabelle(
     }),
     zahlenspalte('flaecheInnen', 'Fläche (m²)'),
     zahlenspalte('flaecheAussen', 'Aussenfläche (m²)'),
-    zahlenspalte('stockwerk', 'Stockwerk'),
     // Datengetrieben: je konfigurierter Spalte genau eine Tabellenspalte. Eine feste
     // Aufzaehlung machte jede neue Kategorie zu einer Codeaenderung. Ein Einzelfall ohne
     // eigene wiederverwendbare Kategorie bekommt keine eigene Zelle — er ist einfach eine
     // weitere Spalte, deren Wert bei allen anderen Einheiten auf 0 bleibt.
+    //
+    // Hier endete frueher die feste Aufzaehlung mit einer Spalte «Stockwerk». Sie war das
+    // Gegenbeispiel zur eigenen Regel: ein hart verdrahtetes Merkmal, das in keine Formel
+    // einging und nur Ablesegrundlage fuer die Wahl eines Zu-/Abschlags war. Die
+    // Stockwerklage wird jetzt als Anpassungsspalte erfasst (Vorlagen `attikalage`,
+    // `erdgeschoss_gartensitzplatz`, `erdgeschoss_einsehbar`) und wirkt damit dort, wo sie
+    // gemeint ist: auf den Preis, mit Begruendung und Herkunft in der Offerte.
     ...spalten.map((s) => spalte.display({
       id: s.id,
       header: s.erfassungsform === 'absolut' ? `${s.bezeichnung} (CHF)` : `${s.bezeichnung} (%)`,

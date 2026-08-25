@@ -19,7 +19,7 @@ function beispiel() {
     ],
     einheiten: [{
       id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
-      flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1,
+      flaecheInnen: 86, flaecheAussen: 19,
       spaltenwerte: { 'S-1': 10_000 },
     }],
     aufwandfaktoren: {},
@@ -57,6 +57,34 @@ describe('projektSchema', () => {
     expect(ergebnis.success).toBe(false);
     if (ergebnis.success) return;
     expect(JSON.stringify(ergebnis.error.issues)).toContain('EINHEIT_ID_DOPPELT');
+  });
+
+  // Das Feld wurde aufgegeben (Einheiten tragen ihre Unterschiede in `spaltenwerte`).
+  // `.strict()` haelt das fest: Ein aelteres Artefakt wird abgewiesen statt stillschweigend
+  // uebernommen — sonst truege die Ablage ein Feld, das keine Berechnung mehr liest.
+  it('weist eine Einheit mit dem aufgegebenen Feld stockwerk zurueck', () => {
+    const p = beispiel();
+    const ergebnis = projektSchema.safeParse({
+      ...p,
+      einheiten: [{ ...p.einheiten[0]!, stockwerk: 1 }],
+    });
+    expect(ergebnis.success).toBe(false);
+    if (ergebnis.success) return;
+    expect(ergebnis.error.issues.some((i) => i.code === 'unrecognized_keys')).toBe(true);
+  });
+
+  // Gegenprobe: Die Referenzobjekt-Parametrisierung fuehrt `stockwerk` weiter — es ist
+  // der Dossier-Parameter der Bewertung (PriceHubble `floorNumber`), kein Merkmal der
+  // einzelnen Einheit.
+  it('fuehrt stockwerk in der Referenzobjekt-Parametrisierung weiter', () => {
+    expect(projektSchema.safeParse(beispiel()).success).toBe(true);
+    const p = beispiel();
+    const { stockwerk: _weg, ...ohne } = p.referenzobjekte[0]!.parametrisierung;
+    const ergebnis = projektSchema.safeParse({
+      ...p,
+      referenzobjekte: [{ ...p.referenzobjekte[0]!, parametrisierung: ohne }],
+    });
+    expect(ergebnis.success).toBe(false);
   });
 
   it('laesst ein leeres Projekt ohne Einheiten zu', () => {

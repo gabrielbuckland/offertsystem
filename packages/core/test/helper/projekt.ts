@@ -234,7 +234,6 @@ export function liegenschaftFixture(
     wohnungstypId: typ.id,
     flaecheInnen: quadratmeter(92.5),
     flaecheAussen: quadratmeterAbNull(aussen),
-    stockwerk: index,
     anpassungen: index === 0 ? optionen.anpassungenErsteEinheit ?? [] : [],
   }));
   const erzeugt = erzeugeLiegenschaft({
@@ -419,7 +418,6 @@ export function szenarioZuEingangsArgumenten(fixture: SzenarioFixture): Eingangs
       wohnungstypId: wohnungstypId(e.typ_id),
       flaecheInnen: quadratmeter(e.A_innen),
       flaecheAussen: quadratmeterAbNull(e.A_aussen),
-      stockwerk: index,
       anpassungen: e.anpassungen.map((a) => ({
         faktor: a.a_i, begruendung: a.begruendung, erfassungsform: 'relativ' as const,
       })),

@@ -67,7 +67,6 @@ export function einTypEinheitenEingang(optionen: EinTypOptionen = {}): PipelineE
       wohnungstypId: typ.id,
       flaecheInnen: quadratmeterAbNull(innen),
       flaecheAussen: quadratmeterAbNull(aussen),
-      stockwerk: index,
       anpassungen: index === 0 ? optionen.anpassungen ?? [] : [],
     })),
   });
@@ -147,7 +146,6 @@ function liegenschaftMitEinheiten(anzahl: number): Liegenschaft {
     wohnungstypId: typ.id,
     flaecheInnen: quadratmeter(92.5),
     flaecheAussen: quadratmeterAbNull(0),
-    stockwerk: index,
     anpassungen: [] as readonly ZuAbschlag[],
   }));
   const erzeugt = erzeugeLiegenschaft({

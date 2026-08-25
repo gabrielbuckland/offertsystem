@@ -5,7 +5,7 @@ import type { ProjektEinheit } from '../../../src/server/projekt-schema.js';
 function einheit(id: string, spaltenwerte: Readonly<Record<string, number>>): ProjektEinheit {
   return {
     id, wohnungsnummer: id, referenzobjektId: 'R-1',
-    flaecheInnen: 80, flaecheAussen: 10, stockwerk: 1,
+    flaecheInnen: 80, flaecheAussen: 10,
     spaltenwerte,
   };
 }

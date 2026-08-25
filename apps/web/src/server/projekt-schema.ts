@@ -51,7 +51,10 @@ const einheitSchema = z.object({
   referenzobjektId: z.string().min(1),
   flaecheInnen: z.number().nonnegative(),
   flaecheAussen: z.number().nonnegative(),
-  stockwerk: z.number().int(),
+  // Bewusst KEIN `stockwerk`: Was eine Einheit gegenueber ihrem Referenzobjekt
+  // unterscheidet, steht vollstaendig in `spaltenwerte` — der offenen, konfigurierbaren
+  // Liste der Zu-/Abschlaege. `.strict()` weist ein Artefakt mit dem frueheren Feld
+  // deshalb ab; abgelegte Projekte wurden einmalig bereinigt (siehe Worklog).
   spaltenwerte: z.record(z.number()),
 }).strict();
 

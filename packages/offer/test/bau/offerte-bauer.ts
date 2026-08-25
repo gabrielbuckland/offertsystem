@@ -101,7 +101,6 @@ const VORLAGE: VeraenderbareOfferte = {
         typeId: 'T-3.5',
         areaInner: 82,
         areaOuter: 12,
-        floor: 1,
         weightedArea: { value: 88, provenance: 'local-derivation' },
         basePrice: { value: 85_000_000, provenance: 'local-derivation' },
         adjustments: [
@@ -123,7 +122,6 @@ const VORLAGE: VeraenderbareOfferte = {
         typeId: 'T-3.5',
         areaInner: 82,
         areaOuter: 14,
-        floor: 2,
         weightedArea: { value: 89, provenance: 'local-derivation' },
         basePrice: { value: 85_965_909.09090909, provenance: 'local-derivation' },
         adjustments: [
@@ -145,7 +143,6 @@ const VORLAGE: VeraenderbareOfferte = {
         typeId: 'T-4.5',
         areaInner: 104,
         areaOuter: 18,
-        floor: 3,
         weightedArea: { value: 113, provenance: 'local-derivation' },
         basePrice: { value: 108_000_000, provenance: 'local-derivation' },
         adjustments: [],

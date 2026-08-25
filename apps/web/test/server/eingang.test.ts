@@ -33,7 +33,7 @@ const BEISPIEL_ERFASSUNG = {
   }],
   einheiten: [{
     wohnungsnummer: 'A1.01', wohnungstypId: 'T-3.5', flaecheInnen: 82, flaecheAussen: 12,
-    stockwerk: 1, anpassungen: [],
+ anpassungen: [],
   }],
   aufwandfaktoren: { innenausbau_qualitaet: 4 },
 } as unknown as Erfassung;

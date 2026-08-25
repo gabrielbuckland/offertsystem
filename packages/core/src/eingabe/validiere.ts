@@ -84,7 +84,6 @@ export function validiereLiegenschaftEingabe(
       wohnungstypId: wohnungstypId(e.wohnungstypId),
       flaecheInnen: quadratmeter(e.flaecheInnen),
       flaecheAussen: quadratmeterAbNull(e.flaecheAussen),
-      stockwerk: e.stockwerk,
       anpassungen: e.anpassungen.map((a) =>
         a.erfassterBetrag === undefined
           ? { faktor: a.faktor, begruendung: a.begruendung, erfassungsform: a.erfassungsform }

@@ -53,11 +53,11 @@ async function vorbereitetesProjekt(projekte: string) {
     einheiten: [
       {
         id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
-        flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, spaltenwerte: {},
+        flaecheInnen: 86, flaecheAussen: 19, spaltenwerte: {},
       },
       {
         id: 'E-2', wohnungsnummer: 'A-02', referenzobjektId: 'R-1',
-        flaecheInnen: 92, flaecheAussen: 12, stockwerk: 2, spaltenwerte: {},
+        flaecheInnen: 92, flaecheAussen: 12, spaltenwerte: {},
       },
     ],
     aufwandfaktoren: { innenausbau_qualitaet: 3 },

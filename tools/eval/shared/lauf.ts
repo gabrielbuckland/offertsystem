@@ -97,7 +97,6 @@ export function baueEingang(szenario: Szenario, konfiguration: Konfiguration): E
       wohnungstypId: e.typ_id as WohnungstypId,
       flaecheInnen: quadratmeter(e.A_innen),
       flaecheAussen: e.A_aussen as RepraesentativeParametrisierung['flaecheAussen'],
-      stockwerk: index,
       anpassungen: e.anpassungen.map((a) => ({
         faktor: a.a_i, begruendung: a.begruendung, erfassungsform: 'relativ' as const,
       })),

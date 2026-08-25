@@ -73,7 +73,6 @@ export function projiziere(
         wohnungstypId: e.referenzobjektId,
         flaecheInnen: e.flaecheInnen,
         flaecheAussen: e.flaecheAussen,
-        stockwerk: e.stockwerk,
         anpassungen: [],
       });
       continue;
@@ -106,7 +105,6 @@ export function projiziere(
       wohnungstypId: e.referenzobjektId,
       flaecheInnen: e.flaecheInnen,
       flaecheAussen: e.flaecheAussen,
-      stockwerk: e.stockwerk,
       anpassungen,
     });
   }

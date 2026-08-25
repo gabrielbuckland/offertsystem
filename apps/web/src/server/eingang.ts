@@ -102,7 +102,6 @@ function entwurfAus(
       wohnungstypId: e.wohnungstypId as WohnungstypId,
       flaecheInnen: e.flaecheInnen as Quadratmeter,
       flaecheAussen: e.flaecheAussen as Quadratmeter,
-      stockwerk: e.stockwerk,
       // `ohneAnpassungen` dient der Basispreisermittlung (PE-21): b_j ist gerade die
       // Groesse VOR den Anpassungen.
       anpassungen: optionen.ohneAnpassungen === true ? [] : e.anpassungen.map(zuAbschlag),
