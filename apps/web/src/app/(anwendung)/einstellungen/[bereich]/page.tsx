@@ -1,7 +1,10 @@
 import { notFound } from 'next/navigation';
 import { EinstellungsEditor } from '../../../../components/einstellungen/EinstellungsEditor.js';
+import { HonorarEditor } from '../../../../components/einstellungen/HonorarEditor.js';
+import { PreisanpassungEditor } from '../../../../components/einstellungen/PreisanpassungEditor.js';
 import { Brotkrume } from '../../../../components/shell/Brotkrume.js';
 import { holeLaufzeit } from '../../../../server/laufzeit.js';
+import type { BereichsEditor } from '../../../../components/einstellungen/verwende-einstellungen.js';
 
 /**
  * Die vier Bereiche entsprechen den Editor-Pfaden aus `PipelineAnsicht`
@@ -32,6 +35,7 @@ const BEREICHE = {
     zweck: 'Gewicht der Aussenflaeche, Grenzen der Zu-/Abschlaege und die '
       + 'Vorlagenliste fuer deren Begruendung.',
     praefix: ['flaeche', 'preisanpassung', 'anpassungsVorlagen'],
+    Editor: PreisanpassungEditor,
   },
   faktoren: {
     titel: 'Aufwandfaktoren',
@@ -43,8 +47,11 @@ const BEREICHE = {
     titel: 'Honorar',
     zweck: 'Stuetzstellen der Honorarstaffel und die Skalierungsfunktion g(D).',
     praefix: 'honorar',
+    Editor: HonorarEditor,
   },
-} as const satisfies Record<string, { titel: string; zweck: string; praefix: string | readonly string[] }>;
+} as const satisfies Record<string, {
+  titel: string; zweck: string; praefix: string | readonly string[]; Editor?: BereichsEditor;
+}>;
 
 type Bereich = keyof typeof BEREICHE;
 
@@ -75,15 +82,16 @@ export default async function BereichSeite({ params }: Props) {
         { beschriftung: eintrag.titel },
       ]}
       />
-      {/* Tasks 15/16 liefern die bereichsspezifischen Formularfelder (HonorarEditor,
-          PreisanpassungEditor, FaktorenEditor, DossierEditor) ueber die `Editor`-Prop.
-          Bis dahin bleibt sie unbelegt — der Rahmen (Karte, Speichern/Verwerfen,
-          Befundanzeige) ist damit unabhaengig von den konkreten Editoren pruefbar. */}
+      {/* Task 16 liefert die verbleibenden bereichsspezifischen Formularfelder
+          (FaktorenEditor, DossierEditor) ueber dieselbe `Editor`-Prop. Bis dahin zeigt
+          der Rahmen sich dort ohne Formularfelder — er bleibt damit unabhaengig von den
+          konkreten Editoren pruefbar. */}
       <EinstellungsEditor
         titel={eintrag.titel}
         zweck={eintrag.zweck}
         bereichPraefix={eintrag.praefix}
         anfang={laufzeit.wert.rohKonfiguration}
+        Editor={'Editor' in eintrag ? eintrag.Editor : undefined}
       />
     </main>
   );
