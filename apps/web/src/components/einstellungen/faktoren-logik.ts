@@ -8,11 +8,16 @@ const GEWICHT_PRAEZISION = 4;
 
 /**
  * Skaliert alle Gewichte proportional auf Summe 1; rundet auf 4 Nachkommastellen und
- * legt die verbleibende Restdifferenz (Rundungsfehler) auf den GROESSTEN Eintrag —
- * die Summe MUSS exakt 1 ergeben, `CFG_WEIGHTS_SUM` (`packages/core/.../ebene3.ts`)
- * laesst nur eine Gleitkomma-Toleranz (`GEWICHTSSUMME_TOLERANZ`) zu, kein gerundetes
- * "fast 1". Ein Eintrag mit Gewicht 0 bleibt 0 (0/Summe * Summe = 0), das ist die
- * gewuenschte Ruhelage eines frisch hinzugefuegten, noch ungewichteten Faktors.
+ * legt die verbleibende Restdifferenz (Rundungsfehler) auf den GROESSTEN Eintrag — die
+ * Summe landet damit innerhalb von `GEWICHTSSUMME_TOLERANZ` (`1e-9`,
+ * `packages/core/src/config/ebene3.ts`) auf 1, dem Massstab, an dem `CFG_WEIGHTS_SUM`
+ * tatsaechlich prueft; kein gerundetes "fast 1" ausserhalb dieser Toleranz. Wegen
+ * IEEE-754 (`Math.round(x * 10000) / 10000` plus die Float-Addition der Restdifferenz)
+ * ist die Summe NICHT immer bitgenau `1` — bei einem Teil der moeglichen Eingaben
+ * bleibt eine Abweichung im Bereich eines ULP (~2.22e-16), weit innerhalb der Toleranz
+ * und damit fuer `CFG_WEIGHTS_SUM` folgenlos. Ein Eintrag mit Gewicht 0 bleibt 0
+ * (0/Summe * Summe = 0), das ist die gewuenschte Ruhelage eines frisch hinzugefuegten,
+ * noch ungewichteten Faktors.
  *
  * Ist die Ausgangssumme 0 (alle Faktoren auf 0, oder keine Faktoren), gibt es nichts
  * proportional zu verteilen — die Eingabe kommt unveraendert zurueck, statt durch 0 zu

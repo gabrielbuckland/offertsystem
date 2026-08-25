@@ -169,7 +169,7 @@ export function FaktorenEditor({ einstellungen }: BereichsEditorProps): ReactEle
                 // Reihenfolge min/max TRAEGT die Polung, ein Tausch waere ein
                 // fachlicher Fehler, kein Tippfehler.
                 <p className="text-sm text-muted-foreground">
-                  Min kann hier groesser als Max sein: Die Reihenfolge legt die Polung
+                  Min kann hier grösser als Max sein: Die Reihenfolge legt die Polung
                   des Lagescores fest (steigt der Aufwand mit dem Rohwert oder sinkt
                   er) — nicht "korrigierend" vertauschen.
                 </p>
