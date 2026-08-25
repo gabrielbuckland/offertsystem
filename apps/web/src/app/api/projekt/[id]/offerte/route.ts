@@ -36,9 +36,10 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
       // Anders als die Berechnungsroute, die das Teilergebnis mit 200 ausweist: Ohne
       // Honorarrange gibt es nichts zu offerieren, also entsteht kein Artefakt (I-24).
       return Response.json(
-        { fehler: { text: uebersetzeStufenFehler(lauf.fehler).text } }, { status: 422 });
+        { fehler: uebersetzeStufenFehler(lauf.fehler) }, { status: 422 });
     case 'fehler':
-      return Response.json({ fehler: { text: lauf.text } }, { status: lauf.status });
+      // Unveraendert durchgereicht, samt `adressat` und ggf. `feldpfad` (s. Berechnungsroute).
+      return Response.json({ fehler: lauf.fehler }, { status: lauf.status });
     case 'offerte':
       await legeOfferteAb(lauf.offerte, offertenVerzeichnis);
       return Response.json({ offertId: lauf.offerte.metadata.offertId }, { status: 201 });

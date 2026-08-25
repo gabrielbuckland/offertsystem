@@ -44,7 +44,10 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
         },
       }, { status: 200 });
     case 'fehler':
-      return Response.json({ fehler: { text: lauf.text } }, { status: lauf.status });
+      // Unveraendert durchgereicht: Ein Stufenfehler traegt neben dem Text auch
+      // `adressat` (Vermarkter oder Auftraggeber) und ggf. `feldpfad`. Beides gehoert
+      // zur Antwort — die Anzeige richtet sich danach.
+      return Response.json({ fehler: lauf.fehler }, { status: lauf.status });
     case 'offerte': {
       const o = lauf.offerte;
       return Response.json({

@@ -5,6 +5,10 @@
  * Artefakt (`derivation`/`aggregates`), statt eines zweiten, eigens aufbereiteten
  * Datenbilds (Spec §4, Begruendung wie Ergebnisseite §5.4.3 im Bericht).
  *
+ * Zweistufig, weil in Franken erfasste Zu-/Abschlaege den ungerundeten Basispreis
+ * brauchen (PE-21) und dieser erst aus einem Lauf OHNE Anpassungen hervorgeht. Ein
+ * einstufiger Weg setzte zwei Darstellungsformen im Kern voraus — das schliesst E-09 aus.
+ *
  * `erzeugeLaufmetadaten` laeuft auch fuer reine Berechnungen: Eine ungenutzte
  * Offert-Kennung ist billig; ein zweiter, metadatenloser Bauweg der Offerte waere die
  * teurere Abweichungsquelle.
@@ -25,11 +29,23 @@ import {
 import { baueOfferte } from '@offert/offer/src/model/baue-offerte.js';
 import type { Offer } from '@offert/offer/src/model/offer.js';
 import { beschaffe, zuEingangsArgumenten } from './eingang.js';
-import { uebersetzeStufenFehler } from './fehlertexte.js';
+import { uebersetzeStufenFehler, type AngezeigterFehler } from './fehlertexte.js';
 import { erzeugeLaufmetadaten } from './laufmetadaten.js';
 import type { Laufzeit } from './laufzeit.js';
 import { ladeProjekt } from './projekt-ablage.js';
 import { projiziere } from './projektion.js';
+
+/**
+ * Anzeigefertiger Fehler, in genau der Form, in der ihn die Routen schon immer
+ * ausgegeben haben. Zwei Auspraegungen, weil es zwei Quellen gibt: Stufenfehler des
+ * Kerns kommen aus `uebersetzeStufenFehler` als vollstaendiger `AngezeigterFehler` —
+ * `adressat` unterscheidet Vermarkter- von Auftraggeberfehlern und traegt
+ * `HonorarAbbruch.tsx`s `data-adressat`, `feldpfad` verankert die Meldung am Feld.
+ * Lade-, Projektions- und Beschaffungsfehler fuehren dagegen seit jeher nur einen Text.
+ * Ein erzwungener `adressat` fuer diese haette der Antwort ein Feld hinzugefuegt, das sie
+ * nie hatte; die Union gibt beide Formen unveraendert weiter.
+ */
+export type LaufFehler = AngezeigterFehler | { readonly text: string };
 
 /** Teilergebnis nach E-04: Wohnungspreise und D bleiben gueltig, nur das Honorar fehlt. */
 export interface HonorarTeilergebnis {
@@ -52,7 +68,8 @@ export type ProjektLaufErgebnis =
   | { readonly art: 'honorarAbbruch';
       readonly teilergebnis: HonorarTeilergebnis;
       readonly fehler: StufenFehler }
-  | { readonly art: 'fehler'; readonly status: 404 | 422 | 502; readonly text: string };
+  | { readonly art: 'fehler'; readonly status: 404 | 422 | 502;
+      readonly fehler: LaufFehler };
 
 export async function fuehreProjektlauf(
   id: string, laufzeit: Laufzeit,
@@ -61,7 +78,7 @@ export async function fuehreProjektlauf(
 
   const projekt = await ladeProjekt(id, projekteVerzeichnis).catch(() => null);
   if (projekt === null) {
-    return { art: 'fehler', status: 404, text: `Projekt ${id} nicht gefunden.` };
+    return { art: 'fehler', status: 404, fehler: { text: `Projekt ${id} nicht gefunden.` } };
   }
   if (projekt.referenzobjekte.length === 0 || projekt.einheiten.length === 0) {
     return { art: 'unvollstaendig' };
@@ -72,20 +89,27 @@ export async function fuehreProjektlauf(
   // hier, in Franken erfasste Positionen ueber die (noch leeren) Basispreise
   // umzurechnen, und schluege fehl, bevor der Lauf sie ermitteln konnte.
   const ohne = projiziere(projekt, {}, { ohneAnpassungen: true });
-  if (!ohne.ok) return { art: 'fehler', status: 422, text: ohne.meldung };
+  if (!ohne.ok) return { art: 'fehler', status: 422, fehler: { text: ohne.meldung } };
 
   const beschafft = await beschaffe(ohne.wert, provider);
-  if (!beschafft.ok) return { art: 'fehler', status: 502, text: beschafft.meldung };
+  if (!beschafft.ok) return { art: 'fehler', status: 502, fehler: { text: beschafft.meldung } };
   if (!beschafft.wert.buendel.vollstaendig) return { art: 'bewertungLuecke' };
 
-  const meta = erzeugeLaufmetadaten(fingerabdruck); // PE-04, E-29: Zeit entsteht hier
+  // PE-04, E-29: Zeit entsteht hier. Nebenwirkung, bewusst in Kauf genommen: Auch eine
+  // reine Berechnung verbraucht eine Referenznummer aus der prozessweiten Folge
+  // `A-<Jahr>-<NNN>` (`laufmetadaten.ts`), die Nummern der abgelegten Offerten haben also
+  // Luecken. Heute liest die Nummer niemand; wird sie einmal als lueckenlos erwartet
+  // (OFFEN-05-1 ist beim Auftraggeber offen), muss sie erst beim Ablegen gezogen werden.
+  const meta = erzeugeLaufmetadaten(fingerabdruck);
   const basisEingang = zuEingangsArgumenten(
     ohne.wert, beschafft.wert, konfiguration, meta.erstelltAm, { ohneAnpassungen: true });
-  if (!basisEingang.ok) return { art: 'fehler', status: 422, text: basisEingang.meldung };
+  if (!basisEingang.ok) {
+    return { art: 'fehler', status: 422, fehler: { text: basisEingang.meldung } };
+  }
 
   const basisLauf = berechne(basisEingang.wert);
   if (!basisLauf.ok) {
-    return { art: 'fehler', status: 422, text: uebersetzeStufenFehler(basisLauf.fehler).text };
+    return { art: 'fehler', status: 422, fehler: uebersetzeStufenFehler(basisLauf.fehler) };
   }
 
   const basispreise: Record<string, number> = {};
@@ -96,18 +120,26 @@ export async function fuehreProjektlauf(
 
   // Zweiter Lauf, jetzt mit umgerechneten Anpassungen.
   const voll = projiziere(projekt, basispreise);
-  if (!voll.ok) return { art: 'fehler', status: 422, text: voll.meldung };
+  if (!voll.ok) return { art: 'fehler', status: 422, fehler: { text: voll.meldung } };
 
   const eingang = zuEingangsArgumenten(voll.wert, beschafft.wert, konfiguration, meta.erstelltAm);
-  if (!eingang.ok) return { art: 'fehler', status: 422, text: eingang.meldung };
+  if (!eingang.ok) return { art: 'fehler', status: 422, fehler: { text: eingang.meldung } };
 
   const ergebnis = berechne(eingang.wert);
   if (!ergebnis.ok) {
-    if (ergebnis.fehler.stufe === 5) {
-      // E-04: oberhalb der obersten Stuetzstelle gibt es keine Zahl, aber ein
-      // Teilergebnis. `berechne` bleibt die einzige Kettendefinition; fuer das
-      // Teilergebnis werden die Stufen 1–4 einzeln nachgefahren (NFA-03 exportiert
-      // sie genau dafuer) — deterministisch, also dasselbe Zwischenergebnis.
+    if (ergebnis.fehler.stufe === 5 && ergebnis.fehler.code === 'VERKAUFSSUMME_AUSSERHALB') {
+      // E-04: Ausserhalb des konfigurierten Staffelbereichs — ober- ODER unterhalb, der
+      // Kern unterscheidet beides ueber `richtung` — gibt es keine Honorarzahl, aber ein
+      // Teilergebnis.
+      //
+      // Der Code wird mitgeprueft, nicht nur die Stufe: Stufe 5 meldet zusaetzlich
+      // `STUFE_ENTARTET` (zwei Stuetzstellen mit gleichem V). Das ist ein
+      // Konfigurationsdefekt ohne gueltige Staffel, kein Teilergebnis — er gehoert in
+      // den regulaeren 422-Zweig, so wie vor der Zusammenlegung.
+      //
+      // `berechne` bleibt die einzige Kettendefinition; fuer das Teilergebnis werden
+      // die Stufen 1–4 einzeln nachgefahren (NFA-03 exportiert sie genau dafuer) —
+      // deterministisch, also dasselbe Zwischenergebnis.
       const s1 = bereiteEingabeAuf(eingang.wert);
       if (s1.ok) {
         const s2 = berechneVerkaufssumme(s1.wert);
@@ -135,7 +167,7 @@ export async function fuehreProjektlauf(
         }
       }
     }
-    return { art: 'fehler', status: 422, text: uebersetzeStufenFehler(ergebnis.fehler).text };
+    return { art: 'fehler', status: 422, fehler: uebersetzeStufenFehler(ergebnis.fehler) };
   }
 
   const offerte = baueOfferte({
