@@ -36,6 +36,13 @@ describe('ermittleWirksamenWert', () => {
     expect(ermittleWirksamenWert(MIT_REGEL, einheit({}, {}))).toBeUndefined();
   });
 
+  it('laesst eine erfasste Uebersteuerung stehen, auch wenn der Merkmalswert fehlt', () => {
+    const ergebnis = ermittleWirksamenWert(MIT_REGEL, einheit({ 'S-1': 500000 }, {}));
+    expect(ergebnis).toEqual({ wert: 500000 });
+    expect(ergebnis).not.toHaveProperty('regel');
+    expect(ergebnis).not.toHaveProperty('uebersteuert');
+  });
+
   it('erkennt eine Uebersteuerung auf 0 als Uebersteuerung — die Anwesenheit entscheidet', () => {
     const ergebnis = ermittleWirksamenWert(MIT_REGEL, einheit({ 'S-1': 0 }, { stockwerk: 2 }));
     expect(ergebnis?.wert).toBe(0);

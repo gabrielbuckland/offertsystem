@@ -39,7 +39,15 @@ export function ermittleWirksamenWert(
   }
 
   const merkmalswert = einheit.merkmalswerte[spalte.regel.merkmal];
-  if (merkmalswert === undefined) return undefined;
+  if (merkmalswert === undefined) {
+    // Fehlender Merkmalswert heisst nur: die Regel ist nicht auswertbar — das darf eine
+    // bereits erfasste Uebersteuerung nicht schlucken (I-24, Migrationspfad: bestehende
+    // Spaltenwerte bleiben gueltig, auch wenn der Merkmalswert einer neu verknuepften
+    // Regel noch fehlt). Plain `{ wert }`, ohne `regel`/`uebersteuert`: Es gibt keinen
+    // Regelwert, gegen den uebersteuert werden koennte, also waere das Flag eine
+    // Behauptung ohne Beleg.
+    return uebersteuerung === undefined ? undefined : { wert: uebersteuerung };
+  }
 
   // `normalisiereBereiche`, nicht die von Zod inferierte Form direkt: Mit
   // `exactOptionalPropertyTypes` infert `z.number().optional()` `unter?: number |
