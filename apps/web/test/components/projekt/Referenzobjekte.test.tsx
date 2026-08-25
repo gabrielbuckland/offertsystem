@@ -16,6 +16,7 @@ interface ErfassteZelle {
 interface ErfassterButton {
   readonly children: unknown;
   readonly disabled?: boolean;
+  readonly title?: string;
   readonly onClick: () => void;
 }
 
@@ -148,6 +149,52 @@ describe('Referenzobjekte — ein zweites Objekt ist ohne Nacharbeit gueltig', (
     erfasst.buttons.find((b) => b.children === 'Referenzobjekt hinzufügen')!.onClick();
     const neu = aendere.mock.calls[0]![0] as readonly Referenzobjekt[];
     expect(new Set(neu.map((r) => r.zimmerzahl)).size).toBe(3);
+  });
+});
+
+// Obere Grenze aus dem Schema (`zimmerzahl: z.number().min(1).max(12)`,
+// `projekt-schema.ts`) — dieselbe Zahl deckelt `naechsteZimmerzahl` in
+// `neuesReferenzobjekt` (`Math.min(12, …)`, Referenzobjekte.tsx). Aus dem Code gelesen,
+// nicht frei erfunden: ein hier abweichender Wert prüfte eine andere Grenze als die
+// implementierte.
+const OBERE_ZIMMERZAHL_GRENZE = 12;
+
+/**
+ * Die Zwoelfergrenze (`docs/offene-punkte-projektansicht.md`): Sind bereits alle
+ * unterscheidbaren Zimmerzahlen 1..12 vergeben, deckelt `Math.min(12, …)` die naechste
+ * Zahl weiterhin auf 12 — ohne die Kollisionspruefung waere das serverseitig ein
+ * garantiertes ZIMMERZAHL_MEHRFACH gewesen, unsichtbar bis zum Speicherversuch.
+ */
+describe('Referenzobjekte — Zwoelfergrenze', () => {
+  function volleBelegung(): readonly Referenzobjekt[] {
+    return Array.from({ length: OBERE_ZIMMERZAHL_GRENZE }, (_, i) => ({
+      ...R, id: `R${i + 1}`, zimmerzahl: i + 1,
+    }));
+  }
+
+  it('sperrt "Referenzobjekt hinzufügen" mit Begruendung, wenn alle Zimmerzahlen vergeben sind', () => {
+    const aendere = vi.fn();
+    zeichne(volleBelegung(), aendere);
+    const knopf = erfasst.buttons.find((b) => b.children === 'Referenzobjekt hinzufügen')!;
+    expect(knopf.disabled).toBe(true);
+    expect(knopf.title).toBe('Alle unterscheidbaren Zimmerzahlen sind vergeben.');
+    knopf.onClick();
+    expect(aendere).not.toHaveBeenCalled();
+  });
+
+  it('bleibt nutzbar, solange eine Zimmerzahl frei ist (eine Luecke in der Belegung)', () => {
+    // Elf von zwoelf vergeben, keine Luecke am oberen Ende: ohne die Kollisionspruefung
+    // deckelte `Math.min(12, …)` trotzdem korrekt auf die freie 12 — dieser Fall bleibt
+    // also der Kontrollfall fuer den unveraenderten Normalpfad.
+    const fastVoll = volleBelegung().filter((r) => r.zimmerzahl !== OBERE_ZIMMERZAHL_GRENZE);
+    const aendere = vi.fn();
+    zeichne(fastVoll, aendere);
+    const knopf = erfasst.buttons.find((b) => b.children === 'Referenzobjekt hinzufügen')!;
+    expect(knopf.disabled).toBeFalsy();
+    knopf.onClick();
+    const neu = aendere.mock.calls[0]![0] as readonly Referenzobjekt[];
+    expect(neu).toHaveLength(OBERE_ZIMMERZAHL_GRENZE);
+    expect(neu[neu.length - 1]!.zimmerzahl).toBe(OBERE_ZIMMERZAHL_GRENZE);
   });
 });
 
