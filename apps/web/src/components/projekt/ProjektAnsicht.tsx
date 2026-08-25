@@ -141,6 +141,15 @@ export function ProjektAnsicht(
     { readonly derivation: PriceDerivation; readonly aggregates: AggregateValues } | undefined;
   const aufwandindikator = herleitung?.aggregates.effortIndicator.value;
 
+  // E-04: Bei einem Honorarabbruch traegt `stand` selbst weder Verkaufssumme noch
+  // Herleitung (verwende-berechnung.ts, OHNE_AGGREGATE) — nur die Honorarrange fehlt,
+  // Wohnungspreise und Aufwandindikator D bleiben gueltig und muessen sichtbar bleiben.
+  // Der Abbruch-Rumpf fuehrt beide Werte eigens mit, deshalb hier als Anzeige-Fallback.
+  // Rein darstellend: `honorarMin`/`honorarMax` bleiben undefiniert, `vollstaendig` in
+  // der Aggregatleiste haengt daran und sperrt die Offert-Schaltflaeche unveraendert.
+  const verkaufssummeAnzeige = stand.honorarAbbruch?.verkaufssumme ?? stand.verkaufssumme;
+  const aufwandindikatorAnzeige = stand.honorarAbbruch?.aufwandindikator ?? aufwandindikator;
+
   return (
     <main>
       <Brotkrume stufen={[
@@ -226,10 +235,10 @@ export function ProjektAnsicht(
         </section>
       )}
       <Aggregatleiste
-        verkaufssumme={stand.verkaufssumme}
+        verkaufssumme={verkaufssummeAnzeige}
         honorarMin={stand.honorarMin}
         honorarMax={stand.honorarMax}
-        aufwandindikator={aufwandindikator}
+        aufwandindikator={aufwandindikatorAnzeige}
         erzeuge={() => { if (!offerteLaeuft) void erzeugeOfferte(); }}
         laeuft={offerteLaeuft}
         speichernLaeuft={speichernLaeuft}
