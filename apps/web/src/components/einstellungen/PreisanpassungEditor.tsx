@@ -90,7 +90,7 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
   return (
     <div className="space-y-6">
       <section className="space-y-2 rounded-md border border-border p-4">
-        <h3 className="text-sm font-semibold">Gewicht der Aussenflaeche</h3>
+        <h3 className="text-sm font-semibold">Gewicht der Aussenfläche</h3>
         <p className="text-sm text-muted-foreground">Gewicht der Aussenfläche in der gewichteten Fläche.</p>
         <div className="max-w-[10rem] space-y-1">
           <Label>α</Label>
@@ -102,7 +102,7 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
       </section>
 
       <section className="space-y-2 rounded-md border border-border p-4">
-        <h3 className="text-sm font-semibold">Grenzen der Zu-/Abschlaege</h3>
+        <h3 className="text-sm font-semibold">Grenzen der Zu-/Abschläge</h3>
         <div className="grid grid-cols-3 gap-4">
           <div className="space-y-1">
             <Label>z min (%)</Label>
@@ -119,7 +119,7 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
             />
           </div>
           <div className="space-y-1">
-            <Label>Mindestlaenge Begruendung</Label>
+            <Label>Mindestlänge Begründung</Label>
             <ZellenEingabe
               wert={preisanpassung.begruendungMinLaenge}
               aendere={(wert) => aenderePreisanpassung('begruendungMinLaenge', wert)}
@@ -144,7 +144,7 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
               <TableHead>ID</TableHead>
               <TableHead>Bezeichnung</TableHead>
               <TableHead>Vorgabefaktor (%)</TableHead>
-              <TableHead>Begruendungsvorschlag</TableHead>
+              <TableHead>Begründungsvorschlag</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
