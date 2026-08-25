@@ -7,7 +7,10 @@ import { kurz, lies, ohneKommentare, quelldateien } from './quelltext.js';
  *
  * I-13 verlangt, dass die BERECHNUNG keinen Faktor privilegiert: keine
  * faktorspezifische Fallunterscheidung, kein Bezeichner als Literal. Geprueft wird
- * deshalb `src/pipeline/**` und `src/modell/**`.
+ * deshalb `src/pipeline/**` und `src/modell/**`. Zusaetzlich werden die
+ * UI-Komponenten in `apps/web/src/components/einstellungen/**` und
+ * `apps/web/src/components/pipeline/**` geprueft: Diese muessen ebenfalls alle
+ * Faktoren iterativ aus der Konfiguration beziehen, nicht fest verdrahten.
  *
  * `src/config/**` ist ausgenommen, und zwar aus einem inhaltlichen Grund: Die
  * Konfigurationsvalidierung MUSS die neun Lagescore-Namen des Anbieters kennen, um
@@ -17,7 +20,12 @@ import { kurz, lies, ohneKommentare, quelldateien } from './quelltext.js';
  * Alternative, jeden Tippfehler im Quellschluessel bis in die Berechnung durchzulassen
  * — das Gegenteil dessen, was I-13 erreichen will.
  */
-const RECHENPFADE = ['pipeline', 'modell'];
+const RECHENPFADE = [
+  'pipeline',
+  'modell',
+  '../../../apps/web/src/components/einstellungen',
+  '../../../apps/web/src/components/pipeline',
+];
 
 describe('I-13 — kein Faktorbezeichner als Literal in der Berechnung', () => {
   const dateien = RECHENPFADE.flatMap((p) => quelldateien(p));
