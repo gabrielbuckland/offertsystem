@@ -129,6 +129,8 @@ describe('projektSchema', () => {
       }],
     });
     expect(ergebnis.success).toBe(false);
+    if (ergebnis.success) return;
+    expect(JSON.stringify(ergebnis.error.issues)).toContain('REGEL_UND_VORGABEWERT');
   });
 
   it('weist eine Staffel ohne Restfall zurueck', () => {
@@ -142,6 +144,8 @@ describe('projektSchema', () => {
       }],
     });
     expect(ergebnis.success).toBe(false);
+    if (ergebnis.success) return;
+    expect(JSON.stringify(ergebnis.error.issues)).toContain('BEREICHE_UNGUELTIG');
   });
 
   it('weist eine Regel auf ein nicht deklariertes Merkmal zurueck', () => {
