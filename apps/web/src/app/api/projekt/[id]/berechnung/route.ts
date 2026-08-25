@@ -1,19 +1,17 @@
 /**
- * Duenner Adapter: laden, projizieren, beschaffen, rechnen lassen, uebersetzen. Er rechnet
- * nicht und formatiert nicht.
+ * Duenner Adapter: Laufzeit holen, `fuehreProjektlauf` fragen, das Ergebnis in eine
+ * Antwort uebersetzen. Er rechnet nicht und formatiert nicht.
  *
- * Zweistufig, weil in Franken erfasste Zu-/Abschlaege den ungerundeten Basispreis
- * brauchen (PE-21) und dieser erst aus einem Lauf OHNE Anpassungen hervorgeht. Ein
- * einstufiger Weg setzte zwei Darstellungsformen im Kern voraus — das schliesst E-09 aus.
+ * Der zweistufige Rechenweg selbst steht in `server/projekt-lauf.ts` (PE-21) — er ist
+ * mit der Offert-Route geteilt. Diese Route unterscheidet sich von jener nur noch darin,
+ * was sie mit dem Ergebnis tut: Es entsteht KEIN Artefakt. Sie antwortet nur.
  *
- * Es entsteht KEIN Artefakt: Diese Route beantwortet nur, sie legt nichts ab.
+ * Die Antwort reicht die Herleitung des Offert-Schemas durch (`derivation`/`aggregates`),
+ * statt ein zweites Datenbild derselben Zahlen aufzubauen.
  */
-import { berechne } from '@offert/core';
-import { beschaffe, zuEingangsArgumenten } from '../../../../../server/eingang.js';
 import { uebersetzeStufenFehler } from '../../../../../server/fehlertexte.js';
 import { holeLaufzeit } from '../../../../../server/laufzeit.js';
-import { ladeProjekt } from '../../../../../server/projekt-ablage.js';
-import { projiziere } from '../../../../../server/projektion.js';
+import { fuehreProjektlauf } from '../../../../../server/projekt-lauf.js';
 
 interface Kontext { readonly params: Promise<{ readonly id: string }> }
 
@@ -22,79 +20,48 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
   if (!laufzeit.ok) {
     return Response.json({ fehler: { text: laufzeit.meldungen.join(' ') } }, { status: 500 });
   }
-  const { konfiguration, provider, projekteVerzeichnis } = laufzeit.wert;
   const { id } = await kontext.params;
 
-  const projekt = await ladeProjekt(id, projekteVerzeichnis).catch(() => null);
-  if (projekt === null) {
-    return Response.json({ fehler: { text: `Projekt ${id} nicht gefunden.` } }, { status: 404 });
+  const lauf = await fuehreProjektlauf(id, laufzeit.wert);
+  switch (lauf.art) {
+    case 'unvollstaendig':
+      return Response.json({ unvollstaendig: true }, { status: 200 });
+    case 'bewertungLuecke':
+      return Response.json({
+        fehler: {
+          text: 'Für mindestens einen Wohnungstyp liegt keine Bewertung vor. '
+            + 'Es werden keine Preise ausgewiesen.',
+        },
+      }, { status: 422 });
+    case 'honorarAbbruch':
+      // Status 200: Eine Konfigurationsluecke oberhalb der obersten Stuetzstelle ist kein
+      // Eingabefehler. Wohnungspreise und Aufwandindikator bleiben gueltig (E-04); nur an
+      // der Stelle der Honorarrange steht eine Meldung statt einer Zahl.
+      return Response.json({
+        honorarAbbruch: {
+          ...lauf.teilergebnis,
+          meldung: uebersetzeStufenFehler(lauf.fehler).text,
+        },
+      }, { status: 200 });
+    case 'fehler':
+      // Unveraendert durchgereicht: Ein Stufenfehler traegt neben dem Text auch
+      // `adressat` (Vermarkter oder Auftraggeber) und ggf. `feldpfad`. Beides gehoert
+      // zur Antwort — die Anzeige richtet sich danach.
+      return Response.json({ fehler: lauf.fehler }, { status: lauf.status });
+    case 'offerte': {
+      const o = lauf.offerte;
+      return Response.json({
+        einheiten: o.derivation.units.map((u) => ({
+          id: lauf.einheitenIds.get(u.unitNumber) ?? u.unitNumber,
+          wohnungsnummer: u.unitNumber,
+          basispreis: u.basePrice.value,
+          preis: u.unitPrice.value,
+        })),
+        verkaufssumme: o.aggregates.totalSalesValue.value,
+        honorarMin: o.aggregates.feeRange.value.min,
+        honorarMax: o.aggregates.feeRange.value.max,
+        herleitung: { derivation: o.derivation, aggregates: o.aggregates },
+      }, { status: 200 });
+    }
   }
-  if (projekt.referenzobjekte.length === 0 || projekt.einheiten.length === 0) {
-    return Response.json({ unvollstaendig: true }, { status: 200 });
-  }
-
-  // Erster Lauf ohne Anpassungen: liefert die Basispreise fuer die Umrechnung. Die
-  // Option ist noetig, nicht nur beabsichtigt — ohne sie versuchte `projiziere` schon
-  // hier, in Franken erfasste Positionen ueber die (noch leeren) Basispreise
-  // umzurechnen, und schluege fehl, bevor der Lauf sie ermitteln konnte.
-  const ohne = projiziere(projekt, {}, { ohneAnpassungen: true });
-  if (!ohne.ok) {
-    return Response.json({ fehler: { text: ohne.meldung } }, { status: 422 });
-  }
-  const beschafft = await beschaffe(ohne.wert, provider);
-  if (!beschafft.ok) {
-    return Response.json({ fehler: { text: beschafft.meldung } }, { status: 502 });
-  }
-  if (!beschafft.wert.buendel.vollstaendig) {
-    return Response.json({
-      fehler: {
-        text: 'Für mindestens einen Wohnungstyp liegt keine Bewertung vor. '
-          + 'Es werden keine Preise ausgewiesen.',
-      },
-    }, { status: 422 });
-  }
-
-  const zeitpunkt = new Date().toISOString(); // E-29: Zeit entsteht hier, nie im Kern
-  const basisEingang = zuEingangsArgumenten(
-    ohne.wert, beschafft.wert, konfiguration, zeitpunkt, { ohneAnpassungen: true });
-  if (!basisEingang.ok) {
-    return Response.json({ fehler: { text: basisEingang.meldung } }, { status: 422 });
-  }
-  const basisLauf = berechne(basisEingang.wert);
-  if (!basisLauf.ok) {
-    return Response.json({ fehler: uebersetzeStufenFehler(basisLauf.fehler) }, { status: 422 });
-  }
-
-  const basispreise: Record<string, number> = {};
-  for (const position of basisLauf.wert.verkaufssumme.positionen) {
-    const einheit = projekt.einheiten.find((e) => e.wohnungsnummer === position.wohnungsnummer);
-    if (einheit !== undefined) basispreise[einheit.id] = position.basispreis;
-  }
-
-  // Zweiter Lauf, jetzt mit umgerechneten Anpassungen.
-  const voll = projiziere(projekt, basispreise);
-  if (!voll.ok) {
-    return Response.json({ fehler: { text: voll.meldung } }, { status: 422 });
-  }
-  const eingang = zuEingangsArgumenten(voll.wert, beschafft.wert, konfiguration, zeitpunkt);
-  if (!eingang.ok) {
-    return Response.json({ fehler: { text: eingang.meldung } }, { status: 422 });
-  }
-  const ergebnis = berechne(eingang.wert);
-  if (!ergebnis.ok) {
-    return Response.json({ fehler: uebersetzeStufenFehler(ergebnis.fehler) }, { status: 422 });
-  }
-
-  const nachNummer = new Map(projekt.einheiten.map((e) => [e.wohnungsnummer, e.id]));
-  return Response.json({
-    einheiten: ergebnis.wert.verkaufssumme.positionen.map((p) => ({
-      id: nachNummer.get(p.wohnungsnummer) ?? p.wohnungsnummer,
-      wohnungsnummer: p.wohnungsnummer,
-      basispreis: p.basispreis,
-      preis: p.preis,
-    })),
-    verkaufssumme: ergebnis.wert.verkaufssumme.verkaufssumme,
-    honorarMin: ergebnis.wert.honorar.honorarMin,
-    honorarMax: ergebnis.wert.honorar.honorarMax,
-  }, { status: 200 });
 }
