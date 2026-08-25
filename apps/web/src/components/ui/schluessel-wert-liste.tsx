@@ -16,6 +16,7 @@
 import { useState, type ReactElement } from 'react';
 import { Button } from './button.js';
 import { Input } from './input.js';
+import { naechsteEintraegeNachHinzufuegen } from './schluessel-wert-logik.js';
 
 export interface SchluesselWertListeProps {
   readonly eintraege: Readonly<Record<string, string>>;
@@ -38,9 +39,9 @@ export function SchluesselWertListe(
   }
 
   function fuegeEintragHinzu(): void {
-    const schluessel = neuerSchluessel.trim();
-    if (schluessel.length === 0) return;
-    aendere({ ...eintraege, [schluessel]: neuerWert });
+    const naechste = naechsteEintraegeNachHinzufuegen(eintraege, neuerSchluessel, neuerWert);
+    if (naechste === undefined) return;
+    aendere(naechste);
     setzeNeuenSchluessel('');
     setzeNeuenWert('');
   }
