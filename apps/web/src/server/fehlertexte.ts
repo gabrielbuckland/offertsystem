@@ -12,7 +12,9 @@
  * Platzhalter sind Daten, keine Strings: Die Formatierung laeuft ueber dieselben
  * Formatierer wie die Offerte, damit Zahlen im Fehlertext und im Dokument gleich aussehen.
  */
-import type { BerechnungsFehlerCode, ProviderFehler, StufenFehler } from '@offert/core';
+import type {
+  AggregatFehler, AggregatFehlerCode, BerechnungsFehlerCode, ProviderFehler, StufenFehler,
+} from '@offert/core';
 // Modulpfad statt Paketindex: Der Index re-exportiert die React-Komponenten (.tsx);
 // Node leistet fuer JSX kein Type-Stripping (PE-09). Serverseitige Module, die unter
 // Node laufen sollen, binden die Formatierer deshalb ueber ihren Modulpfad ein.
@@ -94,6 +96,44 @@ export const KERN_VORLAGEN: Record<BerechnungsFehlerCode, Vorlage> = {
 
 export function uebersetzeStufenFehler(fehler: StufenFehler): AngezeigterFehler {
   return KERN_VORLAGEN[fehler.code](fehler.parameter);
+}
+
+type AggregatParameter = AggregatFehler['parameter'];
+const aggregatListe = (p: AggregatParameter, k: string): string =>
+  ((p[k] as readonly string[] | undefined) ?? []).join(', ');
+
+/**
+ * Uebersetzung fuer `erzeugeLiegenschaft`s Aggregatfehler (`liegenschaft.ts`) — strukturelle
+ * Maengel im Projektstand (doppelte Wohnungsnummer, Referenzobjekt ohne Einheit etc.), noch
+ * vor der eigentlichen Berechnung. Ohne diese Vorlagen zeigte die Oberflaeche den rohen
+ * Fehlercode samt JSON-Parametern an (`eingang.ts`s frueheres `zuText`).
+ */
+export const AGGREGAT_VORLAGEN: Record<AggregatFehlerCode, (p: AggregatParameter) => string> = {
+  KEINE_EINHEIT: () => 'Für die Liegenschaft ist noch keine Einheit erfasst.',
+  WOHNUNGSNUMMER_DOPPELT: (p) => {
+    const nummern = (p['wohnungsnummern'] as readonly string[] | undefined) ?? [];
+    const mehrzahl = nummern.length > 1;
+    return `Die Wohnungsnummer${mehrzahl ? 'n' : ''} ${nummern.join(', ')} `
+      + `${mehrzahl ? 'sind' : 'ist'} mehrfach vergeben. Wohnungsnummern müssen eindeutig sein.`;
+  },
+  WOHNUNGSTYP_UNBEKANNT: (p) =>
+    `Folgende Einheiten verweisen auf ein nicht mehr vorhandenes Referenzobjekt: `
+    + `${aggregatListe(p, 'einheiten')}.`,
+  ZIMMERZAHL_MEHRFACH: (p) =>
+    'Mehrere Referenzobjekte führen dieselbe Zimmerzahl '
+    + `(${aggregatListe(p, 'zimmerzahlen')}). Jede Zimmerzahl darf nur einem Referenzobjekt `
+    + 'zugeordnet sein.',
+  WOHNUNGSTYP_OHNE_EINHEIT: (p) => {
+    const typen = (p['wohnungstypen'] as readonly string[] | undefined) ?? [];
+    const mehrzahl = typen.length > 1;
+    return `Für ${mehrzahl ? 'folgende Referenzobjekte ist' : 'folgendes Referenzobjekt ist'} `
+      + `noch keine Einheit erfasst: ${typen.join(', ')}. Entweder Einheiten dafür anlegen `
+      + `oder ${mehrzahl ? 'die Referenzobjekte' : 'das Referenzobjekt'} entfernen.`;
+  },
+};
+
+export function uebersetzeAggregatFehler(fehler: readonly AggregatFehler[]): string {
+  return fehler.map((f) => AGGREGAT_VORLAGEN[f.code](f.parameter)).join(' ');
 }
 
 /** Ladezeitcodes ohne Laufzeitzwilling (E-16). */

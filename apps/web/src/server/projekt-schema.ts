@@ -45,12 +45,6 @@ const anpassungsSpalteSchema = z.object({
   vorgabewert: z.number(),
 }).strict();
 
-const manuelleAnpassungSchema = z.object({
-  erfassungsform: z.enum(['relativ', 'absolut']),
-  wert: z.number(),
-  begruendung: z.string().trim().min(1),
-}).strict();
-
 const einheitSchema = z.object({
   id: z.string().min(1),
   wohnungsnummer: z.string().trim().min(1),
@@ -59,7 +53,6 @@ const einheitSchema = z.object({
   flaecheAussen: z.number().nonnegative(),
   stockwerk: z.number().int(),
   spaltenwerte: z.record(z.number()),
-  manuelleAnpassungen: z.array(manuelleAnpassungSchema),
 }).strict();
 
 export const projektSchema = z.object({

@@ -1,9 +1,11 @@
 import { execSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import type { BerechnungsFehlerCode, ProviderFehler } from '@offert/core';
+import type { AggregatFehlerCode, BerechnungsFehlerCode, ProviderFehler } from '@offert/core';
 import {
+  AGGREGAT_VORLAGEN,
   KERN_VORLAGEN,
+  uebersetzeAggregatFehler,
   uebersetzeProviderFehler,
   uebersetzeStufenFehler,
 } from '../../src/server/fehlertexte.js';
@@ -21,6 +23,44 @@ describe('Vollstaendigkeit der Abbildung', () => {
       expect(Object.keys(KERN_VORLAGEN)).toContain(code);
     }
     expect(Object.keys(KERN_VORLAGEN)).toHaveLength(codes.length);
+  });
+
+  it('bildet jeden AggregatFehlerCode ab', () => {
+    const codes: readonly AggregatFehlerCode[] = [
+      'WOHNUNGSNUMMER_DOPPELT', 'WOHNUNGSTYP_UNBEKANNT', 'ZIMMERZAHL_MEHRFACH',
+      'WOHNUNGSTYP_OHNE_EINHEIT', 'KEINE_EINHEIT',
+    ];
+    for (const code of codes) {
+      expect(Object.keys(AGGREGAT_VORLAGEN)).toContain(code);
+    }
+    expect(Object.keys(AGGREGAT_VORLAGEN)).toHaveLength(codes.length);
+  });
+});
+
+/**
+ * Regressionsanker fuer den gemeldeten Befund: Die Oberflaeche zeigte vor dieser
+ * Uebersetzung den rohen Fehlercode samt JSON-Parametern an, z. B.
+ * `WOHNUNGSTYP_OHNE_EINHEIT ({"wohnungstypen":["R2"]})`.
+ */
+describe('uebersetzeAggregatFehler', () => {
+  it('uebersetzt WOHNUNGSTYP_OHNE_EINHEIT in einen lesbaren Satz, nicht den rohen Code', () => {
+    const text = uebersetzeAggregatFehler([
+      { code: 'WOHNUNGSTYP_OHNE_EINHEIT', parameter: { wohnungstypen: ['R2'] } },
+    ]);
+    expect(text).not.toContain('WOHNUNGSTYP_OHNE_EINHEIT');
+    expect(text).not.toContain('{');
+    expect(text).toContain('R2');
+    expect(text).toContain('noch keine Einheit erfasst');
+  });
+
+  it('verbindet mehrere Aggregatfehler zu einem Text', () => {
+    const text = uebersetzeAggregatFehler([
+      { code: 'KEINE_EINHEIT', parameter: {} },
+      { code: 'WOHNUNGSNUMMER_DOPPELT', parameter: { wohnungsnummern: ['A1', 'A2'] } },
+    ]);
+    expect(text).toContain('noch keine Einheit erfasst');
+    expect(text).toContain('A1, A2');
+    expect(text).toContain('sind mehrfach vergeben');
   });
 });
 

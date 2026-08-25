@@ -21,7 +21,6 @@ export default async function ProjektSeite({ params }: Props) {
     <ProjektAnsicht
       projekt={projekt}
       faktorformular={baueFaktorformular(konfiguration)}
-      begruendungMinLaenge={konfiguration.preisanpassung.begruendungMinLaenge}
     />
   );
 }

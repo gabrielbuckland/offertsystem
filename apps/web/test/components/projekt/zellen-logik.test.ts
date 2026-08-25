@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  entscheideZellenwert, faktorZuProzent, frankenZuRappen, istBegruendungGueltig,
-  prozentZuFaktor, rappenZuFranken,
+  entscheideZellenwert, faktorZuProzent, frankenZuRappen, prozentZuFaktor, rappenZuFranken,
 } from '../../../src/components/projekt/zellen-logik.js';
 
 describe('entscheideZellenwert', () => {
@@ -56,19 +55,5 @@ describe('frankenZuRappen / rappenZuFranken', () => {
     const eingegebeneFranken = 10_000;
     expect(frankenZuRappen(eingegebeneFranken)).toBe(eingegebeneFranken * 100);
     expect(frankenZuRappen(eingegebeneFranken)).not.toBe(eingegebeneFranken);
-  });
-});
-
-describe('istBegruendungGueltig', () => {
-  it('lehnt eine zu kurze Begruendung ab', () => {
-    expect(istBegruendungGueltig('ok', 10)).toBe(false);
-  });
-
-  it('lehnt eine Begruendung ab, die nur nach Trim zu kurz ist', () => {
-    expect(istBegruendungGueltig('   ok   ', 10)).toBe(false);
-  });
-
-  it('akzeptiert eine ausreichend lange Begruendung', () => {
-    expect(istBegruendungGueltig('Balkonlage Sued', 10)).toBe(true);
   });
 });

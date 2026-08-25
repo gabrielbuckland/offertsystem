@@ -33,7 +33,7 @@ async function vorbereitetesProjekt(projekte: string) {
     einheiten: [{
       id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
       flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1,
-      spaltenwerte: {}, manuelleAnpassungen: [],
+      spaltenwerte: {},
     }],
     aufwandfaktoren: { innenausbau_qualitaet: 3 },
   }, projekte);

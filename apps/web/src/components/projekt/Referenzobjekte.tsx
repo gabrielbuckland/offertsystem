@@ -7,9 +7,8 @@
  * nicht beim blossen Anzeigen der Seite geschehen.
  */
 import { formatiereAggregat } from '@offert/offer';
-import type { Referenzobjekt } from '../../server/projekt-schema.js';
+import type { ProjektEinheit, Referenzobjekt } from '../../server/projekt-schema.js';
 import { Button } from '../ui/button.js';
-import { Input } from '../ui/input.js';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../ui/table.js';
@@ -17,6 +16,10 @@ import { ZellenEingabe } from './ZellenEingabe.js';
 
 export interface ReferenzobjekteProps {
   readonly referenzobjekte: readonly Referenzobjekt[];
+  // Nur um eine Loeschung zu sperren, die eine Einheit ohne Typ zurueckliesse
+  // (REFERENZOBJEKT_UNBEKANNT, `projekt-schema.ts`) — die Komponente aendert `einheiten`
+  // selbst nicht.
+  readonly einheiten: readonly ProjektEinheit[];
   readonly aendere: (referenzobjekte: readonly Referenzobjekt[]) => void;
   readonly rufeAb: () => void;
 }
@@ -67,7 +70,9 @@ function ersetze(
  * (`entscheideZellenwert`) — bei der Zimmerzahl waere die erfundene 0 zudem ein
  * schemawidriger Wert (`min(1)`).
  */
-export function Referenzobjekte({ referenzobjekte, aendere, rufeAb }: ReferenzobjekteProps) {
+export function Referenzobjekte({
+  referenzobjekte, einheiten, aendere, rufeAb,
+}: ReferenzobjekteProps) {
   function setzeMerkmal(
     index: number,
     patch: Partial<Referenzobjekt['parametrisierung']>,
@@ -76,6 +81,10 @@ export function Referenzobjekte({ referenzobjekte, aendere, rufeAb }: Referenzob
     aendere(ersetze(referenzobjekte, index, {
       ...r, parametrisierung: { ...r.parametrisierung, ...patch },
     }));
+  }
+
+  function verwendetVon(id: string): number {
+    return einheiten.filter((e) => e.referenzobjektId === id).length;
   }
 
   return (
@@ -102,57 +111,59 @@ export function Referenzobjekte({ referenzobjekte, aendere, rufeAb }: Referenzob
             <TableRow>
               <TableHead>Zimmerzahl</TableHead>
               <TableHead>Wohnfläche (m²)</TableHead>
-              <TableHead>Aussenfläche (m²)</TableHead>
               <TableHead>Stockwerk</TableHead>
-              <TableHead>Energielabel</TableHead>
               <TableHead>Referenzwert</TableHead>
+              <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
-            {referenzobjekte.map((r, index) => (
-              <TableRow key={r.id}>
-                <TableCell>
-                  <ZellenEingabe
-                    wert={r.zimmerzahl}
-                    aendere={(zimmerzahl) => aendere(
-                      ersetze(referenzobjekte, index, { ...r, zimmerzahl }))}
-                  />
-                </TableCell>
-                <TableCell>
-                  <ZellenEingabe
-                    wert={r.parametrisierung.flaecheInnen}
-                    aendere={(flaecheInnen) => setzeMerkmal(index, { flaecheInnen })}
-                  />
-                </TableCell>
-                <TableCell>
-                  <ZellenEingabe
-                    wert={r.parametrisierung.flaecheAussen}
-                    aendere={(flaecheAussen) => setzeMerkmal(index, { flaecheAussen })}
-                  />
-                </TableCell>
-                <TableCell>
-                  <ZellenEingabe
-                    wert={r.parametrisierung.stockwerk}
-                    aendere={(stockwerk) => setzeMerkmal(index, { stockwerk })}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    className="h-8 w-24"
-                    value={r.parametrisierung.energielabel}
-                    onChange={(e) => setzeMerkmal(index, { energielabel: e.target.value })}
-                  />
-                </TableCell>
-                <TableCell>
-                  {r.bewertung === undefined ? 'nicht bezogen' : (
-                    <>
-                      {formatiereAggregat(r.bewertung.wert)} · {r.bewertung.bewertungsdatum} ·
-                      {' '}{r.bewertung.konfidenzklasse}
-                    </>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
+            {referenzobjekte.map((r, index) => {
+              const verwendungen = verwendetVon(r.id);
+              return (
+                <TableRow key={r.id}>
+                  <TableCell>
+                    <ZellenEingabe
+                      wert={r.zimmerzahl}
+                      aendere={(zimmerzahl) => aendere(
+                        ersetze(referenzobjekte, index, { ...r, zimmerzahl }))}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <ZellenEingabe
+                      wert={r.parametrisierung.flaecheInnen}
+                      aendere={(flaecheInnen) => setzeMerkmal(index, { flaecheInnen })}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <ZellenEingabe
+                      wert={r.parametrisierung.stockwerk}
+                      aendere={(stockwerk) => setzeMerkmal(index, { stockwerk })}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {r.bewertung === undefined ? 'nicht bezogen' : (
+                      <>
+                        {formatiereAggregat(r.bewertung.wert)} · {r.bewertung.bewertungsdatum} ·
+                        {' '}{r.bewertung.konfidenzklasse}
+                      </>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={verwendungen > 0}
+                      title={verwendungen > 0
+                        ? `Wird von ${verwendungen} Einheit${verwendungen === 1 ? '' : 'en'} verwendet.`
+                        : undefined}
+                      onClick={() => aendere(referenzobjekte.filter((_, i) => i !== index))}
+                    >
+                      entfernen
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       )}

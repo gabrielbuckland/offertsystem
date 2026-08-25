@@ -11,7 +11,6 @@
  */
 import {
   erzeugeLiegenschaft,
-  type AggregatFehler,
   type BewertungsAnfrage,
   type BewertungsBuendel,
   type EingangsArgumente,
@@ -29,7 +28,7 @@ import {
   type ZuAbschlag,
 } from '@offert/core';
 import type { Erfassung } from './erfassung-schema.js';
-import { uebersetzeProviderFehler } from './fehlertexte.js';
+import { uebersetzeAggregatFehler, uebersetzeProviderFehler } from './fehlertexte.js';
 
 export type Ergebnis<T> =
   | { readonly ok: true; readonly wert: T }
@@ -61,10 +60,6 @@ export async function beschaffe(
     return { ok: false, meldung: uebersetzeProviderFehler(buendel.fehler).text };
   }
   return { ok: true, wert: { buendel: buendel.wert, lagescores: lagescores.wert } };
-}
-
-function zuText(fehler: readonly AggregatFehler[]): string {
-  return fehler.map((f) => `${f.code} (${JSON.stringify(f.parameter)})`).join('; ');
 }
 
 /**
@@ -123,7 +118,7 @@ export function zuEingangsArgumenten(
   optionen: { ohneAnpassungen?: boolean } = {},
 ): Ergebnis<EingangsArgumente> {
   const aggregat = erzeugeLiegenschaft(entwurfAus(erfassung, optionen));
-  if (!aggregat.ok) return { ok: false, meldung: zuText(aggregat.fehler) };
+  if (!aggregat.ok) return { ok: false, meldung: uebersetzeAggregatFehler(aggregat.fehler) };
   return {
     ok: true,
     wert: {

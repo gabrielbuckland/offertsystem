@@ -104,7 +104,9 @@ export type { ZuAbschlag } from './domain/zuabschlag.js';
 export type { Einheit } from './domain/einheit.js';
 export type { RepraesentativeParametrisierung, Wohnungstyp } from './domain/wohnungstyp.js';
 export { erzeugeLiegenschaft } from './domain/liegenschaft.js';
-export type { AggregatFehler, Liegenschaft, LiegenschaftEntwurf } from './domain/liegenschaft.js';
+export type {
+  AggregatFehler, AggregatFehlerCode, Liegenschaft, LiegenschaftEntwurf,
+} from './domain/liegenschaft.js';
 export type { BerechnungsFehlerCode } from './fehler/codes.js';
 export { stufenFehler } from './fehler/stufenfehler.js';
 export type { StufenFehler } from './fehler/stufenfehler.js';

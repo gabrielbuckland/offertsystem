@@ -6,7 +6,7 @@ function einheit(id: string, spaltenwerte: Readonly<Record<string, number>>): Pr
   return {
     id, wohnungsnummer: id, referenzobjektId: 'R-1',
     flaecheInnen: 80, flaecheAussen: 10, stockwerk: 1,
-    spaltenwerte, manuelleAnpassungen: [],
+    spaltenwerte,
   };
 }
 

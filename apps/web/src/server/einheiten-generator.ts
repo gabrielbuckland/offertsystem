@@ -90,7 +90,6 @@ export function erzeugeEinheiten(
         flaecheAussen: 0,
         stockwerk: 0,
         spaltenwerte: vorbelegteSpaltenwerte(spalten),
-        manuelleAnpassungen: [],
       });
     }
   }

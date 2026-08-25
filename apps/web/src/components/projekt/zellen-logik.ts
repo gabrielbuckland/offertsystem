@@ -71,14 +71,3 @@ export function rappenZuFranken(rappen: number): number {
 export function frankenZuRappen(franken: number): number {
   return Math.round(franken * 100);
 }
-
-/**
- * Ob eine manuelle Position mit dieser Begruendung angelegt werden darf.
- *
- * Spiegelt `erfassungsSchema`s Mindestlaenge (`begruendungMinLaenge`, US-04), statt sie
- * zu duplizieren: die Zahl kommt als Parameter von der Konfiguration des Aufrufers, nicht
- * fest verdrahtet — sonst entstuende ein zweiter, driftender Regelort.
- */
-export function istBegruendungGueltig(begruendung: string, minLaenge: number): boolean {
-  return begruendung.trim().length >= minLaenge;
-}

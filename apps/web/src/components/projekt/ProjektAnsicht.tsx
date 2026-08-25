@@ -27,7 +27,6 @@ import { leseRumpf } from './antwort-rumpf.js';
 export interface ProjektAnsichtProps {
   readonly projekt: Projekt;
   readonly faktorformular: Faktorformular;
-  readonly begruendungMinLaenge: number;
 }
 
 interface BewertungsAntwort {
@@ -65,7 +64,7 @@ const OHNE_AGGREGATE: Aggregate = {
 };
 
 export function ProjektAnsicht(
-  { projekt: anfang, faktorformular, begruendungMinLaenge }: ProjektAnsichtProps,
+  { projekt: anfang, faktorformular }: ProjektAnsichtProps,
 ) {
   const router = useRouter();
   const [abrufMeldung, setAbrufMeldung] = useState<string | undefined>(undefined);
@@ -209,6 +208,7 @@ export function ProjektAnsicht(
       )}
       <Referenzobjekte
         referenzobjekte={projekt.referenzobjekte}
+        einheiten={projekt.einheiten}
         aendere={(referenzobjekte) => aendere({ ...projekt, referenzobjekte: [...referenzobjekte] })}
         rufeAb={() => { if (!abrufLaeuft) void rufeAb(); }}
       />
@@ -236,7 +236,6 @@ export function ProjektAnsicht(
         spalten={projekt.anpassungsSpalten}
         referenzobjekte={projekt.referenzobjekte}
         preise={aggregate.preise}
-        begruendungMinLaenge={begruendungMinLaenge}
         aendere={(einheiten) => aendere({ ...projekt, einheiten: [...einheiten] })}
       />
       {berechnungsFehler !== undefined && (

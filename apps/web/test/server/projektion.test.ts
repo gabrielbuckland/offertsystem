@@ -23,9 +23,6 @@ function projekt(): Projekt {
       id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
       flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1,
       spaltenwerte: { 'S-1': 0.05, 'S-2': 10_000 },
-      manuelleAnpassungen: [
-        { erfassungsform: 'relativ', wert: -0.02, begruendung: 'Nordausrichtung' },
-      ],
     }],
     aufwandfaktoren: { innenausbau_qualitaet: 3 },
     meta: { erstelltAm: '2026-08-24T10:00:00.000Z', geaendertAm: '2026-08-24T10:00:00.000Z' },
@@ -42,13 +39,12 @@ describe('projiziere', () => {
     expect(e.wert.wohnungstypen[0]!.zimmerzahl).toBe(3.5);
   });
 
-  it('verflacht Spaltenwerte und manuelle Positionen in ein Anpassungsarray', () => {
+  it('verflacht Spaltenwerte in ein Anpassungsarray', () => {
     const e = projiziere(projekt(), { 'E-1': 1_000_000 });
     if (!e.ok) return;
     const a = e.wert.einheiten[0]!.anpassungen;
-    expect(a).toHaveLength(3);
-    expect(a.map((x) => x.begruendung))
-      .toEqual(['Zuschlag Etage', 'Aussicht', 'Nordausrichtung']);
+    expect(a).toHaveLength(2);
+    expect(a.map((x) => x.begruendung)).toEqual(['Zuschlag Etage', 'Aussicht']);
   });
 
   it('rechnet einen Frankenbetrag ueber den Basispreis in einen Faktor um', () => {
@@ -65,7 +61,7 @@ describe('projiziere', () => {
     p.einheiten[0]!.spaltenwerte = { 'S-1': 0.05 };
     const e = projiziere(p, { 'E-1': 1_000_000 });
     if (!e.ok) return;
-    expect(e.wert.einheiten[0]!.anpassungen).toHaveLength(2);
+    expect(e.wert.einheiten[0]!.anpassungen).toHaveLength(1);
   });
 
   it('meldet einen fehlenden Basispreis, statt still mit null zu rechnen', () => {

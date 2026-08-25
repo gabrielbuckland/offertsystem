@@ -20,7 +20,7 @@ function beispiel() {
     einheiten: [{
       id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
       flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1,
-      spaltenwerte: { 'S-1': 10_000 }, manuelleAnpassungen: [],
+      spaltenwerte: { 'S-1': 10_000 },
     }],
     aufwandfaktoren: {},
     meta: { erstelltAm: '2026-08-24T10:00:00.000Z', geaendertAm: '2026-08-24T10:00:00.000Z' },
