@@ -1,15 +1,18 @@
 import { execSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   berechne,
   rappen,
+  validiereKonfiguration,
   type AggregatFehlerCode,
   type BerechnungsFehlerCode,
   type EingangsArgumente,
   type Konfiguration,
   type ProviderFehler,
   type Quadratmeter,
+  type KonfigurationsFehler,
   type StufenFehler,
 } from '@offert/core';
 // Modulpfad wie in `fehlertexte.ts` selbst (PE-09): Der Paketindex zoege die
@@ -20,6 +23,8 @@ import {
 import {
   AGGREGAT_VORLAGEN,
   KERN_VORLAGEN,
+  KONFIG_VORLAGEN,
+  uebersetzeKonfigFehler,
   uebersetzeAggregatFehler,
   uebersetzeProviderFehler,
   uebersetzeStufenFehler,
@@ -269,6 +274,107 @@ describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
     // Tausendertrennung U+2019, wie `de-CH` sie setzt (siehe packages/offer/test/format).
     expect(uebersetzeStufenFehler(fehler).text).toContain('’');
     expect(uebersetzeStufenFehler(fehler).text).toContain('Die Honorarstaffelung ist zu erweitern.');
+  });
+});
+
+/**
+ * Dieselbe Pruefart wie fuer die Stufenfehler, fuer die Ladezeitcodes: Der
+ * `KonfigurationsFehler` entsteht durch echte Kernpruefung ueber eine gezielt verletzte
+ * Kopie von `config/company-defaults.json` — nie durch ein handgeschriebenes
+ * Parameterobjekt.
+ *
+ * Die drei Vorlagen sind seit dem Schreibweg der Einstellungen (`einstellungen-ablage.ts`)
+ * nicht mehr toter Code: Er ruft `uebersetzeKonfigFehler` fuer genau diese Codes auf und
+ * beantwortet damit ein fehlgeschlagenes Speichern mit 422 statt 500. `CFG_STRATEGY_UNKNOWN`
+ * WARF zuvor (`liste` rief `.join` auf dem String `verfuegbare` auf) — der erste Fall unten
+ * haelt genau diese Regression fest.
+ */
+describe('Ladezeitvorlagen lesen die Parameter des Konfigurationspruefers', () => {
+  const KONFIGURATIONSPFAD = new URL('../../../../config/company-defaults.json', import.meta.url);
+
+  /** Frische Kopie je Fall; die Datei selbst wird nur gelesen. */
+  function rohkonfiguration(): Record<string, unknown> {
+    return JSON.parse(readFileSync(KONFIGURATIONSPFAD, 'utf8')) as Record<string, unknown>;
+  }
+
+  /**
+   * `validiereKonfiguration` ist der Weg, den auch der Schreibpfad geht; es meldet die
+   * Stuetzstellenbefunde mit, nicht nur die reinen Schemaverstoesse. Gesucht wird gezielt
+   * nach dem erwarteten Code: Eine verletzte Fixtur kann mehrere Befunde ausloesen, und
+   * `[0]` waere dann von der Reihenfolge abhaengig.
+   */
+  function befund(roh: Record<string, unknown>, code: string): KonfigurationsFehler {
+    const ergebnis = validiereKonfiguration(roh);
+    if (ergebnis.ok) throw new Error('Die Fixtur ist gueltig — sie trifft den Fall nicht.');
+    const treffer = ergebnis.fehler.find((f) => f.code === code);
+    if (treffer === undefined) {
+      throw new Error(`${code} nicht gemeldet, stattdessen: `
+        + ergebnis.fehler.map((f) => f.code).join(', '));
+    }
+    return treffer;
+  }
+
+  /** Der Aufrufer reicht `KonfigurationsFehler['parameter']` genau so hinein. */
+  function angezeigt(f: KonfigurationsFehler) {
+    const parameter = f.parameter as unknown as Parameters<typeof uebersetzeKonfigFehler>[1];
+    return uebersetzeKonfigFehler(f.code as keyof typeof KONFIG_VORLAGEN, parameter);
+  }
+
+  it('CFG_STRATEGY_UNKNOWN nennt Bezeichner und verfuegbare Strategien, ohne zu werfen', () => {
+    const roh = rohkonfiguration();
+    const faktoren = roh['aufwandfaktoren'] as Record<string, Record<string, unknown>>;
+    const ersterFaktor = Object.keys(faktoren)[0]!;
+    faktoren[ersterFaktor]!['strategie'] = 'gibt-es-nicht';
+
+    const treffer = befund(roh, 'CFG_STRATEGY_UNKNOWN');
+    // Regressionsanker: `verfuegbare` ist ein STRING. Der fruehere `liste`-Zugriff rief
+    // `.join` darauf auf und warf `TypeError`, statt einen Satz zu liefern.
+    expect(typeof treffer.parameter['verfuegbare']).toBe('string');
+    expect(() => angezeigt(treffer)).not.toThrow();
+
+    const text = angezeigt(treffer).text;
+    expect(text).not.toMatch(/undefined|NaN/);
+    expect(text).toContain('gibt-es-nicht');
+    expect(text).toContain(String(treffer.parameter['verfuegbare']));
+    // Der Feldanker steckt im Pfad des Befunds, nicht im Satz.
+    expect(treffer.pfad).toContain(ersterFaktor);
+  });
+
+  it('CFG_TIER_ORDER nennt das konkrete Stuetzstellenpaar statt einer leeren Liste', () => {
+    const roh = rohkonfiguration();
+    const honorar = roh['honorar'] as Record<string, unknown>;
+    const stellen = honorar['stuetzstellen'] as Record<string, number>[];
+    stellen[2] = { ...stellen[1]! }; // gleiche Verkaufssumme: Stufenbreite null
+
+    const treffer = befund(roh, 'CFG_TIER_ORDER');
+
+    const text = angezeigt(treffer).text;
+    expect(text).not.toMatch(/undefined|NaN/);
+    expect(text).toContain(`Stufe ${String(treffer.parameter['stufe'])}`);
+    expect(text).toContain(formatiereAggregat(Number(treffer.parameter['vorher'])));
+    expect(text).toContain(formatiereAggregat(Number(treffer.parameter['nachher'])));
+  });
+
+  it('CFG_TIER_OPEN nennt die tatsaechliche Anzahl Stuetzstellen', () => {
+    const roh = rohkonfiguration();
+    const honorar = roh['honorar'] as Record<string, unknown>;
+    const stellen = honorar['stuetzstellen'] as unknown[];
+    honorar['stuetzstellen'] = [stellen[0]];
+
+    const treffer = befund(roh, 'CFG_TIER_OPEN');
+    expect(treffer.parameter['anzahl']).toBe(1);
+
+    const text = angezeigt(treffer).text;
+    expect(text).not.toMatch(/undefined|NaN/);
+    expect(text).toContain('nur 1 Stützstelle');
+    expect(text).toContain('mindestens zwei');
+  });
+
+  it('richtet alle drei Ladezeitmeldungen an den Auftraggeber', () => {
+    const roh = rohkonfiguration();
+    const honorar = roh['honorar'] as Record<string, unknown>;
+    honorar['stuetzstellen'] = [(honorar['stuetzstellen'] as unknown[])[0]];
+    expect(angezeigt(befund(roh, 'CFG_TIER_OPEN')).adressat).toBe('auftraggeber');
   });
 });
 
