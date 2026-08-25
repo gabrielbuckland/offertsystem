@@ -73,12 +73,11 @@ export function Aggregatleiste(
         </Button>
         <div className="flex flex-col items-end gap-1">
           {honorarAbbruchMeldung !== undefined && (
-            // `role="alert"` unabhaengig von der (fuer den Auftraggeber bewusst nicht
-            // roten) Warnfarbe: E-04 ist kein Eingabefehler, verlangt aber sofortige
-            // Aufmerksamkeit — die Honorarrange fehlt, bis die Konfiguration passt.
-            <div role="alert">
-              <Hinweis art="warnung">{honorarAbbruchMeldung}</Hinweis>
-            </div>
+            // `rolle="alert"` unabhaengig von der (fuer den Auftraggeber bewusst nicht
+            // roten) Warnfarbe: E-04 ist kein Eingabefehler, blockiert aber das Ziel
+            // (keine Honorarrange, keine Offerte) und verlangt deshalb sofortige
+            // Aufmerksamkeit statt der stillen `status`-Rolle der Art „warnung“.
+            <Hinweis art="warnung" rolle="alert">{honorarAbbruchMeldung}</Hinweis>
           )}
           <Button type="button" onClick={erzeuge} disabled={gesperrtWeil !== undefined || laeuft}>
             {laeuft ? 'Offerte wird erzeugt …' : 'Offerte generieren'}

@@ -15,14 +15,22 @@ const ARTEN: Record<HinweisArt, { rolle: 'alert' | 'status'; klasse: string; sym
   erfolg:  { rolle: 'status', klasse: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-800', symbol: '✓' },
 };
 
-export function Hinweis({ art, children, className }: {
+export function Hinweis({ art, children, className, rolle }: {
   readonly art: HinweisArt;
   readonly children: React.ReactNode;
   readonly className?: string;
+  /**
+   * Ueberschreibt die Standard-Rolle der Art. Ob eine Meldung unterbrechen muss, ist
+   * eine Eigenschaft der SITUATION, nicht der Art: Eine „warnung“, die das Ziel des
+   * Nutzers blockiert — hier kann ohne Honorarrange keine Offerte entstehen —, braucht
+   * `alert`, obwohl ihre Dringlichkeit gestalterisch eine Warnung bleibt (keine „fehler“-
+   * Rotfaerbung). Deshalb ein eigener Prop statt einer weiteren Art.
+   */
+  readonly rolle?: 'alert' | 'status';
 }) {
   const a = ARTEN[art];
   return (
-    <div role={a.rolle}
+    <div role={rolle ?? a.rolle}
          className={cn('flex items-start gap-2 rounded-md border px-3 py-2 text-sm', a.klasse, className)}>
       <span aria-hidden="true" className="mt-0.5 font-semibold">{a.symbol}</span>
       <div>{children}</div>
