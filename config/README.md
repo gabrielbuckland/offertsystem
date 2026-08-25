@@ -74,6 +74,23 @@ gebildet **vor** den Zu-/Abschlaegen. Andernfalls wirkten die vom Vermarkter
 gesetzten Anpassungen ueber die Hintertuer auf das Honorar — eine
 Interessenkollision.
 
+## Merkmale und Bereichsregeln
+
+`merkmale` fuehrt firmenweit nummerische Merkmale einer Einheit; bislang nur
+`stockwerk`. Eine `anpassungsVorlage` kann statt eines festen `vorgabefaktor`
+eine `regel` (Bereichsregel, siehe `packages/core/src/modell/bereichsregel.ts`)
+tragen: Sie bildet den Merkmalswert auf einen Zu-/Abschlag ab, gestaffelt statt
+konstant. Die Vorlage `stockwerklage` ersetzt den bisherigen festen
+Attika-Zuschlag durch eine solche Staffel.
+
+Die Stufengrenzen und -saetze stammen aus `assets/pricing.xlsx`, Blatt
+`Verkaufspreise`, Zeile 4, umgerechnet in Rappen (`erfassungsform: "absolut"`):
+Erdgeschoss und 1. Obergeschoss ohne Zuschlag, ab dem 2. Obergeschoss
+10 000 CHF, ab dem 3. Obergeschoss 20 000 CHF, ab dem 4. Obergeschoss (Restfall)
+30 000 CHF je Einheit. Die Vorlagen `erdgeschoss_gartensitzplatz` und
+`erdgeschoss_einsehbar` bleiben unveraendert bestehen: Sie beschreiben
+Eigenschaften der Erdgeschosslage, die die Stockwerkstaffel nicht abbildet.
+
 ## Weitere Skalarparameter
 
 | Parameter | Wert | Begruendung |

@@ -81,6 +81,7 @@ export {
   type FaktorQuelle as KernFaktorQuelle,
   type Konfiguration,
   type KonfigurationsMeta,
+  type Merkmal,
   type PreisanpassungsKonfiguration,
   type Referenzverteilung,
   type Skalierungsparameter,

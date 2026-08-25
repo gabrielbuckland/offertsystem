@@ -103,3 +103,66 @@ describe('Ebene 3 — fachliche Invarianten', () => {
       .toContain('CFG_TIER_DEGRESSION');
   });
 });
+
+function mitVorlage(vorlage: unknown) {
+  return baueKonfiguration((k) => {
+    (k as unknown as Record<string, unknown>)['merkmale'] =
+      [{ id: 'stockwerk', bezeichnung: 'Stockwerk', form: 'zahl' }];
+    (k as unknown as Record<string, unknown>)['anpassungsVorlagen'] = [vorlage];
+  });
+}
+
+const GUELTIG = {
+  id: 'stockwerklage',
+  bezeichnung: 'Zuschlag Stockwerk',
+  vorgabefaktor: 0,
+  erfassungsform: 'relativ',
+  begruendungVorschlag: 'Zuschlag fuer die Stockwerklage gemaess firmenweiter Staffel.',
+  regel: {
+    merkmal: 'stockwerk',
+    bereiche: [{ unter: 1, wert: 0 }, { unter: 2, wert: 0.05 }, { wert: 0.1 }],
+  },
+};
+
+describe('pruefeEbene3 — Bereichsregeln', () => {
+  it('nimmt eine gueltige Regel an', () => {
+    const befunde = pruefeEbene3(mitVorlage(GUELTIG));
+    expect(befunde.filter((f) => f.code === 'CFG_BEREICHSREGEL')).toEqual([]);
+  });
+
+  it('weist eine Regel auf ein unbekanntes Merkmal zurueck', () => {
+    const befunde = pruefeEbene3(mitVorlage({
+      ...GUELTIG, regel: { ...GUELTIG.regel, merkmal: 'gibtsnicht' },
+    }));
+    expect(befunde.some((f) => f.code === 'CFG_BEREICHSREGEL')).toBe(true);
+  });
+
+  it('weist eine Staffel ohne Restfall zurueck', () => {
+    const befunde = pruefeEbene3(mitVorlage({
+      ...GUELTIG, regel: { merkmal: 'stockwerk', bereiche: [{ unter: 1, wert: 0 }] },
+    }));
+    expect(befunde.some((f) => f.code === 'CFG_BEREICHSREGEL')).toBe(true);
+  });
+
+  it('weist einen relativen Bereichswert ausserhalb der z-Grenzen zurueck', () => {
+    const befunde = pruefeEbene3(mitVorlage({
+      ...GUELTIG,
+      regel: { merkmal: 'stockwerk', bereiche: [{ unter: 1, wert: 0 }, { wert: 9 }] },
+    }));
+    expect(befunde.some((f) => f.code === 'CFG_BEREICHSREGEL')).toBe(true);
+  });
+
+  it('verlangt bei absoluter Erfassungsform ganzzahlige Rappen', () => {
+    const befunde = pruefeEbene3(mitVorlage({
+      ...GUELTIG,
+      erfassungsform: 'absolut',
+      regel: { merkmal: 'stockwerk', bereiche: [{ unter: 1, wert: 0 }, { wert: 10.5 }] },
+    }));
+    expect(befunde.some((f) => f.code === 'CFG_BEREICHSREGEL')).toBe(true);
+  });
+
+  it('weist Regel und Vorgabewert nebeneinander zurueck', () => {
+    const befunde = pruefeEbene3(mitVorlage({ ...GUELTIG, vorgabefaktor: 0.05 }));
+    expect(befunde.some((f) => f.code === 'CFG_BEREICHSREGEL')).toBe(true);
+  });
+});

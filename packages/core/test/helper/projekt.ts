@@ -173,9 +173,11 @@ export function standardKonfiguration(): Konfiguration {
         id: 'attikalage',
         bezeichnung: 'Attikawohnung / Dachgeschoss',
         vorgabefaktor: 0.1,
+        erfassungsform: 'relativ',
         begruendungVorschlag: 'Attikalage mit erhoehter Aussichtsqualitaet und privater Dachterrasse.',
       },
     ],
+    merkmale: [],
     faktoren,
     honorar: {
       stuetzstellen: [

@@ -22,11 +22,13 @@ export const BASIS_KONFIGURATION: RohKonfiguration = {
     begruendungPflicht: true,
     begruendungMinLaenge: 10,
   },
+  merkmale: [],
   anpassungsVorlagen: [
     {
       id: 'attikalage',
       bezeichnung: 'Attikawohnung / Dachgeschoss',
       vorgabefaktor: 0.1,
+      erfassungsform: 'relativ',
       begruendungVorschlag: 'Attikalage mit erhoehter Aussichtsqualitaet und privater Dachterrasse.',
     },
   ],

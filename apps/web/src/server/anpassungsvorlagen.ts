@@ -5,9 +5,9 @@
  * waere eine Entscheidung des Systems, die als Entscheidung des Vermarkters ausgewiesen
  * wuerde — ein Herkunftsfehler und die Musterform des Automation Bias.
  */
-import type { AnpassungsVorlage, Konfiguration } from '@offert/core';
+import type { Konfiguration, KernAnpassungsVorlage } from '@offert/core';
 
-export type Anpassungsvorlage = AnpassungsVorlage;
+export type Anpassungsvorlage = KernAnpassungsVorlage;
 
 export function leseVorlagen(k: Konfiguration): readonly Anpassungsvorlage[] {
   return k.anpassungsVorlagen;

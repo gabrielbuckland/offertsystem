@@ -1,17 +1,18 @@
 import { execSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import type { AnpassungsVorlage, Konfiguration } from '@offert/core';
+import type { Konfiguration, KernAnpassungsVorlage } from '@offert/core';
 import { leseVorlagen, uebernehmeVorlage } from '../../src/server/anpassungsvorlagen.js';
 import { pruefeErfassung } from '../../src/server/feldmeldungen.js';
 import { standardKonfiguration } from '../bau/offerte-bauer.js';
 
 const WURZEL = resolve(import.meta.dirname, '../../../..');
 
-const VORLAGE_SEESICHT: AnpassungsVorlage = {
+const VORLAGE_SEESICHT: KernAnpassungsVorlage = {
   id: 'seesicht',
   bezeichnung: 'Seesicht',
   vorgabefaktor: 0.05,
+  erfassungsform: 'relativ',
   begruendungVorschlag: 'Ungehinderte Seesicht ab dem zweiten Obergeschoss',
 };
 

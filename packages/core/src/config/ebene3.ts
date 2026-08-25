@@ -9,6 +9,7 @@
 import { pruefeNettoDegression, pruefeStufenDegression } from './degression.js';
 import { fehler, type KonfigurationsFehler } from './fehlercodes.js';
 import { ABLEITUNGS_NAMEN, BEZEICHNER_MUSTER, LAGESCORE_NAMEN, type RohKonfiguration } from './schema.js';
+import { pruefeBereiche } from '../modell/bereichsregel.js';
 
 /**
  * Toleranz der Summenbedingung. Bestandteil der Invariantendefinition I-12
@@ -134,6 +135,55 @@ function pruefeAnpassungsVorlagen(konfiguration: RohKonfiguration): Konfiguratio
   return befunde;
 }
 
+/**
+ * Ebene 3 und nicht 2: Die Pruefung blickt ueber das einzelne Feld hinaus — auf die
+ * Merkmalsliste, auf die z-Grenzen und auf die Erfassungsform derselben Vorlage.
+ *
+ * Die Wertschranke wird hier VORVERLEGT: Eine Staffel, die fuer irgendeinen Bereich
+ * einen unzulaessigen Zuschlag vorsieht, ist schon beim Laden falsch und nicht erst,
+ * wenn zufaellig eine Einheit in diesen Bereich faellt.
+ */
+function pruefeBereichsregeln(konfiguration: RohKonfiguration): KonfigurationsFehler[] {
+  const befunde: KonfigurationsFehler[] = [];
+  const { zMin, zMax } = konfiguration.preisanpassung;
+  const bekannteMerkmale = new Set(konfiguration.merkmale.map((m) => m.id));
+
+  konfiguration.anpassungsVorlagen.forEach((vorlage, index) => {
+    const regel = vorlage.regel;
+    if (regel === undefined) return;
+
+    // exactOptionalPropertyTypes: der optionale Restfallwert `unter` darf im uebergebenen
+    // Bereich nicht als explizites `undefined` auftreten, nur als fehlender Schluessel.
+    const bereiche = regel.bereiche.map((b) =>
+      (b.unter === undefined ? { wert: b.wert } : { unter: b.unter, wert: b.wert }));
+    const gruende: string[] = [...pruefeBereiche(bereiche)];
+
+    if (!bekannteMerkmale.has(regel.merkmal)) {
+      gruende.push(`Merkmal '${regel.merkmal}' ist nicht deklariert.`);
+    }
+    if (vorlage.vorgabefaktor !== 0) {
+      gruende.push('Regel und Vorgabewert stehen nebeneinander; der Vorgabewert haette keine Bedeutung.');
+    }
+    for (const [i, b] of regel.bereiche.entries()) {
+      if (vorlage.erfassungsform === 'relativ' && (b.wert < zMin || b.wert > zMax)) {
+        gruende.push(`Bereich ${i}: Wert ${b.wert} ausserhalb [${zMin}, ${zMax}].`);
+      }
+      if (vorlage.erfassungsform === 'absolut' && !Number.isInteger(b.wert)) {
+        gruende.push(`Bereich ${i}: absolute Werte sind ganzzahlige Rappen.`);
+      }
+    }
+
+    if (gruende.length > 0) {
+      befunde.push(fehler('CFG_BEREICHSREGEL', `anpassungsVorlagen[${index}].regel`, {
+        index,
+        bezeichnung: vorlage.bezeichnung,
+        bedingung: gruende.join('; '),
+      }));
+    }
+  });
+  return befunde;
+}
+
 export function pruefeEbene3(konfiguration: RohKonfiguration): KonfigurationsFehler[] {
   const befunde: KonfigurationsFehler[] = [
     ...pruefeGewichtssumme(konfiguration),
@@ -141,6 +191,7 @@ export function pruefeEbene3(konfiguration: RohKonfiguration): KonfigurationsFeh
     ...pruefeStrategien(konfiguration),
     ...pruefeFaktorquellen(konfiguration),
     ...pruefeAnpassungsVorlagen(konfiguration),
+    ...pruefeBereichsregeln(konfiguration),
   ];
 
   const ordnung = pruefeStuetzstellenordnung(konfiguration);

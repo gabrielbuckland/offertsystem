@@ -18,6 +18,7 @@ const ERWARTUNG: ReadonlyArray<readonly [string, string]> = [
   ['netto-degression-verletzt.json', 'CFG_NET_DEGRESSION'],
   ['norm-bounds-equal.json', 'CFG_NORM_BOUNDS'],
   ['zuschlag-bounds-invalid.json', 'CFG_ADJUSTMENT_BOUNDS'],
+  ['bereichsregel-ohne-restfall.json', 'CFG_BEREICHSREGEL'],
 ];
 
 describe('Negativfixtures der Konfigurationsvalidierung', () => {

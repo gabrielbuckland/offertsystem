@@ -66,7 +66,7 @@ describe('parseKonfiguration (PE-01) — Rohkonfiguration auf Kerntyp', () => {
     const r = parseKonfiguration(BASIS_KONFIGURATION);
     if (!r.ok) throw new Error('unerwarteter Fehlschlag');
     expect(Object.keys(r.wert.kern).sort()).toEqual(
-      ['anpassungsVorlagen', 'faktoren', 'flaeche', 'honorar', 'meta', 'preisanpassung']);
+      ['anpassungsVorlagen', 'faktoren', 'flaeche', 'honorar', 'merkmale', 'meta', 'preisanpassung']);
   });
 
   it('reicht die deskriptive Skala unveraendert durch (PE-05)', () => {

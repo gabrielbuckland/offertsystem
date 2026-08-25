@@ -48,7 +48,7 @@ export type MergeErgebnis =
 
 /** Nicht projektbezogen ueberschreibbar (Spec 02 §2.3). */
 export const GESPERRTE_PFADE: readonly string[] = [
-  'meta', 'flaeche', 'preisanpassung', 'anpassungsVorlagen',
+  'meta', 'flaeche', 'preisanpassung', 'anpassungsVorlagen', 'merkmale',
   'aufwandfaktoren', 'honorar', 'dossierDefaults', 'api',
 ];
 

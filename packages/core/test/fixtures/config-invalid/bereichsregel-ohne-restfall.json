@@ -3,7 +3,7 @@
     "schemaVersion": 1,
     "konfigVersion": "1.0.0-vorlaeufig",
     "gueltigAb": "2026-08-16",
-    "beschreibung": "Firmenweite Berechnungsbasis. VORLAEUFIG — saemtliche Zahlenwerte sind eine begruendete Festlegung des Autors und vom Auftraggeber zu bestaetigen. Herleitung in config/README.md."
+    "beschreibung": "NEGATIVFIXTURE — Bereichsregel ohne Restfall (kein Eintrag ohne `unter`). Erwarteter Code: CFG_BEREICHSREGEL."
   },
   "flaeche": {
     "alpha": 0.5
@@ -20,55 +20,14 @@
   "anpassungsVorlagen": [
     {
       "id": "stockwerklage",
-      "bezeichnung": "Zuschlag Stockwerklage",
+      "bezeichnung": "Zuschlag Stockwerk",
       "vorgabefaktor": 0,
-      "erfassungsform": "absolut",
+      "erfassungsform": "relativ",
       "begruendungVorschlag": "Zuschlag fuer die Stockwerklage gemaess firmenweiter Staffel.",
       "regel": {
         "merkmal": "stockwerk",
-        "bereiche": [
-          { "unter": 1, "wert": 0 },
-          { "unter": 2, "wert": 1000000 },
-          { "unter": 3, "wert": 2000000 },
-          { "wert": 3000000 }
-        ]
+        "bereiche": [{ "unter": 1, "wert": 0 }, { "unter": 2, "wert": 0.05 }]
       }
-    },
-    {
-      "id": "erdgeschoss_gartensitzplatz",
-      "bezeichnung": "Erdgeschoss mit Gartensitzplatz",
-      "vorgabefaktor": 0.05,
-      "begruendungVorschlag": "Erdgeschosswohnung mit exklusiv nutzbarem Gartensitzplatz."
-    },
-    {
-      "id": "erdgeschoss_einsehbar",
-      "bezeichnung": "Erdgeschoss, stark einsehbar",
-      "vorgabefaktor": -0.05,
-      "begruendungVorschlag": "Erdgeschosslage mit eingeschraenkter Privatsphaere gegenueber dem Aussenraum."
-    },
-    {
-      "id": "laermexposition",
-      "bezeichnung": "Laermexposition Strassenseite",
-      "vorgabefaktor": -0.1,
-      "begruendungVorschlag": "Ausrichtung zur Hauptverkehrsachse mit erhoehter Laermbelastung."
-    },
-    {
-      "id": "aussicht_frei",
-      "bezeichnung": "Freie Aussichtslage",
-      "vorgabefaktor": 0.08,
-      "begruendungVorschlag": "Unverbaubare Aussichtslage in bevorzugter Ausrichtung."
-    },
-    {
-      "id": "nordausrichtung",
-      "bezeichnung": "Nordausrichtung ohne Besonnung",
-      "vorgabefaktor": -0.06,
-      "begruendungVorschlag": "Nordausrichtung mit geringer direkter Besonnung der Hauptwohnraeume."
-    },
-    {
-      "id": "kein_aussenraum",
-      "bezeichnung": "Ohne Balkon oder Terrasse",
-      "vorgabefaktor": -0.08,
-      "begruendungVorschlag": "Einheit ohne privaten Aussenraum."
     }
   ],
   "aufwandfaktoren": {
@@ -187,12 +146,8 @@
     "flaecheAussen": null,
     "stockwerk": null,
     "energielabel": null,
-    "zustandsbewertungen": {
-      "Neu / kürzlich modernisiert": "3"
-    },
-    "qualitaetsbewertungen": {
-      "Gesamteindruck": "gehoben"
-    }
+    "zustandsbewertungen": {},
+    "qualitaetsbewertungen": {}
   },
   "api": {
     "baseUrl": "https://api.pricehubble.com",

@@ -37,6 +37,7 @@ export const CFG_CODES = [
   'CFG_ZSCORE_CAP',
   'CFG_SOURCE_UNRESOLVED',
   'CFG_TEMPLATE_BOUNDS',
+  'CFG_BEREICHSREGEL',
   'CFG_MERGE_LOCKED_PATH',
 ] as const;
 
@@ -65,6 +66,7 @@ export const CFG_EBENE: Readonly<Record<CfgFehlerCode, Pruefebene>> = {
   CFG_ZSCORE_CAP: 3,
   CFG_SOURCE_UNRESOLVED: 3,
   CFG_TEMPLATE_BOUNDS: 3,
+  CFG_BEREICHSREGEL: 3,
   CFG_MERGE_LOCKED_PATH: 3,
 };
 
