@@ -7,7 +7,9 @@
 import { copyFileSync, mkdtempSync, readdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { beforeEach, describe, expect, it } from 'vitest';
+import {
+  afterEach, beforeEach, describe, expect, it, vi,
+} from 'vitest';
 import { leereZwischenspeicher } from '../../src/server/konfigurations-lader.js';
 import { schreibeCompanyDefaults } from '../../src/server/einstellungen-ablage.js';
 
@@ -61,5 +63,43 @@ describe('schreibeCompanyDefaults', () => {
     preisanpassung['begruendungPflicht'] = false; // fachlich nicht abschaltbar (US-04)
     const e = await schreibeCompanyDefaults(roh, pfad);
     expect(e.ok).toBe(false);
+  });
+
+  describe('Sicherungskollision (zwei Schreibvorgaenge in derselben Millisekunde)', () => {
+    afterEach(() => { vi.useRealTimers(); });
+
+    it('verliert bei gleichem Zeitstempel keine der beiden Vorversionen', async () => {
+      // Ohne eingefrorene Zeit koennten zwei rasch aufeinanderfolgende Aufrufe zufaellig
+      // denselben oder verschiedene Zeitstempel erhalten — nicht deterministisch pruefbar.
+      // `vi.setSystemTime` erzwingt die Kollision, die `sichereVorversion` abfangen muss.
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+
+      const ersterRoh = standardRoh();
+      (ersterRoh['preisanpassung'] as Record<string, unknown>)['begruendungMinLaenge'] = 12;
+      const ersteAntwort = await schreibeCompanyDefaults(ersterRoh, pfad);
+      expect(ersteAntwort.ok).toBe(true);
+
+      const zweiterRoh = standardRoh();
+      (zweiterRoh['preisanpassung'] as Record<string, unknown>)['begruendungMinLaenge'] = 13;
+      const zweiteAntwort = await schreibeCompanyDefaults(zweiterRoh, pfad);
+      expect(zweiteAntwort.ok).toBe(true);
+
+      const backupVerzeichnis = join(dirname(pfad), 'backups');
+      const gesichert = readdirSync(backupVerzeichnis);
+      // Keine der beiden Sicherungen wurde von der anderen ueberschrieben.
+      expect(gesichert).toHaveLength(2);
+
+      const inhalte = gesichert.map(
+        (datei) => JSON.parse(readFileSync(join(backupVerzeichnis, datei), 'utf8')) as
+          Record<string, unknown>,
+      );
+      const minLaengen = inhalte
+        .map((i) => (i['preisanpassung'] as Record<string, unknown>)['begruendungMinLaenge'])
+        .sort();
+      // Erste Sicherung: der Ausgangsstand (10). Zweite Sicherung: der Stand nach dem
+      // ersten Schreiben (12), bevor der zweite Schreibvorgang ihn auf 13 aendert.
+      expect(minLaengen).toEqual([10, 12]);
+    });
   });
 });

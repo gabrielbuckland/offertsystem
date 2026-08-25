@@ -7,6 +7,7 @@
  * Versionsverlauf, nur die Ruecksprungmarke fuer den Auftraggeber (Spec §6).
  */
 import { randomUUID } from 'node:crypto';
+import { constants as fsKonstanten } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { validiereKonfiguration, type KonfigurationsFehler } from '@offert/core';
@@ -34,12 +35,17 @@ function istUebersetzbar(code: string): code is keyof typeof KONFIG_VORLAGEN {
 }
 
 /**
- * `KONFIG_VORLAGEN` (fehlertexte.ts) deckt nur einen Teil des CFG_*-Namensraums ab —
- * die uebrigen Codes (z. B. CFG_TIER_DEGRESSION, CFG_SCHEMA_TYPE) haben dort keine
- * eigene Anzeigevorlage. Die Datei ist eine bestehende Datei einer anderen Spur
- * (Task 12) und wird hier nicht erweitert; fuer Codes ohne Vorlage traegt der
- * Befundtext ersatzweise Code und Parameter. Der `pfad` — der Feldanker der
- * Editoren — bleibt in jedem Fall der aus dem `KonfigurationsFehler`.
+ * `KONFIG_VORLAGEN` (fehlertexte.ts) deckt nur 3 der 21 CFG_*-Codes ab
+ * (CFG_STRATEGY_UNKNOWN, CFG_TIER_ORDER, CFG_TIER_OPEN); die uebrigen — darunter genau die
+ * in dieser Task ausgeloesten CFG_TIER_DEGRESSION und CFG_SCHEMA_TYPE — haben dort KEINE
+ * eigene Anzeigevorlage. Der folgende Zweig ist deshalb ein Notbehelf, nicht der
+ * vorgesehene Weg: Ohne Vorlage sieht der Vermarkter Code + Rohparameter statt eines Satzes,
+ * genau die Rohform, die die Uebersetzungsschicht (E-03) eigentlich vermeiden soll. Die
+ * Tabelle wird hier NICHT erweitert (fehlertexte.ts gehoert einer anderen Spur/Task 12 und
+ * eine Erweiterung hier riskierte einen Merge-Konflikt) — die Vervollstaendigung ist als
+ * Folgeposten vermerkt (Ruecksprache Auftraggeber, 2026-08-25). Der `pfad` — der Feldanker
+ * der Editoren — bleibt in jedem Fall der aus dem `KonfigurationsFehler`, unabhaengig davon,
+ * welcher Zweig den Text liefert.
  */
 function textFuer(befund: KonfigurationsFehler): string {
   if (istUebersetzbar(befund.code)) {
@@ -60,6 +66,30 @@ function zuBefunden(fehler: readonly KonfigurationsFehler[]): EinstellungsBefund
   return fehler.map((f) => ({ pfad: f.pfad, text: textFuer(f) }));
 }
 
+/**
+ * Sichert `pfad` zeitgestempelt nach `sicherungsVerzeichnis`. Kollisionssicher statt auf
+ * den Zufall vertrauend: Zwei Schreibvorgaenge innerhalb derselben Millisekunde traegen
+ * sonst denselben Dateinamen, und ein zweites `copyFile` ueberschriebe die erste Sicherung
+ * stillschweigend — genau der Verlust, den `backups/` verhindern soll (Spec §6). Der Fang
+ * versucht deshalb `COPYFILE_EXCL` (schlaegt fehl statt zu ueberschreiben) und haengt bei
+ * Kollision einen Zaehlersuffix an, bis ein freier Name gefunden ist.
+ */
+async function sichereVorversion(
+  pfad: string, sicherungsVerzeichnis: string, zeitstempel: string,
+): Promise<string> {
+  for (let zaehler = 0; ; zaehler += 1) {
+    const name = zaehler === 0 ? `${zeitstempel}.json` : `${zeitstempel}-${zaehler}.json`;
+    const ziel = join(sicherungsVerzeichnis, name);
+    try {
+      await fs.copyFile(pfad, ziel, fsKonstanten.COPYFILE_EXCL);
+      return ziel;
+    } catch (fehler) {
+      if ((fehler as NodeJS.ErrnoException).code !== 'EEXIST') throw fehler;
+      // Name bereits vergeben (Millisekunden-Kollision) — naechster Zaehlerstand.
+    }
+  }
+}
+
 export async function schreibeCompanyDefaults(
   roh: unknown, pfad: string,
 ): Promise<SchreibErgebnis> {
@@ -71,8 +101,7 @@ export async function schreibeCompanyDefaults(
   const sicherungsVerzeichnis = join(dirname(pfad), 'backups');
   await fs.mkdir(sicherungsVerzeichnis, { recursive: true });
   const zeitstempel = new Date().toISOString().replace(/:/g, '-');
-  const sicherung = join(sicherungsVerzeichnis, `${zeitstempel}.json`);
-  await fs.copyFile(pfad, sicherung);
+  const sicherung = await sichereVorversion(pfad, sicherungsVerzeichnis, zeitstempel);
 
   await schreibeAtomar(pfad, `${JSON.stringify(roh, null, 2)}\n`);
 
