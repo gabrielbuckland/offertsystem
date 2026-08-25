@@ -91,7 +91,7 @@ export default async function BereichSeite({ params }: Props) {
         zweck={eintrag.zweck}
         bereichPraefix={eintrag.praefix}
         anfang={laufzeit.wert.rohKonfiguration}
-        Editor={'Editor' in eintrag ? eintrag.Editor : undefined}
+        {...('Editor' in eintrag ? { Editor: eintrag.Editor } : {})}
       />
     </main>
   );
