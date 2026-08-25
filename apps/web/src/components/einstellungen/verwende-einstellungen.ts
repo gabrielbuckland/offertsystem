@@ -14,7 +14,7 @@
  * Speicherverhalten: Aenderungen sammeln sich hier nur im Entwurf, bis ein expliziter
  * Klick auf «Speichern» sie freigibt.
  */
-import { useCallback, useState, type ReactElement } from 'react';
+import { useCallback, useRef, useState, type ReactElement } from 'react';
 import { rufeApi } from '../rufe-api.js';
 
 export interface EinstellungsBefund {
@@ -42,6 +42,10 @@ interface SpeicherAntwort {
   readonly befunde?: readonly EinstellungsBefund[];
 }
 
+export type SpeicherErgebnis =
+  | { readonly ok: true; readonly pruefsumme: string | undefined }
+  | { readonly ok: false; readonly befunde: readonly EinstellungsBefund[] };
+
 export interface VerwendeEinstellungenErgebnis {
   readonly entwurf: Readonly<Record<string, unknown>>;
   readonly geaendert: boolean;
@@ -58,8 +62,7 @@ export interface VerwendeEinstellungenErgebnis {
 /** Einziger Netzwerkkontakt dieses Hooks. */
 async function schreibeEinstellungen(
   entwurf: Readonly<Record<string, unknown>>,
-): Promise<{ readonly ok: true; readonly pruefsumme: string | undefined }
-  | { readonly ok: false; readonly befunde: readonly EinstellungsBefund[] }> {
+): Promise<SpeicherErgebnis> {
   const antwort = await rufeApi<SpeicherAntwort>('/api/einstellungen', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -79,6 +82,71 @@ async function schreibeEinstellungen(
   };
 }
 
+interface SpeicherBeobachter {
+  readonly aufSpeichertWechsel: (speichert: boolean) => void;
+  readonly aufErgebnis: (ergebnis: SpeicherErgebnis) => void;
+}
+
+/**
+ * Reine Zustandsmaschine ohne React (testbar ohne Hook-Testbibliothek — gleiches
+ * Vorgehen wie `baueSpeicherwarteschlange` in `verwende-projekt.ts`), die Speicher-
+ * versuche gegen ueberholte Antworten absichert.
+ *
+ * `vermerkeAenderung` (Bearbeitung ODER Verwerfen) und `starte` (ein Speicherversuch)
+ * zaehlen eine gemeinsame Generation hoch. Trifft eine Antwort ein, deren Generation
+ * nicht mehr die aktuelle ist, wurde inzwischen weiterbearbeitet oder erneut
+ * gespeichert — sie wird verworfen, statt einen neueren, noch gar nicht gesendeten
+ * Entwurf mit einem Erfolg zu ueberschreiben, der ihm nicht zusteht.
+ *
+ * `speichert` wird NUR von der jeweils zuletzt GESENDETEN Anfrage zurueckgesetzt
+ * (`laufendeGeneration`, getrennt von der allgemeinen Generation): Ein blosses
+ * `vermerkeAenderung()` nach dem Absenden darf `speichert` weiterhin auf false ziehen
+ * (nichts ist mehr unterwegs), ein ZWEITER `starte()`-Aufruf davor jedoch nicht — sonst
+ * risse die spaet eintreffende erste Antwort den Ladezustand herunter, waehrend die
+ * zweite Anfrage noch laeuft.
+ */
+export function baueSpeicherSteuerung(
+  sende: (entwurf: Readonly<Record<string, unknown>>) => Promise<SpeicherErgebnis>,
+  beobachter: SpeicherBeobachter,
+) {
+  let generation = 0;
+  let laufendeGeneration: number | undefined;
+
+  return {
+    vermerkeAenderung(): void {
+      generation += 1;
+    },
+    starte(entwurf: Readonly<Record<string, unknown>>): void {
+      generation += 1;
+      const meineGeneration = generation;
+      laufendeGeneration = meineGeneration;
+      beobachter.aufSpeichertWechsel(true);
+      void sende(entwurf)
+        .then((ergebnis) => {
+          if (generation === meineGeneration) beobachter.aufErgebnis(ergebnis);
+        })
+        .finally(() => {
+          if (laufendeGeneration === meineGeneration) beobachter.aufSpeichertWechsel(false);
+        });
+    },
+  };
+}
+
+/**
+ * Strukturvergleich statt Referenzvergleich (Abweichung vom urspruenglichen Plan,
+ * Ruecksprache Auftraggeber): `aendere` liefert bei jedem Ruecksetzen auf den
+ * Ausgangswert eine NEUE Referenz, obwohl der Baum inhaltlich unveraendert ist. `entwurf`
+ * ist exakt die JSON-Form, die auch an `POST /api/einstellungen` geht — ein
+ * `JSON.stringify`-Vergleich ist deshalb sowohl ausreichend als auch ehrlich, und die
+ * Firmenweite-Wirkung-Schranke («Speichern» nur bei echter Aenderung aktiv) bleibt damit
+ * belastbar statt nur kosmetisch erfuellt.
+ */
+export function entwurfGeaendert(
+  entwurf: Readonly<Record<string, unknown>>, anfang: Readonly<Record<string, unknown>>,
+): boolean {
+  return JSON.stringify(entwurf) !== JSON.stringify(anfang);
+}
+
 export function verwendeEinstellungen(
   anfang: Readonly<Record<string, unknown>>,
 ): VerwendeEinstellungenErgebnis {
@@ -87,12 +155,28 @@ export function verwendeEinstellungen(
   const [pruefsumme, setzePruefsumme] = useState<string | undefined>(undefined);
   const [befunde, setzeBefunde] = useState<readonly EinstellungsBefund[]>([]);
 
-  // Referenzvergleich zum Anfang statt tiefer Objektvergleich: `aendere` erhaelt vom
-  // Aufrufer stets den VOLLEN, neu zusammengesetzten Baum (gleiches Vorgehen wie
-  // `verwendeProjekt`); jede Aenderung liefert damit zwangslaeufig eine neue Referenz.
-  const geaendert = entwurf !== anfang;
+  // Entsteht genau einmal und schliesst damit ueber den ERSTEN Rendervorgang (gleicher
+  // Ref-Umweg wie `verwendeProjekt`).
+  const steuerung = useRef<ReturnType<typeof baueSpeicherSteuerung> | undefined>(undefined);
+  if (steuerung.current === undefined) {
+    steuerung.current = baueSpeicherSteuerung(schreibeEinstellungen, {
+      aufSpeichertWechsel: setzeSpeichert,
+      aufErgebnis: (ergebnis) => {
+        if (ergebnis.ok) {
+          setzeBefunde([]);
+          setzePruefsumme(ergebnis.pruefsumme);
+        } else {
+          setzeBefunde(ergebnis.befunde);
+          setzePruefsumme(undefined);
+        }
+      },
+    });
+  }
+
+  const geaendert = entwurfGeaendert(entwurf, anfang);
 
   const aendere = useCallback((naechster: Readonly<Record<string, unknown>>) => {
+    steuerung.current?.vermerkeAenderung();
     setzeEntwurf(naechster);
     // Ein neuer Bearbeitungsschritt entwertet die letzte Rueckmeldung (Erfolg oder
     // Befunde) — sie galt einem Entwurf, der jetzt ueberholt ist.
@@ -101,21 +185,11 @@ export function verwendeEinstellungen(
   }, []);
 
   const speichere = useCallback(() => {
-    setzeSpeichert(true);
-    void schreibeEinstellungen(entwurf)
-      .then((ergebnis) => {
-        if (ergebnis.ok) {
-          setzeBefunde([]);
-          setzePruefsumme(ergebnis.pruefsumme);
-        } else {
-          setzeBefunde(ergebnis.befunde);
-          setzePruefsumme(undefined);
-        }
-      })
-      .finally(() => setzeSpeichert(false));
+    steuerung.current?.starte(entwurf);
   }, [entwurf]);
 
   const verwerfe = useCallback(() => {
+    steuerung.current?.vermerkeAenderung();
     setzeEntwurf(anfang);
     setzePruefsumme(undefined);
     setzeBefunde([]);
