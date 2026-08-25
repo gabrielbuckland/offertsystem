@@ -6,6 +6,7 @@
  */
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
+import type { DossierDefaults } from '@offert/core';
 import type { ProjektEinheit, Referenzobjekt } from '../../../src/server/projekt-schema.js';
 
 interface ErfassteZelle {
@@ -47,6 +48,15 @@ const R: Referenzobjekt = {
   },
 };
 
+// Durchgehend `null`: keine dieser Bestandstests prueft die Herkunftsauszeichnung
+// (`ParametrisierungsDetail.tsx`, eigener Test), ein zufaellig deckungsgleicher
+// firmenweiter Default duerfte hier also nichts an der bisherigen Aussage der
+// Assertions aendern.
+const dossierDefaultsLeer: DossierDefaults = {
+  flaecheInnen: null, flaecheAussen: null, stockwerk: null, energielabel: null,
+  zustandsbewertungen: {}, qualitaetsbewertungen: {},
+};
+
 function zeichne(
   referenzobjekte: readonly Referenzobjekt[],
   aendere: (r: readonly Referenzobjekt[]) => void,
@@ -58,8 +68,10 @@ function zeichne(
     <Referenzobjekte
       referenzobjekte={referenzobjekte}
       einheiten={einheiten}
+      dossierDefaults={dossierDefaultsLeer}
       aendere={aendere}
       rufeAb={() => undefined}
+      abrufLaeuft={false}
     />);
 }
 
