@@ -78,4 +78,64 @@ describe('projiziere', () => {
     if (!e.ok) return;
     expect(e.wert.einheiten[0]!.anpassungen).toEqual([]);
   });
+
+  it('leitet eine Position aus der Regel ab, ohne dass ein Spaltenwert erfasst ist', () => {
+    const p = projektMitRegel({ stockwerk: 2 }, {});
+    const ergebnis = projiziere(p, { 'E-1': 100_000_00 });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    const anpassungen = ergebnis.wert.einheiten[0]!.anpassungen;
+    expect(anpassungen).toHaveLength(1);
+    expect(anpassungen[0]!.regel).toEqual({
+      merkmal: 'stockwerk', merkmalswert: 2, bereich: 2, regelwert: 2000000,
+    });
+  });
+
+  it('erzeugt keine Position, wenn der wirksame Wert 0 ist — gleich ob aus Regel oder Zelle', () => {
+    const ausRegel = projiziere(projektMitRegel({ stockwerk: 0 }, {}), { 'E-1': 100_000_00 });
+    expect(ausRegel.ok && ausRegel.wert.einheiten[0]!.anpassungen).toHaveLength(0);
+
+    const ausZelle = projiziere(projektMitRegel({ stockwerk: 2 }, { 'S-1': 0 }), { 'E-1': 100_000_00 });
+    expect(ausZelle.ok && ausZelle.wert.einheiten[0]!.anpassungen).toHaveLength(0);
+  });
+
+  it('erzeugt keine Position, wenn der Merkmalswert fehlt', () => {
+    const ergebnis = projiziere(projektMitRegel({}, {}), { 'E-1': 100_000_00 });
+    expect(ergebnis.ok && ergebnis.wert.einheiten[0]!.anpassungen).toHaveLength(0);
+  });
+
+  it('behaelt die Spaltenreihenfolge bei, auch wenn eine Spalte regelgetrieben ist (NFA-06)', () => {
+    const p = projektMitRegel({ stockwerk: 2 }, { 'S-2': 0.03 });
+    const gemischt = {
+      ...p,
+      anpassungsSpalten: [
+        p.anpassungsSpalten[0]!,
+        { id: 'S-2', bezeichnung: 'Aussicht', erfassungsform: 'relativ' as const, vorgabewert: 0 },
+      ],
+    };
+    const ergebnis = projiziere(gemischt, { 'E-1': 100_000_00 });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    expect(ergebnis.wert.einheiten[0]!.anpassungen.map((a) => a.vorlageId))
+      .toEqual(['S-1', 'S-2']);
+  });
 });
+
+function projektMitRegel(
+  merkmalswerte: Record<string, number>,
+  spaltenwerte: Record<string, number>,
+) {
+  const p = projekt();
+  return {
+    ...p,
+    merkmale: [{ id: 'stockwerk', bezeichnung: 'Stockwerk', form: 'zahl' as const }],
+    anpassungsSpalten: [{
+      id: 'S-1', bezeichnung: 'Zuschlag Stockwerk', erfassungsform: 'absolut' as const,
+      regel: {
+        merkmal: 'stockwerk',
+        bereiche: [{ unter: 1, wert: 0 }, { unter: 2, wert: 1000000 }, { wert: 2000000 }],
+      },
+    }],
+    einheiten: [{ ...p.einheiten[0]!, spaltenwerte, merkmalswerte }],
+  };
+}

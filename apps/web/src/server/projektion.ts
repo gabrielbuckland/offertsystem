@@ -12,6 +12,7 @@
 import { rechneBetragInFaktor } from './betragsumrechnung.js';
 import type { Erfassung } from './erfassung-schema.js';
 import type { Projekt } from './projekt-schema.js';
+import { ermittleWirksamenWert, type Regelspur } from './wirksamer-wert.js';
 
 export type ProjektionsErgebnis =
   | { readonly ok: true; readonly wert: Erfassung }
@@ -39,6 +40,7 @@ function absolutZuAnpassung(
   begruendung: string,
   wohnungsnummer: string,
   vorlageId: string,
+  nachweis: { readonly regel?: Regelspur; readonly uebersteuert?: true },
 ): { readonly ok: true; readonly wert: Anpassung } | { readonly ok: false; readonly meldung: string } {
   if (basispreis === undefined) {
     return { ok: false, meldung: fehlenderBasispreis(wohnungsnummer) };
@@ -49,7 +51,10 @@ function absolutZuAnpassung(
   }
   return {
     ok: true,
-    wert: { faktor: umgerechnet.wert, erfassungsform: 'absolut', erfassterBetrag: betrag, begruendung, vorlageId },
+    wert: {
+      faktor: umgerechnet.wert, erfassungsform: 'absolut', erfassterBetrag: betrag, begruendung, vorlageId,
+      ...nachweis,
+    },
   };
 }
 
@@ -81,21 +86,28 @@ export function projiziere(
     const anpassungen: Anpassung[] = [];
 
     for (const spalte of projekt.anpassungsSpalten) {
-      const wert = e.spaltenwerte[spalte.id];
-      // Eine nicht gesetzte oder auf null gesetzte Spalte ist keine Position. Sonst
-      // truege jede Einheit so viele Nullpositionen, wie es Spalten gibt, und die
-      // Offerte wiese Anpassungen ohne Wirkung aus (A-13).
-      if (wert === undefined || wert === 0) continue;
+      const wirksam = ermittleWirksamenWert(spalte, e);
+      // Kein Wert heisst: weder Uebersteuerung noch auswertbare Regel. Und ein wirksamer
+      // Wert von 0 ist kein Zu-/Abschlag — sonst truege die Einheit so viele
+      // Nullpositionen, wie es Spalten gibt (A-13). Die Rangfolge Uebersteuerung vor
+      // Regel steht ausschliesslich in `ermittleWirksamenWert`; hier wird nur noch
+      // entschieden, ob daraus eine Position wird.
+      if (wirksam === undefined || wirksam.wert === 0) continue;
+
+      const nachweis = {
+        ...(wirksam.regel === undefined ? {} : { regel: wirksam.regel }),
+        ...(wirksam.uebersteuert === true ? { uebersteuert: true as const } : {}),
+      };
 
       if (spalte.erfassungsform === 'relativ') {
         anpassungen.push({
-          faktor: wert, erfassungsform: 'relativ',
-          begruendung: spalte.bezeichnung, vorlageId: spalte.id,
+          faktor: wirksam.wert, erfassungsform: 'relativ',
+          begruendung: spalte.bezeichnung, vorlageId: spalte.id, ...nachweis,
         });
         continue;
       }
       const ergebnis = absolutZuAnpassung(
-        wert, basispreise[e.id], spalte.bezeichnung, e.wohnungsnummer, spalte.id);
+        wirksam.wert, basispreise[e.id], spalte.bezeichnung, e.wohnungsnummer, spalte.id, nachweis);
       if (!ergebnis.ok) return ergebnis;
       anpassungen.push(ergebnis.wert);
     }
