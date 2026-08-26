@@ -146,4 +146,50 @@ describe('EinheitenTabelle', () => {
                         referenzobjekte={REFS} preise={{}} aendere={() => undefined} />);
     expect(html).toContain('übersteuert');
   });
+
+  // Der Fall, den `ermittleWirksamenWert` seit Task 5 eigens ausweist: eine Uebersteuerung
+  // auf einer Regel-Spalte, deren Merkmal an dieser Einheit gar keinen Wert fuehrt. Die
+  // Regel kann dann gar nicht ausgewertet werden — `wirksam.regel` bleibt undefiniert —,
+  // trotzdem gilt der eingetippte Wert. Ohne diesen Test koennte ein spaeterer Zugriff
+  // wie `wirksam.regel!.regelwert` unbedingt geschrieben werden und liefe hier ins Leere.
+  it('zeigt bei einer Uebersteuerung ohne Merkmalswert den eingetippten Wert, weder '
+    + '"Merkmal fehlt" noch "aus Regel"', () => {
+      const einheiten = [{
+        ...EINHEITEN[0]!, merkmalswerte: {}, spaltenwerte: { 'S-3': 500000 },
+      }];
+      const html = renderToStaticMarkup(
+        <EinheitenTabelle einheiten={einheiten} spalten={[SPALTE_MIT_REGEL]} merkmale={MERKMALE}
+                          referenzobjekte={REFS} preise={{}} aendere={() => undefined} />);
+      // 500'000 Rappen -> 5'000 Franken (rappenZuFranken), unformatiert wie `ZellenEingabe`
+      // jeden Zellwert ausgibt.
+      expect(html).toContain('value="5000"');
+      expect(html).not.toContain('Merkmal fehlt');
+      expect(html).not.toContain('aus Regel');
+      expect(html).not.toContain('übersteuert');
+    });
+
+  // Die Spec verlangt "Zuruecksetzen stellt den Regelwert wieder her" — das gilt nur,
+  // weil der Rueckruf den SCHLUESSEL aus `spaltenwerte` entfernt statt ihn auf 0 zu
+  // setzen (eine erfasste 0 waere eine bewusste Uebersteuerung, die die Regel weiterhin
+  // unterdrueckt). `toHaveProperty`/`=== undefined` uebersaehe eine Regression zu
+  // `{ ...spaltenwerte, [id]: undefined }` (der Schluessel waere weiterhin vorhanden,
+  // nur sein Wert waere `undefined`) — deshalb hier explizit ueber die Schluesselliste.
+  it('entfernt beim Zuruecksetzen den Schluessel aus spaltenwerte, statt ihn auf 0 zu setzen', () => {
+    const einheit = {
+      ...EINHEITEN[0]!, merkmalswerte: { stockwerk: 2 }, spaltenwerte: { 'S-3': 500000 },
+    };
+    const aendere = vi.fn();
+    erfasst.buttons.length = 0;
+    renderToStaticMarkup(
+      <EinheitenTabelle einheiten={[einheit]} spalten={[SPALTE_MIT_REGEL]} merkmale={MERKMALE}
+                        referenzobjekte={REFS} preise={{}} aendere={aendere} />);
+
+    const zuruecksetzenButton = erfasst.buttons.find((b) => b.children === 'zurücksetzen')!;
+    zuruecksetzenButton.onClick();
+
+    expect(aendere).toHaveBeenCalledTimes(1);
+    const [naechsteEinheiten] = aendere.mock.calls[0]! as [readonly typeof einheit[]];
+    const naechsteSpaltenwerte = naechsteEinheiten[0]!.spaltenwerte;
+    expect(Object.prototype.hasOwnProperty.call(naechsteSpaltenwerte, 'S-3')).toBe(false);
+  });
 });
