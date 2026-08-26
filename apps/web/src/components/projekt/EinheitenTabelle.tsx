@@ -40,6 +40,43 @@ export interface EinheitenTabelleProps {
 
 const spalte = createColumnHelper<ProjektEinheit>();
 
+/**
+ * Schreibt einen erfassten Zellwert als Uebersteuerung in `spaltenwerte` — aber nur, wenn
+ * er vom aktuell wirksamen Wert abweicht.
+ *
+ * `ZellenEingabe` meldet beim Verlassen des Feldes unbedingt, auch wenn sich der Entwurf
+ * gegenueber dem Anzeigewert nicht veraendert hat — reines Durchtabben genuegt (siehe
+ * dortiger Kommentar). Fuer eine regelgetriebene Spalte wuerde das den abgeleiteten
+ * Regelwert unveraendert als Uebersteuerung festschreiben: `ermittleWirksamenWert` wiese
+ * `uebersteuert: true` aus, obwohl der Vermarkter nichts entschieden hat, und die Zelle
+ * folgte einer spaeteren Aenderung der firmenweiten Staffel nicht mehr (Review-Finding 1).
+ * Deshalb schreibt diese Funktion nur, wenn der abgelegte Wert vom uebergebenen wirksamen
+ * Wert abweicht.
+ */
+function schreibeUebersteuerung(
+  spalte: AnpassungsSpalte,
+  einheit: ProjektEinheit,
+  wirksamerWert: number,
+  wert: number,
+  ablage: (w: number) => number,
+  setze: (naechste: ProjektEinheit) => void,
+): void {
+  const abgelegt = ablage(wert);
+  if (abgelegt === wirksamerWert) return;
+  setze({ ...einheit, spaltenwerte: { ...einheit.spaltenwerte, [spalte.id]: abgelegt } });
+}
+
+/** Entfernt eine Uebersteuerung wieder aus `spaltenwerte` — danach gilt der Regelwert. */
+function setzeUebersteuerungZurueck(
+  spalte: AnpassungsSpalte,
+  einheit: ProjektEinheit,
+  setze: (naechste: ProjektEinheit) => void,
+): void {
+  const rest = { ...einheit.spaltenwerte };
+  delete rest[spalte.id];
+  setze({ ...einheit, spaltenwerte: rest });
+}
+
 export function EinheitenTabelle(
   {
     einheiten, spalten, merkmale, referenzobjekte, preise, aendere,
@@ -97,10 +134,13 @@ export function EinheitenTabelle(
     //
     // Hier endete frueher die feste Aufzaehlung mit einer Spalte «Stockwerk». Sie war das
     // Gegenbeispiel zur eigenen Regel: ein hart verdrahtetes Merkmal, das in keine Formel
-    // einging und nur Ablesegrundlage fuer die Wahl eines Zu-/Abschlags war. Die
-    // Stockwerklage wird jetzt als Anpassungsspalte erfasst (Vorlagen `attikalage`,
-    // `erdgeschoss_gartensitzplatz`, `erdgeschoss_einsehbar`) und wirkt damit dort, wo sie
-    // gemeint ist: auf den Preis, mit Begruendung und Herkunft in der Offerte.
+    // einging und nur Ablesegrundlage fuer die Wahl eines Zu-/Abschlags war. Das Stockwerk
+    // ist jetzt eine Merkmalsspalte (oben, ueber `merkmale`/`merkmalswerte`) und speist von
+    // dort aus die Bereichsregel der Anpassungsspalte `stockwerklage`: eine Staffel statt
+    // eines festen Faktors, mit Regelspur und Uebersteuerung wie unten dargestellt. Die
+    // Vorlagen `erdgeschoss_gartensitzplatz` und `erdgeschoss_einsehbar` bleiben als
+    // gewoehnliche, regellose Anpassungsspalten bestehen — sie beschreiben Eigenschaften der
+    // Erdgeschosslage, die die Stockwerkstaffel nicht abbildet.
     ...spalten.map((s) => spalte.display({
       id: s.id,
       header: s.erfassungsform === 'absolut' ? `${s.bezeichnung} (CHF)` : `${s.bezeichnung} (%)`,
@@ -118,12 +158,13 @@ export function EinheitenTabelle(
         const ablage = (w: number) => (s.erfassungsform === 'relativ'
           ? prozentZuFaktor(w) : frankenZuRappen(w));
 
-        const schreibe = (wert: number) => setze(info.row.index, {
-          ...einheit,
-          spaltenwerte: { ...einheit.spaltenwerte, [s.id]: ablage(wert) },
-        });
+        const setzeEinheit = (naechste: ProjektEinheit) => setze(info.row.index, naechste);
 
         if (s.regel === undefined) {
+          const schreibe = (wert: number) => setzeEinheit({
+            ...einheit,
+            spaltenwerte: { ...einheit.spaltenwerte, [s.id]: ablage(wert) },
+          });
           return (
             <ZellenEingabe wert={anzeige(einheit.spaltenwerte[s.id] ?? 0)} aendere={schreibe} />
           );
@@ -139,21 +180,23 @@ export function EinheitenTabelle(
           return <span className="text-sm text-muted-foreground">— Merkmal fehlt</span>;
         }
 
-        function setzeZurueck() {
-          const rest = { ...einheit.spaltenwerte };
-          delete rest[s.id];
-          setze(info.row.index, { ...einheit, spaltenwerte: rest });
-        }
-
         return (
           <div>
-            <ZellenEingabe wert={anzeige(wirksam.wert)} aendere={schreibe} />
+            <ZellenEingabe
+              wert={anzeige(wirksam.wert)}
+              aendere={(wert) => schreibeUebersteuerung(s, einheit, wirksam.wert, wert, ablage, setzeEinheit)}
+            />
             {wirksam.uebersteuert === true ? (
               <div className="mt-1 flex items-center gap-1">
                 <span className="text-xs text-muted-foreground">
                   {`übersteuert (Regel: ${String(anzeige(wirksam.regel!.regelwert))})`}
                 </span>
-                <Button type="button" variant="ghost" size="sm" onClick={setzeZurueck}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setzeUebersteuerungZurueck(s, einheit, setzeEinheit)}
+                >
                   zurücksetzen
                 </Button>
               </div>

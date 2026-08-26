@@ -39,7 +39,9 @@ vi.mock('../../../src/components/ui/input.js', () => ({
   },
 }));
 
-import { ableiteMerkmalId, MerkmalEditor } from '../../../src/components/einstellungen/MerkmalEditor.js';
+import {
+  ableiteMerkmalId, MerkmalEditor, naechsteMerkmalId,
+} from '../../../src/components/einstellungen/MerkmalEditor.js';
 
 function merkmal(id: string, bezeichnung: string): Merkmal {
   return { id, bezeichnung, form: 'zahl' };
@@ -59,7 +61,21 @@ describe('MerkmalEditor — Merkmal hinzufuegen', () => {
     const naechste = aendere.mock.calls[0]![0] as readonly Merkmal[];
     expect(naechste).toHaveLength(2);
     expect(naechste[0]).toEqual(merkmal('stockwerk', 'Stockwerk'));
-    expect(naechste[1]).toEqual({ id: ableiteMerkmalId('merkmal 2'), bezeichnung: 'Neues Merkmal', form: 'zahl' });
+    expect(naechste[1]).toEqual({ id: ableiteMerkmalId('merkmal 1'), bezeichnung: 'Neues Merkmal', form: 'zahl' });
+  });
+});
+
+describe('naechsteMerkmalId', () => {
+  it('leitet die Kennung aus der hoechsten vergebenen merkmal_<n>-Kennung ab, nicht aus der '
+    + 'Listenlaenge — sonst kollidiert Hinzufuegen nach Loeschen (Review-Finding 6)', () => {
+      // Zwei hinzufuegen (merkmal_1, merkmal_2), das erste loeschen, wieder hinzufuegen:
+      // `merkmale.length + 1` ergaebe erneut `merkmal_2` und kollidiert mit dem Ueberlebenden.
+      const nachLoeschen = [merkmal('merkmal_2', 'Neues Merkmal')];
+      expect(naechsteMerkmalId(nachLoeschen)).toBe('merkmal_3');
+    });
+
+  it('ignoriert frei benannte Merkmale bei der Nummerierung', () => {
+    expect(naechsteMerkmalId([merkmal('stockwerk', 'Stockwerk')])).toBe('merkmal_1');
   });
 });
 

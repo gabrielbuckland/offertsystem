@@ -1,3 +1,4 @@
+import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -14,6 +15,28 @@ vi.mock('../../../src/components/ui/button.js', () => ({
     return null;
   },
 }));
+
+interface ErfassteZellenEingabe {
+  readonly wert: number;
+  readonly aendere: (wert: number) => void;
+}
+
+// Faengt die an `ZellenEingabe` uebergebenen Props ab, rendert aber die echte Komponente
+// weiter (per `createElement`, nicht per Direktaufruf — sonst liefe deren `useState` ausserhalb
+// des React-Renderbaums). So bleiben alle bestehenden Assertions auf das gerenderte `value=`
+// gueltig, und Finding-1-Tests koennen zusaetzlich `aendere` direkt aufrufen.
+const erfassteZellen = vi.hoisted(() => ({ liste: [] as ErfassteZellenEingabe[] }));
+
+vi.mock('../../../src/components/projekt/ZellenEingabe.js', async (importOriginal) => {
+  const echte = await importOriginal<typeof import('../../../src/components/projekt/ZellenEingabe.js')>();
+  return {
+    ...echte,
+    ZellenEingabe: (props: ErfassteZellenEingabe) => {
+      erfassteZellen.liste.push(props);
+      return createElement(echte.ZellenEingabe, props);
+    },
+  };
+});
 
 import { EinheitenTabelle } from '../../../src/components/projekt/EinheitenTabelle.js';
 
@@ -192,4 +215,42 @@ describe('EinheitenTabelle', () => {
     const naechsteSpaltenwerte = naechsteEinheiten[0]!.spaltenwerte;
     expect(Object.prototype.hasOwnProperty.call(naechsteSpaltenwerte, 'S-3')).toBe(false);
   });
+
+  // Review-Finding 1: `ZellenEingabe` meldet auf Blur unbedingt, auch ohne Aenderung (reines
+  // Durchtabben). Fuer eine regelgetriebene Zelle darf das NICHT stillschweigend eine
+  // Uebersteuerung erzeugen — sonst friert die Zelle ein und eine spaetere Aenderung der
+  // firmenweiten Staffel erreicht die Einheit nie mehr.
+  it('schreibt keine Uebersteuerung, wenn eine regelgetriebene Zelle mit dem angezeigten '
+    + 'Regelwert unveraendert verlassen wird', () => {
+      const einheiten = [{ ...EINHEITEN[0]!, merkmalswerte: { stockwerk: 2 } }];
+      const aendere = vi.fn();
+      erfassteZellen.liste.length = 0;
+      renderToStaticMarkup(
+        <EinheitenTabelle einheiten={einheiten} spalten={[SPALTE_MIT_REGEL]} merkmale={MERKMALE}
+                          referenzobjekte={REFS} preise={{}} aendere={aendere} />);
+
+      // stockwerk=2 faellt in den Restfall (wert: 2'000'000 Rappen = 20'000 Franken).
+      const zelle = erfassteZellen.liste.find((z) => z.wert === 20000)!;
+      zelle.aendere(20000);
+
+      expect(aendere).not.toHaveBeenCalled();
+    });
+
+  it('schreibt eine tatsaechlich veraenderte Eingabe einer regelgetriebenen Zelle weiterhin '
+    + 'als Uebersteuerung', () => {
+      const einheiten = [{ ...EINHEITEN[0]!, merkmalswerte: { stockwerk: 2 } }];
+      const aendere = vi.fn();
+      erfassteZellen.liste.length = 0;
+      renderToStaticMarkup(
+        <EinheitenTabelle einheiten={einheiten} spalten={[SPALTE_MIT_REGEL]} merkmale={MERKMALE}
+                          referenzobjekte={REFS} preise={{}} aendere={aendere} />);
+
+      const zelle = erfassteZellen.liste.find((z) => z.wert === 20000)!;
+      zelle.aendere(15000);
+
+      expect(aendere).toHaveBeenCalledTimes(1);
+      const [naechsteEinheiten] = aendere.mock.calls[0]! as [readonly (typeof einheiten[0])[]];
+      const naechsteSpaltenwerte = naechsteEinheiten[0]!.spaltenwerte as Record<string, number>;
+      expect(naechsteSpaltenwerte['S-3']).toBe(1500000);
+    });
 });

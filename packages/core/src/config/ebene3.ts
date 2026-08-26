@@ -136,6 +136,29 @@ function pruefeAnpassungsVorlagen(konfiguration: RohKonfiguration): Konfiguratio
 }
 
 /**
+ * Analog zur Doppelpruefung in `pruefeAnpassungsVorlagen`: Die Oberflaeche
+ * (`MerkmalEditor.tsx`) verhindert eine Kollision bei der Neuanlage, kann aber eine bereits
+ * gespeicherte Konfiguration nicht rueckwirkend heilen (z. B. nach direkter Bearbeitung der
+ * JSON-Datei). Ohne diese Pruefung wuerden zwei Tabellenspalten denselben
+ * `merkmalswerte`-Schluessel schreiben und React saehe doppelte Keys.
+ */
+function pruefeMerkmale(konfiguration: RohKonfiguration): KonfigurationsFehler[] {
+  const befunde: KonfigurationsFehler[] = [];
+  const gesehen = new Set<string>();
+  konfiguration.merkmale.forEach((merkmal, index) => {
+    if (gesehen.has(merkmal.id)) {
+      befunde.push(fehler('CFG_MERKMAL_DUPLICATE', `merkmale[${index}]`, {
+        index,
+        id: merkmal.id,
+        bedingung: `id '${merkmal.id}' ist doppelt vergeben`,
+      }));
+    }
+    gesehen.add(merkmal.id);
+  });
+  return befunde;
+}
+
+/**
  * Ebene 3 und nicht 2: Die Pruefung blickt ueber das einzelne Feld hinaus — auf die
  * Merkmalsliste, auf die z-Grenzen und auf die Erfassungsform derselben Vorlage.
  *
@@ -187,6 +210,7 @@ export function pruefeEbene3(konfiguration: RohKonfiguration): KonfigurationsFeh
     ...pruefeStrategien(konfiguration),
     ...pruefeFaktorquellen(konfiguration),
     ...pruefeAnpassungsVorlagen(konfiguration),
+    ...pruefeMerkmale(konfiguration),
     ...pruefeBereichsregeln(konfiguration),
   ];
 

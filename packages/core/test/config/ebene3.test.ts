@@ -98,6 +98,27 @@ describe('Ebene 3 — fachliche Invarianten', () => {
     }))).toContain('CFG_TEMPLATE_BOUNDS');
   });
 
+  it('meldet doppelte Merkmalskennungen', () => {
+    // Review-Finding 6: `MerkmalEditor.tsx` verhindert eine Kollision nur bei der
+    // Neuanlage in der Oberflaeche; eine bereits gespeicherte Konfiguration mit doppelter
+    // `id` (z. B. nach direkter Bearbeitung der JSON-Datei) muss beim Laden auffallen.
+    expect(codes(baueKonfiguration((k) => {
+      (k as unknown as { merkmale: unknown[] }).merkmale = [
+        { id: 'stockwerk', bezeichnung: 'Stockwerk', form: 'zahl' },
+        { id: 'stockwerk', bezeichnung: 'Etage', form: 'zahl' },
+      ];
+    }))).toContain('CFG_MERKMAL_DUPLICATE');
+  });
+
+  it('nimmt eindeutige Merkmalskennungen ohne Befund an', () => {
+    expect(codes(baueKonfiguration((k) => {
+      (k as unknown as { merkmale: unknown[] }).merkmale = [
+        { id: 'stockwerk', bezeichnung: 'Stockwerk', form: 'zahl' },
+        { id: 'flaeche', bezeichnung: 'Fläche', form: 'zahl' },
+      ];
+    }))).not.toContain('CFG_MERKMAL_DUPLICATE');
+  });
+
   it('reicht Degressionsbefunde durch', () => {
     expect(codes(baueKonfiguration((k) => { k.honorar.stuetzstellen[1]!.hMax = 5000000; })))
       .toContain('CFG_TIER_DEGRESSION');

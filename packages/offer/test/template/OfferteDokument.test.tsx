@@ -77,8 +77,12 @@ describe('OfferteDokument — Herkunft und Datengetriebenheit', () => {
 describe('OfferteDokument — Regelspur bleibt intern', () => {
   it('nennt die Regelspur NICHT im Dokument — die Offerte geht an den Eigentuemer', () => {
     const offerte = beispiel();
+    // regelwert bewusst verschieden vom eigenen `factor` der Anpassung (-0.03, "Nordlage,
+    // eingeschraenkte Besonnung" weiter unten im Dokument): Waeren beide Werte gleich,
+    // bestaetigte die formatierte Regelwert-Assertion unten nur zufaellig eine legitime,
+    // unabhaengige Zahl im Dokument statt echt die Regelspur zu pruefen.
     offerte.derivation.units[0]!.adjustments[0]!.value.regel = {
-      merkmal: 'stockwerk', merkmalswert: 2, bereich: 2, regelwert: -0.03,
+      merkmal: 'stockwerk', merkmalswert: 2, bereich: 2, regelwert: -0.07,
     };
     offerte.derivation.units[0]!.adjustments[0]!.value.uebersteuert = true;
     const html = renderToStaticMarkup(<OfferteDokument offerte={offerte} />);
@@ -90,5 +94,20 @@ describe('OfferteDokument — Regelspur bleibt intern', () => {
     expect(html).not.toContain('stockwerk');
     expect(html).not.toContain('Bereich');
     expect(html).not.toContain('Regelwert');
+    // Review-Finding 5: Das gesetzte Fixture-Feld selbst wurde bislang von keiner
+    // Assertion geprueft. Ein kuenftiges Template, das ein "übersteuert"-Badge rendert,
+    // haette die drei Assertions oben unberuehrt gelassen — genau die sensibelste
+    // Offenlegung (der Eigentuemer saehe, dass der Vermarkter von der Staffel abgewichen
+    // ist) waere unbemerkt durchgerutscht. `toLowerCase()` faengt sowohl
+    // "übersteuert" als auch "Übersteuert" ohne Abhaengigkeit von der genauen
+    // Gross-/Kleinschreibung einer kuenftigen Formulierung.
+    expect(html.toLowerCase()).not.toContain('bersteuer');
+    // Der Regelwert selbst darf ebenfalls nicht auftauchen — weder unformatiert noch so, wie
+    // er als Prozentzahl gerendert wuerde (`formatiereProzent`, die Erfassungsform hier ist
+    // `relativ`, siehe `a.value.factor`-Assertions oben im File). Unabhaengig vom Wortlaut
+    // eines kuenftigen Badges.
+    const regelwert = offerte.derivation.units[0]!.adjustments[0]!.value.regel.regelwert;
+    expect(html).not.toContain(String(regelwert));
+    expect(html).not.toContain(formatiereProzent(regelwert));
   });
 });

@@ -31,6 +31,22 @@ export function ableiteMerkmalId(bezeichnung: string): string {
   return /^[a-z]/.test(roh) ? roh : `m_${roh}`;
 }
 
+/**
+ * Naechste Kennung fuer ein neu hinzugefuegtes Merkmal, kollisionsfrei ueber den Lebenszyklus
+ * der Liste hinweg — analog zu `erzeugeSpaltenIdFolge` (AnpassungsSpalten.tsx): Ein Zaehler
+ * `merkmale.length + 1` kollidiert, sobald zwischendurch ein Merkmal geloescht wurde (zwei
+ * hinzufuegen, das erste loeschen, wieder hinzufuegen ergibt zweimal `merkmal_2`). Die
+ * Kennung wird deshalb aus der hoechsten bereits vergebenen `merkmal_<n>`-Kennung abgeleitet,
+ * nicht aus der aktuellen Listenlaenge.
+ */
+export function naechsteMerkmalId(merkmale: readonly Merkmal[]): string {
+  const hoechste = merkmale.reduce((max, m) => {
+    const treffer = /^merkmal_(\d+)$/.exec(m.id);
+    return treffer === null ? max : Math.max(max, Number(treffer[1]));
+  }, 0);
+  return ableiteMerkmalId(`merkmal ${hoechste + 1}`);
+}
+
 export function MerkmalEditor({ merkmale, aendere }: MerkmalEditorProps) {
   return (
     <section className="mb-6 space-y-2 rounded-md border border-border p-4">
@@ -45,7 +61,7 @@ export function MerkmalEditor({ merkmale, aendere }: MerkmalEditorProps) {
           type="button"
           variant="outline"
           onClick={() => aendere([...merkmale, {
-            id: ableiteMerkmalId(`merkmal ${merkmale.length + 1}`),
+            id: naechsteMerkmalId(merkmale),
             bezeichnung: 'Neues Merkmal',
             form: 'zahl',
           }])}
