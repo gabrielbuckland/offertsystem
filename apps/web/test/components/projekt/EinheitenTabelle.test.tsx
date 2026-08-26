@@ -34,11 +34,19 @@ const EINHEITEN = [{
   flaecheInnen: 86, flaecheAussen: 19,
   spaltenwerte: {}, merkmalswerte: {},
 }];
+const MERKMALE = [{ id: 'stockwerk', bezeichnung: 'Stockwerk', form: 'zahl' as const }];
+const SPALTE_MIT_REGEL = {
+  id: 'S-3', bezeichnung: 'Zuschlag Stockwerk', erfassungsform: 'absolut' as const,
+  regel: {
+    merkmal: 'stockwerk',
+    bereiche: [{ unter: 1, wert: 0 }, { unter: 2, wert: 1000000 }, { wert: 2000000 }],
+  },
+};
 
 describe('EinheitenTabelle', () => {
   it('fuehrt je konfigurierter Spalte eine Tabellenspalte', () => {
     const html = renderToStaticMarkup(
-      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS}
+      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS} merkmale={[]}
                         preise={{}} aendere={() => undefined} />);
     expect(html).toContain('Zuschlag Etage');
     expect(html).toContain('Aussicht');
@@ -49,14 +57,14 @@ describe('EinheitenTabelle', () => {
   // Ablesegrundlage — und ist heute eine konfigurierbare Anpassungsspalte.
   it('fuehrt keine fest verdrahtete Stockwerk-Spalte', () => {
     const html = renderToStaticMarkup(
-      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS}
+      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS} merkmale={[]}
                         preise={{}} aendere={() => undefined} />);
     expect(html).not.toContain('Stockwerk');
   });
 
   it('zeigt den berechneten Preis, sobald er vorliegt', () => {
     const html = renderToStaticMarkup(
-      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS}
+      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS} merkmale={[]}
                         preise={{ 'E-1': { basispreis: 100_000_00, preis: 105_000_00 } }}
                         aendere={() => undefined} />);
     expect(html).toContain('105');
@@ -64,7 +72,7 @@ describe('EinheitenTabelle', () => {
 
   it('weist einen noch nicht berechneten Preis aus, statt null zu zeigen', () => {
     const html = renderToStaticMarkup(
-      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS}
+      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS} merkmale={[]}
                         preise={{}} aendere={() => undefined} />);
     expect(html).toContain('—');
   });
@@ -77,7 +85,7 @@ describe('EinheitenTabelle', () => {
         spaltenwerte: { 'S-1': 0.05 }, merkmalswerte: {},
       }];
       const html = renderToStaticMarkup(
-        <EinheitenTabelle einheiten={mitFaktor} spalten={SPALTEN} referenzobjekte={REFS}
+        <EinheitenTabelle einheiten={mitFaktor} spalten={SPALTEN} referenzobjekte={REFS} merkmale={[]}
                           preise={{}} aendere={() => undefined} />);
       expect(html).toContain('value="5"');
       expect(html).not.toContain('value="0.05"');
@@ -91,7 +99,7 @@ describe('EinheitenTabelle', () => {
         spaltenwerte: { 'S-2': 1_000_000 }, merkmalswerte: {},
       }];
       const html = renderToStaticMarkup(
-        <EinheitenTabelle einheiten={mitRappen} spalten={SPALTEN} referenzobjekte={REFS}
+        <EinheitenTabelle einheiten={mitRappen} spalten={SPALTEN} referenzobjekte={REFS} merkmale={[]}
                           preise={{}} aendere={() => undefined} />);
       expect(html).toContain('value="10000"');
       expect(html).not.toContain('value="1000000"');
@@ -105,9 +113,37 @@ describe('EinheitenTabelle', () => {
     const aendere = vi.fn();
     erfasst.buttons.length = 0;
     renderToStaticMarkup(
-      <EinheitenTabelle einheiten={zwei} spalten={SPALTEN} referenzobjekte={REFS}
+      <EinheitenTabelle einheiten={zwei} spalten={SPALTEN} referenzobjekte={REFS} merkmale={[]}
                         preise={{}} aendere={aendere} />);
     erfasst.buttons[1]!.onClick();
     expect(aendere).toHaveBeenCalledWith([zwei[0]]);
+  });
+
+  it('fuehrt je konfiguriertem Merkmal eine Tabellenspalte', () => {
+    const html = renderToStaticMarkup(
+      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} merkmale={MERKMALE}
+                        referenzobjekte={REFS} preise={{}} aendere={() => undefined} />);
+    expect(html).toContain('Stockwerk');
+  });
+
+  it('zeigt den aus der Regel abgeleiteten Wert, ohne dass eine Zelle erfasst ist', () => {
+    const einheiten = [{ ...EINHEITEN[0]!, merkmalswerte: { stockwerk: 2 } }];
+    const html = renderToStaticMarkup(
+      <EinheitenTabelle einheiten={einheiten} spalten={[SPALTE_MIT_REGEL]} merkmale={MERKMALE}
+                        referenzobjekte={REFS} preise={{}} aendere={() => undefined} />);
+    // 2'000'000 Rappen -> 20'000 Franken (rappenZuFranken), unformatiert wie `ZellenEingabe`
+    // jeden Zellwert ausgibt (`String(wert)`, kein Tausendertrennzeichen).
+    expect(html).toContain('20000');
+    expect(html).toContain('aus Regel');
+  });
+
+  it('weist eine Uebersteuerung als solche aus', () => {
+    const einheiten = [{
+      ...EINHEITEN[0]!, merkmalswerte: { stockwerk: 2 }, spaltenwerte: { 'S-3': 500000 },
+    }];
+    const html = renderToStaticMarkup(
+      <EinheitenTabelle einheiten={einheiten} spalten={[SPALTE_MIT_REGEL]} merkmale={MERKMALE}
+                        referenzobjekte={REFS} preise={{}} aendere={() => undefined} />);
+    expect(html).toContain('übersteuert');
   });
 });

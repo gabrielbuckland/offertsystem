@@ -19,8 +19,9 @@ import { ZellenEingabe } from './ZellenEingabe.js';
 import {
   faktorZuProzent, frankenZuRappen, prozentZuFaktor, rappenZuFranken,
 } from './zellen-logik.js';
+import { ermittleWirksamenWert } from '../../server/wirksamer-wert.js';
 import type {
-  AnpassungsSpalte, ProjektEinheit, Referenzobjekt,
+  AnpassungsSpalte, Merkmal, ProjektEinheit, Referenzobjekt,
 } from '../../server/projekt-schema.js';
 
 /** `basispreis` ist optional, weil das E-04-Teilergebnis (`honorarAbbruch.positionen`)
@@ -31,6 +32,7 @@ export interface Preis { readonly basispreis?: number; readonly preis: number }
 export interface EinheitenTabelleProps {
   readonly einheiten: readonly ProjektEinheit[];
   readonly spalten: readonly AnpassungsSpalte[];
+  readonly merkmale: readonly Merkmal[];
   readonly referenzobjekte: readonly Referenzobjekt[];
   readonly preise: Readonly<Record<string, Preis>>;
   readonly aendere: (einheiten: readonly ProjektEinheit[]) => void;
@@ -40,7 +42,7 @@ const spalte = createColumnHelper<ProjektEinheit>();
 
 export function EinheitenTabelle(
   {
-    einheiten, spalten, referenzobjekte, preise, aendere,
+    einheiten, spalten, merkmale, referenzobjekte, preise, aendere,
   }: EinheitenTabelleProps,
 ) {
   /** Ersetzt genau eine Einheit; die uebrigen bleiben referenzgleich. */
@@ -71,6 +73,23 @@ export function EinheitenTabelle(
     }),
     zahlenspalte('flaecheInnen', 'Fläche (m²)'),
     zahlenspalte('flaecheAussen', 'Aussenfläche (m²)'),
+    // Je konfiguriertem Merkmal (Projekt.merkmale) eine Zahlenspalte — analog zu
+    // `zahlenspalte` oben, aber ueber `merkmalswerte` statt ueber ein festes Feld der
+    // Einheit. Das Merkmal selbst ist reine Eingabe; ob es irgendwo eine Regel speist,
+    // entscheidet sich erst an der Zu-/Abschlagsspalte weiter unten.
+    ...merkmale.map((m) => spalte.display({
+      id: `merkmal-${m.id}`,
+      header: m.bezeichnung,
+      cell: (info) => (
+        <ZellenEingabe
+          wert={info.row.original.merkmalswerte[m.id] ?? 0}
+          aendere={(wert) => setze(info.row.index, {
+            ...info.row.original,
+            merkmalswerte: { ...info.row.original.merkmalswerte, [m.id]: wert },
+          })}
+        />
+      ),
+    })),
     // Datengetrieben: je konfigurierter Spalte genau eine Tabellenspalte. Eine feste
     // Aufzaehlung machte jede neue Kategorie zu einer Codeaenderung. Ein Einzelfall ohne
     // eigene wiederverwendbare Kategorie bekommt keine eigene Zelle — er ist einfach eine
@@ -86,7 +105,7 @@ export function EinheitenTabelle(
       id: s.id,
       header: s.erfassungsform === 'absolut' ? `${s.bezeichnung} (CHF)` : `${s.bezeichnung} (%)`,
       cell: (info) => {
-        const roh = info.row.original.spaltenwerte[s.id] ?? 0;
+        const einheit = info.row.original;
         // Die Kolonnenkopf-Einheit muss stimmen, denn `spaltenwerte` fuehrt die Rohgroesse
         // des Kerns unveraendert weiter: "(%)" -> `projektion.ts` nimmt den Wert direkt als
         // Faktor (gespeichert bleibt 0.05, angezeigt/erfasst wird 5); "(CHF)" -> der Wert
@@ -94,22 +113,59 @@ export function EinheitenTabelle(
         // also Franken. Beide Kolonnentypen hatten denselben Fehler — nur bei den
         // Franken-Spalten stand er faelschlich als Absicht im Kommentar (Task-11-Review,
         // Finding 2 vs. Fix Round 2).
-        const angezeigt = s.erfassungsform === 'relativ'
-          ? faktorZuProzent(roh)
-          : rappenZuFranken(roh);
+        const anzeige = (w: number) => (s.erfassungsform === 'relativ'
+          ? faktorZuProzent(w) : rappenZuFranken(w));
+        const ablage = (w: number) => (s.erfassungsform === 'relativ'
+          ? prozentZuFaktor(w) : frankenZuRappen(w));
+
+        const schreibe = (wert: number) => setze(info.row.index, {
+          ...einheit,
+          spaltenwerte: { ...einheit.spaltenwerte, [s.id]: ablage(wert) },
+        });
+
+        if (s.regel === undefined) {
+          return (
+            <ZellenEingabe wert={anzeige(einheit.spaltenwerte[s.id] ?? 0)} aendere={schreibe} />
+          );
+        }
+
+        // Die Rangfolge (Uebersteuerung vor Regel, keine Behauptung ohne Beleg bei
+        // fehlendem Merkmalswert) steht an genau einer Stelle (`ermittleWirksamenWert`) —
+        // hier wird nur noch das Ergebnis dargestellt, nicht neu entschieden (I-24).
+        const wirksam = ermittleWirksamenWert(s, einheit);
+        if (wirksam === undefined) {
+          // Kein Merkmalswert: Die Regel kann nichts sagen, und eine 0 waere eine
+          // Behauptung. Das Feld bleibt leer und die Zelle weist den Grund aus (I-24).
+          return <span className="text-sm text-muted-foreground">— Merkmal fehlt</span>;
+        }
+
+        function setzeZurueck() {
+          const rest = { ...einheit.spaltenwerte };
+          delete rest[s.id];
+          setze(info.row.index, { ...einheit, spaltenwerte: rest });
+        }
+
         return (
-          <ZellenEingabe
-            wert={angezeigt}
-            aendere={(eingabe) => setze(info.row.index, {
-              ...info.row.original,
-              spaltenwerte: {
-                ...info.row.original.spaltenwerte,
-                [s.id]: s.erfassungsform === 'relativ'
-                  ? prozentZuFaktor(eingabe)
-                  : frankenZuRappen(eingabe),
-              },
-            })}
-          />
+          <div>
+            <ZellenEingabe wert={anzeige(wirksam.wert)} aendere={schreibe} />
+            {wirksam.uebersteuert === true ? (
+              <div className="mt-1 flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">
+                  {`übersteuert (Regel: ${String(anzeige(wirksam.regel!.regelwert))})`}
+                </span>
+                <Button type="button" variant="ghost" size="sm" onClick={setzeZurueck}>
+                  zurücksetzen
+                </Button>
+              </div>
+            ) : (
+              // `wirksam.regel` ist hier nur gesetzt, wenn die Regel tatsaechlich
+              // ausgewertet wurde (siehe `ermittleWirksamenWert`); ohne Regel im Ergebnis
+              // waere dieser Zweig eine Behauptung ohne Beleg — daher die Bedingung.
+              wirksam.regel !== undefined && (
+                <span className="mt-1 block text-xs text-muted-foreground">aus Regel</span>
+              )
+            )}
+          </div>
         );
       },
     })),

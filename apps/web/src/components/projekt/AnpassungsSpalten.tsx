@@ -129,44 +129,55 @@ export function AnpassungsSpalten(
                   </Select>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-1">
-                    {/*
-                      Angezeigt und erfasst wird die Einheit, in der ein Mensch denkt —
-                      Prozent bei 'relativ', Franken bei 'absolut' —, gespeichert die des
-                      Kerns (Faktor bzw. Rappen). GENAU wie in `EinheitenTabelle`: Der
-                      Vorgabewert wird von dort in dieselbe Groesse uebernommen
-                      (einheiten-generator.ts), zwei verschiedene Skalen fuer dieselbe
-                      Groesse waeren der Fehler, der schon einmal den Faktor 100
-                      verursacht hat.
-                    */}
-                    <ZellenEingabe
-                      // `?? 0`: Eine Spalte mit `regel` hat keinen Vorgabewert (schliesst
-                      // sich im Schema aus); 0 ist hier der neutrale Anzeigewert.
-                      wert={s.erfassungsform === 'relativ'
-                        ? faktorZuProzent(s.vorgabewert ?? 0)
-                        : rappenZuFranken(s.vorgabewert ?? 0)}
-                      aendere={(eingabe) => aktualisiere(s.id, {
-                        vorgabewert: s.erfassungsform === 'relativ'
-                          ? prozentZuFaktor(eingabe)
-                          : frankenZuRappen(eingabe),
-                      })}
-                    />
-                    <span className="text-xs text-muted-foreground">
-                      {s.erfassungsform === 'relativ' ? '%' : 'CHF'}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Wirkt auf neu erzeugte Einheiten.
-                  </p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="mt-1"
-                    onClick={() => uebernehmeAufEinheiten(s.id)}
-                  >
-                    Auf leere Zellen übernehmen
-                  </Button>
+                  {s.regel === undefined ? (
+                    <>
+                      <div className="flex items-center gap-1">
+                        {/*
+                          Angezeigt und erfasst wird die Einheit, in der ein Mensch denkt —
+                          Prozent bei 'relativ', Franken bei 'absolut' —, gespeichert die des
+                          Kerns (Faktor bzw. Rappen). GENAU wie in `EinheitenTabelle`: Der
+                          Vorgabewert wird von dort in dieselbe Groesse uebernommen
+                          (einheiten-generator.ts), zwei verschiedene Skalen fuer dieselbe
+                          Groesse waeren der Fehler, der schon einmal den Faktor 100
+                          verursacht hat.
+                        */}
+                        <ZellenEingabe
+                          wert={s.erfassungsform === 'relativ'
+                            ? faktorZuProzent(s.vorgabewert ?? 0)
+                            : rappenZuFranken(s.vorgabewert ?? 0)}
+                          aendere={(eingabe) => aktualisiere(s.id, {
+                            vorgabewert: s.erfassungsform === 'relativ'
+                              ? prozentZuFaktor(eingabe)
+                              : frankenZuRappen(eingabe),
+                          })}
+                        />
+                        <span className="text-xs text-muted-foreground">
+                          {s.erfassungsform === 'relativ' ? '%' : 'CHF'}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Wirkt auf neu erzeugte Einheiten.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-1"
+                        onClick={() => uebernehmeAufEinheiten(s.id)}
+                      >
+                        Auf leere Zellen übernehmen
+                      </Button>
+                    </>
+                  ) : (
+                    // Schema (`projekt-schema.ts`) schliesst `regel` und `vorgabewert` an
+                    // derselben Spalte aus — ein Eingabefeld hier haette ein Projekt mit
+                    // Regel unspeicherbar gemacht, sobald jemand hineintippt (die
+                    // firmenweite Vorlage `stockwerklage` traegt eine Regel und bringt
+                    // diesen Fall damit in jedes neue Projekt).
+                    <p className="text-xs text-muted-foreground">
+                      Wird von der hinterlegten Regel bestimmt.
+                    </p>
+                  )}
                 </TableCell>
                 <TableCell>
                   <Button

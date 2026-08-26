@@ -198,6 +198,50 @@ describe('AnpassungsSpalten — Vorgabewert in der Einheit des Menschen', () => 
   });
 });
 
+/**
+ * Deckt die Luecke ab, die Task 8's Review fand: `regel` und `vorgabewert` schliessen
+ * sich seit Task 3 im Schema aus (`REGEL_UND_VORGABEWERT`). Vor dieser Aenderung bot die
+ * Tabelle das Vorgabewert-Feld auch fuer eine Spalte mit Regel an — jede Eingabe darin
+ * machte das Projekt unspeicherbar. Erreichbar im normalen Betrieb, weil
+ * `config/company-defaults.json` die regelbehaftete Vorlage `stockwerklage` mitbringt.
+ */
+describe('AnpassungsSpalten — Vorgabewert entfaellt bei einer Spalte mit Regel', () => {
+  const spalteMitRegel: AnpassungsSpalte = {
+    id: 'S-1',
+    bezeichnung: 'Zuschlag Stockwerk',
+    erfassungsform: 'absolut',
+    regel: { merkmal: 'stockwerk', bereiche: [{ wert: 0 }] },
+  };
+
+  it('bietet fuer eine Spalte mit Regel kein Vorgabewert-Eingabefeld an', () => {
+    erfasst.zellen.length = 0;
+    renderToStaticMarkup(
+      <AnpassungsSpalten
+        spalten={[spalteMitRegel]}
+        aendere={vi.fn()}
+        entferneSpalte={vi.fn()}
+        uebernehmeAufEinheiten={vi.fn()}
+      />,
+    );
+
+    expect(erfasst.zellen).toHaveLength(0);
+  });
+
+  it('bietet fuer eine Spalte ohne Regel weiterhin das Vorgabewert-Eingabefeld an', () => {
+    erfasst.zellen.length = 0;
+    renderToStaticMarkup(
+      <AnpassungsSpalten
+        spalten={[spalte('S-1', 'Erste')]}
+        aendere={vi.fn()}
+        entferneSpalte={vi.fn()}
+        uebernehmeAufEinheiten={vi.fn()}
+      />,
+    );
+
+    expect(erfasst.zellen).toHaveLength(1);
+  });
+});
+
 describe('AnpassungsSpalten — eine neue Spalte ist sofort speicherbar', () => {
   it('gibt einer neuen Spalte eine Bezeichnung, statt sie leer zu lassen', () => {
     erfasst.buttons.length = 0;
