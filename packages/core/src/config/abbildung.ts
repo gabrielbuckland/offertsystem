@@ -8,8 +8,9 @@ import { validiereKonfiguration } from './validieren.js';
 import { fehlschlag, ok, type Result } from '../domain/result.js';
 import { gewicht, rappen } from '../domain/geld.js';
 import { faktorId, type FaktorId } from '../domain/ids.js';
+import { normalisiereBereiche } from '../modell/bereichsregel.js';
 import type {
-  FaktorParameter, Faktormenge, Konfiguration, StrategieBezeichner, Stuetzstelle,
+  AnpassungsVorlage, FaktorParameter, Faktormenge, Konfiguration, StrategieBezeichner, Stuetzstelle,
 } from './typen.js';
 
 export interface KonfigurationsAbbildung {
@@ -58,6 +59,22 @@ function bildeFaktorAb(
   return ok([faktorId(bezeichner), parameter] as const);
 }
 
+/**
+ * Uebersetzt eine Rohvorlage in den Kerntyp. Die optionale `regel` darf im Kerntyp nicht
+ * als explizites `undefined` auftreten, nur als fehlender Schluessel (exactOptionalPropertyTypes);
+ * `normalisiereBereiche` traegt dieselbe Umformung fuer die Bereiche selbst.
+ */
+function bildeAnpassungsVorlageAb(
+  roh: RohKonfiguration['anpassungsVorlagen'][number],
+): AnpassungsVorlage {
+  const { regel, ...rest } = roh;
+  if (regel === undefined) return rest;
+  return {
+    ...rest,
+    regel: { merkmal: regel.merkmal, bereiche: normalisiereBereiche(regel.bereiche) },
+  };
+}
+
 function bildeStuetzstelleAb(
   roh: RohKonfiguration['honorar']['stuetzstellen'][number],
   i: number,
@@ -98,7 +115,8 @@ export function parseKonfiguration(
     meta: roh.meta,
     flaeche: roh.flaeche,
     preisanpassung: roh.preisanpassung,
-    anpassungsVorlagen: roh.anpassungsVorlagen,
+    anpassungsVorlagen: roh.anpassungsVorlagen.map(bildeAnpassungsVorlageAb),
+    merkmale: roh.merkmale,
     faktoren: faktoren as Faktormenge,
     honorar: { stuetzstellen, skalierung: roh.honorar.skalierung },
     // `api` und `dossierDefaults` bleiben bewusst aussen vor: Keine Stufe liest sie.

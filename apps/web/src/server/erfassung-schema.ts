@@ -35,6 +35,16 @@ export function erfassungsSchema(k: Konfiguration) {
     erfassterBetrag: z.number().int().optional(),
     begruendung: z.string().trim().min(k.preisanpassung.begruendungMinLaenge),
     vorlageId: z.string().optional(),
+    // Dokumentarisch: Nachweis, aus welcher Regel/Uebersteuerung der Faktor stammt
+    // (`wirksamer-wert.ts`). Fliesst in keine Formel ein, sonst gaebe es eine zweite
+    // Berechnung ueber denselben Wert.
+    regel: z.object({
+      merkmal: z.string().min(1),
+      merkmalswert: z.number(),
+      bereich: z.number().int().nonnegative(),
+      regelwert: z.number(),
+    }).strict().optional(),
+    uebersteuert: z.literal(true).optional(),
   }).strict();
 
   const einheit = z.object({

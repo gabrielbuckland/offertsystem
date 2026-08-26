@@ -3,6 +3,7 @@
 // Die Faktormenge ist eine Abbildung, keine Aufzaehlung im Typsystem (Brief §5.4, I-13).
 import type { Gewicht, Rappen } from '../domain/geld.js';
 import type { FaktorId } from '../domain/ids.js';
+import type { Bereichsregel } from '../modell/bereichsregel.js';
 
 export type FaktorQuelle = 'lagescore' | 'manuell' | 'abgeleitet';
 
@@ -54,11 +55,21 @@ export interface Skalierungsparameter {
   readonly gMax: number; // gMax >= 1
 }
 
+export interface Merkmal {
+  readonly id: string;
+  readonly bezeichnung: string;
+  /** Nur 'zahl': die Bereichssemantik setzt eine Ordnung voraus (Spec, Abgrenzung). */
+  readonly form: 'zahl';
+}
+
 export interface AnpassungsVorlage {
   readonly id: string;
   readonly bezeichnung: string;
   readonly vorgabefaktor: number;
+  readonly erfassungsform: 'relativ' | 'absolut';
   readonly begruendungVorschlag: string;
+  /** Traegt die Vorlage eine Regel, ist `vorgabefaktor` zwingend 0 (Ebene 3). */
+  readonly regel?: Bereichsregel;
 }
 
 export interface KonfigurationsMeta {
@@ -80,6 +91,7 @@ export interface Konfiguration {
   readonly flaeche: { readonly alpha: number }; // I-04
   readonly preisanpassung: PreisanpassungsKonfiguration; // I-06, I-07
   readonly anpassungsVorlagen: readonly AnpassungsVorlage[]; // E-25
+  readonly merkmale: readonly Merkmal[];
   readonly faktoren: Faktormenge;
   readonly honorar: {
     readonly stuetzstellen: readonly Stuetzstelle[]; // aufsteigend, lueckenlos (I-20)

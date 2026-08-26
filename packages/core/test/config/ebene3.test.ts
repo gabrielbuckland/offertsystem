@@ -98,8 +98,110 @@ describe('Ebene 3 — fachliche Invarianten', () => {
     }))).toContain('CFG_TEMPLATE_BOUNDS');
   });
 
+  it('meldet doppelte Merkmalskennungen', () => {
+    // Review-Finding 6: `MerkmalEditor.tsx` verhindert eine Kollision nur bei der
+    // Neuanlage in der Oberflaeche; eine bereits gespeicherte Konfiguration mit doppelter
+    // `id` (z. B. nach direkter Bearbeitung der JSON-Datei) muss beim Laden auffallen.
+    expect(codes(baueKonfiguration((k) => {
+      (k as unknown as { merkmale: unknown[] }).merkmale = [
+        { id: 'stockwerk', bezeichnung: 'Stockwerk', form: 'zahl' },
+        { id: 'stockwerk', bezeichnung: 'Etage', form: 'zahl' },
+      ];
+    }))).toContain('CFG_MERKMAL_DUPLICATE');
+  });
+
+  it('nimmt eindeutige Merkmalskennungen ohne Befund an', () => {
+    expect(codes(baueKonfiguration((k) => {
+      (k as unknown as { merkmale: unknown[] }).merkmale = [
+        { id: 'stockwerk', bezeichnung: 'Stockwerk', form: 'zahl' },
+        { id: 'flaeche', bezeichnung: 'Fläche', form: 'zahl' },
+      ];
+    }))).not.toContain('CFG_MERKMAL_DUPLICATE');
+  });
+
   it('reicht Degressionsbefunde durch', () => {
     expect(codes(baueKonfiguration((k) => { k.honorar.stuetzstellen[1]!.hMax = 5000000; })))
       .toContain('CFG_TIER_DEGRESSION');
+  });
+});
+
+function mitVorlage(vorlage: unknown) {
+  return baueKonfiguration((k) => {
+    (k as unknown as Record<string, unknown>)['merkmale'] =
+      [{ id: 'stockwerk', bezeichnung: 'Stockwerk', form: 'zahl' }];
+    (k as unknown as Record<string, unknown>)['anpassungsVorlagen'] = [vorlage];
+  });
+}
+
+const GUELTIG = {
+  id: 'stockwerklage',
+  bezeichnung: 'Zuschlag Stockwerk',
+  vorgabefaktor: 0,
+  erfassungsform: 'relativ',
+  begruendungVorschlag: 'Zuschlag fuer die Stockwerklage gemaess firmenweiter Staffel.',
+  regel: {
+    merkmal: 'stockwerk',
+    bereiche: [{ unter: 1, wert: 0 }, { unter: 2, wert: 0.05 }, { wert: 0.1 }],
+  },
+};
+
+describe('pruefeEbene3 — Bereichsregeln', () => {
+  it('nimmt eine gueltige Regel an', () => {
+    const befunde = pruefeEbene3(mitVorlage(GUELTIG));
+    expect(befunde.filter((f) => f.code === 'CFG_BEREICHSREGEL')).toEqual([]);
+  });
+
+  it('weist eine Regel auf ein unbekanntes Merkmal zurueck', () => {
+    const befunde = pruefeEbene3(mitVorlage({
+      ...GUELTIG, regel: { ...GUELTIG.regel, merkmal: 'gibtsnicht' },
+    }));
+    expect(befunde.some((f) => f.code === 'CFG_BEREICHSREGEL')).toBe(true);
+  });
+
+  it('weist eine Staffel ohne Restfall zurueck', () => {
+    const befunde = pruefeEbene3(mitVorlage({
+      ...GUELTIG, regel: { merkmal: 'stockwerk', bereiche: [{ unter: 1, wert: 0 }] },
+    }));
+    expect(befunde.some((f) => f.code === 'CFG_BEREICHSREGEL')).toBe(true);
+  });
+
+  it('weist einen relativen Bereichswert ausserhalb der z-Grenzen zurueck', () => {
+    const befunde = pruefeEbene3(mitVorlage({
+      ...GUELTIG,
+      regel: { merkmal: 'stockwerk', bereiche: [{ unter: 1, wert: 0 }, { wert: 9 }] },
+    }));
+    expect(befunde.some((f) => f.code === 'CFG_BEREICHSREGEL')).toBe(true);
+  });
+
+  it('verlangt bei absoluter Erfassungsform ganzzahlige Rappen', () => {
+    const befunde = pruefeEbene3(mitVorlage({
+      ...GUELTIG,
+      erfassungsform: 'absolut',
+      regel: { merkmal: 'stockwerk', bereiche: [{ unter: 1, wert: 0 }, { wert: 10.5 }] },
+    }));
+    expect(befunde.some((f) => f.code === 'CFG_BEREICHSREGEL')).toBe(true);
+  });
+
+  it('weist Regel und Vorgabewert nebeneinander zurueck', () => {
+    const befunde = pruefeEbene3(mitVorlage({ ...GUELTIG, vorgabefaktor: 0.05 }));
+    expect(befunde.some((f) => f.code === 'CFG_BEREICHSREGEL')).toBe(true);
+  });
+
+  it('laesst einen absoluten Bereichswert ausserhalb der z-Grenzen zu (Kontrolle zur Stockwerkstaffel)', () => {
+    // Die z-Grenzen (relativ, [-0.25, 0.25]) duerfen einen absoluten Rappenbetrag nicht
+    // sperren; sonst waere die firmenweite Staffel selbst (860'000/1'720'000 Rappen)
+    // ungueltig. Reale Werte der Vorlage `stockwerklage` in company-defaults.json.
+    const befunde = pruefeEbene3(mitVorlage({
+      ...GUELTIG,
+      erfassungsform: 'absolut',
+      regel: {
+        merkmal: 'stockwerk',
+        bereiche: [
+          { unter: 1, wert: 860000 }, { unter: 2, wert: 0 }, { unter: 3, wert: 860000 },
+          { wert: 1720000 },
+        ],
+      },
+    }));
+    expect(befunde.filter((f) => f.code === 'CFG_BEREICHSREGEL')).toEqual([]);
   });
 });

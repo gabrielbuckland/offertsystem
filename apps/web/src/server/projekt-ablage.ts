@@ -17,6 +17,7 @@ import { join } from 'node:path';
 import type { Konfiguration } from '@offert/core';
 import { projektSchema, SCHEMA_VERSION, type Projekt } from './projekt-schema.js';
 import { vorbelegteSpalten } from './spalten-vorbelegung.js';
+import { vorbelegteMerkmale } from './merkmal-vorbelegung.js';
 
 export interface ProjektEintrag {
   readonly id: string;
@@ -82,6 +83,7 @@ export async function legeProjektAn(
     adresse,
     referenzobjekte: [],
     anpassungsSpalten: vorbelegteSpalten(konfiguration),
+    merkmale: vorbelegteMerkmale(konfiguration),
     einheiten: [],
     aufwandfaktoren: {},
     meta: { erstelltAm: zeitpunkt, geaendertAm: zeitpunkt },

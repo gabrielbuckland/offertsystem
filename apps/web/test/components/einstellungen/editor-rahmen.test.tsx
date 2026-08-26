@@ -96,6 +96,19 @@ describe('rahmenBefunde (Naht Rahmen <-> Feld-Editor)', () => {
     expect(rahmenBefunde([ortlos], ['flaeche', 'preisanpassung', 'anpassungsVorlagen']))
       .toEqual([ortlos]);
   });
+
+  it('zeigt einen Befund auf der Merkmale-Wurzel, seit `merkmale` zu den Praefixen von '
+    + '«Preisanpassung» gehoert (Task 7)', () => {
+    // Regression: `BEREICHE.preisanpassung.praefix` (bereiche.ts) bekam `'merkmale'`
+    // zusaetzlich zu `flaeche`/`preisanpassung`/`anpassungsVorlagen`. Ohne diesen Eintrag
+    // waere ein Befund GENAU auf der Merkmale-Wurzel (z. B. ein Schemafehler auf dem
+    // Schluessel selbst, kein zeilenverankerter `anpassungsVorlagen[i].regel.merkmal`-
+    // Befund) in KEINER Bereichs-Karte sichtbar — der Nutzer saehe nur ein gescheitertes
+    // Speichern ohne jeden Hinweis, woran es lag.
+    const merkmaleWurzel = { pfad: 'merkmale', text: 'Die Merkmalliste ist ungueltig.' };
+    expect(rahmenBefunde([merkmaleWurzel], ['flaeche', 'preisanpassung', 'anpassungsVorlagen', 'merkmale']))
+      .toEqual([merkmaleWurzel]);
+  });
 });
 
 describe('entwurfGeaendert', () => {

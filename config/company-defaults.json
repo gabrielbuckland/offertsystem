@@ -14,12 +14,25 @@
     "begruendungPflicht": true,
     "begruendungMinLaenge": 10
   },
+  "merkmale": [
+    { "id": "stockwerk", "bezeichnung": "Stockwerk", "form": "zahl" }
+  ],
   "anpassungsVorlagen": [
     {
-      "id": "attikalage",
-      "bezeichnung": "Attikawohnung / Dachgeschoss",
-      "vorgabefaktor": 0.1,
-      "begruendungVorschlag": "Attikalage mit erhoehter Aussichtsqualitaet und privater Dachterrasse."
+      "id": "stockwerklage",
+      "bezeichnung": "Zuschlag Stockwerklage",
+      "vorgabefaktor": 0,
+      "erfassungsform": "absolut",
+      "begruendungVorschlag": "Zuschlag fuer die Stockwerklage gemaess firmenweiter Staffel.",
+      "regel": {
+        "merkmal": "stockwerk",
+        "bereiche": [
+          { "unter": 1, "wert": 860000 },
+          { "unter": 2, "wert": 0 },
+          { "unter": 3, "wert": 860000 },
+          { "wert": 1720000 }
+        ]
+      }
     },
     {
       "id": "erdgeschoss_gartensitzplatz",

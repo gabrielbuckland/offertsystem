@@ -81,6 +81,7 @@ export {
   type FaktorQuelle as KernFaktorQuelle,
   type Konfiguration,
   type KonfigurationsMeta,
+  type Merkmal,
   type PreisanpassungsKonfiguration,
   type Referenzverteilung,
   type Skalierungsparameter,
@@ -100,7 +101,7 @@ export * from './domain/ids.js';
 export * from './domain/geld.js';
 export * from './domain/result.js';
 export type { Adresse } from './domain/adresse.js';
-export type { ZuAbschlag } from './domain/zuabschlag.js';
+export type { Regelspur, ZuAbschlag } from './domain/zuabschlag.js';
 export type { Einheit } from './domain/einheit.js';
 export type { RepraesentativeParametrisierung, Wohnungstyp } from './domain/wohnungstyp.js';
 export { erzeugeLiegenschaft } from './domain/liegenschaft.js';
@@ -115,6 +116,13 @@ export type { EingabeFehler, PreisanpassungsGrenzen } from './eingabe/validiere.
 export * from './ports/valuation-provider.js';
 export { alleToleranzen, rangeBreiteToleranz, toleranzFuer } from './config/toleranzen.js';
 export type { InvariantenId, Toleranz } from './config/toleranzen.js';
+// `normalisiereBereiche` ist oeffentlich, weil sie an JEDER Stelle gebraucht wird, die eine
+// Staffel prueft: sie bringt die von Zod inferierte Optionalitaet auf die Domainform, im
+// Kern ebenso wie in der Web-Schicht.
+export {
+  pruefeBereiche, werteBereichsregelAus, normalisiereBereiche,
+  type Bereich, type Bereichsregel, type Bereichstreffer,
+} from './modell/bereichsregel.js';
 export { gewichteteFlaeche } from './modell/flaeche.js';
 export { alleStrategien, loeseStrategieAuf } from './modell/normalisierung.js';
 export type { NormalisierterFaktor, Normalisierungsstrategie } from './modell/normalisierung.js';

@@ -22,8 +22,9 @@ function projekt(): Projekt {
     einheiten: [{
       id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
       flaecheInnen: 86, flaecheAussen: 19,
-      spaltenwerte: { 'S-1': 0.05, 'S-2': 10_000 },
+      spaltenwerte: { 'S-1': 0.05, 'S-2': 10_000 }, merkmalswerte: {},
     }],
+    merkmale: [],
     aufwandfaktoren: { innenausbau_qualitaet: 3 },
     meta: { erstelltAm: '2026-08-24T10:00:00.000Z', geaendertAm: '2026-08-24T10:00:00.000Z' },
   };
@@ -77,4 +78,147 @@ describe('projiziere', () => {
     if (!e.ok) return;
     expect(e.wert.einheiten[0]!.anpassungen).toEqual([]);
   });
+
+  it('leitet eine Position aus der Regel ab, ohne dass ein Spaltenwert erfasst ist', () => {
+    const p = projektMitRegel({ stockwerk: 2 }, {});
+    const ergebnis = projiziere(p, { 'E-1': 100_000_00 });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    const anpassungen = ergebnis.wert.einheiten[0]!.anpassungen;
+    expect(anpassungen).toHaveLength(1);
+    expect(anpassungen[0]!.regel).toEqual({
+      merkmal: 'stockwerk', merkmalswert: 2, bereich: 2, regelwert: 2000000,
+    });
+  });
+
+  it('erzeugt keine Position, wenn der wirksame Wert 0 ist — gleich ob aus Regel oder Zelle', () => {
+    // Der Merkmalswert (3) ist bewusst NICHT 0 — sonst waere dieser Test von einer
+    // Regression ununterscheidbar, die einen falsy Merkmalswert faelschlich als
+    // "fehlend" behandelt (`if (!merkmalswert) ...` statt `=== undefined`). Erst ein
+    // Bereich, dessen TREFFERWERT 0 ist, bei einem Merkmalswert ungleich 0, pinnt "0 ist
+    // ein gueltiges Ergebnis, keine Position" wirklich.
+    const ausRegel = projiziere(
+      projektMitBereichen({ stockwerk: 3 }, {}, [{ unter: 5, wert: 0 }, { wert: 999 }]),
+      { 'E-1': 100_000_00 },
+    );
+    expect(ausRegel.ok && ausRegel.wert.einheiten[0]!.anpassungen).toHaveLength(0);
+
+    const ausZelle = projiziere(projektMitRegel({ stockwerk: 2 }, { 'S-1': 0 }), { 'E-1': 100_000_00 });
+    expect(ausZelle.ok && ausZelle.wert.einheiten[0]!.anpassungen).toHaveLength(0);
+  });
+
+  it('wertet einen Merkmalswert von 0 korrekt aus, statt ihn als fehlend zu behandeln', () => {
+    // Gegenprobe zum vorigen Test: hier ist der MERKMALSWERT 0, der Treffer aber
+    // ungleich 0. Eine Regression, die 0 mit "fehlend" verwechselt, wuerde hier
+    // faelschlich keine Position erzeugen.
+    const p = projektMitBereichen({ stockwerk: 0 }, {}, [{ unter: 1, wert: 500000 }, { wert: 999 }]);
+    const ergebnis = projiziere(p, { 'E-1': 100_000_00 });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    const anpassungen = ergebnis.wert.einheiten[0]!.anpassungen;
+    expect(anpassungen).toHaveLength(1);
+    expect(anpassungen[0]!.regel).toEqual({
+      merkmal: 'stockwerk', merkmalswert: 0, bereich: 0, regelwert: 500000,
+    });
+  });
+
+  it('erzeugt keine Position, wenn der Merkmalswert fehlt', () => {
+    const ergebnis = projiziere(projektMitRegel({}, {}), { 'E-1': 100_000_00 });
+    expect(ergebnis.ok && ergebnis.wert.einheiten[0]!.anpassungen).toHaveLength(0);
+  });
+
+  it('lässt eine erfasste Uebersteuerung trotz fehlendem Merkmalswert nicht verloren gehen', () => {
+    // Bug aus dem Review: `merkmalswert === undefined` darf die bereits erfasste
+    // Uebersteuerung nicht verschlucken — bestehende Spaltenwerte muessen gueltig
+    // bleiben, auch wenn eine Regel neu mit dem Merkmal verknuepft wird und der
+    // Merkmalswert an dieser Einheit (noch) fehlt.
+    const p = projektMitRegel({}, { 'S-1': 500000 });
+    const ergebnis = projiziere(p, { 'E-1': 100_000_00 });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    const anpassungen = ergebnis.wert.einheiten[0]!.anpassungen;
+    expect(anpassungen).toHaveLength(1);
+    expect(anpassungen[0]).not.toHaveProperty('regel');
+    expect(anpassungen[0]).not.toHaveProperty('uebersteuert');
+  });
+
+  it('gibt Uebersteuerung und Regelspur gemeinsam in die Anpassung durch', () => {
+    const p = projektMitRegel({ stockwerk: 1 }, { 'S-1': 500000 });
+    const ergebnis = projiziere(p, { 'E-1': 100_000_00 });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    const anpassung = ergebnis.wert.einheiten[0]!.anpassungen[0]!;
+    expect(anpassung.uebersteuert).toBe(true);
+    expect(anpassung.regel).toEqual({
+      merkmal: 'stockwerk', merkmalswert: 1, bereich: 1, regelwert: 1000000,
+    });
+  });
+
+  it('reicht Regelspur und Uebersteuerung auch bei einer regelgetriebenen relativ-Spalte durch', () => {
+    const p = projektMitRegel({ stockwerk: 2 }, { 'S-1': 0.03 });
+    const relativ = {
+      ...p,
+      anpassungsSpalten: [{ ...p.anpassungsSpalten[0]!, erfassungsform: 'relativ' as const }],
+    };
+    const ergebnis = projiziere(relativ, { 'E-1': 100_000_00 });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    const anpassung = ergebnis.wert.einheiten[0]!.anpassungen[0]!;
+    expect(anpassung.erfassungsform).toBe('relativ');
+    expect(anpassung.faktor).toBe(0.03);
+    expect(anpassung.uebersteuert).toBe(true);
+    expect(anpassung.regel).toEqual({
+      merkmal: 'stockwerk', merkmalswert: 2, bereich: 2, regelwert: 2000000,
+    });
+  });
+
+  it('behaelt die Spaltenreihenfolge bei, auch wenn eine Spalte regelgetrieben ist (NFA-06)', () => {
+    const p = projektMitRegel({ stockwerk: 2 }, { 'S-2': 0.03 });
+    const gemischt = {
+      ...p,
+      anpassungsSpalten: [
+        p.anpassungsSpalten[0]!,
+        { id: 'S-2', bezeichnung: 'Aussicht', erfassungsform: 'relativ' as const, vorgabewert: 0 },
+      ],
+    };
+    const ergebnis = projiziere(gemischt, { 'E-1': 100_000_00 });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    expect(ergebnis.wert.einheiten[0]!.anpassungen.map((a) => a.vorlageId))
+      .toEqual(['S-1', 'S-2']);
+  });
 });
+
+function projektMitRegel(
+  merkmalswerte: Record<string, number>,
+  spaltenwerte: Record<string, number>,
+) {
+  const p = projekt();
+  return {
+    ...p,
+    merkmale: [{ id: 'stockwerk', bezeichnung: 'Stockwerk', form: 'zahl' as const }],
+    anpassungsSpalten: [{
+      id: 'S-1', bezeichnung: 'Zuschlag Stockwerk', erfassungsform: 'absolut' as const,
+      regel: {
+        merkmal: 'stockwerk',
+        bereiche: [{ unter: 1, wert: 0 }, { unter: 2, wert: 1000000 }, { wert: 2000000 }],
+      },
+    }],
+    einheiten: [{ ...p.einheiten[0]!, spaltenwerte, merkmalswerte }],
+  };
+}
+
+/** Wie `projektMitRegel`, aber mit frei waehlbarer Staffel — fuer Faelle, in denen die
+ * konkreten Bereichswerte den Unterschied zwischen "0 als Ergebnis" und "fehlend" tragen
+ * muessen (siehe Tests zum Merkmalswert 0). */
+function projektMitBereichen(
+  merkmalswerte: Record<string, number>,
+  spaltenwerte: Record<string, number>,
+  bereiche: { unter?: number; wert: number }[],
+) {
+  const p = projektMitRegel(merkmalswerte, spaltenwerte);
+  return {
+    ...p,
+    anpassungsSpalten: [{ ...p.anpassungsSpalten[0]!, regel: { merkmal: 'stockwerk', bereiche } }],
+  };
+}

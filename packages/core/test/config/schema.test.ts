@@ -143,4 +143,23 @@ describe('Ebene 1 — Struktur', () => {
     if (ergebnis.success) return;
     expect(ergebnis.error.issues[0]?.path.join('.')).toBe('api.tokenSicherheitsmargeMin');
   });
+
+  it('belegt merkmale und erfassungsform vor, wenn sie in einer gespeicherten Konfiguration fehlen', () => {
+    // Belegt das Kompatibilitaetsversprechen: Ein Artefakt aus `data/`, das vor dieser
+    // Erweiterung geschrieben wurde, hat weder `merkmale` noch `erfassungsform` und muss
+    // ohne Nachbearbeitung gueltig bleiben (E-07 der Anforderung, hier: Vorgabewerte).
+    const ohneMerkmaleUndErfassungsform = structuredClone(minimal) as Record<string, unknown>;
+    delete ohneMerkmaleUndErfassungsform['merkmale'];
+    (ohneMerkmaleUndErfassungsform['anpassungsVorlagen'] as unknown[]).push({
+      id: 'seesicht',
+      bezeichnung: 'Seesicht',
+      vorgabefaktor: 0.05,
+      begruendungVorschlag: 'Ungehinderte Seesicht ab dem zweiten Obergeschoss.',
+    });
+    const ergebnis = RohKonfigurationSchema.safeParse(ohneMerkmaleUndErfassungsform);
+    expect(ergebnis.success).toBe(true);
+    if (!ergebnis.success) return;
+    expect(ergebnis.data.merkmale).toEqual([]);
+    expect(ergebnis.data.anpassungsVorlagen[0]?.erfassungsform).toBe('relativ');
+  });
 });

@@ -239,6 +239,7 @@ export function ProjektAnsicht(
         <EinheitenTabelle
           einheiten={projekt.einheiten}
           spalten={projekt.anpassungsSpalten}
+          merkmale={projekt.merkmale}
           referenzobjekte={projekt.referenzobjekte}
           preise={stand.preise}
           aendere={(einheiten) => aendere({ ...projekt, einheiten: [...einheiten] })}

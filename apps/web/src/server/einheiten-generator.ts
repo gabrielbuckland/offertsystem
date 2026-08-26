@@ -32,13 +32,23 @@ export interface Wunsch {
  *
  * Ein Vorgabewert von 0 wird NICHT eingetragen: `projiziere` ueberspringt ihn ohnehin,
  * und eine Null im Artefakt sieht aus wie eine erfasste Entscheidung, ist aber keine.
+ *
+ * Eine Spalte mit `regel` hat KEINEN Vorgabewert (schliessen sich im Schema aus,
+ * `projekt-schema.ts`) — fuer sie wird nichts vorbelegt.
  */
 function vorbelegteSpaltenwerte(
   spalten: readonly AnpassungsSpalte[],
 ): Record<string, number> {
   const werte: Record<string, number> = {};
   for (const s of spalten) {
-    if (s.vorgabewert !== 0) werte[s.id] = s.vorgabewert;
+    // Eine Spalte mit Regel wird NICHT vorbelegt: Der Spaltenwert ist ab jetzt die
+    // Uebersteuerung der Regel, und eine vorbelegte Uebersteuerung an jeder neuen
+    // Einheit stellte die Regel still, bevor sie je greift. Das Schema schliesst
+    // `regel` und `vorgabewert` zwar bereits gegenseitig aus (`projekt-schema.ts`),
+    // die Bedingung steht trotzdem explizit hier: Sie ist der eigentliche Grund fuer
+    // das Verhalten, nicht ein Nebeneffekt der Schemapruefung.
+    if (s.regel !== undefined) continue;
+    if (s.vorgabewert !== undefined && s.vorgabewert !== 0) werte[s.id] = s.vorgabewert;
   }
   return werte;
 }
@@ -89,6 +99,7 @@ export function erzeugeEinheiten(
         flaecheInnen: 0,
         flaecheAussen: 0,
         spaltenwerte: vorbelegteSpaltenwerte(spalten),
+        merkmalswerte: {},
       });
     }
   }

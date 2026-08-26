@@ -34,7 +34,7 @@ export const BEREICHE = {
     titel: 'Preisanpassung & Vorlagen',
     zweck: 'Gewicht der Aussenflaeche, Grenzen der Zu-/Abschlaege und die '
       + 'Vorlagenliste fuer deren Begruendung.',
-    praefix: ['flaeche', 'preisanpassung', 'anpassungsVorlagen'],
+    praefix: ['flaeche', 'preisanpassung', 'anpassungsVorlagen', 'merkmale'],
     Editor: PreisanpassungEditor,
   },
   faktoren: {

@@ -92,4 +92,73 @@ describe('projektSchema', () => {
     p.einheiten = [];
     expect(projektSchema.safeParse(p).success).toBe(true);
   });
+
+  it('nimmt ein Projekt ohne Merkmale und ohne Regeln an — Bestandsartefakte bleiben gueltig', () => {
+    const p = beispiel();
+    expect(projektSchema.safeParse(p).success).toBe(true);
+    expect(projektSchema.parse(p).merkmale).toEqual([]);
+    expect(projektSchema.parse(p).einheiten[0]!.merkmalswerte).toEqual({});
+  });
+
+  it('nimmt eine Spalte mit gueltiger Bereichsregel an', () => {
+    const p = beispiel();
+    const ergebnis = projektSchema.safeParse({
+      ...p,
+      merkmale: [{ id: 'stockwerk', bezeichnung: 'Stockwerk', form: 'zahl' }],
+      anpassungsSpalten: [{
+        id: 'S-1', bezeichnung: 'Zuschlag Stockwerk', erfassungsform: 'absolut',
+        regel: {
+          merkmal: 'stockwerk',
+          bereiche: [{ unter: 1, wert: 0 }, { wert: 1000000 }],
+        },
+      }],
+      einheiten: [{ ...p.einheiten[0]!, merkmalswerte: { stockwerk: 2 } }],
+    });
+    expect(ergebnis.success).toBe(true);
+  });
+
+  it('weist eine Spalte mit Regel und Vorgabewert zugleich zurueck', () => {
+    const p = beispiel();
+    const ergebnis = projektSchema.safeParse({
+      ...p,
+      merkmale: [{ id: 'stockwerk', bezeichnung: 'Stockwerk', form: 'zahl' }],
+      anpassungsSpalten: [{
+        id: 'S-1', bezeichnung: 'Zuschlag Stockwerk', erfassungsform: 'absolut',
+        vorgabewert: 500,
+        regel: { merkmal: 'stockwerk', bereiche: [{ unter: 1, wert: 0 }, { wert: 1000000 }] },
+      }],
+    });
+    expect(ergebnis.success).toBe(false);
+    if (ergebnis.success) return;
+    expect(JSON.stringify(ergebnis.error.issues)).toContain('REGEL_UND_VORGABEWERT');
+  });
+
+  it('weist eine Staffel ohne Restfall zurueck', () => {
+    const p = beispiel();
+    const ergebnis = projektSchema.safeParse({
+      ...p,
+      merkmale: [{ id: 'stockwerk', bezeichnung: 'Stockwerk', form: 'zahl' }],
+      anpassungsSpalten: [{
+        id: 'S-1', bezeichnung: 'Zuschlag Stockwerk', erfassungsform: 'absolut',
+        regel: { merkmal: 'stockwerk', bereiche: [{ unter: 1, wert: 0 }] },
+      }],
+    });
+    expect(ergebnis.success).toBe(false);
+    if (ergebnis.success) return;
+    expect(JSON.stringify(ergebnis.error.issues)).toContain('BEREICHE_UNGUELTIG');
+  });
+
+  it('weist eine Regel auf ein nicht deklariertes Merkmal zurueck', () => {
+    const p = beispiel();
+    const ergebnis = projektSchema.safeParse({
+      ...p,
+      anpassungsSpalten: [{
+        id: 'S-1', bezeichnung: 'Zuschlag Stockwerk', erfassungsform: 'absolut',
+        regel: { merkmal: 'stockwerk', bereiche: [{ unter: 1, wert: 0 }, { wert: 1000000 }] },
+      }],
+    });
+    expect(ergebnis.success).toBe(false);
+    if (ergebnis.success) return;
+    expect(JSON.stringify(ergebnis.error.issues)).toContain('MERKMAL_UNBEKANNT');
+  });
 });

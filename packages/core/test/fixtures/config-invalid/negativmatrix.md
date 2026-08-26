@@ -14,6 +14,7 @@ Jede Variante traegt genau eine Mutation.
 | `netto-degression-verletzt.json` | starker Wirkpfad des Projektumfangs bei weitem g-Bildbereich kippt eq:netto_degression (I-18) | `CFG_NET_DEGRESSION` |
 | `norm-bounds-equal.json` | min = max fuer einen Faktor; Division durch null in eq:normalisierung (I-10/I-11) | `CFG_NORM_BOUNDS` |
 | `zuschlag-bounds-invalid.json` | zMin = -1 verletzt z_j > -1 (I-06/I-07) | `CFG_ADJUSTMENT_BOUNDS` |
+| `bereichsregel-ohne-restfall.json` | Bereichsregel ohne Restfall (kein Eintrag ohne `unter`) | `CFG_BEREICHSREGEL` |
 
 ## Konstruktiv ausgeschlossen
 

@@ -74,6 +74,95 @@ gebildet **vor** den Zu-/Abschlaegen. Andernfalls wirkten die vom Vermarkter
 gesetzten Anpassungen ueber die Hintertuer auf das Honorar — eine
 Interessenkollision.
 
+## Merkmale und Bereichsregeln
+
+`merkmale` fuehrt firmenweit nummerische Merkmale einer Einheit; bislang nur
+`stockwerk`. Eine `anpassungsVorlage` kann statt eines festen `vorgabefaktor`
+eine `regel` (Bereichsregel, siehe `packages/core/src/modell/bereichsregel.ts`)
+tragen: Sie bildet den Merkmalswert auf einen Zu-/Abschlag ab, gestaffelt statt
+konstant. Die Vorlage `stockwerklage` bildet diese Staffel ab. Der bisherige
+feste Attika-Zuschlag (`attikalage`, `vorgabefaktor: 0.10`) wird dabei
+**ersatzlos gestrichen** und nicht durch die Staffel ersetzt — siehe dazu den
+eigenen Absatz unten.
+
+Die Stufensaetze stammen aus `assets/pricing.xlsx` **im Bericht-Repository**
+(diese Datei liegt nicht in diesem Repository), Blatt `Verkaufspreise`. Der
+massgebliche Satz steht in Zeile 4 (`N4 = 100`) und ist ein Zuschlag **pro
+Quadratmeter**: Spalte L (`Verkaufspreis pro m²`) summiert unter anderem
+Spalte N zum Quadratmeterpreis auf. Spalte N traegt je Stockwerk ein
+Vielfaches dieses Satzes: Erdgeschoss (Zeilen 6/7) `=$N$4` → 1×, 1.
+Obergeschoss (Zeilen 8/9) leer → 0×, 2. Obergeschoss (Zeilen 10/11) `=$N$4`
+→ 1×, 3. Obergeschoss (Zeile 12) `=$N$4*2` → 2×. Der Nullpunkt der Staffel
+liegt damit beim 1. Obergeschoss und nicht beim Erdgeschoss: Das Excel selbst
+verwendet das 1. OG bereits als seinen Nullpunkt (0×), weil alle
+Referenzbewertungen fuer eine «3.5-ZWG mit 86 m² im 1. OG» erhoben sind. Die
+Vielfachen aus Spalte N sind damit bereits die Abweichungen von diesem
+Referenzpunkt und uebertragen sich eins zu eins auf die Bereichsregel — ohne
+weitere Umrechnung des Nullpunkts.
+
+Das System kennt keine `erfassungsform: "chf_pro_quadratmeter"` — die
+Abgrenzung des Konzepts laesst nur `relativ` (Faktor auf den Referenzwert)
+und `absolut` (fester Rappenbetrag) zu. Der Quadratmetersatz wird deshalb auf
+der Referenzflaeche der Bewertungen in einen festen Betrag umgerechnet:
+100 CHF/m² × 86 m² = 8600 CHF = 860 000 Rappen; das 2×-Band betraegt
+entsprechend 1 720 000 Rappen. **Das ist eine akzeptierte Naeherung, keine
+Nachbildung des Excel-Ergebnisses:** Weil `absolut` einen festen Rappenbetrag
+und keinen Betrag pro Quadratmeter fuehrt, wird der Zuschlag
+flaechenunabhaengig. Eine 120 m² grosse Attikawohnung erhaelt damit ebenfalls
+pauschal +17 200 CHF, waehrend das Excel anteilig rund +24 000 CHF ergaebe
+(100 CHF/m² × 120 m² × 2×). Der Fehler waechst mit der Abweichung der
+Einheitenflaeche von den 86 m² der Referenz. Die Naeherung wird in Kauf
+genommen, weil das System bewusst keine `chf_pro_quadratmeter`-Erfassungsform
+fuehrt (Abgrenzung oben) und die Bereichsregel deshalb nur zwischen `relativ`
+und `absolut` waehlen kann. `stockwerk` zaehlt **0-basiert** (Erdgeschoss = 0)
+und bildet damit direkt auf PriceHubbles `floorNumber` ab (siehe
+`dossierBody()` in `packages/pricehubble/src/acl/bewertungMapper.ts`).
+
+Die resultierende Staffel: Erdgeschoss +8600 CHF, 1. Obergeschoss 0 CHF
+(Referenzpunkt), 2. Obergeschoss +8600 CHF, ab dem 3. Obergeschoss (Restfall)
++17 200 CHF. Eine Bereichsregel ist eine Wertetabelle und darf nicht-monotone
+Werte fuehren; das 1. OG als Senke zwischen zwei hoeheren Stockwerken ist
+damit exakt darstellbar, ohne dass der Kern eine Sonderregel fuer diesen
+Fall braucht. Die Vorlagen `erdgeschoss_gartensitzplatz` und
+`erdgeschoss_einsehbar` bleiben unveraendert bestehen: Sie beschreiben
+Eigenschaften der Erdgeschosslage, die die Stockwerkstaffel nicht abbildet.
+
+**Der Attika-Zuschlag entfaellt, er wird nicht ersetzt.** `attikalage` war ein
+Zuschlag von +10 % fuer Aussichtsqualitaet und eine private Dachterrasse — ein
+Faktor auf den Referenzwert, motiviert durch Ausstattungsmerkmale der
+Wohnung. Die Stockwerkstaffel ist ein fixer Betrag von +17 200 CHF fuer die
+Stockwerklage als solche, eine andere Groesse mit einer anderen Begruendung
+und, bei typischen Referenzwerten, einer anderen Groessenordnung. Sie
+schreibt den Attika-Zuschlag nicht fort und ersetzt ihn nicht funktional. Mit
+dem Wegfall von `attikalage` fehlt der Standardkonfiguration ab sofort jede
+Abbildung der Aussichts- und Terrassenqualitaet des obersten Geschosses; der
+in der Abgrenzung dieses Entwurfs erwaehnte Terrassenzuschlag
+(`833 × Aussenflaeche / Innenflaeche`) bleibt wie dort festgehalten
+Handeingabe und wird durch nichts hier automatisiert. Ob ein
+Aussichts-/Ausstattungszuschlag fuer das oberste Geschoss in anderer Form
+zurueckkehren soll, ist ein offener Punkt fuer den Auftraggeber (siehe unten)
+und keine Festlegung dieser Konfiguration.
+
+**Der Nullpunkt der Staffel ist an die Parametrisierung der Referenzbewertung
+gekoppelt und wird nicht gegengeprueft.** Die Referenzbewertung wird bei
+PriceHubble mit `floorNumber = parametrisierung.stockwerk` bepreist
+(`dossierBody()`, siehe oben) — der Referenz-Basispreis spiegelt also bereits
+das Stockwerk, mit dem das Referenzobjekt parametrisiert wurde. Die Staffel
+setzt ihren eigenen Nullpunkt unabhaengig davon fest bei `stockwerk ∈ [1, 2)`
+(1. Obergeschoss). Beide Werte stimmen in dieser Konfiguration nur ueberein,
+weil jedes Referenzobjekt der mitgelieferten Fixtures mit `stockwerk: 1`
+parametrisiert ist. Waere ein Referenzobjekt stattdessen auf dem Erdgeschoss
+parametrisiert, priest PriceHubble bereits das Erdgeschoss ein, und die
+Staffel addierte fuer eine Erdgeschoss-Einheit zusaetzlich +8600 CHF — eine
+Doppelzaehlung derselben Stockwerklage, einmal im Referenz-Basispreis und
+einmal im Zuschlag. `merkmalswerte.stockwerk` (je Einheit) und
+`parametrisierung.stockwerk` (je Referenzobjekt) sind unabhaengige Felder
+ohne Querpruefung; das System stellt heute nicht sicher, dass der
+Staffel-Nullpunkt mit dem Parametrisierungs-Stockwerk der jeweils
+referenzierten Referenzbewertung uebereinstimmt. Eine Level-3- oder gar
+projektuebergreifende Validierung dieser Konsistenz ist bewusst nicht Teil
+dieser Konfiguration und als eigener Entscheid zu fuehren.
+
 ## Weitere Skalarparameter
 
 | Parameter | Wert | Begruendung |

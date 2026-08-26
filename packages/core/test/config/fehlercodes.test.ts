@@ -7,9 +7,12 @@ import {
 } from '../../src/config/fehlercodes.js';
 
 describe('CFG-Namensraum', () => {
-  it('deckt alle 23 Ladezeitcodes aus Spec 02 §3.0 ab', () => {
-    expect(CFG_CODES).toHaveLength(23);
-    expect(new Set(CFG_CODES).size).toBe(23);
+  it('deckt alle 25 Ladezeitcodes aus Spec 02 §3.0 ab', () => {
+    // 24 + `CFG_MERKMAL_DUPLICATE` (Review-Finding 6, Ebene 3): Ebene 3 prueft seither auch
+    // die Merkmalsliste auf doppelte Kennungen, analog zur bestehenden Pruefung doppelter
+    // Vorlagenbezeichner in `pruefeAnpassungsVorlagen`.
+    expect(CFG_CODES).toHaveLength(25);
+    expect(new Set(CFG_CODES).size).toBe(25);
     for (const code of CFG_CODES) expect(code.startsWith('CFG_')).toBe(true);
   });
 

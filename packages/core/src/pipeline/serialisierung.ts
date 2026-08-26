@@ -10,6 +10,7 @@ import { fehlschlag, ok, type Result } from '../domain/result.js';
 import {
   validiereLiegenschaftEingabe, type EingabeFehler,
 } from '../eingabe/validiere.js';
+import { normalisiereBereiche } from '../modell/bereichsregel.js';
 import type {
   FaktorParameter, Konfiguration, Stuetzstelle,
 } from '../config/typen.js';
@@ -34,6 +35,7 @@ export function serialisiereKonfiguration(k: Konfiguration): unknown {
     flaeche: k.flaeche,
     preisanpassung: k.preisanpassung,
     anpassungsVorlagen: k.anpassungsVorlagen,
+    merkmale: k.merkmale,
     faktoren: paare(k.faktoren).map(([id, p]) => [id, p]),
     honorar: {
       stuetzstellen: k.honorar.stuetzstellen.map((s) => ({ v: s.v, hMin: s.hMin, hMax: s.hMax })),
@@ -62,8 +64,20 @@ const KonfigurationsKopieSchema = z.object({
   }),
   anpassungsVorlagen: z.array(z.object({
     id: z.string(), bezeichnung: z.string(),
-    vorgabefaktor: z.number(), begruendungVorschlag: z.string(),
+    vorgabefaktor: z.number(),
+    // Vorgabe 'relativ' haelt aeltere serialisierte Eingaenge lesbar (I-14 unberuehrt:
+    // sie tragen ohnehin keine Regel, also keine Doppeldeutigkeit).
+    erfassungsform: z.enum(['relativ', 'absolut']).default('relativ'),
+    begruendungVorschlag: z.string(),
+    regel: z.object({
+      merkmal: z.string(),
+      bereiche: z.array(z.object({ unter: z.number().optional(), wert: z.number() })),
+    }).optional(),
   })),
+  // Vorgabe leer haelt aeltere serialisierte Eingaenge ohne Merkmale lesbar.
+  merkmale: z.array(z.object({
+    id: z.string(), bezeichnung: z.string(), form: z.literal('zahl'),
+  })).default([]),
   faktoren: z.array(z.tuple([z.string(), z.object({
     grenzeMin: z.number(), grenzeMax: z.number(), gewicht: z.number(),
     strategie: z.enum(['min-max', 'z-score']),
@@ -112,9 +126,16 @@ export function deserialisiereKonfiguration(
     }
     stuetzstellen.push({ v: rappen(s.v), hMin: rappen(s.hMin), hMax: rappen(s.hMax) });
   }
+  // exactOptionalPropertyTypes: `regel` darf im Kerntyp nicht als explizites `undefined`
+  // auftreten, nur als fehlender Schluessel (analog abbildung.ts).
+  const anpassungsVorlagen = k.anpassungsVorlagen.map((vorlage) => {
+    const { regel, ...rest } = vorlage;
+    if (regel === undefined) return rest;
+    return { ...rest, regel: { merkmal: regel.merkmal, bereiche: normalisiereBereiche(regel.bereiche) } };
+  });
   return ok({
     meta: k.meta, flaeche: k.flaeche, preisanpassung: k.preisanpassung,
-    anpassungsVorlagen: k.anpassungsVorlagen, faktoren,
+    anpassungsVorlagen, merkmale: k.merkmale, faktoren,
     honorar: { stuetzstellen, skalierung: k.honorar.skalierung },
     ...(k.konfigPruefsumme === undefined ? {} : { konfigPruefsumme: k.konfigPruefsumme }),
   });

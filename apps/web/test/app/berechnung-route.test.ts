@@ -27,7 +27,7 @@ async function vorbereitetesProjekt() {
     einheiten: [{
       id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
       flaecheInnen: 86, flaecheAussen: 19,
-      spaltenwerte: {},
+      spaltenwerte: {}, merkmalswerte: {},
     }],
     aufwandfaktoren: { innenausbau_qualitaet: 3 },
   }, v);
@@ -60,7 +60,7 @@ async function projektMitFrankenAnpassung() {
     einheiten: [{
       id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
       flaecheInnen: 86, flaecheAussen: 19,
-      spaltenwerte: { 'S-1': 10_000 },
+      spaltenwerte: { 'S-1': 10_000 }, merkmalswerte: {},
     }],
     aufwandfaktoren: { innenausbau_qualitaet: 3 },
   }, v);

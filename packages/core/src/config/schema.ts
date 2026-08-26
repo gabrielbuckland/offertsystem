@@ -47,11 +47,31 @@ const PreisanpassungSchema = z.object({
   begruendungMinLaenge: z.number(),
 }).strict();
 
+const BereichSchema = z.object({
+  unter: z.number().optional(),
+  wert: z.number(),
+}).strict();
+
+const BereichsregelSchema = z.object({
+  merkmal: z.string().regex(BEZEICHNER_MUSTER),
+  bereiche: z.array(BereichSchema),
+}).strict();
+
+const MerkmalSchema = z.object({
+  id: z.string().regex(BEZEICHNER_MUSTER),
+  bezeichnung: z.string().min(1),
+  form: z.literal('zahl'),
+}).strict();
+
 const AnpassungsVorlageSchema = z.object({
   id: z.string().regex(BEZEICHNER_MUSTER),
   bezeichnung: z.string().min(1),
   vorgabefaktor: z.number(),
+  // Vorgabe 'relativ' haelt bestehende Konfigurationsdateien gueltig; sie ist genau das,
+  // was `spalten-vorbelegung.ts` bisher fest verdrahtet hat.
+  erfassungsform: z.enum(['relativ', 'absolut']).default('relativ'),
   begruendungVorschlag: z.string(),
+  regel: BereichsregelSchema.optional(),
 }).strict();
 
 const ReferenzverteilungSchema = z.object({
@@ -151,6 +171,7 @@ export const RohKonfigurationSchema = z.object({
   flaeche: FlaecheSchema,
   preisanpassung: PreisanpassungSchema,
   anpassungsVorlagen: z.array(AnpassungsVorlageSchema),
+  merkmale: z.array(MerkmalSchema).default([]),
   // Abbildung Faktorbezeichner -> Parameter, KEINE Aufzaehlung (Brief §5.4, I-13).
   aufwandfaktoren: z.record(z.string().regex(BEZEICHNER_MUSTER), FaktorSchema),
   honorar: HonorarSchema,

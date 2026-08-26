@@ -11,6 +11,7 @@
  * Menge ist und nicht ueber einen einzelnen Wert (I-01).
  */
 import { z } from 'zod';
+import { normalisiereBereiche, pruefeBereiche } from '@offert/core';
 
 export const SCHEMA_VERSION = 1;
 
@@ -38,12 +39,51 @@ const referenzobjektSchema = z.object({
   }).strict().optional(),
 }).strict();
 
-const anpassungsSpalteSchema = z.object({
+const bereichSchema = z.object({
+  unter: z.number().optional(),
+  wert: z.number(),
+}).strict();
+
+const bereichsregelSchema = z.object({
+  merkmal: z.string().min(1),
+  bereiche: z.array(bereichSchema),
+}).strict().superRefine((r, ctx) => {
+  // Dieselbe Definition wie in der Konfigurationspruefung: `pruefeBereiche` ist die
+  // einzige Stelle, an der die Staffelinvarianten stehen (Kern, bereichsregel.ts).
+  // `normalisiereBereiche` bringt die von Zod inferierte Optionalitaet (`unter?: number |
+  // undefined`) auf die Domainform (`unter?: number`) — dasselbe Muster wie in
+  // `config/ebene3.ts` im Kern.
+  for (const grund of pruefeBereiche(normalisiereBereiche(r.bereiche))) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom, path: ['bereiche'],
+      params: { regel: 'BEREICHE_UNGUELTIG' }, message: grund,
+    });
+  }
+});
+
+const merkmalSchema = z.object({
+  id: z.string().min(1),
+  bezeichnung: z.string().trim().min(1),
+  form: z.literal('zahl'),
+}).strict();
+
+// Eigener Name fuer das reine Objektschema: Sobald `refine` angehaengt ist, wird daraus
+// ein `ZodEffects`, auf dem `.omit()`/`.pick()`/`.partial()`/`.extend()` nicht mehr
+// existieren. Der exportierte Name traegt die Pruefung, dieser bleibt frei fuer
+// Objekt-Operationen, falls spaetere Tasks welche brauchen.
+const anpassungsSpalteObjektSchema = z.object({
   id: z.string().min(1),
   bezeichnung: z.string().trim().min(1),
   erfassungsform: z.enum(['relativ', 'absolut']),
-  vorgabewert: z.number(),
+  // Optional, weil eine Spalte mit Regel keinen Vorgabewert traegt.
+  vorgabewert: z.number().optional(),
+  regel: bereichsregelSchema.optional(),
 }).strict();
+
+const anpassungsSpalteSchema = anpassungsSpalteObjektSchema.refine(
+  (s) => !(s.regel !== undefined && s.vorgabewert !== undefined),
+  { message: 'REGEL_UND_VORGABEWERT' },
+);
 
 const einheitSchema = z.object({
   id: z.string().min(1),
@@ -56,6 +96,9 @@ const einheitSchema = z.object({
   // Liste der Zu-/Abschlaege. `.strict()` weist ein Artefakt mit dem frueheren Feld
   // deshalb ab; abgelegte Projekte wurden einmalig bereinigt (siehe Worklog).
   spaltenwerte: z.record(z.number()),
+  // Werte der Merkmale (`Projekt.merkmale`), auf denen eine Bereichsregel steht.
+  // `.default({})` haelt bestehende Artefakte ohne dieses Feld gueltig (I-24).
+  merkmalswerte: z.record(z.number()).default({}),
 }).strict();
 
 export const projektSchema = z.object({
@@ -76,6 +119,7 @@ export const projektSchema = z.object({
   baujahr: z.number().int().optional(),
   referenzobjekte: z.array(referenzobjektSchema),
   anpassungsSpalten: z.array(anpassungsSpalteSchema),
+  merkmale: z.array(merkmalSchema).default([]),
   einheiten: z.array(einheitSchema),
   aufwandfaktoren: z.record(z.number()),
   meta: z.object({
@@ -134,9 +178,23 @@ export const projektSchema = z.object({
       }
     }
   }
+
+  const bekannteMerkmale = new Set(p.merkmale.map((m) => m.id));
+  p.anpassungsSpalten.forEach((s, i) => {
+    if (s.regel !== undefined && !bekannteMerkmale.has(s.regel.merkmal)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['anpassungsSpalten', i, 'regel', 'merkmal'],
+        params: { regel: 'MERKMAL_UNBEKANNT', merkmal: s.regel.merkmal },
+        message: 'MERKMAL_UNBEKANNT',
+      });
+    }
+  });
 });
 
 export type Projekt = z.infer<typeof projektSchema>;
 export type Referenzobjekt = z.infer<typeof referenzobjektSchema>;
 export type AnpassungsSpalte = z.infer<typeof anpassungsSpalteSchema>;
 export type ProjektEinheit = z.infer<typeof einheitSchema>;
+export type Merkmal = z.infer<typeof merkmalSchema>;
+export type Bereichsregel = z.infer<typeof bereichsregelSchema>;

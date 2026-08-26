@@ -8,7 +8,9 @@ import {
   baueLiegenschaft,
 } from '../bau/berechnung-bauer.js';
 
-function eingang(optionen: { anpassungMitVorlage?: string | undefined } = {}): OfferteEingang {
+function eingang(
+  optionen: { anpassungMitVorlage?: string | undefined; anpassungMitRegelspur?: boolean } = {},
+): OfferteEingang {
   return {
     ergebnis: baueBerechnungsErgebnis(optionen),
     liegenschaft: baueLiegenschaft(optionen),
@@ -64,6 +66,24 @@ describe('baueOfferte — Vorlagenherkunft (PE-07, A-13)', () => {
   it('laesst vorlageId bei einer frei erfassten Anpassung weg, statt sie zu erfinden', () => {
     const o = baueOfferte(eingang({ anpassungMitVorlage: undefined }));
     expect(o.derivation.units[0]!.adjustments[0]!.value).not.toHaveProperty('vorlageId');
+  });
+});
+
+describe('baueOfferte — Regelspur im Artefakt (Task 6, A-13)', () => {
+  it('reicht Regelspur und Uebersteuerung einer Anpassung bis ins Artefakt durch', () => {
+    const o = baueOfferte(eingang({ anpassungMitRegelspur: true }));
+    const wert = o.derivation.units[0]!.adjustments[0]!.value;
+    expect(wert.regel).toEqual({
+      merkmal: 'stockwerk', merkmalswert: 2, bereich: 2, regelwert: -0.03,
+    });
+    expect(wert.uebersteuert).toBe(true);
+  });
+
+  it('laesst regel/uebersteuert weg, wenn die Anpassung keine Regelspur traegt', () => {
+    const o = baueOfferte(eingang());
+    const wert = o.derivation.units[0]!.adjustments[0]!.value;
+    expect(wert).not.toHaveProperty('regel');
+    expect(wert).not.toHaveProperty('uebersteuert');
   });
 });
 

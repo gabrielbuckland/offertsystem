@@ -92,6 +92,11 @@ function baueEinheiten(e: OfferteEingang): unknown[] {
         // traegt die Kennung; daran haengt die Unterscheidung «aus Vorlage / veraendert
         // / frei erfasst» (PE-07, A-13).
         ...(a.vorlageId === undefined ? {} : { vorlageId: a.vorlageId }),
+        // Regel und Uebersteuerung: dokumentarisch, weglassen statt erfinden, wie
+        // vorlageId. Die Offerte fuehrt sie fuer die Nachvollziehbarkeit (A-13); das
+        // gerenderte Dokument nennt sie bewusst nicht (siehe adjustmentSchema).
+        ...(a.regel === undefined ? {} : { regel: a.regel }),
+        ...(a.uebersteuert === undefined ? {} : { uebersteuert: a.uebersteuert }),
       }, 'marketer-adjustment')),
       adjustmentSum: herkunft(p.anpassungssumme, 'marketer-adjustment'),
       unitPrice: herkunft(p.preis, 'local-derivation'),
