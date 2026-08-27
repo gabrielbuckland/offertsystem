@@ -54,6 +54,13 @@ export {
 
 export { HerkunftsBlock, HerkunftsWert } from './template/HerkunftsWert.js';
 export { OfferteDokument } from './template/OfferteDokument.js';
+export { VermarktungsOfferte } from './template/VermarktungsOfferte.js';
+
+// M-10: Kein weiterer Re-Export aus `vorlage/*` hier. Der Index zieht laut Kommentar
+// unten (`druckeOfferte`) React/`.tsx` in den Graphen und darf aus Node-Kontexten
+// gerade DESHALB nicht importiert werden (PE-09); ein Grep über apps/tools/packages
+// zeigt, dass alle Aufrufer der Vorlagen-/Platzhalter-/Auflösungsfunktionen ohnehin
+// ueber die Modulpfade importieren (Global Constraint), nie ueber diesen Index.
 
 /*
  * `druckeOfferte` steht BEWUSST NICHT hier, abweichend vom Plan. Der Drucker zieht

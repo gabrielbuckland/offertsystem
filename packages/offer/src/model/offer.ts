@@ -18,6 +18,7 @@
  */
 import { z } from 'zod';
 import { provenancedSchema } from './provenance.js';
+import { aufgeloestesDokumentSchema } from '../vorlage/dokument-schema.js';
 
 const rappen = z.number().int().finite();              // ganzzahlig: R1, R2, R3
 const rappenGenau = z.number().finite();               // ungerundeter Zwischenwert
@@ -187,12 +188,26 @@ export const offerMetadataSchema = z.object({
   berechnungsEingabe: z.record(z.unknown()),
 }).strict();
 
+/**
+ * Kundengerichteter Offerttext (Spec 2026-08-27 §1): das Ergebnis der
+ * Platzhalter-Auflösung, NIE die Vorlage — das Artefakt ist selbsttragend und hängt
+ * nicht vom Vorlagen- oder Renderer-Stand ab (US-13). Optional, damit vor dieser
+ * Erweiterung abgelegte Artefakte gültig bleiben (I-24). `auftraggeber` steht hier und
+ * nicht im Offert-Kern, weil er Empfängerangabe des Dokuments ist, keine Rechengrösse.
+ */
+export const offertDokumentBlockSchema = z.object({
+  inhalt: aufgeloestesDokumentSchema,
+  vorlageVersion: z.string().min(1),
+  auftraggeber: z.string().min(1).optional(),
+}).strict();
+
 export const offerSchema = z.object({
   project: projectDataSchema,
   property: propertyDataSchema,
   derivation: priceDerivationSchema,
   aggregates: aggregateValuesSchema,
   metadata: offerMetadataSchema,
+  dokument: offertDokumentBlockSchema.optional(),
 }).strict();
 
 export type Offer = z.infer<typeof offerSchema>;
@@ -201,6 +216,7 @@ export type PropertyData = z.infer<typeof propertyDataSchema>;
 export type PriceDerivation = z.infer<typeof priceDerivationSchema>;
 export type AggregateValues = z.infer<typeof aggregateValuesSchema>;
 export type OfferMetadata = z.infer<typeof offerMetadataSchema>;
+export type OffertDokumentBlock = z.infer<typeof offertDokumentBlockSchema>;
 export type Adjustment = z.infer<typeof adjustmentSchema>;
 export type TierTrace = z.infer<typeof tierTraceSchema>;
 export type EffortFactorTrace = z.infer<typeof effortFactorTraceSchema>;

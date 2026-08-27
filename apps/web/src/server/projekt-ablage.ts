@@ -15,6 +15,7 @@ import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Konfiguration } from '@offert/core';
+import { schreibeAtomar } from './ablage-helfer.js';
 import { projektSchema, SCHEMA_VERSION, type Projekt } from './projekt-schema.js';
 import { vorbelegteSpalten } from './spalten-vorbelegung.js';
 import { vorbelegteMerkmale } from './merkmal-vorbelegung.js';
@@ -40,17 +41,6 @@ let letzterZeitpunkt = 0;
 function jetzt(): string {
   letzterZeitpunkt = Math.max(Date.now(), letzterZeitpunkt + 1);
   return new Date(letzterZeitpunkt).toISOString();
-}
-
-async function schreibeAtomar(ziel: string, inhalt: string): Promise<void> {
-  const temp = `${ziel}.${randomUUID()}.tmp`;
-  await fs.writeFile(temp, inhalt, 'utf8');
-  try {
-    await fs.rename(temp, ziel);
-  } catch (fehler) {
-    await fs.rm(temp, { force: true });
-    throw fehler;
-  }
 }
 
 export async function speichereProjekt(projekt: Projekt, verzeichnis: string): Promise<Projekt> {

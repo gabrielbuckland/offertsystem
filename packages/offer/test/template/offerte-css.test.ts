@@ -9,9 +9,9 @@ describe('offerte.css — ein Stylesheet, ein Renderpfad', () => {
     expect(CSS).toContain('.offerte');
   });
 
-  it('kennt kein zweites Druck-Stylesheet', () => {
+  it('kennt kein drittes Stylesheet', () => {
     const dateien = readdirSync(new URL('../../src/template/', import.meta.url));
-    expect(dateien.filter((d) => d.endsWith('.css'))).toEqual(['offerte.css']);
+    expect(dateien.filter((d) => d.endsWith('.css')).sort()).toEqual(['offerte.css', 'vermarktungsofferte.css']);
   });
 
   it('verhindert Umbrueche in Einheitszeilen und Herkunftsbloecken', () => {

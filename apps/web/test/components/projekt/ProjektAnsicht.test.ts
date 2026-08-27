@@ -25,13 +25,25 @@ describe('ProjektAnsicht — Berechnung ist gekettet, nicht parallel', () => {
   it('stellt die Berechnung aus dem Erfolgspfad des Speicherns ein', () => {
     // `verwendeProjekt(anfang, rueckruf)` — der zweite Parameter ist der Erfolgspfad des
     // PUT (siehe `aufErfolg` in verwende-projekt.ts). Die Warteschlange selbst lebt seit
-    // Task 8 in `verwende-berechnung.ts`; hier wird nur noch deren `stelleEin` verkettet.
-    expect(quelle).toMatch(
-      /verwendeProjekt\(\s*anfang,\s*\(gespeichert\) => \{ stelleEin\(gespeichert\); \},/);
+    // Task 8 in `verwende-berechnung.ts`; hier wird nur noch deren `stelleEin` verkettet
+    // (I-1: neu unter einer Bedingung, siehe naechster Test).
+    expect(quelle).toMatch(/verwendeProjekt\(\s*anfang,\s*\(gespeichert\) => \{/);
+    expect(quelle).toMatch(/stelleEin\(gespeichert\);/);
   });
 
   it('reagiert nicht mehr auf den Projektstand als Effektabhaengigkeit', () => {
     // Ein `useEffect(..., [projekt])` waere der alte, parallele Ausloeser.
     expect(quelle).not.toMatch(/\}, \[projekt\]\)/);
+  });
+
+  it('ueberspringt die Berechnung, wenn sich nur rechenirrelevante Felder aendern (I-1)', () => {
+    // `nurRechenirrelevanteFelderGeaendert` (projekt-rechenrelevanz.ts) ist die reine
+    // Weiche dahinter — hier wird nur die Verdrahtung geprueft: der Aufruf sitzt im
+    // Erfolgspfad des Speicherns, VOR dem `stelleEin`-Aufruf.
+    expect(quelle).toMatch(/nurRechenirrelevanteFelderGeaendert\(/);
+    const stelleEinIndex = quelle.indexOf('stelleEin(gespeichert);');
+    const weicheIndex = quelle.indexOf('nurRechenirrelevanteFelderGeaendert(');
+    expect(weicheIndex).toBeGreaterThan(-1);
+    expect(weicheIndex).toBeLessThan(stelleEinIndex);
   });
 });

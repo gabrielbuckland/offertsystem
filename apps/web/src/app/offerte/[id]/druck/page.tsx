@@ -3,7 +3,7 @@
  * (AK-2.1). Das Bereitschaftssignal `data-druck-bereit="true"` steht bereits im
  * serverseitig erzeugten Markup und ist deshalb ohne Zeitlimit pruefbar.
  */
-import { OfferteDokument } from '@offert/offer';
+import { OfferteDokument, VermarktungsOfferte } from '@offert/offer';
 import { verzeichnisAusLaufzeit } from '../../../../server/laufzeit.js';
 import { ladeOfferte } from '../../../../server/offerten-ablage.js';
 
@@ -14,5 +14,7 @@ export default async function DruckSeite({ params }: { params: Promise<{ id: str
   // `ladeOfferte` prueft gegen offerSchema; ein verletzendes Artefakt wird nicht
   // teilweise dargestellt (I-24).
   const offerte = await ladeOfferte(id, verzeichnisAusLaufzeit());
-  return <OfferteDokument offerte={offerte} />;
+  return offerte.dokument === undefined
+    ? <OfferteDokument offerte={offerte} />
+    : <VermarktungsOfferte offerte={offerte} />;
 }
