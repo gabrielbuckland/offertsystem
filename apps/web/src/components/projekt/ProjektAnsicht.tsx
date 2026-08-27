@@ -23,7 +23,7 @@
  * seinen Ausschnitt und ruft dafuer `aendere` mit dem VOLLEN Projekt auf, damit die
  * Persistenz an einer einzigen Stelle (PUT) bleibt.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import type { OffertKonfiguration } from '@offert/core';
@@ -32,6 +32,7 @@ import type { Projekt } from '../../server/projekt-schema.js';
 import type { Faktorformular } from '../../server/faktorformular.js';
 import { verwendeProjekt } from './verwende-projekt.js';
 import { verwendeBerechnung } from './verwende-berechnung.js';
+import { nurRechenirrelevanteFelderGeaendert } from './projekt-rechenrelevanz.js';
 import { ProjektBasisinformationen } from './ProjektBasisinformationen.js';
 import { Referenzobjekte } from './Referenzobjekte.js';
 import { EinheitenGenerator } from './EinheitenGenerator.js';
@@ -125,15 +126,28 @@ export function ProjektAnsicht(
    * ueberspringt und erst bei der uebernaechsten nachzieht — und, schwerer, als Offerte,
    * die etwas anderes ausweist als der Bildschirm zeigte. Eine laengere Entprellung
    * haette das Fenster nur verkleinert, nicht geschlossen.
+   *
+   * I-1: Nicht JEDER erfolgreiche Speichervorgang loest die Berechnung aus — nur einer,
+   * der mindestens ein rechenrelevantes Feld aendert (`nurRechenirrelevanteFelderGeaendert`,
+   * projekt-rechenrelevanz.ts). `letzterStand` haelt dafuer den zuletzt GESPEICHERTEN
+   * Stand fest (nicht den zuletzt BERECHNETEN) — reine Text-/Auftraggeber-Aenderungen im
+   * Offerttext-Editor speichern weiterhin, loesen aber keinen Bewertungsabruf mehr aus.
    */
+  const letzterStand = useRef<Projekt>(anfang);
   const { projekt, aendere, speichernLaeuft, speichernFehler } = verwendeProjekt(
     anfang,
-    (gespeichert) => { stelleEin(gespeichert); },
+    (gespeichert) => {
+      const nurTextGeaendert = nurRechenirrelevanteFelderGeaendert(letzterStand.current, gespeichert);
+      letzterStand.current = gespeichert;
+      if (nurTextGeaendert) return;
+      stelleEin(gespeichert);
+    },
   );
 
   // Einmalig beim Betreten der Seite: Der geladene Stand liegt bereits auf der Platte, es
   // gibt also kein Speichern, an das sich diese erste Berechnung haengen koennte.
   useEffect(() => {
+    letzterStand.current = anfang;
     stelleEin(anfang);
   }, [anfang, stelleEin]);
 
