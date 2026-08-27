@@ -9,17 +9,40 @@
 import { useEffect, useState } from 'react';
 import type { OffertDokument } from '@offert/offer/src/vorlage/dokument-schema.js';
 import { OffertTextEditor } from './OffertTextEditor.js';
+import { Hinweis } from '../ui/hinweis.js';
 
 interface Vorlage { readonly version: string; readonly inhalt: OffertDokument }
 
 export function VorlagenEditorSeite() {
   const [vorlage, setzeVorlage] = useState<Vorlage | undefined>(undefined);
+  const [ladeFehler, setzeLadeFehler] = useState(false);
   const [befunde, setzeBefunde] = useState<readonly { pfad: string; text: string }[]>([]);
   const [status, setzeStatus] = useState<'' | 'gespeichert' | 'fehler'>('');
 
   useEffect(() => {
-    void fetch('/api/vorlage').then((a) => a.json()).then(setzeVorlage);
+    // I-4: `a.ok` geprueft, statt eine 500-Fehlerseite unbemerkt durchfallen zu lassen —
+    // sonst blieb die Seite bei einem defekten Vorlagenartefakt kommentarlos leer, weil
+    // `vorlage.inhalt` `undefined` als `content` an TipTap ging bzw. `a.json()` warf.
+    void fetch('/api/vorlage')
+      .then((a) => {
+        if (!a.ok) throw new Error('vorlage-ladefehler');
+        return a.json() as Promise<Vorlage>;
+      })
+      .then(setzeVorlage)
+      .catch(() => setzeLadeFehler(true));
   }, []);
+
+  if (ladeFehler) {
+    return (
+      <main className="mx-auto max-w-3xl p-6">
+        <h1 className="mb-4 text-lg font-semibold">Offertvorlage</h1>
+        <Hinweis art="fehler">
+          Die Offerttext-Vorlage konnte nicht geladen werden. Bitte Verbindung prüfen
+          und Seite neu laden.
+        </Hinweis>
+      </main>
+    );
+  }
   if (vorlage === undefined) return null;
 
   return (

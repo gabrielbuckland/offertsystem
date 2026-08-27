@@ -6,11 +6,11 @@
  * Die Vorversion wandert zeitgestempelt nach `backups/` neben der Datei — kein
  * Versionsverlauf, nur die Ruecksprungmarke fuer den Auftraggeber (Spec §6).
  */
-import { randomUUID } from 'node:crypto';
 import { constants as fsKonstanten } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { validiereKonfiguration, type KonfigurationsFehler } from '@offert/core';
+import { schreibeAtomar } from './ablage-helfer.js';
 import { KONFIG_VORLAGEN, uebersetzeKonfigFehler } from './fehlertexte.js';
 import { ladeKonfiguration, leereZwischenspeicher } from './konfigurations-lader.js';
 
@@ -18,17 +18,6 @@ export type EinstellungsBefund = { readonly pfad: string; readonly text: string 
 export type SchreibErgebnis =
   | { readonly ok: true; readonly pruefsumme: string }
   | { readonly ok: false; readonly befunde: readonly EinstellungsBefund[] };
-
-async function schreibeAtomar(ziel: string, inhalt: string): Promise<void> {
-  const temp = `${ziel}.${randomUUID()}.tmp`;
-  await fs.writeFile(temp, inhalt, 'utf8');
-  try {
-    await fs.rename(temp, ziel);
-  } catch (fehler) {
-    await fs.rm(temp, { force: true });
-    throw fehler;
-  }
-}
 
 function istUebersetzbar(code: string): code is keyof typeof KONFIG_VORLAGEN {
   return Object.hasOwn(KONFIG_VORLAGEN, code);

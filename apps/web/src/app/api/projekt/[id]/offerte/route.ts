@@ -48,9 +48,26 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
       // Platzhalter-Auflösung beim Finalisieren (Spec 2026-08-27 §2): Das Artefakt
       // trägt den aufgelösten Text; ein unauflösbarer Platzhalter erzeugt KEIN
       // Artefakt (I-24), sondern eine benannte Meldung an den Vermarkter.
-      const projekt = await ladeProjekt(id, laufzeit.wert.projekteVerzeichnis);
+      //
+      // I-4: `ladeProjekt` (bei einem zwischenzeitlich verschwundenen/defekten
+      // Projektartefakt) und `ladeVorlage` (jetzt ein `Ergebnis`, siehe vorlagen-ablage.ts)
+      // koennen beide fehlschlagen; ohne diesen Fang traege das eine unbehandelte 500,
+      // obwohl die Route fuer jeden anderen Fehlerpfad hier eine benannte Meldung fuehrt.
+      let projekt;
+      try {
+        projekt = await ladeProjekt(id, laufzeit.wert.projekteVerzeichnis);
+      } catch {
+        return Response.json({
+          fehler: { text: `Projekt ${id} nicht gefunden.` },
+        }, { status: 404 });
+      }
       const vorlage = await ladeVorlage(laufzeit.wert.umgebung.offertVorlagePfad);
-      const inhalt = projekt.offertText ?? vorlage.inhalt;
+      if (!vorlage.ok) {
+        return Response.json({
+          fehler: { text: `Die Offerttext-Vorlage ist beschädigt (${vorlage.meldung}).` },
+        }, { status: 500 });
+      }
+      const inhalt = projekt.offertText ?? vorlage.wert.inhalt;
       let aufgeloest;
       try {
         aufgeloest = loeseDokumentAuf(
@@ -73,7 +90,7 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
         ...lauf.offerte,
         dokument: {
           inhalt: aufgeloest,
-          vorlageVersion: vorlage.version,
+          vorlageVersion: vorlage.wert.version,
           ...(projekt.auftraggeber === undefined ? {}
             : { auftraggeber: projekt.auftraggeber }),
         },
