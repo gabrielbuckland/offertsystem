@@ -3,7 +3,7 @@
  * erweitert. Es gibt keine separate «Detailansicht» mit eigener Datenzusammenstellung —
  * zwei Aufbereitungen koennten auseinanderlaufen, ohne dass ein Test es saehe.
  */
-import { OfferteDokument, type Offer } from '@offert/offer';
+import { OfferteDokument, VermarktungsOfferte, type Offer } from '@offert/offer';
 
 export function ErgebnisDarstellung({ offerte }: { offerte: Offer }) {
   return (
@@ -13,7 +13,19 @@ export function ErgebnisDarstellung({ offerte }: { offerte: Offer }) {
         <a href={`/projekte/${offerte.project.projektId}`}>Zurück zum Projekt</a>
         <a href="/projekte">Übersicht</a>
       </nav>
-      <OfferteDokument offerte={offerte} />
+      {offerte.dokument === undefined ? (
+        // Alt-Artefakt aus der Zeit vor dem Dokumentblock: unverändert darstellen (I-24).
+        <OfferteDokument offerte={offerte} />
+      ) : (
+        <>
+          <VermarktungsOfferte offerte={offerte} />
+          {/* Rechenweg nur im Tool (Benutzerentscheid 2026-08-27), nicht im Dokument. */}
+          <details className="bedienelement">
+            <summary>Rechenweg (intern)</summary>
+            <OfferteDokument offerte={offerte} />
+          </details>
+        </>
+      )}
     </div>
   );
 }
