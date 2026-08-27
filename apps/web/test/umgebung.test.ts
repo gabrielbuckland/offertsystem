@@ -24,10 +24,12 @@ describe('leseUmgebung', () => {
     expect(isAbsolute(ergebnis.wert.companyDefaultsPfad)).toBe(true);
     expect(existsSync(ergebnis.wert.companyDefaultsPfad)).toBe(true);
     expect(isAbsolute(ergebnis.wert.offertenVerzeichnis)).toBe(true);
+    expect(isAbsolute(ergebnis.wert.offertVorlagePfad)).toBe(true);
 
     // Die Vorgabe darf nicht ins Paketverzeichnis der Zugriffsschicht zeigen.
     expect(ergebnis.wert.companyDefaultsPfad).not.toMatch(/apps[/\\]web/);
     expect(ergebnis.wert.offertenVerzeichnis).not.toMatch(/apps[/\\]web/);
+    expect(ergebnis.wert.offertVorlagePfad).not.toMatch(/apps[/\\]web/);
   });
 
   it('weist einen unbekannten Schalterwert zurueck', () => {
