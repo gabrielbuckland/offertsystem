@@ -164,18 +164,31 @@ export const aufgeloestesDokumentSchema: z.ZodType<AufgeloestesDokument> = baueB
   textSchema, [preistabelleSchema],
 );
 
+/** Ein Platzhalter-Vorkommen im Dokument, mit der Knotenart, in der es steht (M-1):
+ *  `platzhalter` (inline, im Fliesstext) oder `platzhalterTabelle` (block, eigener
+ *  Absatz). Beide Katalogeinträge können denselben Text `id` tragen (z. B.
+ *  `preistabelle`), sind aber NICHT austauschbar — die Auflösung (aufloesung.ts)
+ *  kennt `preistabelle` ausschliesslich als Blockknoten. Ohne die Knotenart wäre eine
+ *  Prüfung gegen den Katalog blind für diesen Unterschied. */
+export interface PlatzhalterVorkommen {
+  readonly id: string;
+  readonly art: 'inline' | 'block';
+}
+
 /** Reihenfolge des Auftretens, `platzhalterTabelle` erscheint als `preistabelle` — die
  *  ID, unter der sie im Katalog und im Einfügemenü geführt wird. */
-export function sammlePlatzhalterIds(dokument: OffertDokument): readonly string[] {
-  const ids: string[] = [];
+export function sammlePlatzhalterIds(dokument: OffertDokument): readonly PlatzhalterVorkommen[] {
+  const vorkommen: PlatzhalterVorkommen[] = [];
   const besuche = (knoten: unknown): void => {
     if (Array.isArray(knoten)) { knoten.forEach(besuche); return; }
     if (typeof knoten !== 'object' || knoten === null) return;
     const k = knoten as { type?: string; attrs?: { id?: string }; content?: unknown };
-    if (k.type === 'platzhalter' && k.attrs?.id !== undefined) ids.push(k.attrs.id);
-    if (k.type === 'platzhalterTabelle') ids.push('preistabelle');
+    if (k.type === 'platzhalter' && k.attrs?.id !== undefined) {
+      vorkommen.push({ id: k.attrs.id, art: 'inline' });
+    }
+    if (k.type === 'platzhalterTabelle') vorkommen.push({ id: 'preistabelle', art: 'block' });
     besuche(k.content);
   };
   besuche(dokument.content);
-  return ids;
+  return vorkommen;
 }

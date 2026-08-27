@@ -11,9 +11,9 @@ describe('standardVorlage', () => {
   });
 
   it('verwendet ausschliesslich Katalog-Platzhalter', () => {
-    const katalog = new Set(PLATZHALTER_KATALOG.map((e) => e.id));
-    for (const id of sammlePlatzhalterIds(standardVorlage())) {
-      expect(katalog.has(id)).toBe(true);
+    const katalog = new Set<string>(PLATZHALTER_KATALOG.map((e) => e.id));
+    for (const vorkommen of sammlePlatzhalterIds(standardVorlage())) {
+      expect(katalog.has(vorkommen.id)).toBe(true);
     }
   });
 
@@ -24,9 +24,10 @@ describe('standardVorlage', () => {
       expect(text).toContain(titel);
     }
     // Kernplatzhalter der Neubau-Vermarktung sind eingebunden.
+    const vorkommen = sammlePlatzhalterIds(standardVorlage());
     for (const id of ['ort', 'anzahlEinheiten', 'verkaufssumme',
       'honorarMin', 'honorarMax', 'preistabelle', 'auftraggeber']) {
-      expect(sammlePlatzhalterIds(standardVorlage())).toContain(id);
+      expect(vorkommen.some((v) => v.id === id)).toBe(true);
     }
     // Kein Mieter-/Umnutzungsrest aus dem Beispiel.
     expect(text).not.toContain('Mieter');

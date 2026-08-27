@@ -38,9 +38,12 @@ describe('offertDokumentSchema', () => {
     expect(offertDokumentSchema.safeParse(fremd).success).toBe(false);
   });
 
-  it('sammelt Platzhalter-IDs inklusive Tabelle', () => {
+  it('sammelt Platzhalter-IDs inklusive Tabelle, mit Knotenart (M-1)', () => {
     expect(sammlePlatzhalterIds(offertDokumentSchema.parse(MINIMAL)))
-      .toEqual(['ort', 'preistabelle']);
+      .toEqual([
+        { id: 'ort', art: 'inline' },
+        { id: 'preistabelle', art: 'block' },
+      ]);
   });
 });
 

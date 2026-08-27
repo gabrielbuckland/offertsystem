@@ -31,7 +31,13 @@ export interface PlatzhalterWerte {
   readonly preistabelle: readonly PreisZeile[];
 }
 
-export const PLATZHALTER_KATALOG: readonly { id: string; bezeichnung: string }[] = [
+// M-1: `preistabelle` ist im Katalog gelistet, aber KEIN Mitglied von
+// `TEXT_PLATZHALTER` — sie ist der Block-Platzhalter (`platzhalterTabelle`), nicht ein
+// Text-Platzhalter. Der Typ macht das sichtbar, statt beide unter einem `string` zu
+// vermischen; die Unterscheidung nach Knotenart trifft `sammlePlatzhalterIds`
+// (dokument-schema.ts) beim Speichern (vorlagen-ablage.ts).
+export const PLATZHALTER_KATALOG:
+  readonly { id: TextPlatzhalterId | 'preistabelle'; bezeichnung: string }[] = [
   { id: 'adresse', bezeichnung: 'Adresse der Liegenschaft' },
   { id: 'ort', bezeichnung: 'Ortschaft' },
   { id: 'auftraggeber', bezeichnung: 'Auftraggeber' },

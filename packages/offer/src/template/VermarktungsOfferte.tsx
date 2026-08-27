@@ -42,8 +42,12 @@ function BlockKnoten({ knoten }: { knoten: AufgeloesterBlock }) {
         <ul>
           {knoten.content.map((li, i) => (
             <li key={i}>
+              {/* M-8: In <p> gewickelt — das Schema laesst mehrere Absaetze je
+                  Listenpunkt zu (z.array(paragraph).min(1)); ohne umschliessendes
+                  Element verschmolzen zwei Absaetze zu einem zusammenhaengenden
+                  Textlauf. */}
               {li.content.map((p, j) => (
-                <Inhalt key={j} inline={p.content} />
+                <p key={j}><Inhalt inline={p.content} /></p>
               ))}
             </li>
           ))}
@@ -55,7 +59,7 @@ function BlockKnoten({ knoten }: { knoten: AufgeloesterBlock }) {
           {knoten.content.map((li, i) => (
             <li key={i}>
               {li.content.map((p, j) => (
-                <Inhalt key={j} inline={p.content} />
+                <p key={j}><Inhalt inline={p.content} /></p>
               ))}
             </li>
           ))}

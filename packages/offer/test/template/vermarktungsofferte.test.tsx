@@ -47,4 +47,31 @@ describe('VermarktungsOfferte', () => {
       <VermarktungsOfferte offerte={baueBeispielOfferte()} />,
     )).toThrowError('Offerte ohne Dokument');
   });
+
+  it('haelt mehrere Absaetze eines Listenpunkts als eigene <p> auseinander (M-8)', () => {
+    // Vorher standen beide Absaetze ohne umschliessendes Element im <li> und
+    // verschmolzen zu einem zusammenhaengenden Textlauf — das Schema laesst mehrere
+    // Absaetze je Listenpunkt aber ausdruecklich zu (`z.array(paragraph).min(1)`).
+    const offerte = {
+      ...baueBeispielOfferte(),
+      dokument: {
+        inhalt: {
+          type: 'doc' as const,
+          content: [{
+            type: 'bulletList' as const,
+            content: [{
+              type: 'listItem' as const,
+              content: [
+                { type: 'paragraph' as const, content: [{ type: 'text' as const, text: 'Erster Absatz' }] },
+                { type: 'paragraph' as const, content: [{ type: 'text' as const, text: 'Zweiter Absatz' }] },
+              ],
+            }],
+          }],
+        },
+        vorlageVersion: '1',
+      },
+    };
+    const html = renderToStaticMarkup(<VermarktungsOfferte offerte={offerte} />);
+    expect(html).toContain('<li><p>Erster Absatz</p><p>Zweiter Absatz</p></li>');
+  });
 });
