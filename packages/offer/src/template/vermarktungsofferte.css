@@ -1,0 +1,66 @@
+/* packages/offer/src/template/vermarktungsofferte.css
+   Stil nach der realen Primus-Offerte (Theme aus Offerte Beispiel.docx):
+   Akzent #832025 (Titel/Überschriften), Nebentext #7F7F7F, Flächen #F2F2F2,
+   Schrift Source Sans Pro. Eigene Schriftfestlegung wie .offerte in offerte.css,
+   damit die Anwendungs-UI unberührt bleibt. */
+.vermarktungsofferte {
+  font-family: 'Source Sans Pro', 'Segoe UI', sans-serif;
+  color: #1a1a1a;
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+  line-height: 1.5;
+}
+.vermarktungsofferte__kopf { margin-bottom: 2rem; }
+.vermarktungsofferte h1 {
+  color: #832025;
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+}
+.vermarktungsofferte__objekt { font-size: 1.15rem; margin: 0 0 1rem; }
+.vermarktungsofferte__angaben {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.15rem 1.25rem;
+  margin: 0;
+  color: #7f7f7f;
+}
+.vermarktungsofferte__angaben dt { font-weight: 600; }
+.vermarktungsofferte__angaben dd { margin: 0; }
+.vermarktungsofferte h2 {
+  color: #832025;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 1.75rem 0 0.5rem;
+  counter-increment: vo-h2;
+}
+.vermarktungsofferte h2::before { content: counter(vo-h2, upper-roman) '. '; }
+.vermarktungsofferte { counter-reset: vo-h2; }
+.vermarktungsofferte h3 {
+  color: #832025;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.35rem;
+}
+.vermarktungsofferte p { margin: 0.5rem 0; }
+.vermarktungsofferte ul, .vermarktungsofferte ol { margin: 0.5rem 0 0.75rem 1.4rem; }
+.vermarktungsofferte .preistabelle {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0 1rem;
+}
+.vermarktungsofferte .preistabelle th {
+  background: #832025;
+  color: #ffffff;
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+}
+.vermarktungsofferte .preistabelle td {
+  padding: 0.35rem 0.6rem;
+  border-bottom: 1px solid #f2f2f2;
+}
+.vermarktungsofferte .preistabelle tr:nth-child(even) td { background: #f8f8f8; }
+@media print {
+  .vermarktungsofferte { max-width: none; padding: 0; }
+}
