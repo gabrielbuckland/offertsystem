@@ -12,6 +12,89 @@
  */
 import { z } from 'zod';
 
+/**
+ * Handgeschriebene Typen für das Dokumentschema. Diese Interfaces ermöglichen
+ * präzise Typen statt `any` — die generische `baueBloecke`-Funktion kann
+ * TypeScript nicht genug Kontextinformation geben, um Knotenstrukturen zu
+ * inferieren (wegen der variablen Inline-/Blockbestandteile). Mit expliziten
+ * Interfaces werden die Zod-Schemas so annotiert, dass `z.infer` echte Typen
+ * produziert.
+ */
+
+// Inline-Knotentypen (Text-Level)
+export interface TextKnoten {
+  readonly type: 'text';
+  readonly text: string;
+  readonly marks?: readonly { readonly type: 'bold' | 'italic' }[];
+}
+
+export interface PlatzhalterInline {
+  readonly type: 'platzhalter';
+  readonly attrs: { readonly id: string };
+}
+
+// Block-Knotentypen (generisch über ihren Inline-Bestand)
+export interface Absatz<I> {
+  readonly type: 'paragraph';
+  readonly content?: readonly I[];
+}
+
+export interface Ueberschrift<I> {
+  readonly type: 'heading';
+  readonly attrs: { readonly level: 1 | 2 | 3 };
+  readonly content?: readonly I[];
+}
+
+export interface ListenPunkt<I> {
+  readonly type: 'listItem';
+  readonly content: readonly Absatz<I>[];
+}
+
+export interface AufzaehlListe<I> {
+  readonly type: 'bulletList';
+  readonly content: readonly ListenPunkt<I>[];
+}
+
+export interface NummernListe<I> {
+  readonly type: 'orderedList';
+  readonly content: readonly ListenPunkt<I>[];
+}
+
+export interface PlatzhalterTabelle {
+  readonly type: 'platzhalterTabelle';
+}
+
+export interface Preistabelle {
+  readonly type: 'preistabelle';
+  readonly attrs: { readonly zeilen: readonly PreisZeile[] };
+}
+
+// Verbundtypen: alle Blöcke einer bestimmten Editierbarkeit
+export type EditierbarerBlock =
+  | Absatz<TextKnoten | PlatzhalterInline>
+  | Ueberschrift<TextKnoten | PlatzhalterInline>
+  | AufzaehlListe<TextKnoten | PlatzhalterInline>
+  | NummernListe<TextKnoten | PlatzhalterInline>
+  | PlatzhalterTabelle;
+
+export type AufgeloesterBlock =
+  | Absatz<TextKnoten>
+  | Ueberschrift<TextKnoten>
+  | AufzaehlListe<TextKnoten>
+  | NummernListe<TextKnoten>
+  | Preistabelle;
+
+// Komplette Dokumenttypen
+export interface OffertDokument {
+  readonly type: 'doc';
+  readonly content: readonly EditierbarerBlock[];
+}
+
+export interface AufgeloestesDokument {
+  readonly type: 'doc';
+  readonly content: readonly AufgeloesterBlock[];
+}
+
 const markSchema = z.object({ type: z.enum(['bold', 'italic']) }).strict();
 
 const textSchema = z.object({
@@ -73,13 +156,13 @@ function baueBloecke<I extends z.ZodTypeAny, B extends z.ZodTypeAny>(
   return z.object({ type: z.literal('doc'), content: z.array(block).min(1) }).strict();
 }
 
-export const offertDokumentSchema = baueBloecke(
+export const offertDokumentSchema: z.ZodType<OffertDokument> = baueBloecke(
   z.union([textSchema, platzhalterSchema]), [platzhalterTabelleSchema],
 );
-export type OffertDokument = z.infer<typeof offertDokumentSchema>;
 
-export const aufgeloestesDokumentSchema = baueBloecke(textSchema, [preistabelleSchema]);
-export type AufgeloestesDokument = z.infer<typeof aufgeloestesDokumentSchema>;
+export const aufgeloestesDokumentSchema: z.ZodType<AufgeloestesDokument> = baueBloecke(
+  textSchema, [preistabelleSchema],
+);
 
 /** Reihenfolge des Auftretens, `platzhalterTabelle` erscheint als `preistabelle` — die
  *  ID, unter der sie im Katalog und im Einfügemenü geführt wird. */

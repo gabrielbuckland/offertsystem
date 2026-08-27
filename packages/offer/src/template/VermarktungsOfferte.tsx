@@ -14,12 +14,9 @@
 import type { ReactNode } from 'react';
 import { formatiereDatum } from '../format/de-ch.js';
 import type { Offer } from '../model/offer.js';
-import type { AufgeloestesDokument } from '../vorlage/dokument-schema.js';
+import type { AufgeloesterBlock, TextKnoten } from '../vorlage/dokument-schema.js';
 
-type Block = AufgeloestesDokument['content'][number];
-type Inline = { type: 'text'; text: string; marks?: readonly { type: 'bold' | 'italic' }[] };
-
-function InlineText({ knoten }: { knoten: Inline }) {
+function InlineText({ knoten }: { knoten: TextKnoten }) {
   const marks = knoten.marks ?? [];
   let inhalt: ReactNode = knoten.text;
   if (marks.some((m) => m.type === 'italic')) inhalt = <em>{inhalt}</em>;
@@ -27,34 +24,43 @@ function InlineText({ knoten }: { knoten: Inline }) {
   return <>{inhalt}</>;
 }
 
-function Inhalt({ inline }: { inline?: readonly Inline[] }) {
+function Inhalt({ inline }: { inline?: readonly TextKnoten[] | undefined }) {
   return <>{(inline ?? []).map((k, i) => <InlineText key={i} knoten={k} />)}</>;
 }
 
-function BlockKnoten({ knoten }: { knoten: Block }) {
+function BlockKnoten({ knoten }: { knoten: AufgeloesterBlock }) {
   switch (knoten.type) {
     case 'paragraph':
-      return <p><Inhalt inline={knoten.content as readonly Inline[] | undefined} /></p>;
+      return <p><Inhalt inline={knoten.content} /></p>;
     case 'heading': {
       // Dokument-Ebene 1 wird zu h2: h1 ist der Offert-Titel im Kopfblock.
       const Tag = (['h2', 'h3', 'h4'] as const)[knoten.attrs.level - 1]!;
-      return <Tag><Inhalt inline={knoten.content as readonly Inline[] | undefined} /></Tag>;
+      return <Tag><Inhalt inline={knoten.content} /></Tag>;
     }
     case 'bulletList':
-    case 'orderedList': {
-      const Tag = knoten.type === 'bulletList' ? 'ul' : 'ol';
       return (
-        <Tag>
+        <ul>
           {knoten.content.map((li, i) => (
             <li key={i}>
               {li.content.map((p, j) => (
-                <Inhalt key={j} inline={p.content as readonly Inline[] | undefined} />
+                <Inhalt key={j} inline={p.content} />
               ))}
             </li>
           ))}
-        </Tag>
+        </ul>
       );
-    }
+    case 'orderedList':
+      return (
+        <ol>
+          {knoten.content.map((li, i) => (
+            <li key={i}>
+              {li.content.map((p, j) => (
+                <Inhalt key={j} inline={p.content} />
+              ))}
+            </li>
+          ))}
+        </ol>
+      );
     case 'preistabelle':
       return (
         <table className="preistabelle">
