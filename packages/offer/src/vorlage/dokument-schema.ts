@@ -17,7 +17,7 @@ const markSchema = z.object({ type: z.enum(['bold', 'italic']) }).strict();
 const textSchema = z.object({
   type: z.literal('text'),
   text: z.string().min(1),
-  marks: z.array(markSchema).nonempty().optional(),
+  marks: z.array(markSchema).min(1).optional(),
 }).strict();
 
 const platzhalterSchema = z.object({
@@ -58,19 +58,19 @@ function baueBloecke<I extends z.ZodTypeAny, B extends z.ZodTypeAny>(
   }).strict();
   const listItem = z.object({
     type: z.literal('listItem'),
-    content: z.array(paragraph).nonempty(),
+    content: z.array(paragraph).min(1),
   }).strict();
   const bulletList = z.object({
     type: z.literal('bulletList'),
-    content: z.array(listItem).nonempty(),
+    content: z.array(listItem).min(1),
   }).strict();
   const orderedList = z.object({
     type: z.literal('orderedList'),
-    content: z.array(listItem).nonempty(),
+    content: z.array(listItem).min(1),
   }).strict();
   const block = z.union([paragraph, heading, bulletList, orderedList,
     ...zusatzBloecke] as [z.ZodTypeAny, z.ZodTypeAny, ...z.ZodTypeAny[]]);
-  return z.object({ type: z.literal('doc'), content: z.array(block).nonempty() }).strict();
+  return z.object({ type: z.literal('doc'), content: z.array(block).min(1) }).strict();
 }
 
 export const offertDokumentSchema = baueBloecke(
