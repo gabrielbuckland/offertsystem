@@ -7,7 +7,12 @@
 import { Node, mergeAttributes } from '@tiptap/core';
 import { PLATZHALTER_KATALOG } from '@offert/offer/src/vorlage/platzhalter.js';
 
-const BEZEICHNUNG = new Map(PLATZHALTER_KATALOG.map((e) => [e.id, e.bezeichnung]));
+// `string` statt der engeren `PLATZHALTER_KATALOG`-Vereinigung (M-1): Nachgeschlagen
+// wird hier mit `node.attrs['id']`, einem rohen Editor-Attribut — dessen Gültigkeit
+// stellt die Zod-Teilmenge (dokument-schema.ts) sicher, nicht dieser Lookup.
+const BEZEICHNUNG = new Map<string, string>(
+  PLATZHALTER_KATALOG.map((e) => [e.id, e.bezeichnung]),
+);
 
 export const PlatzhalterKnoten = Node.create({
   name: 'platzhalter',
