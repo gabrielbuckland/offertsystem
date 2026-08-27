@@ -36,9 +36,9 @@ describe('offerSchema — Aufbau der fuenf Bereiche', () => {
     expect(() => offerSchema.parse(baueBeispielOfferte())).not.toThrow();
   });
 
-  it('kennt genau die fuenf Bereiche', () => {
+  it('kennt genau die fuenf Bereiche plus optionaler Dokumentblock', () => {
     expect(Object.keys(offerSchema.shape)).toEqual(
-      ['project', 'property', 'derivation', 'aggregates', 'metadata'],
+      ['project', 'property', 'derivation', 'aggregates', 'metadata', 'dokument'],
     );
   });
 
