@@ -12,6 +12,7 @@
  */
 import { z } from 'zod';
 import { normalisiereBereiche, pruefeBereiche } from '@offert/core';
+import { offertDokumentSchema } from '@offert/offer/src/vorlage/dokument-schema.js';
 
 export const SCHEMA_VERSION = 1;
 
@@ -122,6 +123,12 @@ export const projektSchema = z.object({
   merkmale: z.array(merkmalSchema).default([]),
   einheiten: z.array(einheitSchema),
   aufwandfaktoren: z.record(z.number()),
+  // Empfänger der Offerte (Spec 2026-08-27 §1). Optional: bestehende Projekte bleiben
+  // gültig; der Platzhalter {auftraggeber} verlangt ihn erst beim Finalisieren.
+  auftraggeber: z.string().trim().min(1).optional(),
+  // Projektspezifische Kopie des Offerttexts. Fehlt sie, gilt beim Finalisieren die
+  // globale Vorlage (vorlagen-ablage.ts) — gleiches Ergebnis, kein Sonderpfad.
+  offertText: offertDokumentSchema.optional(),
   meta: z.object({
     erstelltAm: z.string().min(1),
     geaendertAm: z.string().min(1),
