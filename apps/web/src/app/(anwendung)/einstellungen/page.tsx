@@ -37,7 +37,15 @@ export default async function EinstellungenSeite() {
   return (
     <main>
       <Brotkrume stufen={[{ beschriftung: 'Einstellungen' }]} />
-      <h1 className="mb-6 text-2xl font-semibold">Einstellungen</h1>
+      <div className="mb-6 flex items-baseline justify-between">
+        <h1 className="text-2xl font-semibold">Einstellungen</h1>
+        {/* Offerttext-Vorlage (Spec 2026-08-27 §3) ist kein Pipeline-Bereich wie die
+            vier Karten unten (kein Zahlenwert, sondern Fliesstext mit Platzhaltern) —
+            deshalb eigene Seite statt eines fuenften inline eingebetteten Editors. */}
+        <a href="/einstellungen/vorlage" className="text-sm text-primary underline">
+          Offertvorlage bearbeiten
+        </a>
+      </div>
 
       {/* Untereinander statt nebeneinander (Rueckmeldung Auftraggeber): Jede Stufe der
           Berechnungs-Pipeline ist hier direkt inline editierbar — kein Umweg mehr ueber

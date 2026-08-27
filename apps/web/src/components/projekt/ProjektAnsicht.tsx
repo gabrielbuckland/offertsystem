@@ -37,6 +37,7 @@ import { Referenzobjekte } from './Referenzobjekte.js';
 import { EinheitenGenerator } from './EinheitenGenerator.js';
 import { AnpassungsSpalten } from './AnpassungsSpalten.js';
 import { EinheitenTabelle } from './EinheitenTabelle.js';
+import { OffertTextSchritt } from './OffertTextSchritt.js';
 import { entferneSpaltenwert } from './spaltenwerte-kaskade.js';
 import { uebernehmeVorgabewert } from './vorgabewert-uebernahme.js';
 import { Aufwandfaktoren } from './Aufwandfaktoren.js';
@@ -196,6 +197,8 @@ export function ProjektAnsicht(
               ...r, parametrisierung: { ...r.parametrisierung, baujahr },
             })),
           })}
+          auftraggeber={projekt.auftraggeber}
+          aendereAuftraggeber={(w) => aendere({ ...projekt, auftraggeber: w })}
         />
       </section>
       <section className="mb-6 rounded-lg border border-border bg-card p-6">
@@ -251,6 +254,12 @@ export function ProjektAnsicht(
           einheiten={projekt.einheiten}
           spalten={projekt.anpassungsSpalten}
           aendere={(einheiten) => aendere({ ...projekt, einheiten: [...einheiten] })}
+        />
+      </section>
+      <section className="mb-6 rounded-lg border border-border bg-card p-6">
+        <OffertTextSchritt
+          projekt={projekt}
+          aendere={aendere}
         />
       </section>
       {stand.fehler !== undefined && (
