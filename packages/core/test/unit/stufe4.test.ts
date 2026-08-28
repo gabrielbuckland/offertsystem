@@ -9,7 +9,7 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
   it('bildet D = Summe w_d * x_dach_d', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Vier normierte Faktoren 0.2/0.4/0.3/0.5 mit den Standardgewichten 0.40/0.25/0.20/0.15',
-      schritte: 'berechneAufwandindikator ausfuehren',
+      schritte: 'berechneAufwandindikator ausführen',
       erwartung: 'D ist 0.315 (Rechenbeispiel Anhang A4) bei Gewichtssumme 1',
       anforderung: 'A-03',
     });
@@ -28,8 +28,8 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
   it('weist den Einzelbeitrag je Faktor aus (A-13, 3.3.5)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Vier normierte Faktoren mit den Standardgewichten',
-      schritte: 'Stufe 4 ausfuehren und die Beitragsliste inspizieren',
-      erwartung: 'Der Beitrag von lage_gesamt ist 0.08; die Beitraege stehen sortiert nach FaktorId',
+      schritte: 'Stufe 4 ausführen und die Beitragsliste inspizieren',
+      erwartung: 'Der Beitrag von lage_gesamt ist 0.08; die Beiträge stehen sortiert nach FaktorId',
       anforderung: 'A-13',
     });
     const r = berechneAufwandindikator(
@@ -47,8 +47,8 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
   it('liefert D = 0 bei allen x_dach = 0 und D = 1 bei allen x_dach = 1 (I-12)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Alle normierten Faktoren auf 0 beziehungsweise alle auf 1',
-      schritte: 'Stufe 4 fuer beide Randbelegungen ausfuehren',
-      erwartung: 'D ist 0 beziehungsweise 1; der Wertebereich wird ausgeschoepft',
+      schritte: 'Stufe 4 für beide Randbelegungen ausführen',
+      erwartung: 'D ist 0 beziehungsweise 1; der Wertebereich wird ausgeschöpft',
       invariante: 'I-12',
     });
     const k = standardKonfiguration();
@@ -65,7 +65,7 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
   it('bricht bei Gewichtssumme ungleich eins ab und normiert nicht — S-05', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Konfiguration mit projektumfang-Gewicht 0.05, also Gewichtssumme 0.9',
-      schritte: 'Stufe 4 ausfuehren und den Fehler inspizieren',
+      schritte: 'Stufe 4 ausführen und den Fehler inspizieren',
       erwartung: 'Fehler GEWICHTSSUMME_UNGUELTIG in Stufe 4 mit Summe 0.9 und der Faktorliste; keine stille Normierung',
     });
     const basis = standardKonfiguration();
@@ -88,7 +88,7 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
   it('akzeptiert die Summe innerhalb der Toleranz aus invariants.json (1e-9)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Konfiguration mit projektumfang-Gewicht 0.15 + 5e-10, also Summe knapp neben 1',
-      schritte: 'Stufe 4 ausfuehren',
+      schritte: 'Stufe 4 ausführen',
       erwartung: 'Ergebnis ok; die Abweichung liegt innerhalb der Toleranz 1e-9',
     });
     const basis = standardKonfiguration();
@@ -102,9 +102,9 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
 
   it('uebernimmt eine Uebersteuerung als D und weist die Ableitung weiter aus', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Vier normierte Faktoren mit abgeleitetem D 0.315 und Uebersteuerung 0.7',
-      schritte: 'Stufe 4 mit Uebersteuerungsargument ausfuehren',
-      erwartung: 'D ist 0.7; der abgeleitete Wert 0.315 und alle vier Faktorbeitraege bleiben ausgewiesen',
+      vorbedingung: 'Vier normierte Faktoren mit abgeleitetem D 0.315 und Übersteuerung 0.7',
+      schritte: 'Stufe 4 mit Übersteuerungsargument ausführen',
+      erwartung: 'D ist 0.7; der abgeleitete Wert 0.315 und alle vier Faktorbeiträge bleiben ausgewiesen',
     });
     const r = berechneAufwandindikator(
       normalisierungErgebnis({ lage_gesamt: 0.2, innenausbau_qualitaet: 0.4,
@@ -121,8 +121,8 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
 
   it('traegt ohne Uebersteuerung KEIN Uebersteuerungsfeld (Anwesenheit entscheidet)', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Vier normierte Faktoren ohne Uebersteuerungsargument',
-      schritte: 'Stufe 4 ausfuehren und die Felder des Ergebnisses pruefen',
+      vorbedingung: 'Vier normierte Faktoren ohne Übersteuerungsargument',
+      schritte: 'Stufe 4 ausführen und die Felder des Ergebnisses prüfen',
       erwartung: 'Das Feld uebersteuerung fehlt im Ergebnis',
     });
     const r = berechneAufwandindikator(

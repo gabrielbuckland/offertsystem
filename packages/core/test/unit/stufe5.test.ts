@@ -10,7 +10,7 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
   it('waehlt die Stufe mit V_k_min <= V < V_k_max und interpoliert linear', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'V 750 000 000 Rappen (Mitte der Stufe [5, 10) Mio. CHF) und D 0.5',
-      schritte: 'bildeHonorarrange mit der Standardkonfiguration ausfuehren',
+      schritte: 'bildeHonorarrange mit der Standardkonfiguration ausführen',
       erwartung: 'Stufenindex 1, Interpolationsanteil 0.5, linear interpolierte Basen und Honorarrange 153 750 bis 205 000 CHF in Rappen',
       anforderung: 'A-04',
     });
@@ -32,7 +32,7 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
   it('haelt die Stetigkeit an der Stufengrenze (I-20)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'V einen Rappen unter beziehungsweise genau auf der Stufengrenze 10 Mio. CHF, D 0.5',
-      schritte: 'Stufe 5 fuer beide Werte ausfuehren und die Basen vergleichen',
+      schritte: 'Stufe 5 für beide Werte ausführen und die Basen vergleichen',
       erwartung: 'Rechts der Grenze gilt Stufenindex 2; basisMax unterscheidet sich um weniger als einen Rappen',
       invariante: 'I-20',
     });
@@ -49,8 +49,8 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
   it('fuehrt beide Enden der Stufe, damit die Interpolation nachrechenbar bleibt (E-19)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'V 750 000 000 Rappen und D 0.5',
-      schritte: 'Stufe 5 ausfuehren und das mitgefuehrte Stufenobjekt inspizieren',
-      erwartung: 'Das Ergebnis traegt beide Stuetzstellen der Stufe (vMin/vMax mit hMin/hMax je Ende)',
+      schritte: 'Stufe 5 ausführen und das mitgeführte Stufenobjekt inspizieren',
+      erwartung: 'Das Ergebnis trägt beide Stützstellen der Stufe (vMin/vMax mit hMin/hMax je Ende)',
     });
     const r = bildeHonorarrange(verkaufssummeErgebnis(rappen(750_000_000)),
       gewichtungErgebnis(0.5), k);
@@ -66,7 +66,7 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
   it('haelt basisMin/basisMax ungerundet (E-09) und rundet erst nach g(D) (R3)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'V 753 000 001 Rappen und D 0.317, damit die Interpolation einen echten Bruchteil ergibt',
-      schritte: 'Stufe 5 ausfuehren und Basen sowie Honorarwerte auf Ganzzahligkeit pruefen',
+      schritte: 'Stufe 5 ausführen und Basen sowie Honorarwerte auf Ganzzahligkeit prüfen',
       erwartung: 'basisMin ist nicht ganzzahlig; honorarMin und honorarMax sind ganzzahlig in Rappen',
     });
     // V = 753 000 001 statt der 753 000 000 des Plans: Bei 753 000 000 ist
@@ -86,8 +86,8 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
   it('wendet g(D) als gemeinsamen Faktor an — die relative Rangebreite bleibt (I-17)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Gleiches V 750 000 000 Rappen mit D 0.1 und D 0.9',
-      schritte: 'Stufe 5 fuer beide D ausfuehren und relative Rangebreiten sowie Skalierung vergleichen',
-      erwartung: 'Die relative Rangebreite ist gleich; die Skalierung waechst mit D',
+      schritte: 'Stufe 5 für beide D ausführen und relative Rangebreiten sowie Skalierung vergleichen',
+      erwartung: 'Die relative Rangebreite ist gleich; die Skalierung wächst mit D',
       invariante: 'I-17',
     });
     const a = bildeHonorarrange(verkaufssummeErgebnis(rappen(750_000_000)), gewichtungErgebnis(0.1), k);
@@ -102,8 +102,8 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
 
   it('rechnet V auf der letzten Stuetzstelle regulaer (E-04, Spec 06 §2.4)', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'V genau auf der letzten Stuetzstelle 20 000 000 000 Rappen, D 0.5',
-      schritte: 'Stufe 5 ausfuehren',
+      vorbedingung: 'V genau auf der letzten Stützstelle 20 000 000 000 Rappen, D 0.5',
+      schritte: 'Stufe 5 ausführen',
       erwartung: 'Ergebnis ok mit Stufenindex 5, Interpolationsanteil 1 und basisMax 2 000 000 CHF in Rappen',
     });
     const r = bildeHonorarrange(verkaufssummeErgebnis(rappen(20_000_000_000)),
@@ -118,8 +118,8 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
 
   it('bricht oberhalb der letzten Stuetzstelle definiert ab — S-10, keine Extrapolation', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'V einen Rappen oberhalb der letzten Stuetzstelle',
-      schritte: 'Stufe 5 ausfuehren und den Fehler inspizieren',
+      vorbedingung: 'V einen Rappen oberhalb der letzten Stützstelle',
+      schritte: 'Stufe 5 ausführen und den Fehler inspizieren',
       erwartung: 'Fehler VERKAUFSSUMME_AUSSERHALB in Stufe 5 mit Bereich und richtung "oberhalb"; keine Extrapolation',
     });
     const r = bildeHonorarrange(verkaufssummeErgebnis(rappen(20_000_000_001)),
@@ -137,8 +137,8 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
 
   it('bricht unterhalb der ersten Stuetzstelle ab — nur mit eigens konstruierter Konfiguration', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Konfiguration ohne die erste Stuetzstelle (Beginn bei 5 Mio. CHF) und V 1 Mio. CHF',
-      schritte: 'Stufe 5 ausfuehren und den Fehler inspizieren',
+      vorbedingung: 'Konfiguration ohne die erste Stützstelle (Beginn bei 5 Mio. CHF) und V 1 Mio. CHF',
+      schritte: 'Stufe 5 ausführen und den Fehler inspizieren',
       erwartung: 'Fehler mit richtung "unterhalb"',
     });
     const stuetzstellen = k.honorar.stuetzstellen.slice(1); // erste Stuetzstelle bei 5 Mio.
@@ -150,8 +150,8 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
 
   it('bricht bei entarteter Stufe ab — S-08, kein NaN in der Honorarrange', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Konfiguration mit zwei Stuetzstellen bei identischem v = 0 (entartete Stufe)',
-      schritte: 'Stufe 5 mit V 0 ausfuehren und den Fehler inspizieren',
+      vorbedingung: 'Konfiguration mit zwei Stützstellen bei identischem v = 0 (entartete Stufe)',
+      schritte: 'Stufe 5 mit V 0 ausführen und den Fehler inspizieren',
       erwartung: 'Fehler STUFE_ENTARTET mit Stufenindex 0; kein NaN in der Honorarrange',
     });
     const stuetzstellen = [

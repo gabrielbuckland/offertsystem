@@ -8,7 +8,7 @@ describe('Stufe 3 — normalisiereFaktoren (eq:normalisierung)', () => {
   it('normalisiert alle konfigurierten Faktoren, sortiert nach FaktorId', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Geschlossener Eingang mit vier Rohfaktoren',
-      schritte: 'normalisiereFaktoren ausfuehren und die Faktorliste pruefen',
+      schritte: 'normalisiereFaktoren ausführen und die Faktorliste prüfen',
       erwartung: 'Vier Faktoren, aufsteigend nach FaktorId sortiert, alle normierten Werte in [0, 1]',
     });
     const r = normalisiereFaktoren(geschlossenerEingang());
@@ -27,7 +27,7 @@ describe('Stufe 3 — normalisiereFaktoren (eq:normalisierung)', () => {
   it('kennt keinen faktorspezifischen Zweig — lage_gesamt wird nur ueber Grenzen invertiert (I-13)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Faktor lage_gesamt mit invertierten Grenzen (grenzeMin 1, grenzeMax 0) und Rohwert 0.8',
-      schritte: 'Stufe 3 ausfuehren und den normierten Wert von lage_gesamt lesen',
+      schritte: 'Stufe 3 ausführen und den normierten Wert von lage_gesamt lesen',
       erwartung: 'Der normierte Wert ist 1 - 0.8; die Inversion folgt allein aus den Grenzen',
       invariante: 'I-13',
     });
@@ -43,7 +43,7 @@ describe('Stufe 3 — normalisiereFaktoren (eq:normalisierung)', () => {
   it('bricht bei fehlendem Rohwert ab — S-02', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Geschlossener Eingang, aus dem der Rohwert lage_gesamt entfernt ist',
-      schritte: 'Stufe 3 ausfuehren und den Fehler inspizieren',
+      schritte: 'Stufe 3 ausführen und den Fehler inspizieren',
       erwartung: 'Fehler FAKTOR_FEHLT in Stufe 3',
     });
     const e = geschlossenerEingang();
@@ -60,7 +60,7 @@ describe('Stufe 3 — normalisiereFaktoren (eq:normalisierung)', () => {
   it('nimmt nur einen geschlossenen Eingang entgegen (Reihenfolgebindung 2 -> 4.2a -> 3)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Geschlossener Eingang aus dem Fixture-Helfer',
-      schritte: 'Die offenen Faktoren des Eingangs pruefen',
+      schritte: 'Die offenen Faktoren des Eingangs prüfen',
       erwartung: 'offeneFaktoren ist leer; Stufe 3 setzt den Zwischenschritt 4.2a voraus',
     });
     const e = geschlossenerEingang();
@@ -69,8 +69,8 @@ describe('Stufe 3 — normalisiereFaktoren (eq:normalisierung)', () => {
 
   it('weist den Saettigungsbereich ueber `gekappt` aus (A-13)', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Rohwert 99 fuer innenausbau_qualitaet oberhalb der oberen Grenze',
-      schritte: 'Stufe 3 ausfuehren und den betroffenen Faktor inspizieren',
+      vorbedingung: 'Rohwert 99 für innenausbau_qualitaet oberhalb der oberen Grenze',
+      schritte: 'Stufe 3 ausführen und den betroffenen Faktor inspizieren',
       erwartung: 'gekappt ist true und der normierte Wert ist 1',
       anforderung: 'A-13',
     });

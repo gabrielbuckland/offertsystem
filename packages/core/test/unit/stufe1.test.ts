@@ -8,7 +8,7 @@ import { score } from '../../src/domain/geld.js';
 describe('Stufe 1 — bereiteEingabeAuf (Spec 03 §4.1)', () => {
   it('schluesselt die Bewertungsliste in eine Map ueber WohnungstypId um', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Eingangsargumente mit einer Referenzbewertung fuer Wohnungstyp T1',
+      vorbedingung: 'Eingangsargumente mit einer Referenzbewertung für Wohnungstyp T1',
       schritte: 'bereiteEingabeAuf auf die Standard-Eingangsargumente anwenden',
       erwartung: 'Ergebnis ok; die Bewertungs-Map liefert unter T1 den Marktwert 85 000 000 Rappen',
     });
@@ -20,8 +20,8 @@ describe('Stufe 1 — bereiteEingabeAuf (Spec 03 §4.1)', () => {
   it('beschafft alle nicht abgeleiteten Rohwerte und vertagt die abgeleiteten (E-06)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Standardkonfiguration mit zwei direkten und zwei abgeleiteten Faktorquellen',
-      schritte: 'Stufe 1 ausfuehren und Rohfaktoren sowie offene Faktoren auslesen',
-      erwartung: 'rohfaktoren enthaelt innenausbau_qualitaet und lage_gesamt; offeneFaktoren enthaelt preissegment und projektumfang',
+      schritte: 'Stufe 1 ausführen und Rohfaktoren sowie offene Faktoren auslesen',
+      erwartung: 'rohfaktoren enthält innenausbau_qualitaet und lage_gesamt; offeneFaktoren enthält preissegment und projektumfang',
     });
     const r = bereiteEingabeAuf(eingangsArgumente());
     expect(r.ok).toBe(true);
@@ -35,7 +35,7 @@ describe('Stufe 1 — bereiteEingabeAuf (Spec 03 §4.1)', () => {
   it('bricht bei fehlender Referenzbewertung ab — S-03, US-05, I-24', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Eingangsargumente ohne Referenzbewertungen (leere Liste)',
-      schritte: 'Stufe 1 ausfuehren und den Fehler inspizieren',
+      schritte: 'Stufe 1 ausführen und den Fehler inspizieren',
       erwartung: 'Fehler REFERENZBEWERTUNG_FEHLT in Stufe 1 mit Zimmerzahl, WohnungstypId, Wohnungsnummern und vollstaendig-Flag',
       invariante: 'I-24',
     });
@@ -52,8 +52,8 @@ describe('Stufe 1 — bereiteEingabeAuf (Spec 03 §4.1)', () => {
 
   it('bricht bei unaufloesbarer Faktorquelle ab — S-02, phase "quelle"', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Lagescore-Buendel ohne Werte, obwohl die Konfiguration einen Lagescore-Faktor verlangt',
-      schritte: 'Stufe 1 ausfuehren und den Fehler inspizieren',
+      vorbedingung: 'Lagescore-Bündel ohne Werte, obwohl die Konfiguration einen Lagescore-Faktor verlangt',
+      schritte: 'Stufe 1 ausführen und den Fehler inspizieren',
       erwartung: 'Fehler FAKTOR_FEHLT mit Parameter phase "quelle"',
     });
     const args = eingangsArgumente({
@@ -70,9 +70,9 @@ describe('Stufe 1 — bereiteEingabeAuf (Spec 03 §4.1)', () => {
 
   it('verwirft einen gelieferten Rohwert ohne Konfigurationseintrag, ohne Fehler (S-02 Gegenrichtung)', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Lagescore-Buendel mit dem zusaetzlichen, nicht konfigurierten Score noise',
-      schritte: 'Stufe 1 ausfuehren und die verworfenen Rohwerte auslesen',
-      erwartung: 'Ergebnis ok; verworfeneRohwerte enthaelt lagescore:noise',
+      vorbedingung: 'Lagescore-Bündel mit dem zusätzlichen, nicht konfigurierten Score noise',
+      schritte: 'Stufe 1 ausführen und die verworfenen Rohwerte auslesen',
+      erwartung: 'Ergebnis ok; verworfeneRohwerte enthält lagescore:noise',
     });
     const args = eingangsArgumente({
       lagescores: {
@@ -88,8 +88,8 @@ describe('Stufe 1 — bereiteEingabeAuf (Spec 03 §4.1)', () => {
   it('rechnet nicht — der Eingang traegt keine Preisgroesse', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Standard-Eingangsargumente',
-      schritte: 'Stufe 1 ausfuehren und die Felder des Ergebnisses pruefen',
-      erwartung: 'Der Pipeline-Eingang traegt kein Feld verkaufssumme',
+      schritte: 'Stufe 1 ausführen und die Felder des Ergebnisses prüfen',
+      erwartung: 'Der Pipeline-Eingang trägt kein Feld verkaufssumme',
     });
     const r = bereiteEingabeAuf(eingangsArgumente());
     expect(r.ok).toBe(true);
@@ -99,8 +99,8 @@ describe('Stufe 1 — bereiteEingabeAuf (Spec 03 §4.1)', () => {
   it('ist deterministisch: die Rohfaktoren stehen aufsteigend nach FaktorId (I-14)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Standard-Eingangsargumente',
-      schritte: 'Stufe 1 ausfuehren und die Schluessel der Rohfaktoren auslesen',
-      erwartung: 'Die Schluessel stehen aufsteigend sortiert nach FaktorId',
+      schritte: 'Stufe 1 ausführen und die Schlüssel der Rohfaktoren auslesen',
+      erwartung: 'Die Schlüssel stehen aufsteigend sortiert nach FaktorId',
       invariante: 'I-14',
     });
     const r = bereiteEingabeAuf(eingangsArgumente());
@@ -113,8 +113,8 @@ describe('Stufe 1 — bereiteEingabeAuf (Spec 03 §4.1)', () => {
   it('reicht den Zeitstempel unveraendert durch und liest keine Uhr (I-14, E-29)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Eingangsargumente mit festem Zeitstempel 2026-08-16T10:00:00.000Z',
-      schritte: 'Stufe 1 ausfuehren und den Zeitstempel des Ergebnisses lesen',
-      erwartung: 'Der Zeitstempel steht unveraendert im Ergebnis',
+      schritte: 'Stufe 1 ausführen und den Zeitstempel des Ergebnisses lesen',
+      erwartung: 'Der Zeitstempel steht unverändert im Ergebnis',
       invariante: 'I-14',
     });
     const r = bereiteEingabeAuf(eingangsArgumente({ zeitstempel: '2026-08-16T10:00:00.000Z' }));
@@ -124,7 +124,7 @@ describe('Stufe 1 — bereiteEingabeAuf (Spec 03 §4.1)', () => {
   it('meldet bei unvollstaendigem Buendel dennoch S-03 und kein Ergebnis (US-15, I-24)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Eingangsargumente ohne Bewertungen und mit vollstaendig=false',
-      schritte: 'Stufe 1 ausfuehren und den Fehler inspizieren',
+      schritte: 'Stufe 1 ausführen und den Fehler inspizieren',
       erwartung: 'Fehler mit Parameter vollstaendig "false"; es entsteht kein Ergebnis',
       invariante: 'I-24',
     });

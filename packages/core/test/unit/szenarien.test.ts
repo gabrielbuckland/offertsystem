@@ -13,9 +13,9 @@ describe('T2 — die fuenf Testszenarien gegen die Referenzberechnung', () => {
   for (const id of ['S1', 'S2', 'S3', 'S4a', 'S4b']) {
     it(`${id} haelt die Abweichungsschwelle von 5 Prozent in V, H_min und H_max ein`, ({ task }) => {
       dokumentiere(task, {
-        vorbedingung: `Szenario ${id} mit unabhaengiger Referenzberechnung`,
+        vorbedingung: `Szenario ${id} mit unabhängiger Referenzberechnung`,
         schritte: 'Das Szenario durch die Pipeline rechnen und mit der Referenz vergleichen',
-        erwartung: 'Die relative Abweichung in V, H_min und H_max betraegt je hoechstens 5 Prozent',
+        erwartung: 'Die relative Abweichung in V, H_min und H_max beträgt je höchstens 5 Prozent',
         anforderung: 'A-06',
       });
       const e = fuehreSzenarioAus(id);
@@ -28,8 +28,8 @@ describe('T2 — die fuenf Testszenarien gegen die Referenzberechnung', () => {
 
   it('S1: Referenztreue ist direkt beobachtbar, p_j = P_ref je Einheit (I-05)', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Szenario S1 ohne Zu-/Abschlaege und mit Referenzflaechen',
-      schritte: 'Das Szenario rechnen und alle Positionspreise pruefen',
+      vorbedingung: 'Szenario S1 ohne Zu-/Abschläge und mit Referenzflächen',
+      schritte: 'Das Szenario rechnen und alle Positionspreise prüfen',
       erwartung: 'Jeder Positionspreis ist exakt P_ref = 85 000 000 Rappen',
       invariante: 'I-05',
     });
@@ -39,9 +39,9 @@ describe('T2 — die fuenf Testszenarien gegen die Referenzberechnung', () => {
 
   it('S2: alpha wirkt in Zaehler und Nenner, I-05 haelt auch mit Aussenflaeche', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Szenario S2, in dem jede Einheit Aussenflaeche traegt',
-      schritte: 'Das Szenario rechnen und die Typableitungen pruefen',
-      erwartung: 'Alle Einheiten haben Aussenflaeche und es entstehen zwei Typableitungen',
+      vorbedingung: 'Szenario S2, in dem jede Einheit Aussenfläche trägt',
+      schritte: 'Das Szenario rechnen und die Typableitungen prüfen',
+      erwartung: 'Alle Einheiten haben Aussenfläche und es entstehen zwei Typableitungen',
       invariante: 'I-05',
     });
     const e = fuehreSzenarioAus('S2');
@@ -52,9 +52,9 @@ describe('T2 — die fuenf Testszenarien gegen die Referenzberechnung', () => {
 
   it('S3: die Anpassungen sind je Position einzeln ausgewiesen und begruendet (I-09)', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Szenario S3 mit Zu-/Abschlaegen auf einzelnen Positionen',
+      vorbedingung: 'Szenario S3 mit Zu-/Abschlägen auf einzelnen Positionen',
       schritte: 'Das Szenario rechnen und die Positionen mit Anpassungen inspizieren',
-      erwartung: 'Jede Anpassung traegt eine Begruendung von mindestens 10 Zeichen; die Anpassungssumme bleibt in [-0.25, 0.25]',
+      erwartung: 'Jede Anpassung trägt eine Begründung von mindestens 10 Zeichen; die Anpassungssumme bleibt in [-0.25, 0.25]',
       invariante: 'I-09',
       anforderung: 'A-14',
     });
@@ -86,7 +86,7 @@ describe('T2 — die fuenf Testszenarien gegen die Referenzberechnung', () => {
   it('S5: ohne Referenzbewertung entsteht kein Ergebnis (I-24, 6.4 (c))', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Szenario S5 ohne Referenzbewertung',
-      schritte: 'Das Szenario rechnen und Fehler sowie Ausgabeflag pruefen',
+      schritte: 'Das Szenario rechnen und Fehler sowie Ausgabeflag prüfen',
       erwartung: 'Kein Ergebnis; Fehler REFERENZBEWERTUNG_FEHLT und ergebnisAusgegeben ist false',
       invariante: 'I-24',
     });
@@ -99,7 +99,7 @@ describe('T2 — die fuenf Testszenarien gegen die Referenzberechnung', () => {
   it('jedes Szenario weist die Herkunft der Lagedaten aus (R-01)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Alle sechs Szenariodefinitionen S1 bis S5',
-      schritte: 'Jedes Szenario laden und das Feld lagedaten_herkunft pruefen',
+      schritte: 'Jedes Szenario laden und das Feld lagedaten_herkunft prüfen',
       erwartung: 'Die Herkunft ist jeweils "synthetisch" oder "aufgezeichnet"',
     });
     for (const id of ['S1', 'S2', 'S3', 'S4a', 'S4b', 'S5']) {
@@ -109,7 +109,7 @@ describe('T2 — die fuenf Testszenarien gegen die Referenzberechnung', () => {
 
   it('erzeugt das Artefakt fuer Kapitel 6 (P1) mit Abweichung und Pass/Fail', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Ergebnisse der fuenf gerechneten Szenarien',
+      vorbedingung: 'Ergebnisse der fünf gerechneten Szenarien',
       schritte: 'schreibeSzenarienArtefakt mit den Ergebnissen aufrufen',
       erwartung: 'Das Artefakt liegt unter artifacts/scenarios/',
     });
@@ -119,8 +119,8 @@ describe('T2 — die fuenf Testszenarien gegen die Referenzberechnung', () => {
 
   it('erzeugt bei Ueberschreitung eine Stufendiagnose statt nur eines Fehlschlags', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Szenario S1 mit auf 1 ueberschriebener Referenz-Verkaufssumme',
-      schritte: 'Das Szenario mit der verfaelschten Referenz rechnen',
+      vorbedingung: 'Szenario S1 mit auf 1 überschriebener Referenz-Verkaufssumme',
+      schritte: 'Das Szenario mit der verfälschten Referenz rechnen',
       erwartung: 'bestanden ist false und die Stufendiagnose nennt die betroffenen Referenzschritte',
     });
     const e = fuehreSzenarioAus('S1', { referenzUeberschreiben: { verkaufssumme: 1 } });

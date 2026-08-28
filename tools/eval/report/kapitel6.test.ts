@@ -99,6 +99,6 @@ describe('p4Erweiterung', () => {
 
 describe('p8Pruefpunkte', () => {
   it('sagt ausdruecklich, dass die manuelle Pruefung noch aussteht', () => {
-    expect(p8Pruefpunkte(null)).toContain('noch nicht durchgefuehrt');
+    expect(p8Pruefpunkte(null)).toContain('noch nicht durchgeführt');
   });
 });

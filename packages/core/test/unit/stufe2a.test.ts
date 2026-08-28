@@ -31,7 +31,7 @@ describe('Zwischenschritt 4.2a — ergaenzeAbgeleiteteFaktoren (E-06)', () => {
   it('bildet q-quer flaechengewichtet und vor den Zu-/Abschlaegen (Spec 02 §5.3)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Eingang mit relativer Anpassung +0.2 auf der ersten Einheit',
-      schritte: 'Stufe 2 und danach Zwischenschritt 4.2a ausfuehren',
+      schritte: 'Stufe 2 und danach Zwischenschritt 4.2a ausführen',
       erwartung: 'preissegment bleibt der unangepasste Quadratmeterpreis; die Anpassung wirkt nicht auf das Honorar',
     });
     const e = pipelineEingang({ anpassungenErsteEinheit: [
@@ -49,7 +49,7 @@ describe('Zwischenschritt 4.2a — ergaenzeAbgeleiteteFaktoren (E-06)', () => {
   it('meldet S-02 mit phase "rohwert" bei unbekannter Ableitung (Spec 06 §2.4)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Konfiguration mit abgeleitetem Faktor risikoindex und unbekanntem quellSchluessel',
-      schritte: 'Stufe 2 und danach Zwischenschritt 4.2a ausfuehren',
+      schritte: 'Stufe 2 und danach Zwischenschritt 4.2a ausführen',
       erwartung: 'Fehler FAKTOR_FEHLT mit phase "rohwert" und dem unbekannten quellSchluessel',
     });
     const basis = standardKonfiguration();
@@ -73,8 +73,8 @@ describe('Zwischenschritt 4.2a — ergaenzeAbgeleiteteFaktoren (E-06)', () => {
   it('ist die Identitaet, wenn keine abgeleitete Quelle konfiguriert ist (Determinismus)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Konfiguration, aus der alle abgeleiteten Faktorquellen entfernt sind',
-      schritte: 'Stufe 2 und danach Zwischenschritt 4.2a ausfuehren',
-      erwartung: 'Die Rohfaktoren bleiben unveraendert und offeneFaktoren ist leer',
+      schritte: 'Stufe 2 und danach Zwischenschritt 4.2a ausführen',
+      erwartung: 'Die Rohfaktoren bleiben unverändert und offeneFaktoren ist leer',
     });
     const basis = standardKonfiguration();
     const faktoren = new Map(
@@ -94,8 +94,8 @@ describe('Zwischenschritt 4.2a — ergaenzeAbgeleiteteFaktoren (E-06)', () => {
   it('rechnet keine Modellgroesse — nur Kennzahlen aus dem Ergebnis von Stufe 2', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Standard-Eingang mit Ergebnis von Stufe 2',
-      schritte: 'Zwischenschritt 4.2a ausfuehren und die Felder des Ergebnisses pruefen',
-      erwartung: 'Das Ergebnis traegt kein Feld verkaufssumme',
+      schritte: 'Zwischenschritt 4.2a ausführen und die Felder des Ergebnisses prüfen',
+      erwartung: 'Das Ergebnis trägt kein Feld verkaufssumme',
     });
     const e = pipelineEingang();
     const v = berechneVerkaufssumme(e);

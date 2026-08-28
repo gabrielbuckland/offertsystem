@@ -44,18 +44,22 @@ function feld(wert: string | null): string {
 }
 
 function bezeichner(f: Testfall): string {
-  return latexEscape(`${f.suite === null ? '' : `${f.suite}: `}${f.name}`);
+  // Gedankenstrich-Einschuebe aus Suite-/Testnamen werden fuer den Bericht in
+  // Kommata ueberfuehrt (Stilregel des Berichts); die Testnamen im Code bleiben
+  // unveraendert.
+  const text = `${f.suite === null ? '' : `${f.suite}: `}${f.name}`;
+  return latexEscape(text.replace(/\s+—\s+/gu, ', '));
 }
 
 const INSTRUMENTE: readonly (readonly [string, string, string])[] = [
-  ['T1', 'Unit-Tests gegen unabhaengige Referenz', 'Vitest, Referenz-CSV aus der Tabellenkalkulation'],
-  ['T2', 'Parametrisierte Tests und Grenzwerte', 'Vitest test.each ueber Szenarien- und Grenzwerttabellen'],
+  ['T1', 'Unit-Tests gegen unabhängige Referenz', 'Vitest, Referenz-CSV aus der Tabellenkalkulation'],
+  ['T2', 'Parametrisierte Tests und Grenzwerte', 'Vitest test.each über Szenarien- und Grenzwerttabellen'],
   ['T3', 'Invarianten des Modells', 'fast-check auf Vitest, ein fixierter Seed je Lauf'],
-  ['T4', 'Semantische Konfigurationsvalidierung', 'Zod-Schema und Invariantenpruefer im Ladepfad'],
+  ['T4', 'Semantische Konfigurationsvalidierung', 'Zod-Schema und Invariantenprüfer im Ladepfad'],
   ['T5', 'Contract Tests', 'Zod-Antwortschema gegen Fixtures und Laufzeitantworten'],
   ['T6', 'Integrationstests mit Mock-API', 'Interface-Mock und MSW auf HTTP-Ebene, manipulierbarer Zeitgeber'],
-  ['T7', 'Sensitivitaetsanalyse (OAT)', 'eigenstaendiges Auswertungsprogramm tools/eval/oat'],
-  ['T8', 'Manuelle Pruefung der Oberflaeche', 'vorab festgelegte Pruefpunktliste, manuell abgearbeitet'],
+  ['T7', 'Sensitivitätsanalyse (OAT)', 'eigenständiges Auswertungsprogramm tools/eval/oat'],
+  ['T8', 'Manuelle Prüfung der Oberfläche', 'vorab festgelegte Prüfpunktliste, manuell abgearbeitet'],
 ];
 
 export function a5Testplan(tests: TestArtefakt): string {
@@ -103,10 +107,10 @@ export function a5Testfaelle(tests: TestArtefakt): string {
               'p{0.18\\textwidth}', 'l', 'l'],
     kopf: ['Testfall', 'Vorbedingung', 'Schritte', 'Erwartungswert', 'Inv.', 'Anf.'],
     zeilen,
-    beschriftung: 'Testfaelle der Kernalgorithmik mit Vorbedingung, Schritten und '
+    beschriftung: 'Testfälle der Kernalgorithmik mit Vorbedingung, Schritten und '
       + 'Erwartungswert, automatisch aus den Testmetadaten erzeugt '
-      + `(${zeilen.length} dokumentierte von ${tests.faelle.length} Testfaellen des `
-      + 'Laufs; die uebrigen erscheinen zusammengefasst im Protokoll).',
+      + `(${zeilen.length} dokumentierte von ${tests.faelle.length} Testfällen des `
+      + 'Laufs; die übrigen erscheinen zusammengefasst im Protokoll).',
     label: 'tab:a5_testfaelle',
   });
 }
@@ -126,7 +130,7 @@ export function a5Protokolle(tests: TestArtefakt): string {
     `  \\item[Commit] \\texttt{${latexEscape(tests.kopf.git_commit)}}`,
     `  \\item[Laufzeitumgebung] Node ${latexEscape(tests.kopf.node_version)}`,
     `  \\item[Ergebnis] ${zaehle('pass')} bestanden, ${zaehle('fail')} fehlgeschlagen, `
-      + `${zaehle('skip')} uebersprungen`,
+      + `${zaehle('skip')} übersprungen`,
     '\\end{description}',
     '',
   ].join('\n');
@@ -134,7 +138,7 @@ export function a5Protokolle(tests: TestArtefakt): string {
   const zeilen = tests.faelle.map((f) => [
     latexEscape(f.datei),
     bezeichner(f),
-    f.zustand === 'pass' ? 'bestanden' : f.zustand === 'fail' ? 'fehlgeschlagen' : 'uebersprungen',
+    f.zustand === 'pass' ? 'bestanden' : f.zustand === 'fail' ? 'fehlgeschlagen' : 'übersprungen',
     f.dauer_ms === null ? '--' : `${f.dauer_ms}`,
     f.fehlermeldung === null ? '--' : latexEscape(f.fehlermeldung.slice(0, 160)),
   ]);
@@ -227,7 +231,7 @@ export function a5Fehlerprotokoll(
 export function a5Toleranzen(invarianten: readonly Invariante[]): string {
   return hinweiskopf('packages/core/test/property/invariants.json') + longtable({
     spalten: ['l', 'p{0.24\\textwidth}', 'l', 'l', 'r', 'p{0.28\\textwidth}'],
-    kopf: ['ID', 'Invariante', 'Kette', 'Typ', 'Wert', 'Begruendung'],
+    kopf: ['ID', 'Invariante', 'Kette', 'Typ', 'Wert', 'Begründung'],
     zeilen: invarianten.map((i) => [
       latexEscape(i.id), latexEscape(i.kurztext), latexEscape(i.kette),
       latexEscape(i.typ), `${i.wert}`, latexEscape(i.begruendung),

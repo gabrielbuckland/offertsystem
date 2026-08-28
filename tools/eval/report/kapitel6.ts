@@ -45,9 +45,9 @@ export function p7Sensitivitaet(oat: { readonly zeilen: readonly OatZeile[] }): 
     kopf: ['Dim.', 'Parameter', 'Var. \\%', 'Szen.',
            'Verkaufssumme \\%', '$H_{\\min}\\cdot g$ \\%', '$H_{\\max}\\cdot g$ \\%', 'Befund'],
     zeilen,
-    beschriftung: 'Sensitivitaetsanalyse je Variationsdimension: prozentuale Aenderung von '
+    beschriftung: 'Sensitivitätsanalyse je Variationsdimension: prozentuale Änderung von '
       + 'Verkaufssumme und Honorarrange, getrennt gemessen. Als dominant gilt eine relative '
-      + 'Aenderung von mehr als 10 Prozent. Dimension D3 misst mit der Korridor-Projektion '
+      + 'Änderung von mehr als 10 Prozent. Dimension D3 misst mit der Korridor-Projektion '
       + 'der Szenariodaten; sie ist eine Operation des Werkzeugs, nicht der Pipeline.',
     label: 'tab:p7_sensitivitaet',
   });
@@ -81,13 +81,13 @@ export function p7Marge(margin: MargenArtefakt): string {
   const kopf = [
     '\\begin{description}',
     `  \\item[Kleinste Marge \\(M = R/L\\)] ${zahlDeCh(margin.margin_min, 4)} `
-      + '(Bedingung erfuellt genau dann, wenn \\(M \\geq 1\\))',
+      + '(Bedingung erfüllt genau dann, wenn \\(M \\geq 1\\))',
     ...(margin.margin_min_grosser_sprung === undefined ? [] : [
       `  \\item[Kleinste Marge bei grossem Projektsprung (\\(\\lambda \\geq 3\\))] `
         + `${zahlDeCh(margin.margin_min_grosser_sprung, 4)}`,
     ]),
-    a === null ? '  \\item[Ungueltigste Konstellation] keine' :
-      `  \\item[Ungueltigste Konstellation] Randkurve ${latexEscape(a.randkurve)}, `
+    a === null ? '  \\item[Ungültigste Konstellation] keine' :
+      `  \\item[Ungültigste Konstellation] Randkurve ${latexEscape(a.randkurve)}, `
       + `Stufe ${a.k}, \\(m_1 = ${a.m1}\\), \\(m_2 = ${a.m2}\\)`,
     `  \\item[Kritischer Parameter] `
       + `${latexEscape(margin.kritischer_parameter ?? 'keiner erreichbar')}`,
@@ -107,13 +107,13 @@ export function p7Marge(margin: MargenArtefakt): string {
   ]);
   return hinweiskopf('artifacts/eval/degression/<zeitstempel>/margin.json') + kopf + longtable({
     spalten: ['l', 'r', 'r', 'r', 'p{0.30\\textwidth}'],
-    kopf: ['Parameter', 'Istwert', 'Wert bei $M = 1$', 'noetige Variation', 'Befund'],
+    kopf: ['Parameter', 'Istwert', 'Wert bei $M = 1$', 'nötige Variation', 'Befund'],
     zeilen,
     beschriftung: 'Marge der Netto-Degression: Abstand zur Schranke und die je Parameter '
-      + 'noetige Variation, um sie zu erreichen. Analytisch aus Stuetzstellen und '
-      + 'Bildbereich der Skalierungsfunktion bestimmt; es wurde keine unzulaessige '
-      + 'Konfiguration ausgefuehrt. Die Aussage zu den Stuetzstellen ist auf die '
-      + 'einparametrige Familie beschraenkt, die das Grundhonorar festhaelt.',
+      + 'nötige Variation, um sie zu erreichen. Analytisch aus Stützstellen und '
+      + 'Bildbereich der Skalierungsfunktion bestimmt; es wurde keine unzulässige '
+      + 'Konfiguration ausgeführt. Die Aussage zu den Stützstellen ist auf die '
+      + 'einparametrige Familie beschränkt, die das Grundhonorar festhält.',
     label: 'tab:p7_marge',
   });
 }
@@ -160,21 +160,21 @@ export function p4Erweiterung(extension: ExtensionArtefakt): string {
         spalten: ['l', 'p{0.34\\textwidth}', 'p{0.40\\textwidth}'],
         kopf: ['Commit', 'Betreff', 'Dateien ausserhalb des Scopes'],
         zeilen,
-        beschriftung: 'Stoerende Commits, die eine aussagekraeftige Messung verhindern.',
+        beschriftung: 'Störende Commits, die eine aussagekräftige Messung verhindern.',
         label: 'tab:p4_erweiterung_verweigert',
       })}`;
   }
   const code = r.metrik_1_und_2;
   const zeilen = [
-    ['Codedateien geaendert', `${code?.dateien_geaendert ?? '--'}`, 'Metrik 1'],
+    ['Codedateien geändert', `${code?.dateien_geaendert ?? '--'}`, 'Metrik 1'],
     ['Codedateien neu', `${code?.dateien_neu ?? '--'}`, 'Metrik 1'],
-    ['Codezeilen hinzugefuegt', `${code?.zeilen_hinzugefuegt ?? '--'}`, 'Metrik 2'],
+    ['Codezeilen hinzugefügt', `${code?.zeilen_hinzugefuegt ?? '--'}`, 'Metrik 2'],
     ['Codezeilen entfernt', `${code?.zeilen_entfernt ?? '--'}`, 'Metrik 2'],
-    ['Konfigurationsdateien geaendert', `${r.konfiguration?.dateien_geaendert ?? '--'}`,
+    ['Konfigurationsdateien geändert', `${r.konfiguration?.dateien_geaendert ?? '--'}`,
      'separat ausgewiesen'],
-    ['Testdateien geaendert', `${r.test?.dateien_geaendert ?? '--'}`, 'separat ausgewiesen'],
-    ['Pipeline-Kern unversehrt', jaNein(r.kern_unversehrt), 'Metrik 3, binaer'],
-    ['Kernstufen der Pipeline unveraendert', jaNein(r.kernstufen_pipeline_unveraendert),
+    ['Testdateien geändert', `${r.test?.dateien_geaendert ?? '--'}`, 'separat ausgewiesen'],
+    ['Pipeline-Kern unversehrt', jaNein(r.kern_unversehrt), 'Metrik 3, binär'],
+    ['Kernstufen der Pipeline unverändert', jaNein(r.kernstufen_pipeline_unveraendert),
      'Metrik 3'],
     ['Faktormenge datengetrieben', jaNein(r.faktormenge_datengetrieben),
      'Voraussetzung der Aussagekraft'],
@@ -185,7 +185,7 @@ export function p4Erweiterung(extension: ExtensionArtefakt): string {
   ];
   return hinweiskopf('artifacts/eval/extension/<zeitstempel>/extension.json') + longtable({
     spalten: ['p{0.42\\textwidth}', 'r', 'p{0.34\\textwidth}'],
-    kopf: ['Messgroesse', 'Wert', 'Bemerkung'],
+    kopf: ['Messgrösse', 'Wert', 'Bemerkung'],
     zeilen,
     beschriftung: 'Erweiterungsaufwand, aus der Versionsgeschichte zwischen den Tags '
       + '\\texttt{eval/ff1b-vorher} und \\texttt{eval/ff1b-nachher} erhoben. Code, '
@@ -234,7 +234,7 @@ export function p1Szenarien(
            '$\\Delta H_{\\min}$', '$\\Delta H_{\\max}$', 'Bewertung', 'Stufendiagnose',
            'Lagedaten'],
     zeilen,
-    beschriftung: `Szenarienlauf gegen die unabhaengige Referenzrechnung; bestanden gilt `
+    beschriftung: `Szenarienlauf gegen die unabhängige Referenzrechnung; bestanden gilt `
       + `bei einer Abweichung bis ${zahlDeCh(szenarien.schwelle * 100, 0)} Prozent. `
       + 'Die Spalte Lagedaten weist die Herkunft der Lagescores aus (R-01).',
     label: 'tab:p1_szenarien',
@@ -273,10 +273,10 @@ export function p2Stufen(
   });
   return hinweiskopf('artifacts/tests + artifacts/coverage') + longtable({
     spalten: ['p{0.36\\textwidth}', 'r', 'r', 'l'],
-    kopf: ['Pipeline-Stufe', 'Testfaelle', 'Zeilenabdeckung \\%', 'Ergebnis'],
+    kopf: ['Pipeline-Stufe', 'Testfälle', 'Zeilenabdeckung \\%', 'Ergebnis'],
     zeilen,
     beschriftung: 'Testergebnisse je Pipeline-Stufe mit Zeilenabdeckung. Die Zuordnung '
-      + 'erfolgt ueber den Dateinamen der Testdatei; Faelle ohne Stufenbezug erscheinen '
+      + 'erfolgt über den Dateinamen der Testdatei; Fälle ohne Stufenbezug erscheinen '
       + 'nicht in dieser Tabelle.',
     label: 'tab:p2_stufen',
   });
@@ -301,9 +301,9 @@ export function p2Invarianten(properties: PropertyArtefakt): string {
   ]);
   return hinweiskopf('artifacts/property/<zeitstempel>/properties.json') + longtable({
     spalten: ['l', 'r', 'l', 'p{0.40\\textwidth}'],
-    kopf: ['Invariante', 'Laeufe', 'Ergebnis', 'minimiertes Gegenbeispiel'],
+    kopf: ['Invariante', 'Läufe', 'Ergebnis', 'minimiertes Gegenbeispiel'],
     zeilen,
-    beschriftung: `Invariantenpruefung mit fast-check, Startwert ${properties.seed ?? '--'}. `
+    beschriftung: `Invariantenprüfung mit fast-check, Startwert ${properties.seed ?? '--'}. `
       + 'Jeder Befund ist mit diesem Startwert exakt wiederholbar.',
     label: 'tab:p2_invarianten',
   });
@@ -338,30 +338,30 @@ export function p2Konfigpruefung(config: KonfigArtefakt): string {
   return hinweiskopf('artifacts/config/<zeitstempel>/config-validation.json')
     + longtable({
         spalten: ['l', 'p{0.60\\textwidth}'],
-        kopf: ['Groesse', 'Wert im Positivlauf'],
+        kopf: ['Grösse', 'Wert im Positivlauf'],
         zeilen: positiv,
-        beschriftung: `Positivlauf der Konfigurationspruefung, Version `
-          + `${latexEscape(config.konfigVersion)}: die drei Pruefebenen mit ihren Zahlenwerten. `
-          + `Die Groesse \\code{kleinsteMarge} im Befund \\code{nettoDegression} ist die `
-          + `relative Sicherheitsmarge $1 - \\text{Verhaeltnis}/\\text{Schwelle}$ der `
-          + `Vorpruefung (erfuellt bei Werten ueber null); sie ist nicht die Marge `
+        beschriftung: `Positivlauf der Konfigurationsprüfung, Version `
+          + `${latexEscape(config.konfigVersion)}: die drei Prüfebenen mit ihren Zahlenwerten. `
+          + `Die Grösse \\code{kleinsteMarge} im Befund \\code{nettoDegression} ist die `
+          + `relative Sicherheitsmarge $1 - \\text{Verhältnis}/\\text{Schwelle}$ der `
+          + `Vorprüfung (erfüllt bei Werten über null); sie ist nicht die Marge `
           + `$M = R/L$ aus Tabelle~\\ref{tab:p7_marge}.`,
         label: 'tab:p2_konfig_positiv',
       })
     + longtable({
         spalten: ['p{0.22\\textwidth}', 'p{0.22\\textwidth}', 'l', 'l', 'l', 'l'],
-        kopf: ['Fixture', 'Verletzung', 'erwartet', 'tatsaechlich', 'Ergebnis erzeugt', 'Status'],
+        kopf: ['Fixture', 'Verletzung', 'erwartet', 'tatsächlich', 'Ergebnis erzeugt', 'Status'],
         zeilen: negativ,
         beschriftung: 'Negativmatrix: je verletzender Konfiguration der erwartete und der '
-          + 'tatsaechliche CFG-Code. Kein Fall erzeugt ein Ergebnisobjekt (I-21).',
+          + 'tatsächliche CFG-Code. Kein Fall erzeugt ein Ergebnisobjekt (I-21).',
         label: 'tab:p2_konfig_negativ',
       })
     + longtable({
         spalten: ['p{0.24\\textwidth}', 'p{0.52\\textwidth}', 'l'],
-        kopf: ['Fall', 'Begruendung', 'Status'],
+        kopf: ['Fall', 'Begründung', 'Status'],
         zeilen: ausgeschlossen,
-        beschriftung: 'Konstruktiv ausgeschlossene Faelle: Sie sind nicht darstellbar und '
-          + 'werden deshalb nicht geprueft, sondern begruendet ausgewiesen (E-18).',
+        beschriftung: 'Konstruktiv ausgeschlossene Fälle: Sie sind nicht darstellbar und '
+          + 'werden deshalb nicht geprüft, sondern begründet ausgewiesen (E-18).',
         label: 'tab:p2_konfig_ausgeschlossen',
       });
 }
@@ -432,8 +432,8 @@ export function p6Entkopplung(integration: LaufArtefakt, contract: LaufArtefakt)
     spalten: ['l', 'p{0.50\\textwidth}'],
     kopf: ['Kriterium', 'Wert'],
     zeilen,
-    beschriftung: 'Nachweis der Entkopplung: Der vollstaendige Testlauf kommt ohne '
-      + 'API-Zugang aus. Die Contract Tests wirken detektiv; ihre Aussagekraft haengt an '
+    beschriftung: 'Nachweis der Entkopplung: Der vollständige Testlauf kommt ohne '
+      + 'API-Zugang aus. Die Contract Tests wirken detektiv; ihre Aussagekraft hängt an '
       + 'der Herkunft der Fixtures.',
     label: 'tab:p6_entkopplung',
   });
@@ -451,9 +451,9 @@ export interface ManuellArtefakt {
 export function p8Pruefpunkte(manual: ManuellArtefakt | null): string {
   if (manual === null || manual.punkte === undefined || manual.punkte.length === 0) {
     return `${hinweiskopf('artifacts/manual/<datum>/ui.json')
-      }Die manuelle Pruefung der Oberflaeche ist noch nicht durchgefuehrt. Die vorab `
-      + `festgelegte Pruefpunktliste liegt unter \\texttt{docs/testdoku/manual/`
-      + `ui-testfaelle.md}; sie ist bewusst vor der Durchfuehrung fixiert.\n\n`;
+      }Die manuelle Prüfung der Oberfläche ist noch nicht durchgeführt. Die vorab `
+      + `festgelegte Prüfpunktliste liegt unter \\texttt{docs/testdoku/manual/`
+      + `ui-testfaelle.md}; sie ist bewusst vor der Durchführung fixiert.\n\n`;
   }
   const zeilen = manual.punkte.map((p) => [
     latexEscape(p.punkt), latexEscape(p.ergebnis), latexEscape(p.datum ?? '--'),
@@ -461,9 +461,9 @@ export function p8Pruefpunkte(manual: ManuellArtefakt | null): string {
   ]);
   return hinweiskopf('artifacts/manual/<datum>/ui.json') + longtable({
     spalten: ['l', 'l', 'l', 'l', 'l'],
-    kopf: ['Pruefpunkt', 'Ergebnis', 'Datum', 'Pruefer', 'Anforderung'],
+    kopf: ['Prüfpunkt', 'Ergebnis', 'Datum', 'Prüfer', 'Anforderung'],
     zeilen,
-    beschriftung: 'Manuelle Pruefpunkte der Oberflaeche. Die Dashboard-Punkte tragen die '
+    beschriftung: 'Manuelle Prüfpunkte der Oberfläche. Die Dashboard-Punkte tragen die '
       + 'Anforderung A-12 und sind damit gesondert auswertbar (E-30).',
     label: 'tab:p8_pruefpunkte',
   });

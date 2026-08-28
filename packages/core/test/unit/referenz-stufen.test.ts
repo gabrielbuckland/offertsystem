@@ -18,7 +18,7 @@ describe('T1 — Unit-Tests gegen die unabhaengige Referenz', () => {
     dokumentiere(task, {
       vorbedingung: 'Referenztabelle 01_flaeche mit alpha in {0, 0.25, 0.5, 1}',
       schritte: 'gewichteteFlaeche je Referenzzeile berechnen',
-      erwartung: 'Jedes Ergebnis stimmt mit A_gewichtet der Referenz auf 9 Stellen ueberein',
+      erwartung: 'Jedes Ergebnis stimmt mit A_gewichtet der Referenz auf 9 Stellen überein',
       anforderung: 'A-06',
     });
     for (const z of ladeReferenz('01_flaeche')) {
@@ -31,9 +31,9 @@ describe('T1 — Unit-Tests gegen die unabhaengige Referenz', () => {
 
   it('02_qm_preis: q_t wird ungerundet verglichen', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Referenztabelle 02_qm_preis mit Referenzpreis und -flaechen',
-      schritte: 'q_t als P_ref durch die gewichtete Referenzflaeche je Zeile bilden',
-      erwartung: 'q_t stimmt ungerundet mit der Referenz auf 6 Stellen ueberein',
+      vorbedingung: 'Referenztabelle 02_qm_preis mit Referenzpreis und -flächen',
+      schritte: 'q_t als P_ref durch die gewichtete Referenzfläche je Zeile bilden',
+      erwartung: 'q_t stimmt ungerundet mit der Referenz auf 6 Stellen überein',
       anforderung: 'A-06',
     });
     for (const z of ladeReferenz('02_qm_preis')) {
@@ -47,7 +47,7 @@ describe('T1 — Unit-Tests gegen die unabhaengige Referenz', () => {
     dokumentiere(task, {
       vorbedingung: 'Referenztabelle 03_wohnungspreis mit bis zu drei Anpassungsfaktoren je Zeile',
       schritte: 'Stufe 2 auf einen Ein-Typ-Eingang mit den Anpassungen der Zeile anwenden',
-      erwartung: 'Der Positionspreis p_j stimmt exakt in Rappen mit der Referenz ueberein',
+      erwartung: 'Der Positionspreis p_j stimmt exakt in Rappen mit der Referenz überein',
       anforderung: 'A-06',
     });
     for (const z of ladeReferenz('03_wohnungspreis')) {
@@ -69,7 +69,7 @@ describe('T1 — Unit-Tests gegen die unabhaengige Referenz', () => {
     dokumentiere(task, {
       vorbedingung: 'Referenztabelle 04_verkaufssumme mit Einheitenzahl m je Zeile',
       schritte: 'Stufe 2 auf einen Ein-Typ-Eingang mit m Einheiten anwenden',
-      erwartung: 'V stimmt exakt in Rappen mit der Referenz ueberein',
+      erwartung: 'V stimmt exakt in Rappen mit der Referenz überein',
       anforderung: 'A-06',
     });
     for (const z of ladeReferenz('04_verkaufssumme')) {
@@ -82,9 +82,9 @@ describe('T1 — Unit-Tests gegen die unabhaengige Referenz', () => {
 
   it('05_normalisierung: innerhalb, auf der Grenze, ausserhalb und invertiert', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Referenztabelle 05_normalisierung mit Faellen innerhalb, auf der Grenze, ausserhalb und invertiert',
+      vorbedingung: 'Referenztabelle 05_normalisierung mit Fällen innerhalb, auf der Grenze, ausserhalb und invertiert',
       schritte: 'Die min-max-Strategie je Zeile mit den Grenzen der Referenz anwenden',
-      erwartung: 'x_norm stimmt mit der Referenz auf 9 Stellen ueberein',
+      erwartung: 'x_norm stimmt mit der Referenz auf 9 Stellen überein',
       anforderung: 'A-06',
     });
     for (const z of ladeReferenz('05_normalisierung')) {
@@ -101,8 +101,8 @@ describe('T1 — Unit-Tests gegen die unabhaengige Referenz', () => {
   it('06_aufwandindikator: D fuer mehrere Faktorkombinationen', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Referenztabelle 06_aufwandindikator mit Gewichten (Summe 1) und normierten Werten',
-      schritte: 'Stufe 4 mit der aus der Tabelle gebildeten Faktormenge ausfuehren',
-      erwartung: 'D stimmt mit der Referenz auf 9 Stellen ueberein',
+      schritte: 'Stufe 4 mit der aus der Tabelle gebildeten Faktormenge ausführen',
+      erwartung: 'D stimmt mit der Referenz auf 9 Stellen überein',
       anforderung: 'A-06',
     });
     const zeilen = ladeReferenz('06_aufwandindikator');
@@ -117,8 +117,8 @@ describe('T1 — Unit-Tests gegen die unabhaengige Referenz', () => {
   it('07_honorar_mapping: Basen ungerundet, Honorar exakt in Rappen', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Referenztabelle 07_honorar_mapping mit V und D je Zeile',
-      schritte: 'Stufe 5 mit der Standardkonfiguration je Zeile ausfuehren',
-      erwartung: 'Stufenindex, g(D) und ungerundete Basis stimmen ueberein; das Honorar exakt in Rappen',
+      schritte: 'Stufe 5 mit der Standardkonfiguration je Zeile ausführen',
+      erwartung: 'Stufenindex, g(D) und ungerundete Basis stimmen überein; das Honorar exakt in Rappen',
       anforderung: 'A-06',
     });
     const k = standardKonfiguration();
@@ -139,8 +139,8 @@ describe('T1 — Unit-Tests gegen die unabhaengige Referenz', () => {
   it('08_degression: linke Seite kleiner gleich rechte Seite (eq:netto_degression)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Referenztabelle 08_degression mit D-Paaren und Margenquotienten',
-      schritte: 'Die Degressionsungleichung und den Skalierungsquotienten je Zeile pruefen',
-      erwartung: 'Die linke Seite bleibt kleiner gleich der rechten Seite; der Skalierungsquotient haelt den Margenquotienten ein',
+      schritte: 'Die Degressionsungleichung und den Skalierungsquotienten je Zeile prüfen',
+      erwartung: 'Die linke Seite bleibt kleiner gleich der rechten Seite; der Skalierungsquotient hält den Margenquotienten ein',
       anforderung: 'A-06',
     });
     for (const z of ladeReferenz('08_degression')) {

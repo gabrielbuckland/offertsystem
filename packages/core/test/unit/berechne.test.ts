@@ -6,8 +6,8 @@ import { dokumentiere } from '../helper/dokumentiere.js';
 describe('berechne — Verkettung (Spec 03 §4.6)', () => {
   it('rechnet aus einem Fixture-Projekt V, D und die Honorarrange', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Vollstaendiges Fixture-Projekt mit vier Einheiten',
-      schritte: 'berechne ueber alle Stufen ausfuehren',
+      vorbedingung: 'Vollständiges Fixture-Projekt mit vier Einheiten',
+      schritte: 'berechne über alle Stufen ausführen',
       erwartung: 'V ist 340 000 000 Rappen, D liegt in [0, 1] und honorarMin ist kleiner als honorarMax',
     });
     const r = berechne(eingangsArgumente());
@@ -23,8 +23,8 @@ describe('berechne — Verkettung (Spec 03 §4.6)', () => {
   it('reicht den Fehler der ersten fehlschlagenden Stufe durch und rechnet nicht weiter', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Eingangsargumente ohne Referenzbewertungen',
-      schritte: 'berechne ausfuehren und den Fehler inspizieren',
-      erwartung: 'Der Fehler REFERENZBEWERTUNG_FEHLT aus Stufe 1 wird unveraendert durchgereicht',
+      schritte: 'berechne ausführen und den Fehler inspizieren',
+      erwartung: 'Der Fehler REFERENZBEWERTUNG_FEHLT aus Stufe 1 wird unverändert durchgereicht',
     });
     const r = berechne(eingangsArgumente({ bewertungen: [] }));
     expect(r.ok).toBe(false);
@@ -37,8 +37,8 @@ describe('berechne — Verkettung (Spec 03 §4.6)', () => {
   it('gibt in keinem Fehlerfall ein Berechnungsergebnis aus (6.4 (c), I-24)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Eingangsargumente ohne Referenzbewertungen',
-      schritte: 'berechne ausfuehren und das Fehlerobjekt pruefen',
-      erwartung: 'Das Fehlerobjekt traegt kein Feld wert; im Fehlerfall entsteht kein Ergebnis',
+      schritte: 'berechne ausführen und das Fehlerobjekt prüfen',
+      erwartung: 'Das Fehlerobjekt trägt kein Feld wert; im Fehlerfall entsteht kein Ergebnis',
       invariante: 'I-24',
     });
     const r = berechne(eingangsArgumente({ bewertungen: [] }));
@@ -48,9 +48,9 @@ describe('berechne — Verkettung (Spec 03 §4.6)', () => {
 
   it('fuehrt die vollstaendige Referenzbewertung inklusive anzeige und die Lagescores (E-19)', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Vollstaendiges Fixture-Projekt',
-      schritte: 'berechne ausfuehren und Bewertung sowie Lagescores im Ergebnis inspizieren',
-      erwartung: 'Konfidenzklasse und -bereich, Parametrisierungsabdruck und Lagescore-Metadaten werden mitgefuehrt',
+      vorbedingung: 'Vollständiges Fixture-Projekt',
+      schritte: 'berechne ausführen und Bewertung sowie Lagescores im Ergebnis inspizieren',
+      erwartung: 'Konfidenzklasse und -bereich, Parametrisierungsabdruck und Lagescore-Metadaten werden mitgeführt',
     });
     const r = berechne(eingangsArgumente());
     if (r.ok) {
@@ -65,8 +65,8 @@ describe('berechne — Verkettung (Spec 03 §4.6)', () => {
   it('fuehrt die eingebettete Konfigurationskopie und den Zeitstempel mit (NFA-07, PE-04)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Fixture-Projekt mit festem Zeitstempel 2026-08-16T10:00:00.000Z',
-      schritte: 'berechne ausfuehren und Zeitstempel sowie Konfigurationsabdruck inspizieren',
-      erwartung: 'Zeitstempel unveraendert; die Konfigurationskopie traegt alpha 0.5, vier Faktoren und eine 64-stellige Hex-Pruefsumme',
+      schritte: 'berechne ausführen und Zeitstempel sowie Konfigurationsabdruck inspizieren',
+      erwartung: 'Zeitstempel unverändert; die Konfigurationskopie trägt alpha 0.5, vier Faktoren und eine 64-stellige Hex-Prüfsumme',
     });
     const r = berechne(eingangsArgumente({ zeitstempel: '2026-08-16T10:00:00.000Z' }));
     if (r.ok) {
@@ -82,8 +82,8 @@ describe('berechne — Verkettung (Spec 03 §4.6)', () => {
 
   it('ist deterministisch: zwei Laeufe liefern tief-gleiche Ergebnisobjekte (I-14)', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Identische Eingangsargumente fuer beide Laeufe',
-      schritte: 'berechne zweimal mit denselben Argumenten ausfuehren',
+      vorbedingung: 'Identische Eingangsargumente für beide Läufe',
+      schritte: 'berechne zweimal mit denselben Argumenten ausführen',
       erwartung: 'Beide Ergebnisse sind strikt tief-gleich',
       invariante: 'I-14',
     });
@@ -96,8 +96,8 @@ describe('berechne — Verkettung (Spec 03 §4.6)', () => {
   it('mutiert die Eingabe nicht', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Eingangsargumente mit Einheitenliste und Vermarkter-Rohwerten',
-      schritte: 'Zustand vorher festhalten, berechne ausfuehren und Zustand vergleichen',
-      erwartung: 'Einheitenzahl und Rohwerte der Eingabe bleiben unveraendert',
+      schritte: 'Zustand vorher festhalten, berechne ausführen und Zustand vergleichen',
+      erwartung: 'Einheitenzahl und Rohwerte der Eingabe bleiben unverändert',
     });
     const args = eingangsArgumente();
     const vorher = structuredClone({
@@ -111,8 +111,8 @@ describe('berechne — Verkettung (Spec 03 §4.6)', () => {
 
   it('exportiert jede Stufe auch einzeln (NFA-03)', async ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Oeffentliche API des Pakets @offert/core',
-      schritte: 'Das Paket importieren und die Exportliste pruefen',
+      vorbedingung: 'Öffentliche API des Pakets @offert/core',
+      schritte: 'Das Paket importieren und die Exportliste prüfen',
       erwartung: 'Alle sechs Stufenfunktionen und berechne sind einzeln als Funktionen exportiert',
     });
     const api = await import('../../src/index.js');
@@ -125,9 +125,9 @@ describe('berechne — Verkettung (Spec 03 §4.6)', () => {
 
   it('erhaelt P1s Exporte unveraendert (PE-15)', async ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Oeffentliche API des Pakets @offert/core',
-      schritte: 'Das Paket importieren und die Exporte aus Plan P1 pruefen',
-      erwartung: 'PAKET_NAME, validiereKonfiguration und parseKonfiguration sind unveraendert vorhanden',
+      vorbedingung: 'Öffentliche API des Pakets @offert/core',
+      schritte: 'Das Paket importieren und die Exporte aus Plan P1 prüfen',
+      erwartung: 'PAKET_NAME, validiereKonfiguration und parseKonfiguration sind unverändert vorhanden',
     });
     const api = await import('../../src/index.js');
     expect(api.PAKET_NAME).toBe('@offert/core');
