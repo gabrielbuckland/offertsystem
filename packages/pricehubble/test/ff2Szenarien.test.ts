@@ -46,7 +46,7 @@ describe('Szenario 1 — Normalbetrieb (HTTP-Ebene)', () => {
     expect(bewertungen.ok && bewertungen.wert.vollstaendig).toBe(true);
     expect(scores.ok && scores.wert.werte.size).toBe(9);
     vermerke({
-      szenario: 'S1 Normalbetrieb', kategorie: 'keine (Erfolgsfall)',
+      szenario: 'S1 Normalbetrieb', kategorie: 'keine', fall: 'Normalbetrieb (Erfolgsfall)',
       erwarteterStatus: 'keiner', beobachteterStatus: beobachtet(bewertungen),
       pipelineZustand: 'abgeschlossen',
     });
@@ -78,7 +78,7 @@ describe('Szenario 2 — Nichtverfuegbarkeit und Timeout (nur HTTP-Ebene moeglic
     expect(ergebnis.ok && ergebnis.wert.fehler?.diagnose.versuche).toBe(3);
     expect(ergebnis.ok && ergebnis.wert.vollstaendig).toBe(false);
     vermerke({
-      szenario: 'S2 Nichtverfuegbarkeit', kategorie: 'Netzwerkfehler',
+      szenario: 'S2 Nichtverfuegbarkeit', kategorie: 'Transport/Verfügbarkeit', fall: 'Netzwerkfehler',
       erwarteterStatus: 'nicht_erreichbar', beobachteterStatus: beobachtet(ergebnis),
       pipelineZustand: 'nicht gestartet',
     });
@@ -97,7 +97,7 @@ describe('Szenario 2 — Nichtverfuegbarkeit und Timeout (nur HTTP-Ebene moeglic
     const ergebnis = await lauf;
     expect(ergebnis.ok && ergebnis.wert.fehler?.art).toBe('zeitueberschreitung');
     vermerke({
-      szenario: 'S2 Nichtverfuegbarkeit', kategorie: 'Timeout',
+      szenario: 'S2 Nichtverfuegbarkeit', kategorie: 'Transport/Verfügbarkeit', fall: 'Timeout',
       erwarteterStatus: 'zeitueberschreitung', beobachteterStatus: beobachtet(ergebnis),
       pipelineZustand: 'nicht gestartet',
     });
@@ -121,7 +121,7 @@ describe('Szenario 2 — Nichtverfuegbarkeit und Timeout (nur HTTP-Ebene moeglic
     expect(ergebnis.ok && ergebnis.wert.fehler?.art).toBe('dienst_gestoert');
     expect(ergebnis.ok && ergebnis.wert.vollstaendig).toBe(false);
     vermerke({
-      szenario: 'S2 Nichtverfuegbarkeit', kategorie: 'HTTP-Statusfehler 5xx',
+      szenario: 'S2 Nichtverfuegbarkeit', kategorie: 'Transport/Verfügbarkeit', fall: 'HTTP-Statusfehler 5xx',
       erwarteterStatus: 'dienst_gestoert', beobachteterStatus: beobachtet(ergebnis),
       pipelineZustand: 'nicht gestartet',
     });
@@ -143,7 +143,7 @@ describe('Szenario 2 — Nichtverfuegbarkeit und Timeout (nur HTTP-Ebene moeglic
     expect(versuche).toBe(1);
     expect(ergebnis.ok && ergebnis.wert.fehler?.art).toBe('anfrage_abgelehnt');
     vermerke({
-      szenario: 'S2 Nichtverfuegbarkeit', kategorie: 'HTTP-Statusfehler 4xx',
+      szenario: 'S2 Nichtverfuegbarkeit', kategorie: 'Zugriffs-/Anfragefehler', fall: 'HTTP-Statusfehler 4xx',
       erwarteterStatus: 'anfrage_abgelehnt', beobachteterStatus: beobachtet(ergebnis),
       pipelineZustand: 'nicht gestartet',
     });
@@ -169,7 +169,7 @@ describe('Szenario 2 — Nichtverfuegbarkeit und Timeout (nur HTTP-Ebene moeglic
     expect(versuche).toBe(2);
     expect(ergebnis.ok && ergebnis.wert.vollstaendig).toBe(true);
     vermerke({
-      szenario: 'S2 Nichtverfuegbarkeit', kategorie: 'Rate-Limiting (Retry-After eingehalten)',
+      szenario: 'S2 Nichtverfuegbarkeit', kategorie: 'Kontingent', fall: 'Rate-Limiting, Retry-After eingehalten',
       erwarteterStatus: 'keiner', beobachteterStatus: beobachtet(ergebnis),
       pipelineZustand: 'abgeschlossen',
     });
@@ -193,7 +193,7 @@ describe('Szenario 2 — Nichtverfuegbarkeit und Timeout (nur HTTP-Ebene moeglic
         ergebnis.wert.fehler.wiederholbarNach,
     ).toBe(600);
     vermerke({
-      szenario: 'S2 Nichtverfuegbarkeit', kategorie: 'Rate-Limiting (Schwelle ueberschritten)',
+      szenario: 'S2 Nichtverfuegbarkeit', kategorie: 'Kontingent', fall: 'Rate-Limiting, Schwelle überschritten',
       erwarteterStatus: 'kontingent', beobachteterStatus: beobachtet(ergebnis),
       pipelineZustand: 'nicht gestartet',
     });
@@ -208,7 +208,7 @@ describe('Szenario 2 — Nichtverfuegbarkeit und Timeout (nur HTTP-Ebene moeglic
     expect(ergebnis.ok && ergebnis.wert.bewertungen.size).toBe(0);
     expect(ergebnis.ok && ergebnis.wert.vollstaendig).toBe(false);
     vermerke({
-      szenario: 'S2 Nichtverfuegbarkeit', kategorie: 'Fallback-Verbot (I-24)',
+      szenario: 'S2 Nichtverfuegbarkeit', kategorie: 'Transport/Verfügbarkeit', fall: 'Fallback-Verbot (I-24)',
       erwarteterStatus: 'dienst_gestoert', beobachteterStatus: beobachtet(ergebnis),
       pipelineZustand: 'nicht gestartet',
     });
@@ -227,7 +227,7 @@ describe('Szenario 3 — Statuscode 200 mit abweichender Feldstruktur (nur HTTP-
     expect(ergebnis.ok && ergebnis.wert.fehler?.art).toBe('antwort_ungueltig');
     expect(ergebnis.ok && ergebnis.wert.bewertungen.size).toBe(0);
     vermerke({
-      szenario: 'S3 Strukturabweichung', kategorie: `Vertragsbruch: ${name}`,
+      szenario: 'S3 Strukturabweichung', kategorie: 'Vertragsbruch', fall: name,
       erwarteterStatus: 'antwort_ungueltig', beobachteterStatus: beobachtet(ergebnis),
       pipelineZustand: 'nicht gestartet',
     });
@@ -244,7 +244,7 @@ describe('Szenario 3 — Statuscode 200 mit abweichender Feldstruktur (nur HTTP-
     expect(ergebnis.ok).toBe(false);
     expect(!ergebnis.ok && ergebnis.fehler.art).toBe('antwort_ungueltig');
     vermerke({
-      szenario: 'S3 Strukturabweichung', kategorie: 'Vertragsbruch: unvollstaendige Lagescores',
+      szenario: 'S3 Strukturabweichung', kategorie: 'Vertragsbruch', fall: 'unvollständige Lagescores',
       erwarteterStatus: 'antwort_ungueltig', beobachteterStatus: beobachtet(ergebnis),
       pipelineZustand: 'nicht gestartet',
     });
@@ -260,7 +260,7 @@ describe('Szenario 3 — Statuscode 200 mit abweichender Feldstruktur (nur HTTP-
     const ergebnis = await adapter.bewerteWohnungstypen([anfrage(1)]);
     expect(ergebnis.ok && ergebnis.wert.vollstaendig).toBe(true);
     vermerke({
-      szenario: 'S3 Strukturabweichung', kategorie: 'unbekanntes Zusatzfeld (AK-5, toleriert)',
+      szenario: 'S3 Strukturabweichung', kategorie: 'keine', fall: 'unbekanntes Zusatzfeld (AK-5, toleriert)',
       erwarteterStatus: 'keiner', beobachteterStatus: beobachtet(ergebnis),
       pipelineZustand: 'abgeschlossen',
     });
@@ -278,7 +278,7 @@ describe('Szenario 3 — Statuscode 200 mit abweichender Feldstruktur (nur HTTP-
     expect(bruch?.['pfad']).toContain('valuationSale.value');
     expect(JSON.stringify(protokoll.ereignisse)).not.toContain('"971000"');
     vermerke({
-      szenario: 'S3 Strukturabweichung', kategorie: 'Diagnoseprotokoll ohne Antwortwerte',
+      szenario: 'S3 Strukturabweichung', kategorie: 'Vertragsbruch', fall: 'Diagnoseprotokoll ohne Antwortwerte',
       erwarteterStatus: 'antwort_ungueltig', beobachteterStatus: beobachtet(ergebnis),
       pipelineZustand: 'nicht gestartet',
     });

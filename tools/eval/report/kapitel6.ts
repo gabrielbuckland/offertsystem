@@ -6,7 +6,7 @@
  */
 import { frankenAusRappen, hinweiskopf, latexEscape, longtable, zahlDeCh } from './latex.ts';
 import type { Testfall } from './vitest-reporter.ts';
-import type { CoverageArtefakt } from './a5.ts';
+import { gewichteteAbdeckung, type CoverageArtefakt } from './a5.ts';
 
 function pz(wert: number | null | undefined): string {
   return wert === null || wert === undefined ? '--' : zahlDeCh(wert, 2);
@@ -258,16 +258,11 @@ export function p2Stufen(
   const zeilen = stufen.map(([anzeige, muster]) => {
     const passend = tests.faelle.filter(
       (f) => f.datei.includes(muster) || (f.suite ?? '').toLowerCase().includes(muster));
-    const abdeckung = Object.entries(coverage)
-      .filter(([pfad]) => pfad.includes(muster))
-      .map(([, w]) => w.lines?.pct)
-      .filter((p): p is number => typeof p === 'number');
+    const abdeckung = gewichteteAbdeckung(coverage, muster, 'lines');
     return [
       latexEscape(anzeige),
       `${passend.length}`,
-      abdeckung.length === 0
-        ? '--'
-        : zahlDeCh(abdeckung.reduce((a, b) => a + b, 0) / abdeckung.length, 2),
+      abdeckung === null ? '--' : zahlDeCh(abdeckung, 2),
       passend.every((f) => f.zustand !== 'fail') ? 'bestanden' : 'nicht bestanden',
     ];
   });
@@ -371,6 +366,7 @@ export function p2Konfigpruefung(config: KonfigArtefakt): string {
 export interface KategorieZeile {
   readonly szenario?: string;
   readonly kategorie?: string;
+  readonly fall?: string;
   readonly erwarteterStatus?: string;
   readonly beobachteterStatus?: string;
   readonly pipelineZustand?: string;
@@ -398,20 +394,23 @@ export function p5Integration(integration: LaufArtefakt): string {
     );
   }
   const zeilen = kategorien.map((k) => [
-    latexEscape(k.szenario ?? '--'),
+    latexEscape((k.szenario ?? '--').split(' ')[0] ?? '--'),
     latexEscape(k.kategorie ?? '--'),
+    latexEscape(k.fall ?? '--'),
     latexEscape(k.erwarteterStatus ?? '--'),
     latexEscape(k.beobachteterStatus ?? '--'),
     latexEscape(k.pipelineZustand ?? '--'),
   ]);
   return hinweiskopf('artifacts/integration/<zeitstempel>/integration.json') + longtable({
-    spalten: ['p{0.16\\textwidth}', 'p{0.24\\textwidth}', 'p{0.15\\textwidth}',
-              'p{0.15\\textwidth}', 'p{0.12\\textwidth}'],
-    kopf: ['Szenario', 'Fehlerkategorie', 'Erwarteter Status', 'Beobachteter Status',
+    spalten: ['l', 'p{0.15\\textwidth}', 'p{0.20\\textwidth}', 'p{0.13\\textwidth}',
+              'p{0.13\\textwidth}', 'p{0.11\\textwidth}'],
+    kopf: ['Szen.', 'Kategorie', 'Fall', 'Erwarteter Status', 'Beobachteter Status',
            'Pipeline'],
     zeilen,
     beschriftung: 'Integrationslauf gegen die Mock-API: erwarteter und beobachteter '
-      + `Fehlerstatus sowie Zustand der Pipeline je Fehlerkategorie. Gesamtergebnis `
+      + 'Fehlerstatus sowie Zustand der Pipeline je gefahrenem Fall; die '
+      + 'Kategoriespalte ordnet jeden Fall einer der vier Fehlerkategorien aus '
+      + `Tabelle~\\ref{tab:fehler_abbildung} zu. Gesamtergebnis `
       + `${latexEscape(integration.ergebnis ?? '--')} `
       + `(${integration.anzahlTests ?? '--'} Tests, `
       + `${integration.laufzeitMs ?? '--'}\\,ms).`,

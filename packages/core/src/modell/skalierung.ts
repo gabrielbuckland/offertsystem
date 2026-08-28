@@ -5,7 +5,12 @@ import type { Skalierungsparameter } from '../config/typen.js';
 
 export function skalierung(d: number, parameter: Skalierungsparameter): number {
   if (!Number.isFinite(d) || d < 0 || d > 1) {
-    throw new Error(`D muss in [0, 1] liegen (I-12), erhalten: ${d}`);
+    // Defensive Zusicherung, kein Sonderfall des Fehlerkontrakts: Stufe 4 garantiert
+    // D in [0,1] (I-12, property-geprueft); dieser Zweig ist im Pipeline-Verbund
+    // unerreichbar und zeigt einen Programmierfehler des Aufrufers an.
+    throw new Error(
+      `Programmierfehler: D muss in [0, 1] liegen (Vorbedingung I-12), erhalten: ${d}`,
+    );
   }
   return parameter.gMin + d * (parameter.gMax - parameter.gMin);
 }

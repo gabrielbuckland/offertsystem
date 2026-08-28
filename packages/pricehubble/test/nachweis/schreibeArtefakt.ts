@@ -4,14 +4,29 @@ import { join } from 'node:path';
 export type Nachweisart = 'contract' | 'integration';
 
 /**
- * Eine Zeile je gefahrener Fehlerkategorie (nur Integrations-Artefakt). Erwarteter und
+ * Eine Zeile je gefahrenem Fall (nur Integrations-Artefakt). Erwarteter und
  * beobachteter Status stehen getrennt, damit die Tabelle in Kapitel 6 den Nachweis
- * «jede Fehlerkategorie endet in einem benannten Fehlerstatus» je Kategorie ablesbar
+ * «jede Fehlerkategorie endet in einem benannten Fehlerstatus» je Fall ablesbar
  * macht, statt ihn ueber eine Zusammenfassung zu behaupten.
+ *
+ * `kategorie` traegt eine der vier kanonischen Fehlerkategorien aus
+ * tab:fehler_abbildung des Berichts (Transport/Verfuegbarkeit,
+ * Zugriffs-/Anfragefehler, Kontingent, Vertragsbruch) oder «keine» fuer Erfolgs-
+ * und Toleranzfaelle; `fall` benennt die konkrete Auspraegung. Die feste
+ * Kategorienmenge macht die Vollstaendigkeitsaussage «alle vier Kategorien
+ * gefahren» am Artefakt pruefbar (F-064).
  */
+export type Fehlerkategorie =
+  | 'Transport/Verfügbarkeit'
+  | 'Zugriffs-/Anfragefehler'
+  | 'Kontingent'
+  | 'Vertragsbruch'
+  | 'keine';
+
 export interface KategorieZeile {
   readonly szenario: string;
-  readonly kategorie: string;
+  readonly kategorie: Fehlerkategorie;
+  readonly fall: string;
   readonly erwarteterStatus: string;
   readonly beobachteterStatus: string;
   readonly pipelineZustand: 'nicht gestartet' | 'abgebrochen' | 'abgeschlossen';

@@ -30,12 +30,46 @@ export interface Invariante {
   readonly begruendung: string;
 }
 
+export interface CoverageMass {
+  readonly pct?: number;
+  readonly covered?: number;
+  readonly total?: number;
+}
+
 export interface CoverageEintrag {
-  readonly lines?: { readonly pct?: number };
-  readonly branches?: { readonly pct?: number };
+  readonly lines?: CoverageMass;
+  readonly branches?: CoverageMass;
 }
 
 export type CoverageArtefakt = Readonly<Record<string, CoverageEintrag>>;
+
+/**
+ * Zeilengewichtete Paketabdeckung: sum(covered) / sum(total) ueber alle Dateien des
+ * Praefixes. Ein ungewichtetes Mittel der Datei-Prozentsaetze wuerde kleine Dateien
+ * ueberrepraesentieren und hat im Kern 2,25 Prozentpunkte zu viel ausgewiesen
+ * (Befund F-060 des Gutachtens vom 2026-08-28).
+ */
+export function gewichteteAbdeckung(
+  coverage: CoverageArtefakt,
+  praefix: string,
+  art: 'lines' | 'branches',
+): number | null {
+  let covered = 0;
+  let total = 0;
+  for (const [pfad, eintrag] of Object.entries(coverage)) {
+    if (pfad === 'total' || !pfad.includes(praefix)) continue;
+    const mass = eintrag[art];
+    if (typeof mass?.covered !== 'number' || typeof mass?.total !== 'number') {
+      throw new Error(
+        `Abdeckungseintrag ${pfad} ohne covered/total — Artefakt aus altem Lauf? `
+        + 'coverage-summary.json neu erzeugen (npm run test:coverage).',
+      );
+    }
+    covered += mass.covered;
+    total += mass.total;
+  }
+  return total === 0 ? null : (100 * covered) / total;
+}
 
 const FEHLT = '\\textbf{METADATEN FEHLEN}';
 
@@ -160,17 +194,9 @@ export const ABDECKUNGSZIELE = [
 ] as const;
 
 export function a5Coverage(coverage: CoverageArtefakt): string {
-  const mittel = (praefix: string, art: 'lines' | 'branches'): number | null => {
-    const werte = Object.entries(coverage)
-      .filter(([pfad]) => pfad.includes(praefix))
-      .map(([, w]) => w[art]?.pct)
-      .filter((p): p is number => typeof p === 'number');
-    return werte.length === 0 ? null : werte.reduce((a, b) => a + b, 0) / werte.length;
-  };
-
   const zeilen: string[][] = ABDECKUNGSZIELE.map((z) => {
-    const l = mittel(z.paket, 'lines');
-    const b = mittel(z.paket, 'branches');
+    const l = gewichteteAbdeckung(coverage, z.paket, 'lines');
+    const b = gewichteteAbdeckung(coverage, z.paket, 'branches');
     return [
       latexEscape(z.anzeige),
       l === null ? '--' : zahlDeCh(l, 2),
@@ -191,9 +217,11 @@ export function a5Coverage(coverage: CoverageArtefakt): string {
     spalten: ['l', 'r', 'r', 'l', 'l'],
     kopf: ['Bereich', 'Zeilen \\%', 'Branches \\%', 'Ziel Zeilen', 'Ziel Branches'],
     zeilen,
-    beschriftung: 'Testabdeckung je Paket. Die Zielwerte sind eine eigene Festlegung der '
-      + 'Umsetzung; Abschnitt 4.4 der Arbeit verlangt Testabdeckung ohne Zielwert (R-05). '
-      + 'Die Abdeckung ist ein notwendiges, kein hinreichendes Kriterium.',
+    beschriftung: 'Testabdeckung je Paket, zeilengewichtet aggregiert (abgedeckte durch '
+      + 'gesamte Zeilen bzw. Zweige aller Dateien des Pakets). Die Zielwerte sind eine '
+      + 'eigene Festlegung der Umsetzung; Abschnitt 4.4 der Arbeit verlangt Testabdeckung '
+      + 'ohne Zielwert (R-05). Die Abdeckung ist ein notwendiges, kein hinreichendes '
+      + 'Kriterium.',
     label: 'tab:a5_coverage',
   });
 }

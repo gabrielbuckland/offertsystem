@@ -3,8 +3,10 @@
  *
  *   mock (Vorgabe) — Interface-Ebene; ein frisch geklontes Repository laeuft ohne
  *                    Zugangsdaten gruen durch
- *   fixture        — echter Adapter gegen aufgezeichnete Antworten (MSW); die
- *                    Schemavalidierung laeuft mit
+ *   fixture        — reserviert fuer den Betrieb gegen aufgezeichnete Antworten;
+ *                    derzeit baugleich mit `pricehubble` (echter Adapter, echtes
+ *                    fetch), da noch keine Aufzeichnungen existieren und der
+ *                    MSW-Ersatz nur in der Testumgebung laeuft
  *   pricehubble    — echter Adapter gegen die reale API
  *
  * Ein unbekannter Wert ist ein KonfigurationsFehler, kein stiller Rueckfall.

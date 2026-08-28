@@ -76,8 +76,15 @@ describe('a5Protokolle', () => {
 describe('a5Coverage', () => {
   const coverage: CoverageArtefakt = {
     total: { lines: { pct: 96.4 }, branches: { pct: 91.2 } },
-    'packages/core/src/pipeline/stufe4.ts': { lines: { pct: 100 }, branches: { pct: 95 } },
-    'packages/pricehubble/src/client/http.ts': { lines: { pct: 82.1 }, branches: { pct: 70 } },
+    'packages/core/src/pipeline/stufe4.ts':
+      { lines: { pct: 100, covered: 100, total: 100 },
+        branches: { pct: 95, covered: 19, total: 20 } },
+    'packages/core/src/pipeline/stufe5.ts':
+      { lines: { pct: 50, covered: 150, total: 300 },
+        branches: { pct: 50, covered: 10, total: 20 } },
+    'packages/pricehubble/src/client/http.ts':
+      { lines: { pct: 82.1, covered: 821, total: 1000 },
+        branches: { pct: 70, covered: 70, total: 100 } },
   };
 
   it('weist die Abdeckung je Paket mit den Zielwerten und deren Herkunft aus', () => {
@@ -85,6 +92,20 @@ describe('a5Coverage', () => {
     expect(tex).toContain('96.40');
     expect(tex).toContain('@offert/core');
     expect(tex).toContain('eigene Festlegung');
+  });
+
+  it('aggregiert zeilengewichtet statt als Mittel der Datei-Prozentsaetze', () => {
+    const tex = a5Coverage(coverage);
+    // core: (100+150)/(100+300) = 62.50 % — das Dateimittel waere 75.00 %.
+    expect(tex).toContain('62.50');
+    expect(tex).not.toContain('75.00');
+  });
+
+  it('bricht bei einem Eintrag ohne covered/total ab, statt still zu mitteln', () => {
+    const alt: CoverageArtefakt = {
+      'packages/core/src/x.ts': { lines: { pct: 90 }, branches: { pct: 80 } },
+    };
+    expect(() => a5Coverage(alt)).toThrow(/covered\/total/u);
   });
 });
 

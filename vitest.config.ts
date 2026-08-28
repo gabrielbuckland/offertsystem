@@ -31,7 +31,9 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json-summary', 'html'],
       reportsDirectory: 'artifacts/coverage',
-      include: ['packages/*/src/**/*.ts', 'apps/*/src/**/*.ts'],
+      // .tsx gehoert zur Messung: Ohne die Endung blieben 52 Komponentendateien
+      // (u. a. OfferteDokument.tsx) unerfasst und unausgewiesen (F-060).
+      include: ['packages/*/src/**/*.{ts,tsx}', 'apps/*/src/**/*.{ts,tsx}'],
       exclude: ['**/index.ts', '**/*.d.ts'],
     },
   },
