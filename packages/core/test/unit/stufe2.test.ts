@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { berechneVerkaufssumme } from '../../src/pipeline/stufe2-verkaufssumme.js';
 import { pipelineEingang } from '../helper/projekt.js';
+import { dokumentiere } from '../helper/dokumentiere.js';
 
 describe('Stufe 2 — berechneVerkaufssumme (eq:flaeche, eq:qm_preis, eq:wohnungspreis, eq:verkaufssumme)', () => {
-  it('bildet q_t ungerundet und p_j auf ganze Rappen gerundet (R2)', () => {
+  it('bildet q_t ungerundet und p_j auf ganze Rappen gerundet (R2)', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Referenzbewertung 85 000 000 Rappen bei 92.5 m2, alpha 0.5, keine Aussenflaeche',
+      schritte: 'berechneVerkaufssumme ausfuehren und Quadratmeterpreis sowie Positionspreise pruefen',
+      erwartung: 'q_t bleibt ungerundet (nicht ganzzahlig); jeder Positionspreis ist ganzzahlig in Rappen',
+    });
     // P_ref = 85 000 000 Rappen, A_ref = 92.5 m^2, alpha = 0.5, A_aussen = 0
     const r = berechneVerkaufssumme(pipelineEingang());
     expect(r.ok).toBe(true);
@@ -15,12 +21,24 @@ describe('Stufe 2 — berechneVerkaufssumme (eq:flaeche, eq:qm_preis, eq:wohnung
     }
   });
 
-  it('haelt I-05 exakt: Referenzflaechen und keine Anpassungen ergeben P_ref', () => {
+  it('haelt I-05 exakt: Referenzflaechen und keine Anpassungen ergeben P_ref', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Einheiten mit Referenzflaechen und ohne Zu-/Abschlaege',
+      schritte: 'Stufe 2 ausfuehren und alle Positionspreise vergleichen',
+      erwartung: 'Jeder Positionspreis ist exakt P_ref = 85 000 000 Rappen',
+      invariante: 'I-05',
+    });
     const r = berechneVerkaufssumme(pipelineEingang());
     if (r.ok) for (const p of r.wert.positionen) expect(p.preis).toBe(85_000_000);
   });
 
-  it('bildet V als exakte Ganzzahlsumme (eq:verkaufssumme)', () => {
+  it('bildet V als exakte Ganzzahlsumme (eq:verkaufssumme)', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Vier identische Einheiten zum Referenzpreis',
+      schritte: 'Stufe 2 ausfuehren und Verkaufssumme sowie Einheitenzahl lesen',
+      erwartung: 'V ist exakt 4 * 85 000 000 Rappen bei Einheitenzahl 4',
+      anforderung: 'A-03',
+    });
     const r = berechneVerkaufssumme(pipelineEingang());
     if (r.ok) {
       expect(r.wert.verkaufssumme).toBe(4 * 85_000_000);
@@ -28,7 +46,13 @@ describe('Stufe 2 — berechneVerkaufssumme (eq:flaeche, eq:qm_preis, eq:wohnung
     }
   });
 
-  it('verknuepft Anpassungen additiv und reihenfolgeunabhaengig (I-08)', () => {
+  it('verknuepft Anpassungen additiv und reihenfolgeunabhaengig (I-08)', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Erste Einheit mit zwei relativen Anpassungen +0.1 und -0.05',
+      schritte: 'Stufe 2 mit beiden Anpassungsreihenfolgen ausfuehren und Preise vergleichen',
+      erwartung: 'Gleicher Preis in beiden Reihenfolgen; Anpassungssumme 0.05; Preis = P_ref * 1.05',
+      invariante: 'I-08',
+    });
     const a = [{ faktor: 0.1, begruendung: 'Attikalage mit Dachterrasse', erfassungsform: 'relativ' as const },
                { faktor: -0.05, begruendung: 'Erdgeschoss stark einsehbar', erfassungsform: 'relativ' as const }];
     const vor = berechneVerkaufssumme(pipelineEingang({ anpassungenErsteEinheit: a }));
@@ -41,7 +65,14 @@ describe('Stufe 2 — berechneVerkaufssumme (eq:flaeche, eq:qm_preis, eq:wohnung
     }
   });
 
-  it('weist die Anpassungen einzeln aus (I-09, A-14)', () => {
+  it('weist die Anpassungen einzeln aus (I-09, A-14)', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Erste Einheit mit einer relativen Anpassung -0.05 samt Begruendung',
+      schritte: 'Stufe 2 ausfuehren und die Position der ersten Einheit inspizieren',
+      erwartung: 'Die Anpassung ist einzeln mit Begruendung ausgewiesen; der Basispreis steht getrennt daneben',
+      invariante: 'I-09',
+      anforderung: 'A-14',
+    });
     const r = berechneVerkaufssumme(pipelineEingang({ anpassungenErsteEinheit: [
       { faktor: -0.05, begruendung: 'Laermexposition Strassenseite', erfassungsform: 'relativ' }] }));
     if (r.ok) {
@@ -52,7 +83,12 @@ describe('Stufe 2 — berechneVerkaufssumme (eq:flaeche, eq:qm_preis, eq:wohnung
     }
   });
 
-  it('bricht bei A_t_ref = 0 ab — S-04, kein Infinity in der Offerte', () => {
+  it('bricht bei A_t_ref = 0 ab — S-04, kein Infinity in der Offerte', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Wohnungstyp mit gewichteter Referenzflaeche 0',
+      schritte: 'Stufe 2 ausfuehren und den Fehler inspizieren',
+      erwartung: 'Fehler REFERENZFLAECHE_NULL in Stufe 2 mit WohnungstypId, alpha und den Flaechenparametern',
+    });
     const r = berechneVerkaufssumme(pipelineEingang({ referenzflaecheNull: true }));
     expect(r.ok).toBe(false);
     if (!r.ok) {
@@ -64,7 +100,12 @@ describe('Stufe 2 — berechneVerkaufssumme (eq:flaeche, eq:qm_preis, eq:wohnung
     }
   });
 
-  it('bricht bei z_j <= -1 ab und kappt nicht — S-06, Modellgrenze', () => {
+  it('bricht bei z_j <= -1 ab und kappt nicht — S-06, Modellgrenze', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Erste Einheit mit relativer Anpassung -1 (Anpassungssumme auf der Modellgrenze)',
+      schritte: 'Stufe 2 ausfuehren und den Fehler inspizieren',
+      erwartung: 'Fehler ANPASSUNG_UNZULAESSIG mit art "modellgrenze" und zSumme -1; kein Kappen',
+    });
     const r = berechneVerkaufssumme(pipelineEingang({ anpassungenErsteEinheit: [
       { faktor: -1, begruendung: 'Vollstaendiger Abschlag', erfassungsform: 'relativ' }] }));
     expect(r.ok).toBe(false);
@@ -74,7 +115,12 @@ describe('Stufe 2 — berechneVerkaufssumme (eq:flaeche, eq:qm_preis, eq:wohnung
     }
   });
 
-  it('bricht bei z_j ausserhalb der konfigurierten Grenzen ab — S-06, Konfigurationsgrenze', () => {
+  it('bricht bei z_j ausserhalb der konfigurierten Grenzen ab — S-06, Konfigurationsgrenze', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Erste Einheit mit Anpassung 0.4 ausserhalb der konfigurierten Grenzen [-0.25, 0.25]',
+      schritte: 'Stufe 2 ausfuehren und den Fehler inspizieren',
+      erwartung: 'Fehler mit art "konfigurationsgrenze", den Grenzen und der beanstandeten Anpassung samt Begruendung',
+    });
     const r = berechneVerkaufssumme(pipelineEingang({ anpassungenErsteEinheit: [
       { faktor: 0.4, begruendung: 'Aussichtslage mit Seeblick', erfassungsform: 'relativ' }] }));
     expect(r.ok).toBe(false);
@@ -85,7 +131,13 @@ describe('Stufe 2 — berechneVerkaufssumme (eq:flaeche, eq:qm_preis, eq:wohnung
     }
   });
 
-  it('bildet A_t_ref und A_j mit demselben alpha (Abnahmekriterium 9)', () => {
+  it('bildet A_t_ref und A_j mit demselben alpha (Abnahmekriterium 9)', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Eingang mit alpha 0.25 und 12 m2 Aussenflaeche je Einheit und Referenz',
+      schritte: 'Stufe 2 ausfuehren und Referenzflaeche, gewichtete Flaeche und Preis vergleichen',
+      erwartung: 'Beide Flaechen sind 92.5 + 0.25 * 12; der Preis bleibt P_ref',
+      invariante: 'I-05',
+    });
     const r = berechneVerkaufssumme(pipelineEingang({ alpha: 0.25, aussenflaeche: 12 }));
     if (r.ok) {
       expect(r.wert.alpha).toBe(0.25);
@@ -95,7 +147,12 @@ describe('Stufe 2 — berechneVerkaufssumme (eq:flaeche, eq:qm_preis, eq:wohnung
     }
   });
 
-  it('gibt die Positionen nach Wohnungsnummer sortiert aus (Spec 03 §9.3)', () => {
+  it('gibt die Positionen nach Wohnungsnummer sortiert aus (Spec 03 §9.3)', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Standard-Eingang mit vier Einheiten',
+      schritte: 'Stufe 2 ausfuehren und die Wohnungsnummern der Positionen auslesen',
+      erwartung: 'Die Positionen stehen aufsteigend nach Wohnungsnummer sortiert',
+    });
     const r = berechneVerkaufssumme(pipelineEingang());
     if (r.ok) {
       const n = r.wert.positionen.map((p) => p.wohnungsnummer);

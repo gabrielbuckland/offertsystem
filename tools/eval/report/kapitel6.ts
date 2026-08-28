@@ -341,7 +341,11 @@ export function p2Konfigpruefung(config: KonfigArtefakt): string {
         kopf: ['Groesse', 'Wert im Positivlauf'],
         zeilen: positiv,
         beschriftung: `Positivlauf der Konfigurationspruefung, Version `
-          + `${latexEscape(config.konfigVersion)}: die drei Pruefebenen mit ihren Zahlenwerten.`,
+          + `${latexEscape(config.konfigVersion)}: die drei Pruefebenen mit ihren Zahlenwerten. `
+          + `Die Groesse \\code{kleinsteMarge} im Befund \\code{nettoDegression} ist die `
+          + `relative Sicherheitsmarge $1 - \\text{Verhaeltnis}/\\text{Schwelle}$ der `
+          + `Vorpruefung (erfuellt bei Werten ueber null); sie ist nicht die Marge `
+          + `$M = R/L$ aus Tabelle~\\ref{tab:p7_marge}.`,
         label: 'tab:p2_konfig_positiv',
       })
     + longtable({
@@ -364,6 +368,14 @@ export function p2Konfigpruefung(config: KonfigArtefakt): string {
 
 // --- P5/P6: Integration und Entkopplung ---------------------------------------------
 
+export interface KategorieZeile {
+  readonly szenario?: string;
+  readonly kategorie?: string;
+  readonly erwarteterStatus?: string;
+  readonly beobachteterStatus?: string;
+  readonly pipelineZustand?: string;
+}
+
 export interface LaufArtefakt {
   readonly systemverhalten?: string;
   readonly fehlerstatus?: string;
@@ -373,23 +385,36 @@ export interface LaufArtefakt {
   readonly laufzeitMs?: number;
   readonly wirkung?: string;
   readonly fixtures_herkunft?: string;
+  readonly kategorien?: readonly KategorieZeile[];
 }
 
 export function p5Integration(integration: LaufArtefakt): string {
-  const zeilen = [
-    ['Systemverhalten', latexEscape(integration.systemverhalten ?? '--')],
-    ['Fehlerstatus', latexEscape(integration.fehlerstatus ?? '--')],
-    ['Zustand der Pipeline', latexEscape(integration.pipelineZustand ?? '--')],
-    ['Ergebnis', latexEscape(integration.ergebnis ?? '--')],
-    ['Anzahl Tests', `${integration.anzahlTests ?? '--'}`],
-    ['Laufzeit [ms]', `${integration.laufzeitMs ?? '--'}`],
-  ];
+  const kategorien = integration.kategorien ?? [];
+  if (kategorien.length === 0) {
+    throw new Error(
+      'Integrations-Artefakt ohne kategorien: Der Nachweis je Fehlerkategorie '
+      + '(sec:integrationstests) braucht eine Zeile je gefahrener Kategorie. '
+      + 'Testlauf mit aktuellem ff2Szenarien.test.ts wiederholen.',
+    );
+  }
+  const zeilen = kategorien.map((k) => [
+    latexEscape(k.szenario ?? '--'),
+    latexEscape(k.kategorie ?? '--'),
+    latexEscape(k.erwarteterStatus ?? '--'),
+    latexEscape(k.beobachteterStatus ?? '--'),
+    latexEscape(k.pipelineZustand ?? '--'),
+  ]);
   return hinweiskopf('artifacts/integration/<zeitstempel>/integration.json') + longtable({
-    spalten: ['l', 'p{0.60\\textwidth}'],
-    kopf: ['Groesse', 'Wert'],
+    spalten: ['p{0.16\\textwidth}', 'p{0.24\\textwidth}', 'p{0.15\\textwidth}',
+              'p{0.15\\textwidth}', 'p{0.12\\textwidth}'],
+    kopf: ['Szenario', 'Fehlerkategorie', 'Erwarteter Status', 'Beobachteter Status',
+           'Pipeline'],
     zeilen,
-    beschriftung: 'Integrationslauf gegen die Mock-API: Systemverhalten, Fehlerstatus und '
-      + 'Zustand der Pipeline je Fehlerkategorie.',
+    beschriftung: 'Integrationslauf gegen die Mock-API: erwarteter und beobachteter '
+      + `Fehlerstatus sowie Zustand der Pipeline je Fehlerkategorie. Gesamtergebnis `
+      + `${latexEscape(integration.ergebnis ?? '--')} `
+      + `(${integration.anzahlTests ?? '--'} Tests, `
+      + `${integration.laufzeitMs ?? '--'}\\,ms).`,
     label: 'tab:p5_integration',
   });
 }

@@ -17,6 +17,9 @@ const tests: TestArtefakt = {
     { datei: 'packages/core/test/unit/stufe5.test.ts', suite: 'Stufe 5', name: 'interpoliert',
       zustand: 'pass', dauer_ms: 5, vorbedingung: 'Standardkonfiguration', schritte: 'aufrufen',
       erwartung: 'Referenzwert', invariante: 'I-20', anforderung: 'A-04', fehlermeldung: null },
+    { datei: 'packages/core/test/unit/y.test.ts', suite: null, name: 'teilweise dokumentiert',
+      zustand: 'pass', dauer_ms: 2, vorbedingung: 'nur Vorbedingung', schritte: null,
+      erwartung: null, invariante: null, anforderung: null, fehlermeldung: null },
     { datei: 'packages/core/test/unit/x.test.ts', suite: null, name: 'ohne Metadaten',
       zustand: 'pass', dauer_ms: 1, vorbedingung: null, schritte: null,
       erwartung: null, invariante: null, anforderung: null, fehlermeldung: null },
@@ -32,8 +35,24 @@ describe('a5Testfaelle', () => {
     expect(tex).toContain('A-04');
   });
 
-  it('macht fehlende Metadaten sichtbar statt sie zu verschweigen', () => {
+  it('macht fehlende Metadaten teilweise dokumentierter Faelle sichtbar', () => {
+    expect(tex).toContain('nur Vorbedingung');
     expect(tex).toContain('METADATEN FEHLEN');
+  });
+
+  it('laesst undokumentierte Faelle weg und weist die Auswahl in der Beschriftung aus', () => {
+    expect(tex).not.toContain('ohne Metadaten');
+    expect(tex).toContain('2 dokumentierte von 3');
+  });
+
+  it('bricht ab, wenn kein Fall Metadaten traegt', () => {
+    const ohne = {
+      ...tests,
+      faelle: tests.faelle.map((f) => ({
+        ...f, vorbedingung: null, schritte: null, erwartung: null,
+      })),
+    };
+    expect(() => a5Testfaelle(ohne)).toThrow(/Metadaten/u);
   });
 
   it('traegt den Hinweis auf die automatische Erzeugung', () => {

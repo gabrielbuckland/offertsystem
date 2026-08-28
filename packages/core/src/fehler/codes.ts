@@ -8,4 +8,4 @@ export type BerechnungsFehlerCode =
   | 'GEWICHTSSUMME_UNGUELTIG' // S-05, Laufzeit-Vorbedingung
   | 'ANPASSUNG_UNZULAESSIG' // S-06
   | 'STUFE_ENTARTET' // S-08, Laufzeit-Vorbedingung
-  | 'VERKAUFSSUMME_AUSSERHALB'; // S-09/S-10
+  | 'VERKAUFSSUMME_AUSSERHALB'; // S-10 (S-09 faengt die Ladezeitpruefung als CFG_TIER_OPEN ab)

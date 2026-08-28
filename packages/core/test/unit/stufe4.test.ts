@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { berechneAufwandindikator } from '../../src/pipeline/stufe4-gewichtung.js';
 import { normalisierungErgebnis, standardKonfiguration } from '../helper/projekt.js';
+import { dokumentiere } from '../helper/dokumentiere.js';
 import { faktorId } from '../../src/domain/ids.js';
 import { gewicht } from '../../src/domain/geld.js';
 
 describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
-  it('bildet D = Summe w_d * x_dach_d', () => {
+  it('bildet D = Summe w_d * x_dach_d', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Vier normierte Faktoren 0.2/0.4/0.3/0.5 mit den Standardgewichten 0.40/0.25/0.20/0.15',
+      schritte: 'berechneAufwandindikator ausfuehren',
+      erwartung: 'D ist 0.315 (Rechenbeispiel Anhang A4) bei Gewichtssumme 1',
+      anforderung: 'A-03',
+    });
     // Anhang A4: 0.40*0.2 + 0.25*0.4 + 0.20*0.3 + 0.15*0.5 = 0.08+0.10+0.06+0.075 = 0.315
     const r = berechneAufwandindikator(
       normalisierungErgebnis({ lage_gesamt: 0.2, innenausbau_qualitaet: 0.4,
@@ -18,7 +25,13 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
     }
   });
 
-  it('weist den Einzelbeitrag je Faktor aus (A-13, 3.3.5)', () => {
+  it('weist den Einzelbeitrag je Faktor aus (A-13, 3.3.5)', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Vier normierte Faktoren mit den Standardgewichten',
+      schritte: 'Stufe 4 ausfuehren und die Beitragsliste inspizieren',
+      erwartung: 'Der Beitrag von lage_gesamt ist 0.08; die Beitraege stehen sortiert nach FaktorId',
+      anforderung: 'A-13',
+    });
     const r = berechneAufwandindikator(
       normalisierungErgebnis({ lage_gesamt: 0.2, innenausbau_qualitaet: 0.4,
         preissegment: 0.3, projektumfang: 0.5 }),
@@ -31,7 +44,13 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
     }
   });
 
-  it('liefert D = 0 bei allen x_dach = 0 und D = 1 bei allen x_dach = 1 (I-12)', () => {
+  it('liefert D = 0 bei allen x_dach = 0 und D = 1 bei allen x_dach = 1 (I-12)', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Alle normierten Faktoren auf 0 beziehungsweise alle auf 1',
+      schritte: 'Stufe 4 fuer beide Randbelegungen ausfuehren',
+      erwartung: 'D ist 0 beziehungsweise 1; der Wertebereich wird ausgeschoepft',
+      invariante: 'I-12',
+    });
     const k = standardKonfiguration();
     const null_ = berechneAufwandindikator(normalisierungErgebnis({ lage_gesamt: 0,
       innenausbau_qualitaet: 0, preissegment: 0, projektumfang: 0 }), k);
@@ -43,7 +62,12 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
     }
   });
 
-  it('bricht bei Gewichtssumme ungleich eins ab und normiert nicht — S-05', () => {
+  it('bricht bei Gewichtssumme ungleich eins ab und normiert nicht — S-05', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Konfiguration mit projektumfang-Gewicht 0.05, also Gewichtssumme 0.9',
+      schritte: 'Stufe 4 ausfuehren und den Fehler inspizieren',
+      erwartung: 'Fehler GEWICHTSSUMME_UNGUELTIG in Stufe 4 mit Summe 0.9 und der Faktorliste; keine stille Normierung',
+    });
     const basis = standardKonfiguration();
     const faktoren = new Map(basis.faktoren);
     faktoren.set(faktorId('projektumfang'),
@@ -61,7 +85,12 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
     }
   });
 
-  it('akzeptiert die Summe innerhalb der Toleranz aus invariants.json (1e-9)', () => {
+  it('akzeptiert die Summe innerhalb der Toleranz aus invariants.json (1e-9)', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Konfiguration mit projektumfang-Gewicht 0.15 + 5e-10, also Summe knapp neben 1',
+      schritte: 'Stufe 4 ausfuehren',
+      erwartung: 'Ergebnis ok; die Abweichung liegt innerhalb der Toleranz 1e-9',
+    });
     const basis = standardKonfiguration();
     const faktoren = new Map(basis.faktoren);
     faktoren.set(faktorId('projektumfang'),
@@ -71,7 +100,12 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
     expect(r.ok).toBe(true);
   });
 
-  it('uebernimmt eine Uebersteuerung als D und weist die Ableitung weiter aus', () => {
+  it('uebernimmt eine Uebersteuerung als D und weist die Ableitung weiter aus', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Vier normierte Faktoren mit abgeleitetem D 0.315 und Uebersteuerung 0.7',
+      schritte: 'Stufe 4 mit Uebersteuerungsargument ausfuehren',
+      erwartung: 'D ist 0.7; der abgeleitete Wert 0.315 und alle vier Faktorbeitraege bleiben ausgewiesen',
+    });
     const r = berechneAufwandindikator(
       normalisierungErgebnis({ lage_gesamt: 0.2, innenausbau_qualitaet: 0.4,
         preissegment: 0.3, projektumfang: 0.5 }),
@@ -85,7 +119,12 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
     }
   });
 
-  it('traegt ohne Uebersteuerung KEIN Uebersteuerungsfeld (Anwesenheit entscheidet)', () => {
+  it('traegt ohne Uebersteuerung KEIN Uebersteuerungsfeld (Anwesenheit entscheidet)', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Vier normierte Faktoren ohne Uebersteuerungsargument',
+      schritte: 'Stufe 4 ausfuehren und die Felder des Ergebnisses pruefen',
+      erwartung: 'Das Feld uebersteuerung fehlt im Ergebnis',
+    });
     const r = berechneAufwandindikator(
       normalisierungErgebnis({ lage_gesamt: 0.2, innenausbau_qualitaet: 0.4,
         preissegment: 0.3, projektumfang: 0.5 }),
@@ -93,7 +132,13 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
     if (r.ok) expect('uebersteuerung' in r.wert).toBe(false);
   });
 
-  it('unterscheidet Lagescore, Vermarkterfaktor, Preissegment und Projektumfang nicht (I-13)', () => {
+  it('unterscheidet Lagescore, Vermarkterfaktor, Preissegment und Projektumfang nicht (I-13)', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Quelltext der Funktion berechneAufwandindikator',
+      schritte: 'Den Funktionsquelltext auf Faktorliterale durchsuchen',
+      erwartung: 'Kein faktorspezifisches Literal kommt vor; alle Faktoren laufen durch denselben Pfad',
+      invariante: 'I-13',
+    });
     const quelltext = String(berechneAufwandindikator);
     for (const literal of ['lage_gesamt', 'innenausbau', 'preissegment', 'projektumfang']) {
       expect(quelltext).not.toContain(literal);

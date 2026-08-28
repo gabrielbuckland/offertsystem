@@ -78,7 +78,21 @@ export function a5Testplan(tests: TestArtefakt): string {
 }
 
 export function a5Testfaelle(tests: TestArtefakt): string {
-  const zeilen = tests.faelle.map((f) => [
+  // Abgedruckt werden die dokumentierten Faelle der Kernalgorithmik (mindestens ein
+  // Metadatenfeld gesetzt; fehlende Felder erscheinen sichtbar als METADATEN FEHLEN).
+  // Die uebrigen Faelle des Laufs stehen zusammengefasst im Protokoll. Ein Lauf ganz
+  // ohne dokumentierte Faelle ist ein Reihenfolgefehler (alte Testbasis), kein leerer
+  // Anhang.
+  const dokumentiert = tests.faelle.filter(
+    (f) => f.vorbedingung !== null || f.schritte !== null || f.erwartung !== null,
+  );
+  if (dokumentiert.length === 0) {
+    throw new Error(
+      'Kein Testfall traegt vollstaendige Metadaten (vorbedingung/schritte/erwartung). '
+      + 'Testlauf mit annotierter Kernalgorithmik wiederholen (Spec 06 §8.2).',
+    );
+  }
+  const zeilen = dokumentiert.map((f) => [
     bezeichner(f),
     feld(f.vorbedingung), feld(f.schritte), feld(f.erwartung),
     f.invariante === null ? '--' : latexEscape(f.invariante),
@@ -89,8 +103,10 @@ export function a5Testfaelle(tests: TestArtefakt): string {
               'p{0.18\\textwidth}', 'l', 'l'],
     kopf: ['Testfall', 'Vorbedingung', 'Schritte', 'Erwartungswert', 'Inv.', 'Anf.'],
     zeilen,
-    beschriftung: 'Testfaelle mit Vorbedingung, Schritten und Erwartungswert, '
-      + 'automatisch aus den Testmetadaten erzeugt.',
+    beschriftung: 'Testfaelle der Kernalgorithmik mit Vorbedingung, Schritten und '
+      + 'Erwartungswert, automatisch aus den Testmetadaten erzeugt '
+      + `(${zeilen.length} dokumentierte von ${tests.faelle.length} Testfaellen des `
+      + 'Laufs; die uebrigen erscheinen zusammengefasst im Protokoll).',
     label: 'tab:a5_testfaelle',
   });
 }
