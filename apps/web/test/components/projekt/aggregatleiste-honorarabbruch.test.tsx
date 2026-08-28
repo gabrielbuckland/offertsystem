@@ -76,8 +76,7 @@ describe('Aggregatleiste bei Honorarabbruch — ueber den echten Verarbeitungspf
         laeuft={false}
         speichernLaeuft={false}
         berechnungLaeuft={false}
-        rechenwegOffen={false}
-        schalteRechenweg={() => undefined}
+        zeigeRechenweg={() => undefined}
       />);
 
     expect(html).toContain(formatiereAggregat(5_000_000));

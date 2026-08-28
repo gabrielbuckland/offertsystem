@@ -44,7 +44,7 @@ export function ProjektKacheln({ eintraege, leerAktion }: ProjektKachelnProps) {
             // der Stelle sichtbar machen, an der die Regel (Spec §2/§3) am ehesten
             // uebersehen wird.
             <p className="text-muted-foreground">
-              Projekt nicht lesbar — Datei muss geprueft werden.
+              Projekt nicht lesbar. Die Datei muss geprüft werden.
             </p>
           ) : (
             <Link href={`/projekte/${e.id}` as Route} className="block">

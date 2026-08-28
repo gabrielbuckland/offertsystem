@@ -1,82 +1,167 @@
 /**
- * Zustandslose Kartenreihe der fuenf Berechnungsstufen (US-09/A-10). Das Skelett — fuenf
- * Karten, Pfeile dazwischen — ist fix; jeder Karteninhalt kommt ausschliesslich aus
- * `bauePipelineDaten`, das ueber die Konfiguration bzw. eine Herleitung iteriert. Diese
- * Ansicht dient nur der Projektseite (Zwischenwerte des laufenden Projekts, dezenter
- * Verweis auf die Einstellungen); die Einstellungen-Uebersicht selbst bettet seit der
- * Zusammenlegung (Rueckmeldung Auftraggeber) die echten Bereichs-Editoren direkt und
- * untereinander ein (`einstellungen/page.tsx`), statt hierueber auf sie zu verlinken.
- * Rein darstellend: kein State, kein `'use client'`.
+ * Rechenweg-Ansicht (US-09/A-10): die fuenf Berechnungsstufen untereinander, in der
+ * Reihenfolge der Rechnung. Das Skelett — nummerierte Stufen an einer Leitlinie — ist
+ * fix; jeder Inhalt kommt ausschliesslich aus `bauePipelineDaten`, das ueber die
+ * Konfiguration bzw. eine Herleitung iteriert. Formelzeilen zeigen den Ausdruck mit den
+ * eingesetzten Werten und dem Ergebnis des Kerns; gerechnet wird hier nichts (I-24).
+ * Rein darstellend: kein State, kein `'use client'` — eingebettet wird sie vom
+ * `RechenwegDialog` der Projektseite.
  */
 import type { Route } from 'next';
 import Link from 'next/link';
-import { Fragment } from 'react';
-import type { PipelineStufe } from './pipeline-daten.js';
+import type { PipelineAbschnitt, PipelineStufe, PipelineZeile } from './pipeline-daten.js';
 
 export interface PipelineAnsichtProps {
   readonly stufen: readonly PipelineStufe[];
 }
 
-function PipelineKarte({ stufe }: { readonly stufe: PipelineStufe }) {
+function Herkunftszeichen({ herkunft }: { readonly herkunft: 'firmenweit' | 'projekt' }) {
   return (
-    <div className="min-w-56 rounded-lg border border-border bg-card p-3">
-      <p className="mb-2 font-medium">
-        Stufe {stufe.nr} · {stufe.titel}
-      </p>
-      <dl className="space-y-1 text-sm">
-        {stufe.zeilen.map((zeile) => (
-          <div key={zeile.beschriftung} className="flex items-baseline justify-between gap-2">
-            <dt className="text-muted-foreground">{zeile.beschriftung}</dt>
-            <dd className="tabular-nums">
-              {zeile.wert}
-              {zeile.herkunft !== undefined && (
-                <span className="ml-1 text-muted-foreground">
-                  ({zeile.herkunft === 'projekt' ? 'projektbezogen' : 'firmenweit'})
-                </span>
-              )}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      {stufe.balken !== undefined && (
-        <div className="mt-2 space-y-1.5">
-          {stufe.balken.map((balken) => (
-            <div key={balken.beschriftung}>
-              <div className="flex items-baseline justify-between gap-2 text-sm">
-                <span className="text-muted-foreground">{balken.beschriftung}</span>
-                <span className="tabular-nums">{balken.wert}</span>
-              </div>
-              <div className="h-1.5 w-full rounded bg-primary/20">
-                <div
-                  className="h-1.5 rounded bg-primary"
-                  style={{ width: `${Math.round(balken.anteil * 100)}%` }}
-                />
-              </div>
-            </div>
+    <span
+      className={`rounded-full border px-1.5 py-px text-[10px] leading-4 ${
+        herkunft === 'projekt'
+          ? 'border-accent-foreground/30 bg-accent text-accent-foreground'
+          : 'border-border bg-muted text-muted-foreground'}`}
+    >
+      {herkunft === 'projekt' ? 'projektbezogen' : 'firmenweit'}
+    </span>
+  );
+}
+
+function Formelzeile({ zeile }: { readonly zeile: PipelineZeile }) {
+  return (
+    <div className={zeile.hervorgehoben === true
+      ? 'rounded-md border border-accent-foreground/20 bg-accent/60 px-3 py-2'
+      : 'px-3 py-1.5'}
+    >
+      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-0.5">
+        <dt className={`flex items-center gap-2 text-sm ${
+          zeile.hervorgehoben === true ? 'font-medium' : 'text-muted-foreground'}`}
+        >
+          {zeile.beschriftung}
+          {zeile.herkunft !== undefined && <Herkunftszeichen herkunft={zeile.herkunft} />}
+        </dt>
+        <dd className="flex flex-wrap items-baseline gap-x-2 text-sm">
+          {zeile.ausdruck !== undefined && (
+            <span className="font-mono text-[13px] text-muted-foreground">
+              {zeile.ausdruck}
+              <span className="mx-1">=</span>
+            </span>
+          )}
+          <span className={`tabular-nums ${zeile.hervorgehoben === true ? 'font-semibold' : 'font-medium'}`}>
+            {zeile.wert}
+          </span>
+        </dd>
+      </div>
+      {zeile.anteil !== undefined && (
+        <div className="mt-1.5 h-1 w-full max-w-56 rounded-full bg-primary/15">
+          <div
+            className="h-1 rounded-full bg-primary"
+            style={{ width: `${String(Math.round(Math.min(1, Math.max(0, zeile.anteil)) * 100))}%` }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Abschnitt({ abschnitt }: { readonly abschnitt: PipelineAbschnitt }) {
+  return (
+    <div>
+      {abschnitt.titel !== undefined && (
+        <h4 className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {abschnitt.titel}
+        </h4>
+      )}
+      {abschnitt.formeln !== undefined && (
+        <div className="mb-2 space-y-0.5 px-3">
+          {abschnitt.formeln.map((formel) => (
+            <p key={formel} className="font-mono text-[13px] text-muted-foreground">{formel}</p>
           ))}
         </div>
       )}
-      <div className="mt-3 border-t border-border pt-2 text-sm">
-        <Link href={stufe.editorPfad as Route} className="text-muted-foreground">
-          Parameter in Einstellungen
-        </Link>
-      </div>
+      {abschnitt.zeilen !== undefined && (
+        <dl className="divide-y divide-border/60">
+          {abschnitt.zeilen.map((zeile) => (
+            <Formelzeile key={zeile.beschriftung} zeile={zeile} />
+          ))}
+        </dl>
+      )}
+      {abschnitt.tabelle !== undefined && (
+        <div className="mx-3 overflow-x-auto rounded-md border border-border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/50 text-left">
+                {abschnitt.tabelle.kopf.map((kopf, i) => (
+                  <th
+                    key={kopf}
+                    className={`px-3 py-2 font-medium text-muted-foreground ${
+                      abschnitt.tabelle!.ausrichtung[i] === 'rechts' ? 'text-right' : ''}`}
+                  >
+                    {kopf}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/60">
+              {/* Reihenfolge und Anzahl der Zeilen sind durch die Herleitung fixiert,
+                  der Index ist ein stabiler Schluessel. */}
+              {abschnitt.tabelle.zeilen.map((zeile, zi) => (
+                <tr key={zi} className="align-top">
+                  {zeile.map((zelle, si) => (
+                    <td
+                      key={si}
+                      className={`whitespace-pre-line px-3 py-2 tabular-nums ${
+                        abschnitt.tabelle!.ausrichtung[si] === 'rechts' ? 'text-right' : ''}`}
+                    >
+                      {zelle}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
+  );
+}
+
+function Stufe({ stufe, letzte }: { readonly stufe: PipelineStufe; readonly letzte: boolean }) {
+  return (
+    <section aria-label={`Stufe ${String(stufe.nr)}: ${stufe.titel}`} className="flex gap-4">
+      <div className="flex flex-col items-center">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+          {stufe.nr}
+        </span>
+        {!letzte && <span aria-hidden="true" className="w-px flex-1 bg-border" />}
+      </div>
+      <div className={`min-w-0 flex-1 ${letzte ? '' : 'pb-8'}`}>
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h3 className="text-base font-semibold">{stufe.titel}</h3>
+          <Link
+            href={stufe.editorPfad as Route}
+            className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+          >
+            Parameter in Einstellungen
+          </Link>
+        </div>
+        <p className="mb-3 max-w-prose text-sm text-muted-foreground">{stufe.zweck}</p>
+        <div className="space-y-4 rounded-lg border border-border bg-card py-2">
+          {stufe.abschnitte.map((abschnitt, i) => (
+            <Abschnitt key={i} abschnitt={abschnitt} />
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
 export function PipelineAnsicht({ stufen }: PipelineAnsichtProps) {
   return (
-    <div className="flex items-center gap-2 overflow-x-auto">
+    <div>
       {stufen.map((stufe, index) => (
-        <Fragment key={stufe.nr}>
-          {index > 0 && (
-            <span aria-hidden="true" className="text-muted-foreground">
-              →
-            </span>
-          )}
-          <PipelineKarte stufe={stufe} />
-        </Fragment>
+        <Stufe key={stufe.nr} stufe={stufe} letzte={index === stufen.length - 1} />
       ))}
     </div>
   );

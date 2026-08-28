@@ -179,7 +179,7 @@ export function EinheitenTabelle(
         if (wirksam === undefined) {
           // Kein Merkmalswert: Die Regel kann nichts sagen, und eine 0 waere eine
           // Behauptung. Das Feld bleibt leer und die Zelle weist den Grund aus (I-24).
-          return <span className="text-sm text-muted-foreground">— Merkmal fehlt</span>;
+          return <span className="text-sm text-muted-foreground">Merkmal fehlt</span>;
         }
 
         return (

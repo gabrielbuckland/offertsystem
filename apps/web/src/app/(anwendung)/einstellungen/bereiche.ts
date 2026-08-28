@@ -26,7 +26,7 @@ import type { BereichsEditor } from '../../../components/einstellungen/verwende-
 export const BEREICHE = {
   dossier: {
     titel: 'Dossier-Voreinstellungen',
-    zweck: 'Voreinstellungen fuer neue Projekte — leer lassen heisst: keine Vorgabe.',
+    zweck: 'Voreinstellungen fuer neue Projekte; leer lassen heisst keine Vorgabe.',
     praefix: 'dossierDefaults',
     Editor: DossierEditor,
   },

@@ -47,13 +47,13 @@ import { Brotkrume } from '../shell/Brotkrume.js';
 import { Hinweis, type HinweisArt } from '../ui/hinweis.js';
 import { StatusZeile } from '../ui/status-zeile.js';
 import { rufeApi } from '../rufe-api.js';
-import { PipelineAnsicht } from '../pipeline/PipelineAnsicht.js';
+import { RechenwegDialog } from '../pipeline/RechenwegDialog.js';
 import { bauePipelineDaten } from '../pipeline/pipeline-daten.js';
 
 export interface ProjektAnsichtProps {
   readonly projekt: Projekt;
   readonly faktorformular: Faktorformular;
-  /** Basis der Pipeline-Stufen im Rechenweg-Block (Task 7) — dieselbe Konfiguration,
+  /** Basis der Pipeline-Stufen im Rechenweg-Dialog (Task 7) — dieselbe Konfiguration,
    *  gegen die auch die Berechnung serverseitig laeuft. */
   readonly konfigurationBasis: OffertKonfiguration;
 }
@@ -315,15 +315,16 @@ export function ProjektAnsicht(
       {offerteFehler !== undefined && (
         <Hinweis art="fehler" className="mt-4">{offerteFehler}</Hinweis>
       )}
-      {rechenwegOffen && (
-        <section className="mb-6 rounded-lg border border-border bg-card p-6">
-          <h2 className="mb-3 text-base font-semibold">Rechenweg</h2>
-          <PipelineAnsicht
-            stufen={bauePipelineDaten(konfigurationBasis, {
-              ...(herleitung === undefined ? {} : { herleitung }),
-            })} />
-        </section>
-      )}
+      {/* Seitenfuellender Dialog statt eines eingebetteten Blocks: Die fuenf Stufen mit
+          Formeln brauchen die volle Hoehe (RechenwegDialog.tsx). */}
+      <RechenwegDialog
+        offen={rechenwegOffen}
+        schliesse={() => setRechenwegOffen(false)}
+        stufen={bauePipelineDaten(konfigurationBasis, {
+          ...(herleitung === undefined ? {} : { herleitung }),
+          aufwandindikatorUebersteuert: projekt.aufwandindikatorUebersteuerung !== undefined,
+        })}
+      />
       <Aggregatleiste
         verkaufssumme={verkaufssummeAnzeige}
         honorarMin={stand.honorarMin}
@@ -334,8 +335,7 @@ export function ProjektAnsicht(
         laeuft={offerteLaeuft}
         speichernLaeuft={speichernLaeuft}
         berechnungLaeuft={stand.laeuft}
-        rechenwegOffen={rechenwegOffen}
-        schalteRechenweg={() => setRechenwegOffen((offen) => !offen)}
+        zeigeRechenweg={() => setRechenwegOffen(true)}
         {...(stand.honorarAbbruch === undefined
           ? {}
           : { honorarAbbruchMeldung: stand.honorarAbbruch.meldung })}

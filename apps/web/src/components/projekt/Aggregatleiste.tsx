@@ -18,8 +18,32 @@ export interface AggregatleisteProps {
   readonly laeuft: boolean;
   readonly speichernLaeuft: boolean;
   readonly berechnungLaeuft: boolean;
-  readonly rechenwegOffen: boolean;
-  readonly schalteRechenweg: () => void;
+  readonly zeigeRechenweg: () => void;
+}
+
+/**
+ * Eine nackte Kommazahl sagt dem Vermarkter nichts (Rueckmeldung Auftraggeber
+ * 2026-08-28): Die kleine Skala verortet D zwischen seinen fachlichen Polen 0 (gering)
+ * und 1 (hoch), ohne Schwellen zu erfinden — die Zuordnung ist monoton (I-15/I-16), mehr
+ * behauptet die Darstellung nicht. Der Fuellstand wird nur fuers Zeichnen begrenzt: Der
+ * E-04-Teilerfolg kann ein D ausserhalb von [0, 1] anzeigen, der Zahlwert bleibt ehrlich.
+ */
+function AufwandindikatorSkala({ wert }: { readonly wert: number }) {
+  const anteil = Math.min(1, Math.max(0, wert));
+  return (
+    <div className="mt-1 w-28">
+      <div className="h-1 rounded-full bg-primary/15">
+        <div
+          className="h-1 rounded-full bg-primary"
+          style={{ width: `${String(Math.round(anteil * 100))}%` }}
+        />
+      </div>
+      <div className="mt-0.5 flex justify-between text-[10px] leading-3 text-muted-foreground">
+        <span>gering</span>
+        <span>hoch</span>
+      </div>
+    </div>
+  );
 }
 
 /**
@@ -33,7 +57,7 @@ export function Aggregatleiste(
   {
     verkaufssumme, honorarMin, honorarMax, aufwandindikator, aufwandindikatorUebersteuert,
     honorarAbbruchMeldung,
-    erzeuge, laeuft, speichernLaeuft, berechnungLaeuft, rechenwegOffen, schalteRechenweg,
+    erzeuge, laeuft, speichernLaeuft, berechnungLaeuft, zeigeRechenweg,
   }: AggregatleisteProps,
 ) {
   const vollstaendig = verkaufssumme !== undefined
@@ -65,17 +89,18 @@ export function Aggregatleiste(
                 : `${formatiereAggregat(honorarMin)} – ${formatiereAggregat(honorarMax)}`}
             </dd>
           </div>
-          <div>
+          <div title="Aufwandintensität der Vermarktung. Skaliert die Honorarrange innerhalb ihrer Stufe.">
             <dt className="text-sm text-muted-foreground">
               Aufwandindikator D{aufwandindikatorUebersteuert === true ? ' (übersteuert)' : ''}
             </dt>
             <dd className="text-lg font-medium">
               {aufwandindikator === undefined ? '—' : formatiereScore(aufwandindikator)}
             </dd>
+            {aufwandindikator !== undefined && <AufwandindikatorSkala wert={aufwandindikator} />}
           </div>
         </dl>
-        <Button type="button" variant="ghost" onClick={schalteRechenweg}>
-          {rechenwegOffen ? 'Rechenweg ausblenden' : 'Rechenweg anzeigen'}
+        <Button type="button" variant="ghost" onClick={zeigeRechenweg}>
+          Rechenweg anzeigen
         </Button>
         <div className="flex flex-col items-end gap-1">
           {honorarAbbruchMeldung !== undefined && (

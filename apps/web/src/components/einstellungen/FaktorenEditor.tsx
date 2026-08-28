@@ -114,7 +114,7 @@ export function FaktorenEditor({ einstellungen }: BereichsEditorProps): ReactEle
       <div className="flex items-center justify-between rounded-md border border-border p-3">
         <p className={summeStimmt ? 'text-sm' : 'text-sm font-semibold text-destructive'}>
           Gewichtssumme: {(gewichtssumme * 100).toFixed(2)} %
-          {!summeStimmt && ' — muss genau 100 % ergeben'}
+          {!summeStimmt && ', muss genau 100 % ergeben'}
         </p>
         <Button type="button" variant="outline" size="sm" onClick={renormalisiere}>
           Gewichte renormalisieren
@@ -185,7 +185,7 @@ export function FaktorenEditor({ einstellungen }: BereichsEditorProps): ReactEle
                 <p className="text-sm text-muted-foreground">
                   Min kann hier grösser als Max sein: Die Reihenfolge legt die Polung
                   des Lagescores fest (steigt der Aufwand mit dem Rohwert oder sinkt
-                  er) — nicht "korrigierend" vertauschen.
+                  er). Nicht «korrigierend» vertauschen.
                 </p>
               )}
               {faktor.skala !== undefined && (

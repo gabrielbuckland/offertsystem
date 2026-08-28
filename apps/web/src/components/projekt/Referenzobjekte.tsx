@@ -147,7 +147,7 @@ export function Referenzobjekte({
         <div>
           <h2 className="text-base font-semibold">Referenzobjekte</h2>
           <p className="text-sm text-muted-foreground">
-            Je Wohnungstyp eine Referenzbewertung — sie ist der Ausgangswert der Preisableitung.
+            Je Wohnungstyp eine Referenzbewertung als Ausgangswert der Preisableitung.
           </p>
         </div>
         <div className="flex items-center gap-2">

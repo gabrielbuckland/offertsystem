@@ -17,8 +17,7 @@ function basisProps(): AggregatleisteProps {
     laeuft: false,
     speichernLaeuft: false,
     berechnungLaeuft: false,
-    rechenwegOffen: false,
-    schalteRechenweg: () => undefined,
+    zeigeRechenweg: () => undefined,
   };
 }
 

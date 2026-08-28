@@ -58,7 +58,7 @@ function OrdinalFeld(
       <option value="" disabled>Bitte auswählen</option>
       {feld.stufen?.map((stufe) => (
         <option key={stufe.wert} value={stufe.wert}>
-          {`${stufe.wert} — ${stufe.bezeichnung}`}
+          {`${stufe.wert}: ${stufe.bezeichnung}`}
         </option>
       ))}
     </Select>

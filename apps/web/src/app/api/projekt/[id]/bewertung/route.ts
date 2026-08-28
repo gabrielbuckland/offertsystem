@@ -66,8 +66,8 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
   } catch {
     return Response.json({
       fehler: {
-        text: 'Die Bewertung wurde bezogen — dabei wurde Guthaben beim Anbieter '
-          + 'verbraucht —, konnte aber nicht gespeichert werden. Der Abruf muss '
+        text: 'Die Bewertung wurde bezogen, konnte aber nicht gespeichert werden; '
+          + 'dabei wurde Guthaben beim Anbieter verbraucht. Der Abruf muss '
           + 'wiederholt werden.',
       },
     }, { status: 500 });

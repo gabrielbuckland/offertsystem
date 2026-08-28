@@ -40,6 +40,6 @@ export const PlatzhalterTabelleKnoten = Node.create({
     return ['div', mergeAttributes(HTMLAttributes, {
       'data-platzhalter-tabelle': 'true',
       class: 'my-2 rounded border border-dashed border-neutral-400 p-2 text-sm text-neutral-600',
-    }), '⟨Preistabelle je Wohnung — wird beim Finalisieren eingesetzt⟩'];
+    }), '⟨Preistabelle je Wohnung, wird beim Finalisieren eingesetzt⟩'];
   },
 });

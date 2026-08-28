@@ -175,7 +175,7 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
         {/* Keine Checkbox, kein Schalter: der Wert ist fachlich fix (Spec §6), kein
             einstellbarer Zustand. */}
         <p className="text-sm text-muted-foreground">
-          Begründungspflicht: aktiv — fachlich nicht abschaltbar.
+          Die Begründungspflicht ist aktiv und fachlich nicht abschaltbar.
         </p>
         {preisanpassungBefunde.map((befund, i) => (
           <Hinweis key={`${befund.pfad}-${i}`} art="fehler">{befund.text}</Hinweis>
@@ -225,7 +225,7 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
                           index, { erfassungsform: e.target.value as VorlageRoh['erfassungsform'] },
                         )}
                       >
-                        <option value="relativ">relativ</option>
+                        <option value="relativ">Prozent</option>
                         <option value="absolut">Franken</option>
                       </Select>
                     </TableCell>

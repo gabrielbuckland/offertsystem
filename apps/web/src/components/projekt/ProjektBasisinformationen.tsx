@@ -162,7 +162,9 @@ export function ProjektBasisinformationen(
           />
           <p className="text-xs text-muted-foreground">
             {aufwandindikator === undefined
-              ? 'Abgeleitet aus PriceHubble-Lagescore und Projektdaten; zum Übersteuern Wert eintragen.'
+              ? '0 steht für geringen, 1 für hohen Vermarktungsaufwand; der Wert skaliert '
+                + 'die Honorarrange. Abgeleitet aus PriceHubble-Lagescore und Projektdaten, '
+                + 'zum Übersteuern Wert eintragen.'
               : `Übersteuert. Ableitung: ${aufwandindikatorVorschlag === undefined
                 ? '—' : formatiereScore(aufwandindikatorVorschlag)}`}
           </p>

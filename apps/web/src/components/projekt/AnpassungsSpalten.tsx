@@ -66,8 +66,8 @@ export function erzeugeSpaltenIdFolge(vorhandene: readonly AnpassungsSpalte[]): 
 }
 
 /**
- * Beschreibt die Staffel einer Regelspalte lesbar («Stockwerk unter 1: CHF 8’600 · … ·
- * sonst: CHF 17’200») — der Betrag je Segment war sonst NIRGENDS in der Projektansicht
+ * Beschreibt die Staffel einer Regelspalte lesbar («Stockwerk: unter 1 CHF 8’600 · sonst
+ * CHF 17’200») — der Betrag je Segment war sonst NIRGENDS in der Projektansicht
  * sichtbar, nur der Satz «Wird von der hinterlegten Regel bestimmt» (Rueckmeldung
  * Auftraggeber 2026-08-28). Reine Funktion, damit sie ohne DOM testbar bleibt (Muster
  * `zellen-logik.ts`). Der Wert wird in der Erfassungsform der SPALTE formatiert —
@@ -84,9 +84,9 @@ export function beschreibeStaffel(
     ? formatiereAggregat(wert)
     : `${String(faktorZuProzent(wert))} %`);
   const teile = regel.bereiche.map((b) => (b.unter === undefined
-    ? `sonst: ${betrag(b.wert)}`
-    : `unter ${String(b.unter)}: ${betrag(b.wert)}`));
-  return `${merkmal} — ${teile.join(' · ')}`;
+    ? `sonst ${betrag(b.wert)}`
+    : `unter ${String(b.unter)} ${betrag(b.wert)}`));
+  return `${merkmal}: ${teile.join(' · ')}`;
 }
 
 /**
@@ -152,11 +152,12 @@ export function AnpassungsSpalten(
 
   return (
     <section>
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-base font-semibold">Zu-/Abschläge — Spalten</h2>
+          <h2 className="text-base font-semibold">Zu-/Abschläge</h2>
           <p className="text-sm text-muted-foreground">
-            Definiert Zu- und Abschläge, die je Einheit auf den Referenzwert wirken.
+            Wirken je Einheit auf den Referenzwert. Der Vorgabewert gilt für neu erzeugte
+            Einheiten, erfasst wird je Einheit in der Einheitentabelle.
           </p>
         </div>
         <Button type="button" onClick={fuegeHinzu}>
@@ -166,14 +167,14 @@ export function AnpassungsSpalten(
       {spalten.length === 0 ? (
         <p className="text-muted-foreground">Noch keine Spalte erfasst.</p>
       ) : (
+        <div className="overflow-hidden rounded-md border border-border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-8" />
-              <TableHead>Bezeichnung</TableHead>
+              <TableHead className="w-2/5">Bezeichnung</TableHead>
               <TableHead>Erfassungsform</TableHead>
-              <TableHead>Vorgabewert</TableHead>
-              <TableHead />
+              <TableHead>Vorgabe</TableHead>
+              <TableHead className="w-px" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -181,99 +182,77 @@ export function AnpassungsSpalten(
               <Fragment key={s.id}>
               <TableRow>
                 <TableCell>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="size-8"
-                    aria-label={offene.includes(s.id) ? 'Details schliessen' : 'Details öffnen'}
-                    aria-expanded={offene.includes(s.id)}
-                    onClick={() => schalte(s.id)}
-                  >
-                    {offene.includes(s.id)
-                      ? <ChevronDown className="size-4" />
-                      : <ChevronRight className="size-4" />}
-                  </Button>
-                </TableCell>
-                <TableCell>
                   <Input
+                    className="h-8"
+                    aria-label="Bezeichnung"
                     value={s.bezeichnung}
                     onChange={(e) => aktualisiere(s.id, { bezeichnung: e.target.value })}
                   />
                 </TableCell>
                 <TableCell>
                   <Select
+                    className="h-8"
+                    aria-label="Erfassungsform"
                     value={s.erfassungsform}
                     onChange={(e) => aktualisiere(s.id, {
                       erfassungsform: e.target.value as AnpassungsSpalte['erfassungsform'],
                     })}
                   >
-                    <option value="relativ">relativ</option>
+                    <option value="relativ">Prozent</option>
                     <option value="absolut">Franken</option>
                   </Select>
                 </TableCell>
                 <TableCell>
                   {s.regel === undefined ? (
-                    <>
-                      <div className="flex items-center gap-1">
-                        {/*
-                          Angezeigt und erfasst wird die Einheit, in der ein Mensch denkt —
-                          Prozent bei 'relativ', Franken bei 'absolut' —, gespeichert die des
-                          Kerns (Faktor bzw. Rappen). GENAU wie in `EinheitenTabelle`: Der
-                          Vorgabewert wird von dort in dieselbe Groesse uebernommen
-                          (einheiten-generator.ts), zwei verschiedene Skalen fuer dieselbe
-                          Groesse waeren der Fehler, der schon einmal den Faktor 100
-                          verursacht hat.
-                        */}
-                        <ZellenEingabe
-                          wert={s.erfassungsform === 'relativ'
-                            ? faktorZuProzent(s.vorgabewert ?? 0)
-                            : rappenZuFranken(s.vorgabewert ?? 0)}
-                          aendere={(eingabe) => aktualisiere(s.id, {
-                            vorgabewert: s.erfassungsform === 'relativ'
-                              ? prozentZuFaktor(eingabe)
-                              : frankenZuRappen(eingabe),
-                          })}
-                        />
-                        <span className="text-xs text-muted-foreground">
-                          {s.erfassungsform === 'relativ' ? '%' : 'CHF'}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Wirkt auf neu erzeugte Einheiten.
-                      </p>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="mt-1"
-                        onClick={() => uebernehmeAufEinheiten(s.id)}
-                      >
-                        Auf leere Zellen übernehmen
-                      </Button>
-                    </>
+                    <div className="flex items-center gap-1.5">
+                      {/*
+                        Angezeigt und erfasst wird die Einheit, in der ein Mensch denkt —
+                        Prozent bei 'relativ', Franken bei 'absolut' —, gespeichert die des
+                        Kerns (Faktor bzw. Rappen). GENAU wie in `EinheitenTabelle`: Der
+                        Vorgabewert wird von dort in dieselbe Groesse uebernommen
+                        (einheiten-generator.ts), zwei verschiedene Skalen fuer dieselbe
+                        Groesse waeren der Fehler, der schon einmal den Faktor 100
+                        verursacht hat.
+                      */}
+                      <ZellenEingabe
+                        wert={s.erfassungsform === 'relativ'
+                          ? faktorZuProzent(s.vorgabewert ?? 0)
+                          : rappenZuFranken(s.vorgabewert ?? 0)}
+                        aendere={(eingabe) => aktualisiere(s.id, {
+                          vorgabewert: s.erfassungsform === 'relativ'
+                            ? prozentZuFaktor(eingabe)
+                            : frankenZuRappen(eingabe),
+                        })}
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        {s.erfassungsform === 'relativ' ? '%' : 'CHF'}
+                      </span>
+                    </div>
                   ) : (
                     // Schema (`projekt-schema.ts`) schliesst `regel` und `vorgabewert` an
                     // derselben Spalte aus — ein Eingabefeld hier haette ein Projekt mit
                     // Regel unspeicherbar gemacht, sobald jemand hineintippt (die
                     // firmenweite Vorlage `stockwerklage` traegt eine Regel und bringt
                     // diesen Fall damit in jedes neue Projekt). Die Staffel selbst wird
-                    // aber AUSGEWIESEN — vorher stand hier nur ein Satz, und welcher
-                    // Betrag in welchem Segment gilt, war in der Projektansicht nirgends
-                    // sichtbar. Bearbeitet wird sie in der aufklappbaren Detailzeile
-                    // (Akkordeon, `BereichsregelEditor`); firmenweit zusaetzlich unter
+                    // AUSGEWIESEN und in der aufklappbaren Detailzeile bearbeitet
+                    // («Staffel», `BereichsregelEditor`); firmenweit zusaetzlich unter
                     // Einstellungen → Preisanpassung & Vorlagen.
-                    <>
-                      <p className="text-xs font-medium text-foreground/80">
-                        {beschreibeStaffel(s, merkmale)}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Staffel nach Merkmal — zum Bearbeiten die Zeile aufklappen.
-                      </p>
-                    </>
+                    <p className="text-sm">{beschreibeStaffel(s, merkmale)}</p>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap text-right">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    aria-expanded={offene.includes(s.id)}
+                    onClick={() => schalte(s.id)}
+                  >
+                    {s.regel === undefined ? 'Details' : 'Staffel'}
+                    {offene.includes(s.id)
+                      ? <ChevronDown className="size-4" />
+                      : <ChevronRight className="size-4" />}
+                  </Button>
                   <Button
                     type="button"
                     variant="ghost"
@@ -289,26 +268,41 @@ export function AnpassungsSpalten(
               </TableRow>
               {offene.includes(s.id) && (
                 <TableRow>
-                  <TableCell colSpan={5} className="bg-muted/30">
+                  <TableCell colSpan={4} className="bg-muted/30">
                     {s.regel === undefined ? (
-                      <div className="flex items-center gap-3 py-1">
-                        <p className="text-sm text-muted-foreground">
-                          Diese Spalte trägt einen festen Vorgabewert. Alternativ kann sie
-                          einer Staffel nach Merkmal folgen (z.&nbsp;B. Zuschlag je
-                          Stockwerk).
-                        </p>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          disabled={merkmale.length === 0}
-                          title={merkmale.length === 0
-                            ? 'Es ist kein Merkmal konfiguriert.' : undefined}
-                          onClick={() => aendere(spalten.map((x) => (
-                            x.id === s.id ? spalteMitRegel(x, merkmale[0]!.id) : x)))}
-                        >
-                          Staffel nach Merkmal einführen
-                        </Button>
+                      <div className="flex flex-wrap items-start gap-x-10 gap-y-3 py-1">
+                        <div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => uebernehmeAufEinheiten(s.id)}
+                          >
+                            Auf leere Zellen übernehmen
+                          </Button>
+                          <p className="mt-1 max-w-72 text-xs text-muted-foreground">
+                            Schreibt den Vorgabewert in alle Einheiten, die in dieser
+                            Spalte noch keinen eigenen Wert tragen.
+                          </p>
+                        </div>
+                        <div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={merkmale.length === 0}
+                            title={merkmale.length === 0
+                              ? 'Es ist kein Merkmal konfiguriert.' : undefined}
+                            onClick={() => aendere(spalten.map((x) => (
+                              x.id === s.id ? spalteMitRegel(x, merkmale[0]!.id) : x)))}
+                          >
+                            Staffel nach Merkmal einführen
+                          </Button>
+                          <p className="mt-1 max-w-72 text-xs text-muted-foreground">
+                            Der Wert folgt dann je Einheit einem Merkmal, zum Beispiel dem
+                            Stockwerk, statt eines festen Vorgabewerts.
+                          </p>
+                        </div>
                       </div>
                     ) : (
                       <div className="py-1">
@@ -334,8 +328,11 @@ export function AnpassungsSpalten(
                           onClick={() => aendere(spalten.map((x) => (
                             x.id === s.id ? spalteOhneRegel(x) : x)))}
                         >
-                          Staffel entfernen (fester Vorgabewert)
+                          Staffel entfernen
                         </Button>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Die Spalte trägt danach wieder einen festen Vorgabewert.
+                        </p>
                       </div>
                     )}
                   </TableCell>
@@ -345,6 +342,7 @@ export function AnpassungsSpalten(
             ))}
           </TableBody>
         </Table>
+        </div>
       )}
     </section>
   );
