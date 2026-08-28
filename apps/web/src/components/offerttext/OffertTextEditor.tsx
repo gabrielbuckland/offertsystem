@@ -18,6 +18,7 @@
  * Projekts scheiterte (siehe Review, Ort: apps/web/src/app/api/projekt/[id]/route.ts).
  */
 import { useEffect, useState } from 'react';
+import { Bold, Heading1, Heading2, Italic, List } from 'lucide-react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 // Kein neuer npm-Eintrag: `@tiptap/extension-list-item` ist bereits über
@@ -80,10 +81,15 @@ export function OffertTextEditor({ inhalt, beiAenderung }: OffertTextEditorProps
   // Preistabelle-Option sperren kann, solange der Cursor in einem Listenpunkt steht
   // (C-1) — TipTap loest bei Selektions-/Inhaltswechseln keinen React-Rerender aus,
   // deshalb die eigene Abonnierung statt eines direkten `editor.isActive`-Aufrufs im
-  // Render.
+  // Render. `setzeAuswahlstand` erzwingt denselben Rerender fuer die Aktiv-Zustaende
+  // der Werkzeugleiste (gedrueckter Knopf, solange der Cursor z. B. in Fett steht).
+  const [, setzeAuswahlstand] = useState(0);
   useEffect(() => {
     if (editor === null) return;
-    const aktualisiere = () => setInListenPunkt(editor.isActive('listItem'));
+    const aktualisiere = () => {
+      setInListenPunkt(editor.isActive('listItem'));
+      setzeAuswahlstand((n) => n + 1);
+    };
     editor.on('selectionUpdate', aktualisiere);
     editor.on('transaction', aktualisiere);
     aktualisiere();
@@ -95,32 +101,72 @@ export function OffertTextEditor({ inhalt, beiAenderung }: OffertTextEditorProps
 
   if (editor === null) return null;
 
-  const knopf = 'rounded border px-2 py-0.5 text-sm';
+  // Werkzeugleisten-Knopf mit Aktiv-Zustand: Der gedrueckte Zustand folgt
+  // `editor.isActive(...)` und wird zusaetzlich als `aria-pressed` ausgewiesen.
+  function WerkzeugKnopf(
+    { beschriftung, aktiv, beiKlick, Icon }: {
+      readonly beschriftung: string;
+      readonly aktiv: boolean;
+      readonly beiKlick: () => void;
+      readonly Icon: typeof Bold;
+    },
+  ) {
+    return (
+      <button
+        type="button"
+        title={beschriftung}
+        aria-label={beschriftung}
+        aria-pressed={aktiv}
+        // Der Klick darf dem Editor den Fokus nicht wegnehmen: `mousedown` auf dem
+        // Knopf wuerde die Textauswahl aufheben, BEVOR der Befehl laeuft — Fett auf
+        // eine Auswahl griffe dann ins Leere. `preventDefault` unterbindet den
+        // Fokuswechsel; `chain().focus()` bleibt fuer Tastaturbedienung bestehen.
+        onMouseDown={(e) => e.preventDefault()}
+        className={`inline-flex size-8 items-center justify-center rounded-md transition-colors ${
+          aktiv
+            ? 'bg-accent text-accent-foreground'
+            : 'text-foreground/70 hover:bg-muted hover:text-foreground'
+        }`}
+        onClick={beiKlick}
+      >
+        <Icon className="size-4" />
+      </button>
+    );
+  }
+
   return (
-    <div className="rounded border border-neutral-300">
-      <div className="flex flex-wrap gap-1 border-b border-neutral-200 p-1.5">
-        <button type="button" className={knopf}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
-          Titel
-        </button>
-        <button type="button" className={knopf}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
-          Untertitel
-        </button>
-        <button type="button" className={knopf}
-          onClick={() => editor.chain().focus().toggleBold().run()}>
-          Fett
-        </button>
-        <button type="button" className={knopf}
-          onClick={() => editor.chain().focus().toggleItalic().run()}>
-          Kursiv
-        </button>
-        <button type="button" className={knopf}
-          onClick={() => editor.chain().focus().toggleBulletList().run()}>
-          Liste
-        </button>
+    <div className="rounded-md border border-border">
+      <div className="flex flex-wrap items-center gap-1 border-b border-border bg-muted/50 p-1.5">
+        <WerkzeugKnopf
+          beschriftung="Titel" Icon={Heading1}
+          aktiv={editor.isActive('heading', { level: 1 })}
+          beiKlick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        />
+        <WerkzeugKnopf
+          beschriftung="Untertitel" Icon={Heading2}
+          aktiv={editor.isActive('heading', { level: 2 })}
+          beiKlick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        />
+        <div className="mx-1 h-5 w-px bg-border" aria-hidden />
+        <WerkzeugKnopf
+          beschriftung="Fett" Icon={Bold}
+          aktiv={editor.isActive('bold')}
+          beiKlick={() => editor.chain().focus().toggleBold().run()}
+        />
+        <WerkzeugKnopf
+          beschriftung="Kursiv" Icon={Italic}
+          aktiv={editor.isActive('italic')}
+          beiKlick={() => editor.chain().focus().toggleItalic().run()}
+        />
+        <div className="mx-1 h-5 w-px bg-border" aria-hidden />
+        <WerkzeugKnopf
+          beschriftung="Aufzählung" Icon={List}
+          aktiv={editor.isActive('bulletList')}
+          beiKlick={() => editor.chain().focus().toggleBulletList().run()}
+        />
+        <div className="mx-1 h-5 w-px bg-border" aria-hidden />
         <select
-          className={knopf}
+          className="h-8 rounded-md border border-border bg-background px-2 text-sm"
           value=""
           onChange={(e) => {
             const id = e.target.value;
@@ -145,9 +191,9 @@ export function OffertTextEditor({ inhalt, beiAenderung }: OffertTextEditorProps
           ))}
         </select>
       </div>
-      <EditorContent editor={editor} className="prose-sm min-h-64 p-3" />
+      <EditorContent editor={editor} className="offert-editor" />
       {formatHinweis && (
-        <div className="border-t border-neutral-200 p-2">
+        <div className="border-t border-border p-2">
           <Hinweis art="warnung">
             Diese Formatierung wird in der Offerte nicht unterstützt.
           </Hinweis>

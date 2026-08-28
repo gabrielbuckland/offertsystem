@@ -54,3 +54,38 @@ body { background: var(--background); color: var(--foreground); }
 
 /* Zahlenkolonnen bleiben buendig (Spec §3). */
 table { font-variant-numeric: tabular-nums; }
+
+/* Offerttext-Editor (OffertTextEditor.tsx): Ohne diese Regeln setzt Tailwinds Preflight
+   h1/h2/ul auf die Groesse und Einzuege des Fliesstexts zurueck — der Editor zeigte
+   Titel und Listen dann nicht unterscheidbar an, obwohl das Dokument sie traegt. Die
+   Abstufung folgt der gerenderten Offerte (VermarktungsOfferte, packages/offer), damit
+   der Editor eine ehrliche Vorschau bleibt. */
+.offert-editor .ProseMirror {
+  min-height: 16rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  outline: none;
+}
+.offert-editor .ProseMirror h1 {
+  margin: 0.75rem 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.offert-editor .ProseMirror h2 {
+  margin: 0.75rem 0 0.375rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.offert-editor .ProseMirror h3 {
+  margin: 0.625rem 0 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.offert-editor .ProseMirror p { margin: 0.25rem 0; }
+.offert-editor .ProseMirror ul {
+  margin: 0.375rem 0;
+  padding-left: 1.375rem;
+  list-style: disc;
+}
+.offert-editor .ProseMirror li > p { margin: 0.125rem 0; }
