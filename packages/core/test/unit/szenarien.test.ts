@@ -4,14 +4,14 @@ import { dokumentiere } from '../helper/dokumentiere.js';
 
 const SCHWELLE = 0.05;
 
-describe('T2 — die fuenf Testszenarien gegen die Referenzberechnung', () => {
+describe('T2 — die fünf Testszenarien gegen die Referenzberechnung', () => {
   const ergebnisse = ['S1', 'S2', 'S3', 'S4a', 'S4b'].map((id) => fuehreSzenarioAus(id));
 
   // In Vitest 2 reicht `it.each` den Testkontext (und damit `task.meta`) nicht
   // an die Testfunktion weiter; die Falltabelle laeuft deshalb als Schleife
   // ueber normale `it`-Aufrufe — die Testnamen bleiben identisch.
   for (const id of ['S1', 'S2', 'S3', 'S4a', 'S4b']) {
-    it(`${id} haelt die Abweichungsschwelle von 5 Prozent in V, H_min und H_max ein`, ({ task }) => {
+    it(`${id} hält die Abweichungsschwelle von 5 Prozent in V, H_min und H_max ein`, ({ task }) => {
       dokumentiere(task, {
         vorbedingung: `Szenario ${id} mit unabhängiger Referenzberechnung`,
         schritte: 'Das Szenario durch die Pipeline rechnen und mit der Referenz vergleichen',
@@ -37,7 +37,7 @@ describe('T2 — die fuenf Testszenarien gegen die Referenzberechnung', () => {
     for (const p of e.ergebnis!.verkaufssumme.positionen) expect(p.preis).toBe(85_000_000);
   });
 
-  it('S2: alpha wirkt in Zaehler und Nenner, I-05 haelt auch mit Aussenflaeche', ({ task }) => {
+  it('S2: alpha wirkt in Zähler und Nenner, I-05 hält auch mit Aussenfläche', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Szenario S2, in dem jede Einheit Aussenfläche trägt',
       schritte: 'Das Szenario rechnen und die Typableitungen prüfen',
@@ -50,7 +50,7 @@ describe('T2 — die fuenf Testszenarien gegen die Referenzberechnung', () => {
     expect(e.ergebnis!.verkaufssumme.typAbleitungen).toHaveLength(2);
   });
 
-  it('S3: die Anpassungen sind je Position einzeln ausgewiesen und begruendet (I-09)', ({ task }) => {
+  it('S3: die Anpassungen sind je Position einzeln ausgewiesen und begründet (I-09)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Szenario S3 mit Zu-/Abschlägen auf einzelnen Positionen',
       schritte: 'Das Szenario rechnen und die Positionen mit Anpassungen inspizieren',
@@ -107,7 +107,7 @@ describe('T2 — die fuenf Testszenarien gegen die Referenzberechnung', () => {
     }
   });
 
-  it('erzeugt das Artefakt fuer Kapitel 6 (P1) mit Abweichung und Pass/Fail', ({ task }) => {
+  it('erzeugt das Artefakt für Kapitel 6 (P1) mit Abweichung und Pass/Fail', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Ergebnisse der fünf gerechneten Szenarien',
       schritte: 'schreibeSzenarienArtefakt mit den Ergebnissen aufrufen',
@@ -117,7 +117,7 @@ describe('T2 — die fuenf Testszenarien gegen die Referenzberechnung', () => {
     expect(pfad).toMatch(/^artifacts\/scenarios\//);
   });
 
-  it('erzeugt bei Ueberschreitung eine Stufendiagnose statt nur eines Fehlschlags', ({ task }) => {
+  it('erzeugt bei Überschreitung eine Stufendiagnose statt nur eines Fehlschlags', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Szenario S1 mit auf 1 überschriebener Referenz-Verkaufssumme',
       schritte: 'Das Szenario mit der verfälschten Referenz rechnen',

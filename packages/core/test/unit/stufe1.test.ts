@@ -6,7 +6,7 @@ import { lagescoreName, wohnungstypId } from '../../src/domain/ids.js';
 import { score } from '../../src/domain/geld.js';
 
 describe('Stufe 1 — bereiteEingabeAuf (Spec 03 §4.1)', () => {
-  it('schluesselt die Bewertungsliste in eine Map ueber WohnungstypId um', ({ task }) => {
+  it('schlüsselt die Bewertungsliste in eine Map über WohnungstypId um', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Eingangsargumente mit einer Referenzbewertung für Wohnungstyp T1',
       schritte: 'bereiteEingabeAuf auf die Standard-Eingangsargumente anwenden',
@@ -50,7 +50,7 @@ describe('Stufe 1 — bereiteEingabeAuf (Spec 03 §4.1)', () => {
     }
   });
 
-  it('bricht bei unaufloesbarer Faktorquelle ab — S-02, phase "quelle"', ({ task }) => {
+  it('bricht bei unauflösbarer Faktorquelle ab — S-02, phase "quelle"', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Lagescore-Bündel ohne Werte, obwohl die Konfiguration einen Lagescore-Faktor verlangt',
       schritte: 'Stufe 1 ausführen und den Fehler inspizieren',
@@ -85,7 +85,7 @@ describe('Stufe 1 — bereiteEingabeAuf (Spec 03 §4.1)', () => {
     if (r.ok) expect(r.wert.verworfeneRohwerte).toContain('lagescore:noise');
   });
 
-  it('rechnet nicht — der Eingang traegt keine Preisgroesse', ({ task }) => {
+  it('rechnet nicht — der Eingang trägt keine Preisgrösse', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Standard-Eingangsargumente',
       schritte: 'Stufe 1 ausführen und die Felder des Ergebnisses prüfen',
@@ -110,7 +110,7 @@ describe('Stufe 1 — bereiteEingabeAuf (Spec 03 §4.1)', () => {
     }
   });
 
-  it('reicht den Zeitstempel unveraendert durch und liest keine Uhr (I-14, E-29)', ({ task }) => {
+  it('reicht den Zeitstempel unverändert durch und liest keine Uhr (I-14, E-29)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Eingangsargumente mit festem Zeitstempel 2026-08-16T10:00:00.000Z',
       schritte: 'Stufe 1 ausführen und den Zeitstempel des Ergebnisses lesen',
@@ -121,7 +121,7 @@ describe('Stufe 1 — bereiteEingabeAuf (Spec 03 §4.1)', () => {
     if (r.ok) expect(r.wert.zeitstempel).toBe('2026-08-16T10:00:00.000Z');
   });
 
-  it('meldet bei unvollstaendigem Buendel dennoch S-03 und kein Ergebnis (US-15, I-24)', ({ task }) => {
+  it('meldet bei unvollständigem Bündel dennoch S-03 und kein Ergebnis (US-15, I-24)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Eingangsargumente ohne Bewertungen und mit vollstaendig=false',
       schritte: 'Stufe 1 ausführen und den Fehler inspizieren',

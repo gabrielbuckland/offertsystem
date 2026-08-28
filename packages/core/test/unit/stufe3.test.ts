@@ -24,7 +24,7 @@ describe('Stufe 3 — normalisiereFaktoren (eq:normalisierung)', () => {
     }
   });
 
-  it('kennt keinen faktorspezifischen Zweig — lage_gesamt wird nur ueber Grenzen invertiert (I-13)', ({ task }) => {
+  it('kennt keinen faktorspezifischen Zweig — lage_gesamt wird nur über Grenzen invertiert (I-13)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Faktor lage_gesamt mit invertierten Grenzen (grenzeMin 1, grenzeMax 0) und Rohwert 0.8',
       schritte: 'Stufe 3 ausführen und den normierten Wert von lage_gesamt lesen',
@@ -67,7 +67,7 @@ describe('Stufe 3 — normalisiereFaktoren (eq:normalisierung)', () => {
     expect(e.offeneFaktoren).toEqual([]);
   });
 
-  it('weist den Saettigungsbereich ueber `gekappt` aus (A-13)', ({ task }) => {
+  it('weist den Sättigungsbereich über `gekappt` aus (A-13)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Rohwert 99 für innenausbau_qualitaet oberhalb der oberen Grenze',
       schritte: 'Stufe 3 ausführen und den betroffenen Faktor inspizieren',

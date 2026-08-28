@@ -7,7 +7,7 @@ import { rappen } from '../../src/domain/geld.js';
 const k = standardKonfiguration();
 
 describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
-  it('waehlt die Stufe mit V_k_min <= V < V_k_max und interpoliert linear', ({ task }) => {
+  it('wählt die Stufe mit V_k_min <= V < V_k_max und interpoliert linear', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'V 750 000 000 Rappen (Mitte der Stufe [5, 10) Mio. CHF) und D 0.5',
       schritte: 'bildeHonorarrange mit der Standardkonfiguration ausführen',
@@ -29,7 +29,7 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
     }
   });
 
-  it('haelt die Stetigkeit an der Stufengrenze (I-20)', ({ task }) => {
+  it('hält die Stetigkeit an der Stufengrenze (I-20)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'V einen Rappen unter beziehungsweise genau auf der Stufengrenze 10 Mio. CHF, D 0.5',
       schritte: 'Stufe 5 für beide Werte ausführen und die Basen vergleichen',
@@ -46,7 +46,7 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
     }
   });
 
-  it('fuehrt beide Enden der Stufe, damit die Interpolation nachrechenbar bleibt (E-19)', ({ task }) => {
+  it('führt beide Enden der Stufe, damit die Interpolation nachrechenbar bleibt (E-19)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'V 750 000 000 Rappen und D 0.5',
       schritte: 'Stufe 5 ausführen und das mitgeführte Stufenobjekt inspizieren',
@@ -63,7 +63,7 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
     }
   });
 
-  it('haelt basisMin/basisMax ungerundet (E-09) und rundet erst nach g(D) (R3)', ({ task }) => {
+  it('hält basisMin/basisMax ungerundet (E-09) und rundet erst nach g(D) (R3)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'V 753 000 001 Rappen und D 0.317, damit die Interpolation einen echten Bruchteil ergibt',
       schritte: 'Stufe 5 ausführen und Basen sowie Honorarwerte auf Ganzzahligkeit prüfen',
@@ -100,7 +100,7 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
     }
   });
 
-  it('rechnet V auf der letzten Stuetzstelle regulaer (E-04, Spec 06 §2.4)', ({ task }) => {
+  it('rechnet V auf der letzten Stützstelle regulär (E-04, Spec 06 §2.4)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'V genau auf der letzten Stützstelle 20 000 000 000 Rappen, D 0.5',
       schritte: 'Stufe 5 ausführen',
@@ -116,7 +116,7 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
     }
   });
 
-  it('bricht oberhalb der letzten Stuetzstelle definiert ab — S-10, keine Extrapolation', ({ task }) => {
+  it('bricht oberhalb der letzten Stützstelle definiert ab — S-10, keine Extrapolation', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'V einen Rappen oberhalb der letzten Stützstelle',
       schritte: 'Stufe 5 ausführen und den Fehler inspizieren',
@@ -135,7 +135,7 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
     }
   });
 
-  it('bricht unterhalb der ersten Stuetzstelle ab — nur mit eigens konstruierter Konfiguration', ({ task }) => {
+  it('bricht unterhalb der ersten Stützstelle ab — nur mit eigens konstruierter Konfiguration', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Konfiguration ohne die erste Stützstelle (Beginn bei 5 Mio. CHF) und V 1 Mio. CHF',
       schritte: 'Stufe 5 ausführen und den Fehler inspizieren',

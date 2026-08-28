@@ -13,8 +13,8 @@ import { einTypEinheitenEingang, faktormengeMitGewichtssummeEins, normalisierung
   from '../property/generatoren.js';
 import { gewichtungErgebnis, standardKonfiguration, verkaufssummeErgebnis } from '../helper/projekt.js';
 
-describe('T1 — Unit-Tests gegen die unabhaengige Referenz', () => {
-  it('01_flaeche: eq:flaeche stimmt fuer alpha in {0, 0.25, 0.5, 1}', ({ task }) => {
+describe('T1 — Unit-Tests gegen die unabhängige Referenz', () => {
+  it('01_flaeche: eq:flaeche stimmt für alpha in {0, 0.25, 0.5, 1}', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Referenztabelle 01_flaeche mit alpha in {0, 0.25, 0.5, 1}',
       schritte: 'gewichteteFlaeche je Referenzzeile berechnen',
@@ -43,7 +43,7 @@ describe('T1 — Unit-Tests gegen die unabhaengige Referenz', () => {
     }
   });
 
-  it('03_wohnungspreis: p_j exakt in Rappen, inklusive Zu-/Abschlaegen', ({ task }) => {
+  it('03_wohnungspreis: p_j exakt in Rappen, inklusive Zu-/Abschlägen', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Referenztabelle 03_wohnungspreis mit bis zu drei Anpassungsfaktoren je Zeile',
       schritte: 'Stufe 2 auf einen Ein-Typ-Eingang mit den Anpassungen der Zeile anwenden',
@@ -98,7 +98,7 @@ describe('T1 — Unit-Tests gegen die unabhaengige Referenz', () => {
     }
   });
 
-  it('06_aufwandindikator: D fuer mehrere Faktorkombinationen', ({ task }) => {
+  it('06_aufwandindikator: D für mehrere Faktorkombinationen', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Referenztabelle 06_aufwandindikator mit Gewichten (Summe 1) und normierten Werten',
       schritte: 'Stufe 4 mit der aus der Tabelle gebildeten Faktormenge ausführen',
@@ -151,7 +151,7 @@ describe('T1 — Unit-Tests gegen die unabhaengige Referenz', () => {
     }
   });
 
-  it('weist eine veraenderte Referenzdatei ueber die Pruefsumme zurueck', ({ task }) => {
+  it('weist eine veränderte Referenzdatei über die Prüfsumme zurück', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Referenzname ohne Eintrag im Manifest',
       schritte: 'ladeReferenz mit dem unbekannten Namen aufrufen',

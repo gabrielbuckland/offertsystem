@@ -21,7 +21,7 @@ describe('Stufe 2 — berechneVerkaufssumme (eq:flaeche, eq:qm_preis, eq:wohnung
     }
   });
 
-  it('haelt I-05 exakt: Referenzflaechen und keine Anpassungen ergeben P_ref', ({ task }) => {
+  it('hält I-05 exakt: Referenzflächen und keine Anpassungen ergeben P_ref', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Einheiten mit Referenzflächen und ohne Zu-/Abschläge',
       schritte: 'Stufe 2 ausführen und alle Positionspreise vergleichen',
@@ -46,7 +46,7 @@ describe('Stufe 2 — berechneVerkaufssumme (eq:flaeche, eq:qm_preis, eq:wohnung
     }
   });
 
-  it('verknuepft Anpassungen additiv und reihenfolgeunabhaengig (I-08)', ({ task }) => {
+  it('verknüpft Anpassungen additiv und reihenfolgeunabhängig (I-08)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Erste Einheit mit zwei relativen Anpassungen +0.1 und -0.05',
       schritte: 'Stufe 2 mit beiden Anpassungsreihenfolgen ausführen und Preise vergleichen',

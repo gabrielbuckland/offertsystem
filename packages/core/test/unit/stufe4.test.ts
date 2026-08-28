@@ -100,7 +100,7 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
     expect(r.ok).toBe(true);
   });
 
-  it('uebernimmt eine Uebersteuerung als D und weist die Ableitung weiter aus', ({ task }) => {
+  it('übernimmt eine Übersteuerung als D und weist die Ableitung weiter aus', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Vier normierte Faktoren mit abgeleitetem D 0.315 und Übersteuerung 0.7',
       schritte: 'Stufe 4 mit Übersteuerungsargument ausführen',
@@ -119,7 +119,7 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
     }
   });
 
-  it('traegt ohne Uebersteuerung KEIN Uebersteuerungsfeld (Anwesenheit entscheidet)', ({ task }) => {
+  it('trägt ohne Übersteuerung KEIN Übersteuerungsfeld (Anwesenheit entscheidet)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Vier normierte Faktoren ohne Übersteuerungsargument',
       schritte: 'Stufe 4 ausführen und die Felder des Ergebnisses prüfen',

@@ -46,7 +46,7 @@ describe('berechne — Verkettung (Spec 03 §4.6)', () => {
     if (!r.ok) expect(Object.keys(r.fehler)).not.toContain('wert');
   });
 
-  it('fuehrt die vollstaendige Referenzbewertung inklusive anzeige und die Lagescores (E-19)', ({ task }) => {
+  it('führt die vollständige Referenzbewertung inklusive anzeige und die Lagescores (E-19)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Vollständiges Fixture-Projekt',
       schritte: 'berechne ausführen und Bewertung sowie Lagescores im Ergebnis inspizieren',
@@ -62,7 +62,7 @@ describe('berechne — Verkettung (Spec 03 §4.6)', () => {
     }
   });
 
-  it('fuehrt die eingebettete Konfigurationskopie und den Zeitstempel mit (NFA-07, PE-04)', ({ task }) => {
+  it('führt die eingebettete Konfigurationskopie und den Zeitstempel mit (NFA-07, PE-04)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Fixture-Projekt mit festem Zeitstempel 2026-08-16T10:00:00.000Z',
       schritte: 'berechne ausführen und Zeitstempel sowie Konfigurationsabdruck inspizieren',
@@ -80,7 +80,7 @@ describe('berechne — Verkettung (Spec 03 §4.6)', () => {
     }
   });
 
-  it('ist deterministisch: zwei Laeufe liefern tief-gleiche Ergebnisobjekte (I-14)', ({ task }) => {
+  it('ist deterministisch: zwei Läufe liefern tief-gleiche Ergebnisobjekte (I-14)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Identische Eingangsargumente für beide Läufe',
       schritte: 'berechne zweimal mit denselben Argumenten ausführen',
@@ -123,7 +123,7 @@ describe('berechne — Verkettung (Spec 03 §4.6)', () => {
     }
   });
 
-  it('erhaelt P1s Exporte unveraendert (PE-15)', async ({ task }) => {
+  it('erhält P1s Exporte unverändert (PE-15)', async ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Öffentliche API des Pakets @offert/core',
       schritte: 'Das Paket importieren und die Exporte aus Plan P1 prüfen',

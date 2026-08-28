@@ -28,7 +28,7 @@ describe('Zwischenschritt 4.2a — ergaenzeAbgeleiteteFaktoren (E-06)', () => {
     }
   });
 
-  it('bildet q-quer flaechengewichtet und vor den Zu-/Abschlaegen (Spec 02 §5.3)', ({ task }) => {
+  it('bildet q-quer flächengewichtet und vor den Zu-/Abschlägen (Spec 02 §5.3)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Eingang mit relativer Anpassung +0.2 auf der ersten Einheit',
       schritte: 'Stufe 2 und danach Zwischenschritt 4.2a ausführen',
@@ -70,7 +70,7 @@ describe('Zwischenschritt 4.2a — ergaenzeAbgeleiteteFaktoren (E-06)', () => {
     }
   });
 
-  it('ist die Identitaet, wenn keine abgeleitete Quelle konfiguriert ist (Determinismus)', ({ task }) => {
+  it('ist die Identität, wenn keine abgeleitete Quelle konfiguriert ist (Determinismus)', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Konfiguration, aus der alle abgeleiteten Faktorquellen entfernt sind',
       schritte: 'Stufe 2 und danach Zwischenschritt 4.2a ausführen',
@@ -91,7 +91,7 @@ describe('Zwischenschritt 4.2a — ergaenzeAbgeleiteteFaktoren (E-06)', () => {
     }
   });
 
-  it('rechnet keine Modellgroesse — nur Kennzahlen aus dem Ergebnis von Stufe 2', ({ task }) => {
+  it('rechnet keine Modellgrösse — nur Kennzahlen aus dem Ergebnis von Stufe 2', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Standard-Eingang mit Ergebnis von Stufe 2',
       schritte: 'Zwischenschritt 4.2a ausführen und die Felder des Ergebnisses prüfen',
