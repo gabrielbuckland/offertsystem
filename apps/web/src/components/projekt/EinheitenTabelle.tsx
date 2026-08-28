@@ -108,12 +108,12 @@ export function EinheitenTabelle(
         return treffer === undefined ? '—' : `${treffer.zimmerzahl} Zimmer`;
       },
     }),
-    zahlenspalte('flaecheInnen', 'Fläche (m²)'),
-    zahlenspalte('flaecheAussen', 'Aussenfläche (m²)'),
     // Je konfiguriertem Merkmal (Projekt.merkmale) eine Zahlenspalte — analog zu
-    // `zahlenspalte` oben, aber ueber `merkmalswerte` statt ueber ein festes Feld der
+    // `zahlenspalte` unten, aber ueber `merkmalswerte` statt ueber ein festes Feld der
     // Einheit. Das Merkmal selbst ist reine Eingabe; ob es irgendwo eine Regel speist,
-    // entscheidet sich erst an der Zu-/Abschlagsspalte weiter unten.
+    // entscheidet sich erst an der Zu-/Abschlagsspalte weiter unten. Position direkt
+    // nach «Typ», vor den Flaechen (Rueckmeldung Auftraggeber 2026-08-28): das Merkmal
+    // (z. B. Stockwerk) beschreibt wie der Typ die Wohnung selbst, nicht ihre Masse.
     ...merkmale.map((m) => spalte.display({
       id: `merkmal-${m.id}`,
       header: m.bezeichnung,
@@ -127,6 +127,8 @@ export function EinheitenTabelle(
         />
       ),
     })),
+    zahlenspalte('flaecheInnen', 'Fläche (m²)'),
+    zahlenspalte('flaecheAussen', 'Aussenfläche (m²)'),
     // Datengetrieben: je konfigurierter Spalte genau eine Tabellenspalte. Eine feste
     // Aufzaehlung machte jede neue Kategorie zu einer Codeaenderung. Ein Einzelfall ohne
     // eigene wiederverwendbare Kategorie bekommt keine eigene Zelle — er ist einfach eine

@@ -18,9 +18,12 @@
  * auslassen. Ein eigener Pflicht-Rueckruf macht das Weglassen an der JSX-Aufrufstelle
  * zu einem Kompilierfehler.
  */
-import { Trash2 } from 'lucide-react';
-import { useRef } from 'react';
-import type { AnpassungsSpalte } from '../../server/projekt-schema.js';
+import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import { Fragment, useRef, useState } from 'react';
+import { formatiereAggregat } from '@offert/offer/src/format/de-ch.js';
+import { normalisiereBereiche, type Bereichsregel as KernBereichsregel } from '@offert/core';
+import type { AnpassungsSpalte, Merkmal } from '../../server/projekt-schema.js';
+import { BereichsregelEditor } from '../einstellungen/BereichsregelEditor.js';
 import { Button } from '../ui/button.js';
 import { Input } from '../ui/input.js';
 import { Select } from '../ui/select.js';
@@ -34,6 +37,9 @@ import {
 
 export interface AnpassungsSpaltenProps {
   readonly spalten: readonly AnpassungsSpalte[];
+  /** Merkmale des Projekts — nur gelesen, um die Staffel einer Regelspalte mit der
+   *  Merkmalsbezeichnung («Stockwerk») statt der rohen Kennung auszuweisen. */
+  readonly merkmale: readonly Merkmal[];
   readonly aendere: (spalten: readonly AnpassungsSpalte[]) => void;
   readonly entferneSpalte: (id: string) => void;
   /** Uebertraegt den Vorgabewert der Spalte in alle Einheiten ohne eigenen Wert
@@ -59,9 +65,70 @@ export function erzeugeSpaltenIdFolge(vorhandene: readonly AnpassungsSpalte[]): 
   };
 }
 
+/**
+ * Beschreibt die Staffel einer Regelspalte lesbar («Stockwerk unter 1: CHF 8’600 · … ·
+ * sonst: CHF 17’200») — der Betrag je Segment war sonst NIRGENDS in der Projektansicht
+ * sichtbar, nur der Satz «Wird von der hinterlegten Regel bestimmt» (Rueckmeldung
+ * Auftraggeber 2026-08-28). Reine Funktion, damit sie ohne DOM testbar bleibt (Muster
+ * `zellen-logik.ts`). Der Wert wird in der Erfassungsform der SPALTE formatiert —
+ * dieselbe Skalenkonvention wie in `EinheitenTabelle` (Rappen bei 'absolut', Faktor bei
+ * 'relativ').
+ */
+export function beschreibeStaffel(
+  spalte: AnpassungsSpalte, merkmale: readonly Merkmal[],
+): string {
+  const regel = spalte.regel;
+  if (regel === undefined) return '';
+  const merkmal = merkmale.find((m) => m.id === regel.merkmal)?.bezeichnung ?? regel.merkmal;
+  const betrag = (wert: number) => (spalte.erfassungsform === 'absolut'
+    ? formatiereAggregat(wert)
+    : `${String(faktorZuProzent(wert))} %`);
+  const teile = regel.bereiche.map((b) => (b.unter === undefined
+    ? `sonst: ${betrag(b.wert)}`
+    : `unter ${String(b.unter)}: ${betrag(b.wert)}`));
+  return `${merkmal} — ${teile.join(' · ')}`;
+}
+
+/**
+ * Umbau einer Spalte auf eine Merkmals-Staffel bzw. zurueck auf einen festen Vorgabewert.
+ * Reine Funktionen (Muster `zellen-logik.ts`), weil das Schema `regel` und `vorgabewert`
+ * gegenseitig ausschliesst (`projekt-schema.ts`, REGEL_UND_VORGABEWERT): Der jeweils
+ * andere Schluessel muss beim Umbau ENTFERNT werden, nicht auf `undefined` gesetzt —
+ * sonst scheiterte jedes PUT des Projekts.
+ */
+export function spalteMitRegel(s: AnpassungsSpalte, merkmalId: string): AnpassungsSpalte {
+  const { vorgabewert: _vorgabewert, ...rest } = s;
+  // Ein Startbereich, der nur den Restfall traegt: die Staffel ist damit sofort total
+  // und gueltig (`pruefeBereiche`), die Segmente ergaenzt der Vermarkter im Editor.
+  return { ...rest, regel: { merkmal: merkmalId, bereiche: [{ wert: 0 }] } };
+}
+
+export function spalteOhneRegel(s: AnpassungsSpalte): AnpassungsSpalte {
+  const { regel: _regel, ...rest } = s;
+  return { ...rest, vorgabewert: 0 };
+}
+
+/** Bringt die im Editor geaenderte Kern-Regel auf die Schemaform des Projekts
+ *  (readonly-Array -> gewoehnliches Array, flache Kopie wie `spalten-vorbelegung.ts`). */
+export function spalteMitGeaenderterRegel(
+  s: AnpassungsSpalte, regel: KernBereichsregel,
+): AnpassungsSpalte {
+  return {
+    ...s,
+    regel: { merkmal: regel.merkmal, bereiche: regel.bereiche.map((b) => ({ ...b })) },
+  };
+}
+
 export function AnpassungsSpalten(
-  { spalten, aendere, entferneSpalte, uebernehmeAufEinheiten }: AnpassungsSpaltenProps,
+  { spalten, merkmale, aendere, entferneSpalte, uebernehmeAufEinheiten }: AnpassungsSpaltenProps,
 ) {
+  // Aufgeklappte Spalten (Akkordeon): Die Staffel wird in einer Detailzeile UNTER der
+  // Spaltenzeile bearbeitet, nicht in einem eigenen Dialog — sie gehoert sichtbar zur
+  // Spalte (Rueckmeldung Auftraggeber 2026-08-28).
+  const [offene, setzeOffene] = useState<readonly string[]>([]);
+  function schalte(id: string): void {
+    setzeOffene((o) => (o.includes(id) ? o.filter((x) => x !== id) : [...o, id]));
+  }
   const naechsteId = useRef<(() => string) | undefined>(undefined);
   if (naechsteId.current === undefined) {
     naechsteId.current = erzeugeSpaltenIdFolge(spalten);
@@ -102,6 +169,7 @@ export function AnpassungsSpalten(
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-8" />
               <TableHead>Bezeichnung</TableHead>
               <TableHead>Erfassungsform</TableHead>
               <TableHead>Vorgabewert</TableHead>
@@ -110,7 +178,23 @@ export function AnpassungsSpalten(
           </TableHeader>
           <TableBody>
             {spalten.map((s) => (
-              <TableRow key={s.id}>
+              <Fragment key={s.id}>
+              <TableRow>
+                <TableCell>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    aria-label={offene.includes(s.id) ? 'Details schliessen' : 'Details öffnen'}
+                    aria-expanded={offene.includes(s.id)}
+                    onClick={() => schalte(s.id)}
+                  >
+                    {offene.includes(s.id)
+                      ? <ChevronDown className="size-4" />
+                      : <ChevronRight className="size-4" />}
+                  </Button>
+                </TableCell>
                 <TableCell>
                   <Input
                     value={s.bezeichnung}
@@ -173,10 +257,20 @@ export function AnpassungsSpalten(
                     // derselben Spalte aus — ein Eingabefeld hier haette ein Projekt mit
                     // Regel unspeicherbar gemacht, sobald jemand hineintippt (die
                     // firmenweite Vorlage `stockwerklage` traegt eine Regel und bringt
-                    // diesen Fall damit in jedes neue Projekt).
-                    <p className="text-xs text-muted-foreground">
-                      Wird von der hinterlegten Regel bestimmt.
-                    </p>
+                    // diesen Fall damit in jedes neue Projekt). Die Staffel selbst wird
+                    // aber AUSGEWIESEN — vorher stand hier nur ein Satz, und welcher
+                    // Betrag in welchem Segment gilt, war in der Projektansicht nirgends
+                    // sichtbar. Bearbeitet wird sie in der aufklappbaren Detailzeile
+                    // (Akkordeon, `BereichsregelEditor`); firmenweit zusaetzlich unter
+                    // Einstellungen → Preisanpassung & Vorlagen.
+                    <>
+                      <p className="text-xs font-medium text-foreground/80">
+                        {beschreibeStaffel(s, merkmale)}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Staffel nach Merkmal — zum Bearbeiten die Zeile aufklappen.
+                      </p>
+                    </>
                   )}
                 </TableCell>
                 <TableCell>
@@ -193,6 +287,61 @@ export function AnpassungsSpalten(
                   </Button>
                 </TableCell>
               </TableRow>
+              {offene.includes(s.id) && (
+                <TableRow>
+                  <TableCell colSpan={5} className="bg-muted/30">
+                    {s.regel === undefined ? (
+                      <div className="flex items-center gap-3 py-1">
+                        <p className="text-sm text-muted-foreground">
+                          Diese Spalte trägt einen festen Vorgabewert. Alternativ kann sie
+                          einer Staffel nach Merkmal folgen (z.&nbsp;B. Zuschlag je
+                          Stockwerk).
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={merkmale.length === 0}
+                          title={merkmale.length === 0
+                            ? 'Es ist kein Merkmal konfiguriert.' : undefined}
+                          onClick={() => aendere(spalten.map((x) => (
+                            x.id === s.id ? spalteMitRegel(x, merkmale[0]!.id) : x)))}
+                        >
+                          Staffel nach Merkmal einführen
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="py-1">
+                        <BereichsregelEditor
+                          // `normalisiereBereiche` bringt die Zod-Optionalitaet
+                          // (`unter?: number | undefined`) auf die Kernform
+                          // (`unter?: number`) — dasselbe Muster wie im Schema selbst
+                          // (`projekt-schema.ts`, superRefine).
+                          regel={{
+                            merkmal: s.regel.merkmal,
+                            bereiche: normalisiereBereiche(s.regel.bereiche),
+                          }}
+                          merkmale={merkmale}
+                          erfassungsform={s.erfassungsform}
+                          aendere={(regel) => aendere(spalten.map((x) => (
+                            x.id === s.id ? spalteMitGeaenderterRegel(x, regel) : x)))}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="mt-2"
+                          onClick={() => aendere(spalten.map((x) => (
+                            x.id === s.id ? spalteOhneRegel(x) : x)))}
+                        >
+                          Staffel entfernen (fester Vorgabewert)
+                        </Button>
+                      </div>
+                    )}
+                  </TableCell>
+                </TableRow>
+              )}
+              </Fragment>
             ))}
           </TableBody>
         </Table>

@@ -55,7 +55,10 @@ vi.mock('../../../src/components/projekt/ZellenEingabe.js', () => ({
   },
 }));
 
-import { AnpassungsSpalten, erzeugeSpaltenIdFolge } from '../../../src/components/projekt/AnpassungsSpalten.js';
+import {
+  AnpassungsSpalten, beschreibeStaffel, erzeugeSpaltenIdFolge,
+  spalteMitGeaenderterRegel, spalteMitRegel, spalteOhneRegel,
+} from '../../../src/components/projekt/AnpassungsSpalten.js';
 
 function spalte(id: string, bezeichnung: string): AnpassungsSpalte {
   return {
@@ -70,6 +73,7 @@ describe('AnpassungsSpalten — Entfernen ist ein eigener Rueckruf', () => {
     const entferneSpalte = vi.fn();
     renderToStaticMarkup(
       <AnpassungsSpalten
+        merkmale={[]}
         spalten={[spalte('S-1', 'Erste'), spalte('S-2', 'Zweite')]}
         aendere={aendere}
         entferneSpalte={entferneSpalte}
@@ -93,6 +97,7 @@ describe('AnpassungsSpalten — Entfernen ist ein eigener Rueckruf', () => {
     const entferneSpalte = vi.fn();
     renderToStaticMarkup(
       <AnpassungsSpalten
+        merkmale={[]}
         spalten={[spalte('S-1', 'Erste')]}
         aendere={aendere}
         entferneSpalte={entferneSpalte}
@@ -115,6 +120,7 @@ describe('AnpassungsSpalten — freigewordene Kennungen werden nicht wiederverwe
     const aendere = vi.fn();
     renderToStaticMarkup(
       <AnpassungsSpalten
+        merkmale={[]}
         spalten={[spalte('S-1', 'Erste'), spalte('S-2', 'Zweite')]}
         aendere={aendere}
         entferneSpalte={vi.fn()}
@@ -166,6 +172,7 @@ describe('AnpassungsSpalten — Vorgabewert in der Einheit des Menschen', () => 
     const aendere = vi.fn();
     renderToStaticMarkup(
       <AnpassungsSpalten
+        merkmale={[]}
         spalten={[{
           id: 'S-1', bezeichnung: 'Aussicht', erfassungsform, vorgabewert,
         }]}
@@ -217,6 +224,7 @@ describe('AnpassungsSpalten — Vorgabewert entfaellt bei einer Spalte mit Regel
     erfasst.zellen.length = 0;
     renderToStaticMarkup(
       <AnpassungsSpalten
+        merkmale={[]}
         spalten={[spalteMitRegel]}
         aendere={vi.fn()}
         entferneSpalte={vi.fn()}
@@ -231,6 +239,7 @@ describe('AnpassungsSpalten — Vorgabewert entfaellt bei einer Spalte mit Regel
     erfasst.zellen.length = 0;
     renderToStaticMarkup(
       <AnpassungsSpalten
+        merkmale={[]}
         spalten={[spalte('S-1', 'Erste')]}
         aendere={vi.fn()}
         entferneSpalte={vi.fn()}
@@ -248,6 +257,7 @@ describe('AnpassungsSpalten — eine neue Spalte ist sofort speicherbar', () => 
     const aendere = vi.fn();
     renderToStaticMarkup(
       <AnpassungsSpalten
+        merkmale={[]}
         spalten={[]}
         aendere={aendere}
         entferneSpalte={vi.fn()}
@@ -262,5 +272,70 @@ describe('AnpassungsSpalten — eine neue Spalte ist sofort speicherbar', () => 
     // mit 422 scheitern und meldete dem Vermarkter nach JEDEM Hinzufuegen, die Aenderung
     // habe nicht gespeichert werden koennen.
     expect(neu.bezeichnung.trim().length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * Die Staffel einer Regelspalte muss in der Projektansicht ABLESBAR sein — vorher stand
+ * dort nur «Wird von der hinterlegten Regel bestimmt», und welcher Betrag in welchem
+ * Segment gilt, war nirgends sichtbar (Rueckmeldung Auftraggeber 2026-08-28).
+ */
+describe('beschreibeStaffel — weist Segmente und Betraege lesbar aus', () => {
+  it('formatiert eine absolute Staffel in Franken mit Merkmalsbezeichnung', () => {
+    const s: AnpassungsSpalte = {
+      id: 'S-1', bezeichnung: 'Zuschlag Stockwerklage', erfassungsform: 'absolut',
+      regel: { merkmal: 'stockwerk', bereiche: [
+        { unter: 1, wert: 860000 }, { unter: 2, wert: 0 }, { wert: 1720000 },
+      ] },
+    };
+    const text = beschreibeStaffel(s, [{ id: 'stockwerk', bezeichnung: 'Stockwerk', form: 'zahl' }]);
+    expect(text).toContain('Stockwerk');
+    expect(text).toContain('unter 1');
+    expect(text).toContain('sonst');
+    // formatiereAggregat formatiert Rappen als Franken (860000 Rp -> CHF 8'600).
+    expect(text).toMatch(/8.600/);
+    expect(text).toMatch(/17.200/);
+  });
+
+  it('formatiert eine relative Staffel in Prozent und faellt ohne Merkmalseintrag auf die Kennung zurueck', () => {
+    const s: AnpassungsSpalte = {
+      id: 'S-1', bezeichnung: 'Aussicht', erfassungsform: 'relativ',
+      regel: { merkmal: 'ausrichtung', bereiche: [{ unter: 1, wert: 0.05 }, { wert: 0 }] },
+    };
+    const text = beschreibeStaffel(s, []);
+    expect(text).toContain('ausrichtung');
+    expect(text).toContain('5 %');
+  });
+
+  it('liefert fuer eine Spalte ohne Regel einen leeren Text', () => {
+    expect(beschreibeStaffel(spalte('S-1', 'Erste'), [])).toBe('');
+  });
+});
+
+/**
+ * Der Umbau Vorgabewert <-> Staffel muss den jeweils anderen Schluessel ENTFERNEN —
+ * das Schema schliesst `regel` und `vorgabewert` gegenseitig aus (REGEL_UND_VORGABEWERT),
+ * ein zurueckbleibender Schluessel machte jedes PUT des Projekts unspeicherbar.
+ */
+describe('Spalten-Umbau Vorgabewert <-> Staffel haelt den Schema-Ausschluss ein', () => {
+  it('spalteMitRegel entfernt den Vorgabewert und startet mit totalem Restfall', () => {
+    const neu = spalteMitRegel(spalte('S-1', 'Erste'), 'stockwerk');
+    expect('vorgabewert' in neu).toBe(false);
+    expect(neu.regel).toEqual({ merkmal: 'stockwerk', bereiche: [{ wert: 0 }] });
+  });
+
+  it('spalteOhneRegel entfernt die Regel und setzt den Vorgabewert neutral auf 0', () => {
+    const mitRegel = spalteMitRegel(spalte('S-1', 'Erste'), 'stockwerk');
+    const zurueck = spalteOhneRegel(mitRegel);
+    expect('regel' in zurueck).toBe(false);
+    expect(zurueck.vorgabewert).toBe(0);
+  });
+
+  it('spalteMitGeaenderterRegel kopiert die Bereiche flach in die Schemaform', () => {
+    const basis = spalteMitRegel(spalte('S-1', 'Erste'), 'stockwerk');
+    const kernRegel = { merkmal: 'stockwerk', bereiche: [{ unter: 1, wert: 860000 }, { wert: 0 }] };
+    const neu = spalteMitGeaenderterRegel(basis, kernRegel);
+    expect(neu.regel).toEqual(kernRegel);
+    expect(neu.regel!.bereiche[0]).not.toBe(kernRegel.bereiche[0]);
   });
 });
