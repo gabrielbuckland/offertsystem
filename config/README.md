@@ -29,17 +29,27 @@ den Faktor stillgelegt.
 
 | # | Bezeichner | Quelle | min | max | Gewicht | Polung |
 |---|---|---|---|---|---|---|
-| 1 | `lage_gesamt` | `lagescore` → `location` | 1.0 | 0.0 | 0.40 | invertiert |
-| 2 | `innenausbau_qualitaet` | `manuell` | 1 | 6 | 0.25 | direkt |
-| 3 | `preissegment` | `abgeleitet` → `mittlererQuadratmeterpreis` | 600 000 | 1 800 000 | 0.20 | direkt |
-| 4 | `projektumfang` | `abgeleitet` → `einheitenzahl` | 4 | 36 | 0.15 | direkt |
+| 1 | `lage_gesamt` | `lagescore` → `location` | 1.0 | 0.0 | 0.55 | invertiert |
+| 2 | `preissegment` | `abgeleitet` → `mittlererQuadratmeterpreis` | 600 000 | 1 800 000 | 0.25 | direkt |
+| 3 | `projektumfang` | `abgeleitet` → `einheitenzahl` | 4 | 36 | 0.20 | direkt |
+
+Seit Konfigversion 1.1.0 fuehren die Firmen-Defaults **keinen manuellen Faktor
+mehr** (vormals `innenausbau_qualitaet`, Gewicht 0.25, anteilig auf die drei
+verbleibenden Faktoren umgelegt): Der Aufwandindikator D leitet sich damit
+vollstaendig automatisch aus dem PriceHubble-Lagescore und den abgeleiteten
+Projektgroessen her. Die fachliche Einschaetzung des Vermarkters fliesst nicht
+mehr ueber einen Einzelfaktor ein, sondern ueber die direkte Uebersteuerung von
+D im Projekt (`aufwandindikatorUebersteuerung`, Basisinformationen der
+Detailseite). Die Quelle `manuell` bleibt im Modell und in der Erfassungsmaske
+erhalten — eine Konfiguration mit manuellen Faktoren zeigt das Formular
+weiterhin an.
 
 Faktorschluessel und Quellschluessel sind zu unterscheiden: Der Faktor heisst
 `projektumfang`, seine Datenquelle im Kern heisst `einheitenzahl`. Zulaessige
 Quellschluessel der Quelle `abgeleitet` sind `einheitenzahl` und
 `mittlererQuadratmeterpreis`.
 
-Σw = 0.40 + 0.25 + 0.20 + 0.15 = **1.00**, exakt und ohne Toleranzausschoepfung.
+Σw = 0.55 + 0.25 + 0.20 = **1.00**, exakt und ohne Toleranzausschoepfung.
 
 Die vertauschten Grenzen von `lage_gesamt` sind der Richtungsmechanismus
 `x̂ = 1 − x`: Ein hoher Lagescore bedeutet gute Lage und damit geringen Aufwand.
@@ -49,23 +59,6 @@ jede Sonderbehandlung im Code machte jeden neuen Faktor zu einer Codeaenderung.
 **Nur der Gesamtlagescore geht als Aufwandfaktor ein, nicht alle neun.** Das
 System verdichtet nichts: Alle neun Scores bleiben in Datenmodell und Offerte
 getrennt gefuehrt; die Konfiguration waehlt aus, welcher gewichtet wird.
-
-### Skala `innenausbau_qualitaet`
-
-Sechsstufige Ordinalskala: 1 einfacher Standard · 2 Standard · 3 gehoben ·
-4 hochwertig · 5 exklusiv · 6 Luxus. Die Stufenbeschriftungen stehen im Feld
-`skala` des Faktors und werden von der Erfassungsmaske daraus gelesen (E-24).
-Das Feld ist **rein deskriptiv** und geht in keine Formel ein; Rechenwirkung
-haben allein `min`, `max`, `strategie` und `gewicht`. Eine Umbenennung oder
-Erweiterung der Stufen ist damit eine Konfigurationsaenderung.
-Geradzahlig, also **ohne neutrale Mitte** —
-eine ungerade Skala verleitet zur Zentraltendenz, und bei nur einem Bewerter je
-Projekt waere eine systematische Mittelwahl unmittelbar honorarwirksam.
-
-**Methodische Offenlegung:** Die Min-Max-Normalisierung behandelt die
-Ordinalskala wie eine Intervallskala (Aequidistanzannahme). Das ist fuer die
-gewichtete Summe notwendig und in der Praxis ueblich, aber eine Annahme und
-keine Messeigenschaft.
 
 ### Ermittlung des Preissegments
 

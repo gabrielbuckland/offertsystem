@@ -126,6 +126,9 @@ export function zuEingangsArgumenten(
           Object.entries(erfassung.aufwandfaktoren).map(([id, wert]) => [id as FaktorId, wert]),
         ),
       },
+      ...(erfassung.aufwandindikatorUebersteuerung === undefined
+        ? {}
+        : { aufwandindikatorUebersteuerung: erfassung.aufwandindikatorUebersteuerung }),
       konfiguration,
       zeitstempel,
     },

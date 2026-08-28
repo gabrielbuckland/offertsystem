@@ -131,6 +131,9 @@ export function projiziere(
       })),
       einheiten,
       aufwandfaktoren: projekt.aufwandfaktoren,
+      ...(projekt.aufwandindikatorUebersteuerung === undefined
+        ? {}
+        : { aufwandindikatorUebersteuerung: projekt.aufwandindikatorUebersteuerung }),
     } as Erfassung,
   };
 }

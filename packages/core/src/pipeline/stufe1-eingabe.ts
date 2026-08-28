@@ -15,6 +15,12 @@ export interface EingangsArgumente {
   readonly bewertungsbuendelVollstaendig: boolean; // aus BewertungsBuendel (US-15)
   readonly lagescores: Lagescores;
   readonly vermarkterFaktoren: VermarkterFaktoren;
+  /**
+   * Vom Vermarkter gesetzter Aufwandindikator D in [0,1] — uebersteuert in Stufe 4 den
+   * aus den Faktoren abgeleiteten Wert (die Anwesenheit entscheidet, nicht die Groesse).
+   * Fehlt das Feld, gilt die Ableitung.
+   */
+  readonly aufwandindikatorUebersteuerung?: number;
   readonly konfiguration: Konfiguration;
   readonly zeitstempel: string; // hereingereicht (E-29)
 }

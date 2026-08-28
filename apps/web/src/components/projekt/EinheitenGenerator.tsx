@@ -8,11 +8,13 @@
  *
  * Nacherfassen, nicht Ersterfassung: Beim Anlegen eines NEUEN Referenzobjekts fragt
  * dessen Dialog (`Referenzobjekte.tsx`) die Anzahl Wohnungen bereits mit ab und erzeugt
- * sie selbst. Dieser Block bleibt fuer den Fall, dass spaeter weitere Wohnungen eines
- * BEREITS bestehenden Typs dazukommen — deshalb unter der Einheitentabelle statt davor
- * (Rueckmeldung Auftraggeber).
+ * sie selbst. Dieser Baustein bleibt fuer den Fall, dass spaeter weitere Wohnungen eines
+ * BEREITS bestehenden Typs dazukommen. Er ist kein eigener Block mehr, sondern eine
+ * Schaltflaeche mit Dialog direkt unter der Einheitentabelle, deren Bestand er ergaenzt
+ * (Rueckmeldung Auftraggeber) — dasselbe `<dialog>`-Muster wie der Anlegen-Dialog in
+ * `Referenzobjekte.tsx`.
  */
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { erzeugeEinheiten, type Wunsch } from '../../server/einheiten-generator.js';
 import type {
   AnpassungsSpalte, ProjektEinheit, Referenzobjekt,
@@ -32,55 +34,78 @@ export interface EinheitenGeneratorProps {
 export function EinheitenGenerator({
   referenzobjekte, einheiten, spalten, aendere,
 }: EinheitenGeneratorProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const [anzahlen, setAnzahlen] = useState<Record<string, number>>({});
 
+  function oeffneDialog(): void {
+    setAnzahlen({});
+    dialogRef.current?.showModal();
+  }
+
+  const wuensche: Wunsch[] = referenzobjekte
+    .map((r) => ({ referenzobjektId: r.id, anzahl: anzahlen[r.id] ?? 0 }))
+    .filter((w) => w.anzahl > 0);
+
   function anlegen() {
-    const wuensche: Wunsch[] = referenzobjekte
-      .map((r) => ({ referenzobjektId: r.id, anzahl: anzahlen[r.id] ?? 0 }))
-      .filter((w) => w.anzahl > 0);
     if (wuensche.length === 0) return;
     const neue = erzeugeEinheiten(wuensche, referenzobjekte, einheiten, spalten);
     aendere([...einheiten, ...neue]);
-    setAnzahlen({});
-  }
-
-  if (referenzobjekte.length === 0) {
-    return (
-      <section>
-        <h2 className="text-base font-semibold">Wohnung nacherfassen</h2>
-        <p className="mb-3 text-muted-foreground">
-          Zuerst ein Referenzobjekt anlegen, danach können Einheiten erzeugt werden.
-        </p>
-      </section>
-    );
+    dialogRef.current?.close();
   }
 
   return (
-    <section>
-      <h2 className="text-base font-semibold">Wohnung nacherfassen</h2>
-      <p className="mb-3 text-sm text-muted-foreground">
-        Ergänzt die Einheitentabelle um weitere Wohnungen eines bestehenden Wohnungstyps.
-      </p>
-      <div className="mb-3 flex flex-wrap items-end gap-4">
-        {referenzobjekte.map((r) => (
-          <div key={r.id} className="flex flex-col gap-1">
-            <Label htmlFor={`anzahl-${r.id}`}>{r.zimmerzahl} Zimmer</Label>
-            <Input
-              id={`anzahl-${r.id}`}
-              type="number"
-              min={0}
-              step={1}
-              value={anzahlen[r.id] ?? ''}
-              onChange={(e) => {
-                const wert = e.target.value === '' ? 0 : Number(e.target.value);
-                setAnzahlen((a) => ({ ...a, [r.id]: wert }));
-              }}
-              className="w-24"
-            />
-          </div>
-        ))}
-      </div>
-      <Button type="button" onClick={anlegen}>Wohnungen nacherfassen</Button>
-    </section>
+    <div className="mt-3">
+      <Button
+        type="button"
+        variant="outline"
+        disabled={referenzobjekte.length === 0}
+        title={referenzobjekte.length === 0
+          ? 'Zuerst ein Referenzobjekt anlegen, danach können Einheiten erzeugt werden.'
+          : undefined}
+        onClick={oeffneDialog}
+      >
+        Wohnungen nacherfassen
+      </Button>
+      <dialog
+        ref={dialogRef}
+        aria-label="Wohnungen nacherfassen"
+        // `m-auto`: siehe Kommentar am Anlegen-Dialog in `Referenzobjekte.tsx` (Preflight
+        // ueberschreibt die UA-Zentrierung nativer Dialoge).
+        className="m-auto rounded-lg border border-border bg-background p-6 backdrop:bg-foreground/30"
+      >
+        <h3 className="mb-1 text-base font-semibold">Wohnungen nacherfassen</h3>
+        <p className="mb-4 max-w-sm text-sm text-muted-foreground">
+          Ergänzt die Einheitentabelle um weitere Wohnungen eines bestehenden Wohnungstyps.
+        </p>
+        <div className="grid gap-4">
+          {referenzobjekte.map((r) => (
+            <div key={r.id} className="flex items-center justify-between gap-6">
+              <Label htmlFor={`anzahl-${r.id}`}>{r.zimmerzahl} Zimmer</Label>
+              <Input
+                id={`anzahl-${r.id}`}
+                type="number"
+                min={0}
+                step={1}
+                placeholder="0"
+                value={anzahlen[r.id] ?? ''}
+                onChange={(e) => {
+                  const wert = e.target.value === '' ? 0 : Number(e.target.value);
+                  setAnzahlen((a) => ({ ...a, [r.id]: wert }));
+                }}
+                className="w-24"
+              />
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex justify-end gap-3">
+          <Button type="button" variant="outline" onClick={() => dialogRef.current?.close()}>
+            Abbrechen
+          </Button>
+          <Button type="button" onClick={anlegen} disabled={wuensche.length === 0}>
+            Hinzufügen
+          </Button>
+        </div>
+      </dialog>
+    </div>
   );
 }

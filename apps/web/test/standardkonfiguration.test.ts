@@ -60,13 +60,17 @@ describe('Standardkonfiguration', () => {
     expect(faktor?.quelle).toBe('abgeleitet');
   });
 
-  it('haelt die Stufenbeschriftungen des Innenausbaus in der Konfiguration', () => {
+  // Seit Konfigversion 1.1.0 fuehren die Firmen-Defaults keinen manuellen Faktor mehr
+  // (config/README.md): D leitet sich vollautomatisch aus Lagescore und abgeleiteten
+  // Groessen her; die Vermarkter-Einschaetzung laeuft ueber die D-Uebersteuerung im
+  // Projekt. Dieser Test sichert genau das ab — ein wieder auftauchender manueller
+  // Faktor braeuchte auch wieder eine Erfassungsstelle (Aufwandfaktoren-Block).
+  it('fuehrt keinen manuellen Faktor — D ist vollstaendig ableitbar', () => {
     const ergebnis = validiereKonfiguration(roh);
     expect(ergebnis.ok).toBe(true);
     if (!ergebnis.ok) return;
-    const skala = ergebnis.wert.aufwandfaktoren['innenausbau_qualitaet']?.skala;
-    expect(skala?.form).toBe('ordinal');
-    expect(skala?.stufen).toHaveLength(6);
-    expect(skala?.stufen.at(-1)?.bezeichnung).toBe('Luxus');
+    const quellen = Object.values(ergebnis.wert.aufwandfaktoren).map((f) => f.quelle);
+    expect(quellen).not.toContain('manuell');
+    expect(quellen).toContain('lagescore');
   });
 });

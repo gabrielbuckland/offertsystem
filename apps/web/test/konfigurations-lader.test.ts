@@ -24,7 +24,7 @@ describe('ladeKonfiguration', () => {
     const ergebnis = ladeKonfiguration({ pfad: STANDARD });
     expect(ergebnis.ok).toBe(true);
     if (!ergebnis.ok) return;
-    expect(ergebnis.fingerabdruck.konfigVersion).toBe('1.0.0-vorlaeufig');
+    expect(ergebnis.fingerabdruck.konfigVersion).toBe('1.1.0-vorlaeufig');
     expect(ergebnis.fingerabdruck.schemaVersion).toBe(1);
     expect(ergebnis.fingerabdruck.konfigPruefsumme).toMatch(/^[0-9a-f]{64}$/);
     expect(ergebnis.fingerabdruck.ueberschreibungen).toEqual([]);

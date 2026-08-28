@@ -8,6 +8,9 @@ export interface AggregatleisteProps {
   readonly honorarMin: number | undefined;
   readonly honorarMax: number | undefined;
   readonly aufwandindikator: number | undefined;
+  /** Wahr, wenn D vom Vermarkter uebersteuert ist (Basisinformationen) — der Ausweis
+   *  unterscheidet den gesetzten vom abgeleiteten Wert. */
+  readonly aufwandindikatorUebersteuert?: boolean;
   /** Nur gesetzt bei E-04 (Verkaufssumme ausserhalb der Staffel) — Text kommt fertig
    *  uebersetzt aus der Route, diese Komponente uebersetzt nicht nach. */
   readonly honorarAbbruchMeldung?: string;
@@ -28,7 +31,8 @@ export interface AggregatleisteProps {
  */
 export function Aggregatleiste(
   {
-    verkaufssumme, honorarMin, honorarMax, aufwandindikator, honorarAbbruchMeldung,
+    verkaufssumme, honorarMin, honorarMax, aufwandindikator, aufwandindikatorUebersteuert,
+    honorarAbbruchMeldung,
     erzeuge, laeuft, speichernLaeuft, berechnungLaeuft, rechenwegOffen, schalteRechenweg,
   }: AggregatleisteProps,
 ) {
@@ -62,7 +66,9 @@ export function Aggregatleiste(
             </dd>
           </div>
           <div>
-            <dt className="text-sm text-muted-foreground">Aufwandindikator D</dt>
+            <dt className="text-sm text-muted-foreground">
+              Aufwandindikator D{aufwandindikatorUebersteuert === true ? ' (übersteuert)' : ''}
+            </dt>
             <dd className="text-lg font-medium">
               {aufwandindikator === undefined ? '—' : formatiereScore(aufwandindikator)}
             </dd>

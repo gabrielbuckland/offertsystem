@@ -1,7 +1,7 @@
 {
   "meta": {
     "schemaVersion": 1,
-    "konfigVersion": "1.0.0-vorlaeufig+risikoindex-ohne-renorm",
+    "konfigVersion": "1.1.0-vorlaeufig+risikoindex-ohne-renorm",
     "gueltigAb": "2026-08-16",
     "beschreibung": "Gezielt verletzende Variante: Sigma w = 1.10, muss zurueckgewiesen werden (I-12)."
   },
@@ -94,45 +94,7 @@
       "strategie": "minmax",
       "min": 1,
       "max": 0,
-      "gewicht": 0.4
-    },
-    "innenausbau_qualitaet": {
-      "bezeichnung": "Qualitaet des Innenausbaus",
-      "quelle": "manuell",
-      "quellSchluessel": "innenausbau_qualitaet",
-      "strategie": "minmax",
-      "min": 1,
-      "max": 6,
-      "gewicht": 0.25,
-      "skala": {
-        "form": "ordinal",
-        "stufen": [
-          {
-            "wert": 1,
-            "bezeichnung": "einfacher Standard"
-          },
-          {
-            "wert": 2,
-            "bezeichnung": "Standard"
-          },
-          {
-            "wert": 3,
-            "bezeichnung": "gehoben"
-          },
-          {
-            "wert": 4,
-            "bezeichnung": "hochwertig"
-          },
-          {
-            "wert": 5,
-            "bezeichnung": "exklusiv"
-          },
-          {
-            "wert": 6,
-            "bezeichnung": "Luxus"
-          }
-        ]
-      }
+      "gewicht": 0.55
     },
     "preissegment": {
       "bezeichnung": "Preissegment (flaechengewichteter mittlerer Quadratmeterpreis)",
@@ -141,7 +103,7 @@
       "strategie": "minmax",
       "min": 600000,
       "max": 1800000,
-      "gewicht": 0.2
+      "gewicht": 0.25
     },
     "projektumfang": {
       "bezeichnung": "Projektumfang (Anzahl Einheiten)",
@@ -150,7 +112,7 @@
       "strategie": "minmax",
       "min": 4,
       "max": 36,
-      "gewicht": 0.15
+      "gewicht": 0.2
     },
     "risikoindex": {
       "bezeichnung": "Risikoindex (Marktvolatilitaet der Region)",

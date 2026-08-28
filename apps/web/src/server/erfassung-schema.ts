@@ -92,6 +92,9 @@ export function erfassungsSchema(k: Konfiguration) {
     }).strict()).min(1),
     einheiten: z.array(einheit).min(1),
     aufwandfaktoren: z.record(z.number()), // datengetrieben, Aufgabe 15
+    // Uebersteuerter Aufwandindikator D (projekt-schema.ts, dort begruendet) — optional,
+    // die Anwesenheit entscheidet.
+    aufwandindikatorUebersteuerung: z.number().min(0).max(1).optional(),
   }).strict().superRefine((e, ctx) => {
     // I-01: Eindeutigkeit auf Aggregatebene, nicht je Feld. Gemeldet wird an ALLEN
     // kollidierenden Einheiten — sonst muesste der Vermarkter raten, welche gemeint ist.

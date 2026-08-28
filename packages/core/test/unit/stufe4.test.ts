@@ -71,6 +71,28 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
     expect(r.ok).toBe(true);
   });
 
+  it('uebernimmt eine Uebersteuerung als D und weist die Ableitung weiter aus', () => {
+    const r = berechneAufwandindikator(
+      normalisierungErgebnis({ lage_gesamt: 0.2, innenausbau_qualitaet: 0.4,
+        preissegment: 0.3, projektumfang: 0.5 }),
+      standardKonfiguration(), 0.7);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.wert.aufwandindikator).toBe(0.7);
+      expect(r.wert.uebersteuerung?.abgeleitet).toBeCloseTo(0.315, 12);
+      // Die Faktorspuren bleiben vollstaendig — Vorschlag und Herleitung (US-13).
+      expect(r.wert.beitraege).toHaveLength(4);
+    }
+  });
+
+  it('traegt ohne Uebersteuerung KEIN Uebersteuerungsfeld (Anwesenheit entscheidet)', () => {
+    const r = berechneAufwandindikator(
+      normalisierungErgebnis({ lage_gesamt: 0.2, innenausbau_qualitaet: 0.4,
+        preissegment: 0.3, projektumfang: 0.5 }),
+      standardKonfiguration());
+    if (r.ok) expect('uebersteuerung' in r.wert).toBe(false);
+  });
+
   it('unterscheidet Lagescore, Vermarkterfaktor, Preissegment und Projektumfang nicht (I-13)', () => {
     const quelltext = String(berechneAufwandindikator);
     for (const literal of ['lage_gesamt', 'innenausbau', 'preissegment', 'projektumfang']) {

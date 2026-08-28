@@ -5,7 +5,7 @@
  * wird gerade, dass im Fehlerfall NICHTS abgelegt wird, und das haengt an der echten
  * Reihenfolge im Handler.
  */
-import { mkdtemp, readdir } from 'node:fs/promises';
+import { mkdtemp, readdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -94,7 +94,28 @@ describe('POST /api/offerte', () => {
   });
 
   it('legt bei einem Stufenfehler keine Offerte ab (I-24)', async () => {
-    // Ohne den konfigurierten manuellen Aufwandfaktor bricht Stufe 3 mit FAKTOR_FEHLT ab.
+    // Ohne einen konfigurierten manuellen Aufwandfaktor bricht die Pipeline mit
+    // FAKTOR_FEHLT ab. Die Firmen-Defaults fuehren seit Konfigversion 1.1.0 keinen
+    // manuellen Faktor mehr (config/README.md) — der Testfall laedt deshalb eine
+    // abgewandelte Konfiguration MIT manuellem Faktor, denn geprueft wird hier nicht
+    // die Standardkonfiguration, sondern dass im Fehlerfall NICHTS abgelegt wird.
+    const roh = JSON.parse(
+      await readFile(`${WURZEL}/config/company-defaults.json`, 'utf8'),
+    ) as { aufwandfaktoren: Record<string, Record<string, unknown>> };
+    roh.aufwandfaktoren['innenausbau_qualitaet'] = {
+      bezeichnung: 'Qualitaet des Innenausbaus', quelle: 'manuell',
+      quellSchluessel: 'innenausbau_qualitaet', strategie: 'minmax',
+      min: 1, max: 6, gewicht: 0.25,
+    };
+    roh.aufwandfaktoren['lage_gesamt']!['gewicht'] = 0.3; // Summe der Gewichte wieder 1
+    // Eigenes Verzeichnis — `ablage` muss am Testende leer sein (genau das ist die
+    // Behauptung dieses Tests).
+    const konfigPfad = join(
+      await mkdtemp(join(tmpdir(), 'konfig-')), 'konfig-mit-manuellem-faktor.json');
+    await writeFile(konfigPfad, JSON.stringify(roh));
+    process.env['COMPANY_DEFAULTS_PATH'] = konfigPfad;
+    leereZwischenspeicher();
+
     // Das Erfassungsschema laesst die leere Faktormenge zu — die Vollstaendigkeit je
     // Faktor prueft `pruefeFaktorwerte` in der Maske, nicht das Schema.
     const ohneFaktor = beispielErfassung();

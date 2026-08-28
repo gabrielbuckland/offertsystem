@@ -21,12 +21,22 @@ export interface Faktorbeitrag {
 export interface GewichtungErgebnis {
   readonly beitraege: readonly Faktorbeitrag[]; // sortiert nach faktorId
   readonly gewichtssumme: number; // Summe w_d, ausgewiesen
-  readonly aufwandindikator: number; // D
+  readonly aufwandindikator: number; // D (wirksam; bei Uebersteuerung deren Wert)
+  /**
+   * Nur gesetzt, wenn der Vermarkter D uebersteuert hat (Muster `wirksamer-wert.ts` in
+   * apps/web: die ANWESENHEIT entscheidet, nicht die Groesse). `abgeleitet` haelt den
+   * weiterhin berechneten Faktorwert fest, damit Ausweis und Vorschlag erhalten bleiben.
+   */
+  readonly uebersteuerung?: { readonly abgeleitet: number };
 }
 
 export function berechneAufwandindikator(
   normalisierung: NormalisierungErgebnis,
   konfiguration: Konfiguration,
+  // In [0,1]; die Bereichspruefung liegt beim Aufrufer (apps/web validiert per Zod im
+  // Projektschema) — der Kern uebernimmt den Wert unveraendert, wie bei den
+  // Vermarkter-Faktorwerten auch.
+  uebersteuerung?: number,
 ): Result<GewichtungErgebnis, StufenFehler> {
   const eintraege = sortiereNachSchluessel(konfiguration.faktoren);
   const gewichtssumme = eintraege.reduce((s, [, p]) => s + p.gewicht, 0);
@@ -63,5 +73,16 @@ export function berechneAufwandindikator(
     aufwandindikator += beitrag; // Summationsreihenfolge: aufsteigend nach faktorId
   }
 
-  return ok({ beitraege, gewichtssumme, aufwandindikator });
+  // Die Faktoren werden auch bei Uebersteuerung vollstaendig berechnet und ausgewiesen:
+  // Der abgeleitete Wert bleibt der nachvollziehbare Vorschlag, der wirksame Wert die
+  // Entscheidung des Vermarkters — beide gehoeren in die Herleitung (US-13).
+  if (uebersteuerung === undefined) {
+    return ok({ beitraege, gewichtssumme, aufwandindikator });
+  }
+  return ok({
+    beitraege,
+    gewichtssumme,
+    aufwandindikator: uebersteuerung,
+    uebersteuerung: { abgeleitet: aufwandindikator },
+  });
 }

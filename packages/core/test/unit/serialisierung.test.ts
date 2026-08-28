@@ -50,6 +50,19 @@ describe('Serialisierung der Berechnungseingabe (PE-08, AK-4.4, US-13)', () => {
     expect([...r.wert.lagescores.meta.entries()]).toEqual([...e.lagescores.meta.entries()]);
   });
 
+  it('fuehrt die D-Uebersteuerung durch den Rundlauf — und laesst sie sonst weg', () => {
+    const mit = { ...eingangsArgumente(), aufwandindikatorUebersteuerung: 0.7 };
+    const wieder = deserialisiereEingang(JSON.parse(JSON.stringify(serialisiereEingang(mit))));
+    expect(wieder.ok).toBe(true);
+    if (wieder.ok) expect(wieder.wert.aufwandindikatorUebersteuerung).toBe(0.7);
+    // Ohne Uebersteuerung traegt die serialisierte Form den Schluessel NICHT — fehlend
+    // heisst «keine Uebersteuerung», auch nach dem Rundlauf (Anwesenheit entscheidet).
+    const roh = serialisiereEingang(eingangsArgumente()) as Record<string, unknown>;
+    expect('aufwandindikatorUebersteuerung' in roh).toBe(false);
+    const ohne = deserialisiereEingang(JSON.parse(JSON.stringify(roh)));
+    if (ohne.ok) expect('aufwandindikatorUebersteuerung' in ohne.wert).toBe(false);
+  });
+
   it('weist eine fremde Version und Strukturfehler zurueck, ohne zu werfen', () => {
     for (const eingabe of [null, 7, {}, { version: 99 }]) {
       const r = deserialisiereEingang(eingabe);

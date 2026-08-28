@@ -41,7 +41,8 @@ export function berechne(
   const stufe3 = normalisiereFaktoren(geschlossen.wert);
   if (!stufe3.ok) return fehlschlag(stufe3.fehler);
 
-  const stufe4 = berechneAufwandindikator(stufe3.wert, eingang.konfiguration);
+  const stufe4 = berechneAufwandindikator(
+    stufe3.wert, eingang.konfiguration, eingang.aufwandindikatorUebersteuerung);
   if (!stufe4.ok) return fehlschlag(stufe4.fehler);
 
   const stufe5 = bildeHonorarrange(stufe2.wert, stufe4.wert, eingang.konfiguration);

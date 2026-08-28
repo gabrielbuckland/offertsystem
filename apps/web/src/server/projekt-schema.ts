@@ -123,6 +123,12 @@ export const projektSchema = z.object({
   merkmale: z.array(merkmalSchema).default([]),
   einheiten: z.array(einheitSchema),
   aufwandfaktoren: z.record(z.number()),
+  // Vom Vermarkter gesetzter Aufwandindikator D (Rueckmeldung Auftraggeber 2026-08-28):
+  // Die ANWESENHEIT entscheidet, nicht die Groesse (Muster `wirksamer-wert.ts`) — fehlt
+  // das Feld, gilt der aus den Faktoren (PriceHubble-Lagescore, abgeleitete Groessen)
+  // hergeleitete Wert. Die Bereichspruefung [0,1] liegt HIER, der Kern uebernimmt den
+  // Wert unveraendert (Kommentar in stufe4-gewichtung.ts).
+  aufwandindikatorUebersteuerung: z.number().min(0).max(1).optional(),
   // Empfänger der Offerte (Spec 2026-08-27 §1). Optional: bestehende Projekte bleiben
   // gültig; der Platzhalter {auftraggeber} verlangt ihn erst beim Finalisieren.
   auftraggeber: z.string().trim().min(1).optional(),

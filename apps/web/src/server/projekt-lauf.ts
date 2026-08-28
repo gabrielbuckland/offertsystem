@@ -124,7 +124,8 @@ function fahreStufen1bis4Nach(eingang: EingangsArgumente): NachfahrErgebnis {
   const s3 = normalisiereFaktoren(geschlossen.wert);
   if (!s3.ok) return { ok: false, stufe: '3 (Normalisierung)', fehler: s3.fehler };
 
-  const s4 = berechneAufwandindikator(s3.wert, eingang.konfiguration);
+  const s4 = berechneAufwandindikator(
+    s3.wert, eingang.konfiguration, eingang.aufwandindikatorUebersteuerung);
   if (!s4.ok) return { ok: false, stufe: '4 (Gewichtung)', fehler: s4.fehler };
 
   return { ok: true, wert: { verkaufssumme: s2.wert, gewichtung: s4.wert } };

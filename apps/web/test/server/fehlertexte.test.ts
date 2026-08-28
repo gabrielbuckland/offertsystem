@@ -143,8 +143,13 @@ describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
   const faelle: readonly (readonly [string, Fall])[] = [
     ['FAKTOR_FEHLT', {
       code: 'FAKTOR_FEHLT',
-      eingang: () => ({ ...baueEingangsArgumente(), vermarkterFaktoren: { werte: new Map() } }),
-      erwartet: () => ['Qualitaet des Innenausbaus'],
+      // Seit Konfigversion 1.1.0 gibt es keinen manuellen Faktor mehr; der Fall wird
+      // ueber einen fehlenden Lagescore ausgeloest (gleicher Code, phase 'quelle').
+      eingang: () => {
+        const basis = baueEingangsArgumente();
+        return { ...basis, lagescores: { ...basis.lagescores, werte: new Map() } };
+      },
+      erwartet: () => ['Gesamtlage (PriceHubble-Lagescore)'],
     }],
     ['REFERENZBEWERTUNG_FEHLT', {
       code: 'REFERENZBEWERTUNG_FEHLT',
@@ -158,7 +163,7 @@ describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
         faktoren: new Map([...k.faktoren].map(([id, p]) =>
           [id, { ...p, grenzeMin: 5, grenzeMax: 5 }])),
       })),
-      erwartet: () => ['Qualitaet des Innenausbaus', formatiereScore(5)],
+      erwartet: () => ['Gesamtlage (PriceHubble-Lagescore)', formatiereScore(5)],
     }],
     ['REFERENZFLAECHE_NULL', {
       code: 'REFERENZFLAECHE_NULL',
@@ -191,7 +196,7 @@ describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
           [id, { ...p, gewicht: (p.gewicht + 0.5) as typeof p.gewicht }])),
       })),
       // Die Faktorliste stand wegen `faktorliste` statt `faktoren` immer leer da.
-      erwartet: () => ['innenausbau_qualitaet|Qualitaet des Innenausbaus'],
+      erwartet: () => ['lage_gesamt|Gesamtlage (PriceHubble-Lagescore)'],
     }],
     ['ANPASSUNG_UNZULAESSIG (Konfigurationsgrenze)', {
       code: 'ANPASSUNG_UNZULAESSIG',

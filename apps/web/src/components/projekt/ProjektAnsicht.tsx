@@ -172,6 +172,14 @@ export function ProjektAnsicht(
     { readonly derivation: PriceDerivation; readonly aggregates: AggregateValues } | undefined;
   const aufwandindikator = herleitung?.aggregates.effortIndicator.value;
 
+  // Der abgeleitete (nicht uebersteuerte) D-Wert ist die Summe der Faktorbeitraege —
+  // dieselben Spuren, die auch der Rechenweg zeigt. Ohne Uebersteuerung ist er mit
+  // `effortIndicator` identisch; mit Uebersteuerung traegt `effortIndicator` den
+  // gesetzten Wert, waehrend die Beitraege die Ableitung ausweisen (stufe4-gewichtung.ts).
+  const aufwandindikatorAbgeleitet = herleitung === undefined
+    ? undefined
+    : herleitung.aggregates.effortFactors.reduce((s, f) => s + f.beitrag, 0);
+
   // E-04: Bei einem Honorarabbruch traegt `stand` selbst weder Verkaufssumme noch
   // Herleitung (verwende-berechnung.ts, OHNE_AGGREGATE) — nur die Honorarrange fehlt,
   // Wohnungspreise und Aufwandindikator D bleiben gueltig und muessen sichtbar bleiben.
@@ -213,6 +221,15 @@ export function ProjektAnsicht(
           })}
           auftraggeber={projekt.auftraggeber}
           aendereAuftraggeber={(w) => aendere({ ...projekt, auftraggeber: w })}
+          aufwandindikator={projekt.aufwandindikatorUebersteuerung}
+          aufwandindikatorVorschlag={aufwandindikatorAbgeleitet}
+          aendereAufwandindikator={(w) => {
+            // Bedingter Spread statt `undefined`-Zuweisung: `exactOptionalPropertyTypes`,
+            // und das Schema soll den Schluessel gar nicht erst tragen (Anwesenheit
+            // entscheidet, projekt-schema.ts).
+            const { aufwandindikatorUebersteuerung: _entfernt, ...rest } = projekt;
+            aendere(w === undefined ? rest : { ...rest, aufwandindikatorUebersteuerung: w });
+          }}
         />
       </section>
       <section className="mb-6 rounded-lg border border-border bg-card p-6">
@@ -232,6 +249,7 @@ export function ProjektAnsicht(
       <section className="mb-6 rounded-lg border border-border bg-card p-6">
         <AnpassungsSpalten
           spalten={projekt.anpassungsSpalten}
+          merkmale={projekt.merkmale}
           aendere={(spalten) => aendere({ ...projekt, anpassungsSpalten: [...spalten] })}
           entferneSpalte={(id) => aendere({
             ...projekt,
@@ -261,8 +279,8 @@ export function ProjektAnsicht(
           preise={stand.preise}
           aendere={(einheiten) => aendere({ ...projekt, einheiten: [...einheiten] })}
         />
-      </section>
-      <section className="mb-6 rounded-lg border border-border bg-card p-6">
+        {/* Direkt unter der Tabelle, deren Bestand er ergaenzt — Schaltflaeche mit
+            Dialog statt eines eigenen Blocks (Rueckmeldung Auftraggeber). */}
         <EinheitenGenerator
           referenzobjekte={projekt.referenzobjekte}
           einheiten={projekt.einheiten}
@@ -279,13 +297,21 @@ export function ProjektAnsicht(
       {stand.fehler !== undefined && (
         <Hinweis art="fehler" className="mt-4">{stand.fehler}</Hinweis>
       )}
-      <section className="mb-6 rounded-lg border border-border bg-card p-6">
-        <Aufwandfaktoren
-          formular={faktorformular}
-          werte={projekt.aufwandfaktoren}
-          aendere={(werte) => aendere({ ...projekt, aufwandfaktoren: { ...werte } })}
-        />
-      </section>
+      {/* Nur solange die Konfiguration MANUELLE Faktoren fuehrt — mit den aktuellen
+          Firmen-Defaults (nur Lagescore + abgeleitete Groessen) entfaellt der Block;
+          D steht dafuer in den Basisinformationen (Rueckmeldung Auftraggeber
+          2026-08-28). Der bedingte Block bleibt, damit eine Konfiguration mit
+          manuellen Faktoren nicht in FAKTOR_FEHLT laufen kann, ohne dass es eine
+          Erfassungsstelle gaebe. */}
+      {faktorformular.felder.length > 0 && (
+        <section className="mb-6 rounded-lg border border-border bg-card p-6">
+          <Aufwandfaktoren
+            formular={faktorformular}
+            werte={projekt.aufwandfaktoren}
+            aendere={(werte) => aendere({ ...projekt, aufwandfaktoren: { ...werte } })}
+          />
+        </section>
+      )}
       {offerteFehler !== undefined && (
         <Hinweis art="fehler" className="mt-4">{offerteFehler}</Hinweis>
       )}
@@ -303,6 +329,7 @@ export function ProjektAnsicht(
         honorarMin={stand.honorarMin}
         honorarMax={stand.honorarMax}
         aufwandindikator={aufwandindikatorAnzeige}
+        aufwandindikatorUebersteuert={projekt.aufwandindikatorUebersteuerung !== undefined}
         erzeuge={() => { if (!offerteLaeuft) void erzeugeOfferte(); }}
         laeuft={offerteLaeuft}
         speichernLaeuft={speichernLaeuft}

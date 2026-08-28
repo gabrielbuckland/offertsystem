@@ -25,7 +25,9 @@ describe('baueVarianten', () => {
   it('fuehrt fuer D1 je Faktor eine eigene Parameterkennung', () => {
     const faktoren = new Set(varianten.filter((v) => v.dimension === 'D1')
       .map((v) => v.parameter_id));
-    expect(faktoren.size).toBeGreaterThanOrEqual(4);
+    // Seit Konfigversion 1.1.0 fuehren die Firmen-Defaults drei Faktoren (der manuelle
+    // Innenausbau-Faktor ist entfallen, config/README.md).
+    expect(faktoren.size).toBeGreaterThanOrEqual(3);
     for (const id of faktoren) expect(id.startsWith('w:')).toBe(true);
   });
 

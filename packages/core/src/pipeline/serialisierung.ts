@@ -158,6 +158,11 @@ export function serialisiereEingang(e: EingangsArgumente): unknown {
       anbieter: e.lagescores.anbieter,
     },
     vermarkterFaktoren: { werte: paare(e.vermarkterFaktoren.werte) },
+    // Bedingter Spread statt `undefined`-Schluessel: Fehlend heisst «keine
+    // Uebersteuerung», und die serialisierte Form soll das genauso tragen.
+    ...(e.aufwandindikatorUebersteuerung === undefined
+      ? {}
+      : { aufwandindikatorUebersteuerung: e.aufwandindikatorUebersteuerung }),
     konfiguration: serialisiereKonfiguration(e.konfiguration),
     zeitstempel: e.zeitstempel,
   };
@@ -177,6 +182,9 @@ const EingangSchema = z.object({
     anbieter: z.string(),
   }),
   vermarkterFaktoren: z.object({ werte: z.array(z.tuple([z.string(), z.number()])) }),
+  // Optional additiv — aeltere serialisierte Eingaenge ohne das Feld bleiben lesbar,
+  // deshalb KEIN Versionssprung (SERIALISIERUNGS_VERSION unveraendert).
+  aufwandindikatorUebersteuerung: z.number().min(0).max(1).optional(),
   konfiguration: z.unknown(),
   zeitstempel: z.string(),
 });
@@ -236,6 +244,9 @@ export function deserialisiereEingang(
     bewertungsbuendelVollstaendig: d.bewertungsbuendelVollstaendig,
     lagescores,
     vermarkterFaktoren: { werte: rohfaktoren },
+    ...(d.aufwandindikatorUebersteuerung === undefined
+      ? {}
+      : { aufwandindikatorUebersteuerung: d.aufwandindikatorUebersteuerung }),
     konfiguration: konfiguration.wert,
     zeitstempel: d.zeitstempel,
   });

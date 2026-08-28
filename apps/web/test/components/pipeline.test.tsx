@@ -19,9 +19,10 @@ describe('bauePipelineDaten', () => {
     expect(stufen.map((s) => s.nr)).toEqual([1, 2, 3, 4, 5]);
     const faktorStufe = stufen.find((s) => s.nr === 3)!;
     // Datengetrieben (US-09): jeder konfigurierte Faktor erscheint mit seiner
-    // Bezeichnung — hier die vier der Standardkonfiguration, ohne dass dieser Test
+    // Bezeichnung — hier die drei der Standardkonfiguration (seit 1.1.0 ohne
+    // manuellen Faktor, config/README.md), ohne dass dieser Test
     // oder die Komponente einen Bezeichner fest verdrahtet.
-    expect(faktorStufe.zeilen.length).toBeGreaterThanOrEqual(4);
+    expect(faktorStufe.zeilen.length).toBeGreaterThanOrEqual(3);
   });
   it('zeigt ohne Herleitung — statt Zahlen', () => {
     const stufen = bauePipelineDaten(basis());
