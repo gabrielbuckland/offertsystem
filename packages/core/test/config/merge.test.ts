@@ -58,19 +58,59 @@ describe('mergeKonfiguration', () => {
     expect(ergebnis.wert.ueberschreibungen[0]?.pfad).toBe('preisanpassungen.3.1');
   });
 
-  it('weist einen gesperrten Pfad mit Pfadangabe zurueck', () => {
+  it('uebersteuert einen Skalarwert der Basis und protokolliert ihn', () => {
     const ergebnis = mergeKonfiguration(basis, { flaeche: { alpha: 0.8 } });
-    expect(ergebnis.ok).toBe(false);
-    if (ergebnis.ok) return;
-    expect(ergebnis.fehler[0]?.code).toBe('CFG_MERGE_LOCKED_PATH');
-    expect(ergebnis.fehler[0]?.pfad).toBe('flaeche');
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    expect(ergebnis.wert.basis.flaeche.alpha).toBe(0.8);
+    // Die Firmenbasis selbst bleibt unangetastet — der Merge kopiert.
+    expect(basis.flaeche.alpha).toBe(0.5);
+    expect(ergebnis.wert.ueberschreibungen).toEqual([
+      { pfad: 'flaeche.alpha', defaultwert: 0.5, projektwert: 0.8 },
+    ]);
   });
 
-  it('weist auch die Anpassungsvorlagen als gesperrt zurueck', () => {
+  it('uebersteuert ein Gewicht tief im Baum, ohne Geschwister zu verlieren', () => {
+    const ergebnis = mergeKonfiguration(basis, {
+      aufwandfaktoren: { lage_gesamt: { gewicht: 0.45 } },
+    });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    const faktor = ergebnis.wert.basis.aufwandfaktoren['lage_gesamt'];
+    expect(faktor?.gewicht).toBe(0.45);
+    // Nicht genannte Geschwisterfelder ueberleben die Zusammenfuehrung.
+    expect(faktor?.quellSchluessel).toBe('location');
+    expect(faktor?.min).toBe(1);
+    expect(ergebnis.wert.basis.aufwandfaktoren['preissegment']?.gewicht).toBe(0.2);
+    expect(ergebnis.wert.ueberschreibungen).toEqual([
+      { pfad: 'aufwandfaktoren.lage_gesamt.gewicht', defaultwert: 0.4, projektwert: 0.45 },
+    ]);
+  });
+
+  it('ersetzt ein Array vollstaendig statt elementweise', () => {
     const ergebnis = mergeKonfiguration(basis, { anpassungsVorlagen: [] });
-    expect(ergebnis.ok).toBe(false);
-    if (ergebnis.ok) return;
-    expect(ergebnis.fehler[0]?.code).toBe('CFG_MERGE_LOCKED_PATH');
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    // Vollstaendige Ersetzung: Eine geloeschte Vorlage darf nicht wiederkehren.
+    expect(ergebnis.wert.basis.anpassungsVorlagen).toEqual([]);
+    expect(ergebnis.wert.ueberschreibungen[0]?.pfad).toBe('anpassungsVorlagen');
+  });
+
+  it('haelt meta und api weiterhin gesperrt', () => {
+    for (const pfad of ['meta', 'api']) {
+      const ergebnis = mergeKonfiguration(basis, { [pfad]: {} });
+      expect(ergebnis.ok).toBe(false);
+      if (ergebnis.ok) return;
+      expect(ergebnis.fehler[0]?.code).toBe('CFG_MERGE_LOCKED_PATH');
+      expect(ergebnis.fehler[0]?.pfad).toBe(pfad);
+    }
+  });
+
+  it('protokolliert einen unveraenderten Wert nicht als Ueberschreibung', () => {
+    const ergebnis = mergeKonfiguration(basis, { flaeche: { alpha: 0.5 } });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    expect(ergebnis.wert.ueberschreibungen).toEqual([]);
   });
 
   it('weist unbekannte Schluessel als Fehler zurueck, nicht als Warnung', () => {

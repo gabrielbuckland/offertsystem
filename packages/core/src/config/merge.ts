@@ -1,14 +1,14 @@
 /**
  * Keine Formel. Zwei-Ebenen-Merge (Spec 02 §2.2, §2.3).
  * Ebene 1 ist die firmenweite Berechnungsbasis, Ebene 2 ein Teilbaum des
- * Projektdatensatzes — keine zweite Konfigurationsdatei. Ueberschreibbar sind
- * ausschliesslich die Dossier-Parameter je Wohnungstyp und die Zu-/Abschlaege
- * je Einheit; alles Uebrige ist gesperrt.
+ * Projektdatensatzes — keine zweite Konfigurationsdatei. Gesperrt sind seit
+ * 2026-08-29 nur noch `meta` und `api` (siehe `GESPERRTE_PFADE`); alles
+ * Uebrige ist projektbezogen ueberschreibbar.
  *
- * Der Merge kann Ebene 3 nicht verletzen, weil keine invariantenrelevante
- * Groesse ueberschreibbar ist. Die erneute Validierung im Ladepfad ist dennoch
- * vorgesehen, damit die Aussage nicht von der Vollstaendigkeit der Sperrliste
- * abhaengt.
+ * Der Merge kann Ebene 3 dadurch nicht mehr konstruktionsbedingt ausschliessen.
+ * Die Garantie traegt stattdessen die erneute Validierung im Ladepfad
+ * (`konfigurations-lader.ts`), die die zusammengefuehrte Basis erneut durch
+ * alle drei Pruefebenen schickt.
  */
 import { z } from 'zod';
 import { fehler, type KonfigurationsFehler } from './fehlercodes.js';
@@ -46,13 +46,24 @@ export type MergeErgebnis =
   | { readonly ok: true; readonly wert: EffektiveKonfiguration }
   | { readonly ok: false; readonly fehler: readonly KonfigurationsFehler[] };
 
-/** Nicht projektbezogen ueberschreibbar (Spec 02 §2.3). */
-export const GESPERRTE_PFADE: readonly string[] = [
-  'meta', 'flaeche', 'preisanpassung', 'anpassungsVorlagen', 'merkmale',
-  'aufwandfaktoren', 'honorar', 'dossierDefaults', 'api',
-];
+/**
+ * Nicht projektbezogen ueberschreibbar. Seit der Auftraggeber-Rueckmeldung vom
+ * 2026-08-29 sind das nur noch zwei Pfade: `meta` traegt Schema- und Konfigversion
+ * (ein Projekt darf nicht behaupten, einer anderen Schemaversion zu folgen), `api`
+ * traegt Betriebsparameter der Zugriffsschicht und gehoert der IT, nicht dem
+ * Auftraggeber (Rollentrennung US-08).
+ *
+ * ALLES UEBRIGE IST UEBERSTEUERBAR. Damit faellt das fruehere Argument weg, eine
+ * projektbezogene Anpassung koenne konstruktionsbedingt keine Invariante verletzen.
+ * Die Garantie liegt jetzt bei der Nachvalidierung im Ladepfad
+ * (`konfigurations-lader.ts`), die die zusammengefuehrte Basis erneut durch alle drei
+ * Pruefebenen schickt und eine verletzende Projektkonfiguration ZURUECKWEIST. Diese
+ * Nachvalidierung ist damit tragend und darf nicht uebersprungen werden.
+ */
+export const GESPERRTE_PFADE: readonly string[] = ['meta', 'api'];
 
-const ERLAUBTE_PFADE: readonly string[] = ['dossierParameter', 'preisanpassungen'];
+/** Zweigt in die Sonderbehandlung ab statt in die Basis-Zusammenfuehrung. */
+const SONDERPFADE: readonly string[] = ['dossierParameter', 'preisanpassungen'];
 
 const PreisanpassungSchema = z.object({
   faktor: z.number(),
@@ -153,6 +164,64 @@ function verschmelzePreisanpassungen(
   return ergebnis;
 }
 
+/**
+ * Fuehrt einen Ueberschreibungsteilbaum in die Basis ein und protokolliert jedes
+ * geaenderte Blatt mit seinem vollqualifizierten Punktpfad.
+ *
+ * Objekte werden feldweise zusammengelegt, ARRAYS VOLLSTAENDIG ERSETZT. Die
+ * Array-Regel ist die bestehende und bleibt begruendet: Eine elementweise
+ * Zusammenfuehrung koennte einen projektbezogen geloeschten Zu-/Abschlag
+ * stillschweigend wieder einfuehren.
+ *
+ * Ein unbekannter Schluessel ist ein Fehler, keine Warnung — sonst verschwaende ein
+ * Tippfehler die Uebersteuerung lautlos. Geprueft wird gegen die Schluesselmenge der
+ * Basis; offene Woerterbuecher (`aufwandfaktoren`, `dossierDefaults.*bewertungen`)
+ * duerfen dagegen neue Schluessel tragen und werden ueber `offen` ausgenommen.
+ */
+function verschmelzeTeilbaum(
+  basiswert: unknown,
+  ueberschreibung: unknown,
+  pfad: string,
+  befunde: KonfigurationsFehler[],
+  protokoll: UeberschreibungsProtokoll[],
+  offen: boolean,
+): unknown {
+  if (Array.isArray(ueberschreibung)) {
+    if (JSON.stringify(basiswert) !== JSON.stringify(ueberschreibung)) {
+      protokoll.push({ pfad, defaultwert: basiswert, projektwert: ueberschreibung });
+    }
+    return ueberschreibung;
+  }
+
+  if (!istObjekt(ueberschreibung) || !istObjekt(basiswert)) {
+    if (basiswert !== ueberschreibung) {
+      protokoll.push({ pfad, defaultwert: basiswert, projektwert: ueberschreibung });
+    }
+    return ueberschreibung;
+  }
+
+  const ergebnis: Record<string, unknown> = { ...basiswert };
+  for (const [schluessel, wert] of Object.entries(ueberschreibung)) {
+    if (!offen && !Object.hasOwn(basiswert, schluessel)) {
+      befunde.push(fehler('CFG_SCHEMA_UNKNOWN_KEY', `${pfad}.${schluessel}`, {
+        verfuegbar: Object.keys(basiswert).join(', '),
+      }));
+      continue;
+    }
+    ergebnis[schluessel] = verschmelzeTeilbaum(
+      basiswert[schluessel], wert, `${pfad}.${schluessel}`, befunde, protokoll, false,
+    );
+  }
+  return ergebnis;
+}
+
+/**
+ * Wurzeln, unter denen der Anwender eigene Schluessel anlegen darf. `aufwandfaktoren`
+ * ist der tragende Fall: Ein rein konfigurativ ergaenzter Faktor ist der Nachweis fuer
+ * FF 1 (A-10) und darf projektbezogen nicht an einer Schluesselpruefung scheitern.
+ */
+const OFFENE_WURZELN: readonly string[] = ['aufwandfaktoren'];
+
 export function mergeKonfiguration(
   basis: OffertKonfiguration,
   ueberschreibungen: unknown,
@@ -175,17 +244,27 @@ export function mergeKonfiguration(
     };
   }
 
-  for (const schluessel of Object.keys(ueberschreibungen)) {
-    if (ERLAUBTE_PFADE.includes(schluessel)) continue;
+  const rohBasis = basis as unknown as Record<string, unknown>;
+  const zusammengefuehrt: Record<string, unknown> = { ...rohBasis };
+
+  for (const [schluessel, wert] of Object.entries(ueberschreibungen)) {
+    if (SONDERPFADE.includes(schluessel)) continue;
     if (GESPERRTE_PFADE.includes(schluessel)) {
       befunde.push(fehler('CFG_MERGE_LOCKED_PATH', schluessel, {
-        bedingung: 'projektbezogen nicht ueberschreibbar; die firmenweite Basis bleibt unverschoben',
+        bedingung: 'projektbezogen nicht ueberschreibbar; Betriebsparameter der IT',
       }));
-    } else {
-      befunde.push(fehler('CFG_SCHEMA_UNKNOWN_KEY', schluessel, {
-        verfuegbar: ERLAUBTE_PFADE.join(', '),
-      }));
+      continue;
     }
+    if (!Object.hasOwn(rohBasis, schluessel)) {
+      befunde.push(fehler('CFG_SCHEMA_UNKNOWN_KEY', schluessel, {
+        verfuegbar: [...Object.keys(rohBasis), ...SONDERPFADE].join(', '),
+      }));
+      continue;
+    }
+    zusammengefuehrt[schluessel] = verschmelzeTeilbaum(
+      rohBasis[schluessel], wert, schluessel, befunde, protokoll,
+      OFFENE_WURZELN.includes(schluessel),
+    );
   }
 
   const dossierParameter = verschmelzeDossierParameter(
@@ -198,6 +277,11 @@ export function mergeKonfiguration(
   if (befunde.length > 0) return { ok: false, fehler: befunde };
   return {
     ok: true,
-    wert: { basis, dossierParameter, preisanpassungen, ueberschreibungen: protokoll },
+    wert: {
+      basis: zusammengefuehrt as unknown as OffertKonfiguration,
+      dossierParameter,
+      preisanpassungen,
+      ueberschreibungen: protokoll,
+    },
   };
 }
