@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { validiereKonfiguration } from '@offert/core';
+import { mergeKonfiguration, validiereKonfiguration } from '@offert/core';
 import { formatiereAggregat, formatiereScore } from '@offert/offer/src/format/de-ch.js';
 import { PipelineAnsicht } from '../../src/components/pipeline/PipelineAnsicht.js';
 import {
-  bauePipelineDaten, type PipelineStufe, type PipelineZeile,
+  bauePipelineDaten, istProjektbezogen, type PipelineStufe, type PipelineZeile,
 } from '../../src/components/pipeline/pipeline-daten.js';
 import { baueBeispielOfferte } from '../bau/offerte-bauer.js';
 
@@ -26,6 +26,48 @@ function alleZeilen(stufe: PipelineStufe): readonly PipelineZeile[] {
 function herleitung() {
   const offerte = baueBeispielOfferte();
   return { derivation: offerte.derivation, aggregates: offerte.aggregates };
+}
+
+function zeile(stufe: PipelineStufe, beschriftung: string): PipelineZeile {
+  const treffer = alleZeilen(stufe).find((z) => z.beschriftung === beschriftung);
+  if (treffer === undefined) throw new Error(`Zeile «${beschriftung}» fehlt in Stufe ${String(stufe.nr)}`);
+  return treffer;
+}
+
+/**
+ * Projekt-Delta, das in jeder projektbezogen uebersteuerbaren Wurzel eingreift, die der
+ * Rechenweg anzeigt: eine Dossier-Voreinstellung, ein Flaechenparameter, ein
+ * Honorarparameter, das Gewicht eines bestehenden Aufwandfaktors und ein rein
+ * projektbezogen ergaenzter Faktor.
+ *
+ * Das Ueberschreibungsprotokoll wird NICHT von Hand geschrieben, sondern vom echten
+ * Zwei-Ebenen-Merge erzeugt, und die Pipeline erhaelt die zusammengefuehrte Basis — so
+ * prueft der Test die Herkunftsanzeige gegen die Pfadform des Kerns und nicht gegen
+ * seine eigene Annahme darueber.
+ */
+function mitProjektDelta() {
+  const firma = basis();
+  const bestehenderFaktor = Object.keys(firma.aufwandfaktoren).sort((a, b) => a.localeCompare(b))[0]!;
+  const neuerFaktor = 'projekt_laerm';
+  const ergebnis = mergeKonfiguration(firma, {
+    dossierDefaults: { stockwerk: 7 },
+    flaeche: { alpha: 0.9 },
+    honorar: { skalierung: { gMin: 0.9 } },
+    aufwandfaktoren: {
+      [bestehenderFaktor]: { gewicht: 0.4 },
+      [neuerFaktor]: {
+        bezeichnung: 'Lärmbelastung', quelle: 'manuell', quellSchluessel: neuerFaktor,
+        strategie: 'minmax', min: 0, max: 1, gewicht: 0.1,
+      },
+    },
+  });
+  if (!ergebnis.ok) throw new Error('Delta des Nachreviews muss zusammenfuehrbar sein');
+  return {
+    basis: ergebnis.wert.basis,
+    ueberschreibungen: ergebnis.wert.ueberschreibungen,
+    bestehenderFaktor,
+    neuerFaktor,
+  };
 }
 
 describe('bauePipelineDaten', () => {
@@ -53,6 +95,54 @@ describe('bauePipelineDaten', () => {
     });
     const eingabe = stufen.find((s) => s.nr === 1)!;
     expect(alleZeilen(eingabe).some((z) => z.herkunft === 'projekt')).toBe(true);
+  });
+
+  it('weist eine uebersteuerte Dossier-Voreinstellung in Stufe 1 als projektbezogen aus', () => {
+    const delta = mitProjektDelta();
+    const stufen = bauePipelineDaten(delta.basis, { ueberschreibungen: delta.ueberschreibungen });
+    const eingabe = stufen.find((s) => s.nr === 1)!;
+
+    // `dossierDefaults.stockwerk` steht im Protokoll — die Zeile muss es zeigen.
+    expect(zeile(eingabe, 'stockwerk').herkunft).toBe('projekt');
+    // Gegenprobe: nicht uebersteuerte Felder bleiben firmenweit, die Anzeige faerbt
+    // nicht pauschal ein, sobald irgendein Delta vorliegt.
+    expect(zeile(eingabe, 'energielabel').herkunft).toBe('firmenweit');
+  });
+
+  it('weist die uebersteuerten Parameter der Stufen 2 und 5 als projektbezogen aus', () => {
+    const delta = mitProjektDelta();
+    const stufen = bauePipelineDaten(delta.basis, { ueberschreibungen: delta.ueberschreibungen });
+
+    // Beide Zeilen waren bis zur Behebung von K-2 fest auf «firmenweit» verdrahtet.
+    const verkauf = stufen.find((s) => s.nr === 2)!;
+    expect(zeile(verkauf, 'Gewicht der Aussenfläche α').herkunft).toBe('projekt');
+    expect(zeile(verkauf, 'Zulässige Zu-/Abschlagssumme je Einheit').herkunft).toBe('firmenweit');
+
+    // Ein Protokolleintrag `honorar.skalierung.gMin` muss die Zeile treffen, die den
+    // Skalierungsbereich zeigt — der Eintrag ist feiner als die Zeile.
+    const honorar = stufen.find((s) => s.nr === 5)!;
+    expect(zeile(honorar, 'Skalierungsbereich g').herkunft).toBe('projekt');
+    expect(zeile(honorar, 'Honorarstaffel').herkunft).toBe('firmenweit');
+  });
+
+  it('weist uebersteuerte Aufwandfaktoren in der Stufe ihres angezeigten Werts aus', () => {
+    const delta = mitProjektDelta();
+    const stufen = bauePipelineDaten(delta.basis, { ueberschreibungen: delta.ueberschreibungen });
+    const skalen = stufen.find((s) => s.nr === 3)!;
+    const beitraege = stufen.find((s) => s.nr === 4)!;
+    const bestehend = delta.basis.aufwandfaktoren[delta.bestehenderFaktor]!.bezeichnung;
+    const neu = delta.basis.aufwandfaktoren[delta.neuerFaktor]!.bezeichnung;
+
+    // Uebersteuert ist das GEWICHT: das faerbt die Beitragszeile, nicht die Skalenzeile,
+    // deren angezeigte Grenzen unveraendert firmenweit gelten.
+    expect(zeile(beitraege, bestehend).herkunft).toBe('projekt');
+    expect(zeile(skalen, bestehend).herkunft).toBe('firmenweit');
+
+    // Ein projektbezogen ergaenzter Faktor steht als ganzer Teilbaum im Protokoll
+    // (`aufwandfaktoren.<faktor>`) — der Eintrag ist groeber als die Zeilen und muss
+    // beide treffen.
+    expect(zeile(skalen, neu).herkunft).toBe('projekt');
+    expect(zeile(beitraege, neu).herkunft).toBe('projekt');
   });
 
   it('weist mit Herleitung je Einheit eine Rechenzeile und die Kern-Verkaufssumme aus', () => {
@@ -98,6 +188,54 @@ describe('bauePipelineDaten', () => {
       .toBe(formatiereScore(abgeleitet));
     expect(zeilen.find((z) => z.beschriftung === 'Aufwandindikator D')?.wert)
       .toBe(formatiereScore(h.aggregates.effortIndicator.value));
+  });
+});
+
+describe('istProjektbezogen', () => {
+  function protokoll(...pfade: readonly string[]) {
+    return pfade.map((pfad) => ({ pfad, defaultwert: null, projektwert: 1 }));
+  }
+
+  it('trifft einen Eintrag, der feiner oder groeber ist als der Bezugspfad der Zeile', () => {
+    expect(istProjektbezogen(['honorar.skalierung.gMin'], protokoll('honorar.skalierung.gMin')))
+      .toBe(true);
+    // Groeber: der ganze Teilbaum wurde ersetzt.
+    expect(istProjektbezogen(['honorar.skalierung.gMin'], protokoll('honorar'))).toBe(true);
+    // Feiner: die Zeile zeigt den Teilbaum, uebersteuert wurde ein Blatt darin.
+    expect(istProjektbezogen(['honorar.skalierung'], protokoll('honorar.skalierung.gMax')))
+      .toBe(true);
+    // Nachbarpfad derselben Wurzel darf nicht faelschlich treffen.
+    expect(istProjektbezogen(['honorar.skalierung.gMin'], protokoll('honorar.stuetzstellen')))
+      .toBe(false);
+  });
+
+  it('erkennt das Sternsegment nur als GENAU ein Segment', () => {
+    expect(istProjektbezogen(['dossierParameter.*.stockwerk'],
+      protokoll('dossierParameter.typ_3_5.stockwerk'))).toBe(true);
+    expect(istProjektbezogen(['dossierParameter.*.stockwerk'],
+      protokoll('dossierParameter.typ_3_5.flaecheInnen'))).toBe(false);
+  });
+
+  it('weist eine gesperrte Wurzel nie als projektbezogen aus', () => {
+    // `api` steht in `GESPERRTE_PFADE`; der Merge lehnt eine solche Uebersteuerung ab.
+    // Selbst wenn ein Eintrag den Pfad truege, darf die Anzeige ihn nicht bestaetigen.
+    expect(istProjektbezogen(['api.baseUrl'], protokoll('api.baseUrl'))).toBe(false);
+    expect(istProjektbezogen(['meta.konfigVersion'], protokoll('meta'))).toBe(false);
+  });
+
+  it('meldet ohne Protokoll nichts als projektbezogen', () => {
+    expect(istProjektbezogen(['flaeche.alpha'], undefined)).toBe(false);
+    expect(istProjektbezogen(['flaeche.alpha'], [])).toBe(false);
+  });
+
+  it('keine Zeile verdrahtet ihre Herkunft fest', () => {
+    // Gegenprobe zur Ursache von K-2: In den Stufen 2 und 5 stand die Herkunft als
+    // Literal im Quelltext und war damit vom Protokoll abgekoppelt. Faellt jemand
+    // dorthin zurueck, faellt es hier auf, bevor der Rechenweg wieder falsch anzeigt.
+    const quelle = readFileSync(
+      new URL('../../src/components/pipeline/pipeline-daten.ts', import.meta.url), 'utf8');
+    expect(quelle).not.toContain("herkunft: 'firmenweit'");
+    expect(quelle).not.toContain("herkunft: 'projekt'");
   });
 });
 
