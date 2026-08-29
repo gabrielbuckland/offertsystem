@@ -52,6 +52,17 @@ const PROZENT = new Intl.NumberFormat('de-CH', {
   signDisplay: 'exceptZero',
 });
 
+/**
+ * Eigener Formatierer statt Wiederverwendung von `PROZENT` (Spec 2026-08-29): `PROZENT`
+ * traegt `signDisplay: 'exceptZero'` fuer Zu-/Abschlaege (immer mit Vorzeichen), das
+ * Honorar ist aber nie negativ und ein erzwungenes "+" waere hier falsch. Beide teilen
+ * dieselbe Nachkommastellen-Vorgabe (eine Stelle) und denselben ICU-Ausgabepfad
+ * (`formatiere`/`mitFesterTrennung`).
+ */
+const HONORAR_PROZENT = new Intl.NumberFormat('de-CH', {
+  style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1,
+});
+
 const ZIMMER = new Intl.NumberFormat('de-CH', {
   minimumFractionDigits: 1, maximumFractionDigits: 1,
 });
@@ -64,6 +75,8 @@ export const formatiereAggregat = (rappen: number): string => formatiere(AGGREGA
 export const formatiereBetrag = (rappen: number): string => formatiere(EINZELPREIS, zuFranken(rappen));
 export const formatiereFlaeche = (m2: number): string => `${formatiere(FLAECHE, m2)} m²`;
 export const formatiereProzent = (faktor: number): string => formatiere(PROZENT, faktor);
+/** Honorar/Verkaufssumme als vorzeichenlose Prozentzahl, eine Nachkommastelle. */
+export const formatiereHonorarProzent = (anteil: number): string => formatiere(HONORAR_PROZENT, anteil);
 export const formatiereZimmerzahl = (z: number): string => formatiere(ZIMMER, z);
 export const formatiereScore = (s: number): string => formatiere(SCORE, s);
 export const formatiereDatum = (iso: string): string => DATUM.format(new Date(iso));

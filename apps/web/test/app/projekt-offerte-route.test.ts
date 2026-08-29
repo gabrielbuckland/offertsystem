@@ -9,6 +9,19 @@ import { standardKonfiguration } from '../bau/offerte-bauer.js';
 
 const ADRESSE = { strasse: 'Seestrasse', hausnummer: '1', plz: '8001', ort: 'Zürich' };
 
+// Ein von der (in diesen Tests nicht berechneten) Range unabhaengiger, aber formal
+// gueltiger Betrag: Die Route lehnt eine Abweichung von der Honorarrange nicht ab
+// (honorar-eingabe.ts, Spec 2026-08-29) — nur das Format wird hier geprueft.
+const GEWAEHLTES_HONORAR = 5_000_000_00;
+
+function anfrageMitHonorar(gewaehltesHonorar: unknown = GEWAEHLTES_HONORAR): Request {
+  return new Request('http://test', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ gewaehltesHonorar }),
+  });
+}
+
 async function projekteUndOffertenVerzeichnis() {
   const projekte = await mkdtemp(join(tmpdir(), 'projekte-'));
   const offerten = await mkdtemp(join(tmpdir(), 'offerten-'));
@@ -57,7 +70,7 @@ describe('POST /api/projekt/[id]/offerte', () => {
     const { projekte, offerten } = await projekteUndOffertenVerzeichnis();
     const id = await vorbereitetesProjekt(projekte, 'Muster Immobilien AG');
     const antwort = await POST(
-      new Request('http://test', { method: 'POST' }),
+      anfrageMitHonorar(),
       { params: Promise.resolve({ id }) },
     );
     expect(antwort.status).toBe(201);
@@ -68,6 +81,52 @@ describe('POST /api/projekt/[id]/offerte', () => {
     expect(liste).toHaveLength(1);
     expect(liste[0]!.fehlerhaft).toBe(false);
     expect(liste[0]!.liegenschaft).toContain('Seestrasse');
+
+    const offerte = await ladeOfferte(koerper.offertId, offerten);
+    expect(offerte.aggregates.gewaehltesHonorar).toEqual({
+      value: GEWAEHLTES_HONORAR, provenance: 'marketer-decision',
+    });
+  });
+
+  it('weist einen fehlenden Honorarbetrag zurueck und legt kein Artefakt ab', async () => {
+    const { projekte, offerten } = await projekteUndOffertenVerzeichnis();
+    const id = await vorbereitetesProjekt(projekte, 'Muster Immobilien AG');
+    const antwort = await POST(
+      new Request('http://test', { method: 'POST' }),
+      { params: Promise.resolve({ id }) },
+    );
+    expect(antwort.status).toBe(422);
+    const koerper = await antwort.json() as { fehler: { text: string } };
+    expect(koerper.fehler.text).toContain('Honorarbetrag');
+    expect(await listeOfferten(offerten)).toHaveLength(0);
+  });
+
+  it('weist einen nicht ganzzahligen Honorarbetrag zurueck und legt kein Artefakt ab', async () => {
+    const { projekte, offerten } = await projekteUndOffertenVerzeichnis();
+    const id = await vorbereitetesProjekt(projekte, 'Muster Immobilien AG');
+    const antwort = await POST(
+      anfrageMitHonorar(123.45),
+      { params: Promise.resolve({ id }) },
+    );
+    expect(antwort.status).toBe(422);
+    const koerper = await antwort.json() as { fehler: { text: string } };
+    expect(koerper.fehler.text).toContain('ganzzahlig');
+    expect(await listeOfferten(offerten)).toHaveLength(0);
+  });
+
+  it('akzeptiert einen formal gueltigen Honorarbetrag ausserhalb der Range (Empfehlung, '
+    + 'keine Schranke)', async () => {
+    const { projekte, offerten } = await projekteUndOffertenVerzeichnis();
+    const id = await vorbereitetesProjekt(projekte, 'Muster Immobilien AG');
+    // Bewusst weit ausserhalb jeder plausiblen Range fuer dieses winzige Testprojekt.
+    const antwort = await POST(
+      anfrageMitHonorar(1),
+      { params: Promise.resolve({ id }) },
+    );
+    expect(antwort.status).toBe(201);
+    const { offertId } = await antwort.json() as { offertId: string };
+    const offerte = await ladeOfferte(offertId, offerten);
+    expect(offerte.aggregates.gewaehltesHonorar).toEqual({ value: 1, provenance: 'marketer-decision' });
   });
 
   it('meldet ein unbekanntes Projekt mit 404 und legt kein Artefakt ab (I-24)', async () => {
@@ -103,7 +162,7 @@ describe('POST /api/projekt/[id]/offerte', () => {
     await speichereProjekt({ ...projekt, auftraggeber: 'Muster Immobilien AG' }, projekte);
 
     const antwort = await POST(
-      new Request('http://test', { method: 'POST' }),
+      anfrageMitHonorar(),
       { params: Promise.resolve({ id }) },
     );
     expect(antwort.status).toBe(201);
@@ -122,7 +181,7 @@ describe('POST /api/projekt/[id]/offerte', () => {
       join(await mkdtemp(join(tmpdir(), 'vorlage-')), 'offert-vorlage.json');
     const id = await vorbereitetesProjekt(projekte); // ohne auftraggeber
     const antwort = await POST(
-      new Request('http://test', { method: 'POST' }),
+      anfrageMitHonorar(),
       { params: Promise.resolve({ id }) },
     );
     expect(antwort.status).toBe(422);
@@ -151,7 +210,7 @@ describe('POST /api/projekt/[id]/offerte', () => {
       },
     }, projekte);
     const antwort = await POST(
-      new Request('http://test', { method: 'POST' }),
+      anfrageMitHonorar(),
       { params: Promise.resolve({ id }) },
     );
     expect(antwort.status).toBe(201);
@@ -170,7 +229,7 @@ describe('POST /api/projekt/[id]/offerte', () => {
     const { projekte, offerten } = await projekteUndOffertenVerzeichnis();
     const id = await vorbereitetesProjekt(projekte, 'Muster Immobilien AG');
     const antwort = await POST(
-      new Request('http://test', { method: 'POST' }),
+      anfrageMitHonorar(),
       { params: Promise.resolve({ id }) },
     );
     expect(antwort.status).toBe(201);
@@ -190,7 +249,7 @@ describe('POST /api/projekt/[id]/offerte', () => {
     await writeFile(process.env['OFFERT_VORLAGE_PATH']!, '{ kaputtes json', 'utf8');
 
     const antwort = await POST(
-      new Request('http://test', { method: 'POST' }),
+      anfrageMitHonorar(),
       { params: Promise.resolve({ id }) },
     );
     expect(antwort.status).toBe(500);

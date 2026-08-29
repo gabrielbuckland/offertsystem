@@ -82,10 +82,15 @@ export function standardVorlage(): OffertDokument {
         'Briefing des Notars und Koordination der öffentlichen Beurkundungen',
       ),
       h2('Honorar'),
+      // Prozentsatz UND Frankenbetrag nebeneinander (Nachtrag Spec 2026-08-29): Der
+      // gerundete Prozentsatz allein liesse sich vom Eigentuemer nicht verlustfrei auf
+      // den massgebenden Betrag zurueckrechnen. Klammerform statt Nebensatz, damit der
+      // Satz auch dann aufgeht, wenn `honorar` mangels Verkaufssumme «–» ist — der
+      // Frankenbetrag steht unabhaengig davon als konkrete Zahl daneben.
       p(t('Gestützt auf den ermittelten Vermarktungsaufwand offerieren wir unsere '
-        + 'Dienstleistungen mit einem Honorar zwischen '), ph('honorarMin'),
-        t(' und '), ph('honorarMax'),
-        t('. Sämtliche Angaben verstehen sich exklusive MwSt.; Drittkosten für '
+        + 'Dienstleistungen mit einem Honorar von '), ph('honorar'),
+        t(' der Verkaufssumme ('), ph('honorarBetrag'),
+        t('). Sämtliche Angaben verstehen sich exklusive MwSt.; Drittkosten für '
           + 'Werbemassnahmen und Publikationen werden nach Aufwand und vorgängiger '
           + 'Freigabe verrechnet.')),
       p(t('Sehr gerne würden wir die offerierten Dienstleistungen für Sie ausführen. '

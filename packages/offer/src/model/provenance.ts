@@ -16,7 +16,8 @@ export type Herkunft =
   | 'pricehubble'
   | 'local-derivation'
   | 'marketer-adjustment'
-  | 'local-calculation';
+  | 'local-calculation'
+  | 'marketer-decision';
 
 export interface Provenanced<T, P extends Herkunft> {
   readonly value: T;
@@ -32,6 +33,7 @@ export const HERKUNFT_BESCHRIFTUNG: Readonly<Record<Herkunft, string>> = {
   'local-derivation': 'systemseitige Ableitung',
   'marketer-adjustment': 'Anpassung Vermarkter',
   'local-calculation': 'lokale Kalkulation',
+  'marketer-decision': 'Entscheid Vermarkter',
 };
 
 /**

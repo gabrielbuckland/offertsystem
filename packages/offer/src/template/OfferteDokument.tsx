@@ -14,10 +14,12 @@ import {
   formatiereBetrag,
   formatiereDatum,
   formatiereFlaeche,
+  formatiereHonorarProzent,
   formatiereProzent,
   formatiereScore,
   formatiereZimmerzahl,
 } from '../format/de-ch.js';
+import { berechneHonorarProzent } from '../model/honorar-eingabe.js';
 import type { Offer, TierTrace } from '../model/offer.js';
 import { HerkunftsBlock, HerkunftsWert } from './HerkunftsWert.js';
 
@@ -205,8 +207,26 @@ export function OfferteDokument({ offerte }: { offerte: Offer }) {
         <HerkunftsWert wert={a.scalingFactor}
                        beschriftung="Skalierungsfaktor g(D)" formatiere={formatiereScore} />
         <HerkunftsWert wert={a.feeRange}
-                       beschriftung="Honorarrange (eq:honorar_mapping)"
+                       beschriftung="Honorarrange (eq:honorar_mapping, intern)"
                        formatiere={(r) => `${formatiereAggregat(r.min)} – ${formatiereAggregat(r.max)}`} />
+        {/* Der Eigentuemer sieht EINEN Betrag, nie die Range (Spec 2026-08-29): Die
+            Range oben bleibt Teil der Herleitung fuer den Vermarkter, `gewaehltesHonorar`
+            ist die dem Kunden genannte Zahl. Fehlt sie (Altartefakt ohne gewaehlten
+            Betrag), zeigt die Stelle einen Bindestrich statt der verworfenen Range.
+            Der Rechenweg bleibt bewusst frankenbasiert (eq:honorar_mapping erzeugt
+            Betraege) — der Prozentsatz kommt hier nur ZUSAETZLICH dazu, ersetzt den
+            Frankenbetrag nicht. */}
+        {a.gewaehltesHonorar === undefined ? (
+          <p className="honorar-fehlt">Honorarbetrag: —</p>
+        ) : (
+          <HerkunftsWert wert={a.gewaehltesHonorar}
+                         beschriftung="Honorar (Offerte)"
+                         formatiere={(v) => {
+                           const anteil = berechneHonorarProzent(v, a.totalSalesValue.value);
+                           const prozent = anteil === null ? '–' : formatiereHonorarProzent(anteil);
+                           return `${formatiereAggregat(v)} (${prozent})`;
+                         }} />
+        )}
       </HerkunftsBlock>
 
       <section className="offerte__grundlagen" data-herkunft="local-calculation">

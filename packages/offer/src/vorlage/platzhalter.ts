@@ -13,13 +13,15 @@ import {
   formatiereBetrag,
   formatiereDatum,
   formatiereFlaeche,
+  formatiereHonorarProzent,
 } from '../format/de-ch.js';
+import { berechneHonorarProzent } from '../model/honorar-eingabe.js';
 import type { Offer } from '../model/offer.js';
 import type { PreisZeile } from './dokument-schema.js';
 
 export const TEXT_PLATZHALTER = [
   'adresse', 'ort', 'auftraggeber', 'anzahlEinheiten', 'anzahlWohnungstypen',
-  'verkaufssumme', 'honorarMin', 'honorarMax', 'erstelltAm',
+  'verkaufssumme', 'honorar', 'honorarBetrag', 'erstelltAm',
 ] as const;
 export type TextPlatzhalterId = (typeof TEXT_PLATZHALTER)[number];
 
@@ -41,8 +43,8 @@ export const PLATZHALTER_KATALOG:
   { id: 'anzahlEinheiten', bezeichnung: 'Anzahl Wohnungen' },
   { id: 'anzahlWohnungstypen', bezeichnung: 'Anzahl Wohnungstypen' },
   { id: 'verkaufssumme', bezeichnung: 'Verkaufssumme (berechnet)' },
-  { id: 'honorarMin', bezeichnung: 'Honorar untere Grenze (berechnet)' },
-  { id: 'honorarMax', bezeichnung: 'Honorar obere Grenze (berechnet)' },
+  { id: 'honorar', bezeichnung: 'Honorar als Prozentsatz der Verkaufssumme (vom Vermarkter gewählt)' },
+  { id: 'honorarBetrag', bezeichnung: 'Honorar als Frankenbetrag (vom Vermarkter gewählt)' },
   { id: 'erstelltAm', bezeichnung: 'Erstelldatum' },
   { id: 'preistabelle', bezeichnung: 'Preistabelle je Wohnung' },
 ];
@@ -59,8 +61,27 @@ export function platzhalterWerte(
       anzahlEinheiten: String(offer.derivation.units.length),
       anzahlWohnungstypen: String(offer.derivation.apartmentTypes.length),
       verkaufssumme: formatiereAggregat(offer.aggregates.totalSalesValue.value),
-      honorarMin: formatiereAggregat(offer.aggregates.feeRange.value.min),
-      honorarMax: formatiereAggregat(offer.aggregates.feeRange.value.max),
+      // Fehlt (Offerte ohne gewaehlten Betrag, z. B. ein Altartefakt), bleiben beide
+      // Schluessel weg — die Aufloesung meldet den fehlenden Platzhalter dann selbst
+      // (aufloesung.ts, `PlatzhalterFehler`), statt hier die Honorarrange zu erfinden.
+      // ZWEI Platzhalter statt einem (Nachtrag Spec 2026-08-29): Ein gerundeter
+      // Prozentsatz allein liesse sich vom Eigentuemer nicht verlustfrei auf den
+      // massgebenden Betrag zurueckrechnen (3.14 % gerundet auf 3.1 % weicht bei
+      // hohen Verkaufssummen um mehrere tausend Franken vom tatsaechlichen Honorar
+      // ab) — `honorar` (Prozentsatz) und `honorarBetrag` (Franken) stehen deshalb
+      // NEBENEINANDER im Dokument. Berechnung/Speicherung bleiben in Rappen
+      // (`gewaehltesHonorar`); beide Platzhalter sind reine Anzeige desselben Werts.
+      // `–` beim Prozentsatz, wenn die Verkaufssumme keine sinnvolle Bezugsgroesse ist
+      // (`berechneHonorarProzent`) — der Frankenbetrag bleibt davon unberuehrt, er
+      // haengt nicht von der Verkaufssumme ab.
+      ...(offer.aggregates.gewaehltesHonorar === undefined ? {} : (() => {
+        const betrag = offer.aggregates.gewaehltesHonorar.value;
+        const anteil = berechneHonorarProzent(betrag, offer.aggregates.totalSalesValue.value);
+        return {
+          honorar: anteil === null ? '–' : formatiereHonorarProzent(anteil),
+          honorarBetrag: formatiereAggregat(betrag),
+        };
+      })()),
       erstelltAm: formatiereDatum(offer.metadata.erstelltAm),
     },
     preistabelle: offer.derivation.units.map((u) => ({

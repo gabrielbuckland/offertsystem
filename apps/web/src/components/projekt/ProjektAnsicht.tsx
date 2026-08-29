@@ -27,6 +27,7 @@ import { uebernehmeVorgabewert } from './vorgabewert-uebernahme.js';
 import { Aufwandfaktoren } from './Aufwandfaktoren.js';
 import { Aggregatleiste } from './Aggregatleiste.js';
 import { Hinweis, type HinweisArt } from '../ui/hinweis.js';
+import { HonorarEingabeDialog } from '../ui/honorar-eingabe-dialog.js';
 import { StatusZeile } from '../ui/status-zeile.js';
 import { rufeApi } from '../rufe-api.js';
 import { RechenwegDialog } from '../pipeline/RechenwegDialog.js';
@@ -75,6 +76,10 @@ export function ProjektAnsicht(
   const [offerteLaeuft, setOfferteLaeuft] = useState(false);
   const [offerteFehler, setOfferteFehler] = useState<string | undefined>(undefined);
   const [rechenwegOffen, setRechenwegOffen] = useState(false);
+  // Honorareingabe VOR dem Erzeugen (Spec 2026-08-29): Die Offerte nennt dem Eigentuemer
+  // einen einzigen Betrag, nie die Range — der Klick auf «Offerte generieren» oeffnet
+  // deshalb erst dieses Modal, statt sofort zu erzeugen.
+  const [honorarModalOffen, setHonorarModalOffen] = useState(false);
 
   async function rufeAb() {
     setAbrufMeldung(undefined);
@@ -132,12 +137,18 @@ export function ProjektAnsicht(
     stelleEin(anfang);
   }, [anfang, stelleEin]);
 
-  async function erzeugeOfferte() {
+  async function erzeugeOfferte(gewaehltesHonorar: number) {
     setOfferteFehler(undefined);
     setOfferteLaeuft(true);
     // Fehlerbehandlung fuer Netz-/Antwortfehler liegt in `rufeApi`.
     const { ok, rumpf } = await rufeApi<OfferteAntwort>(
-      `/api/projekt/${projekt.id}/offerte`, { method: 'POST' });
+      `/api/projekt/${projekt.id}/offerte`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ gewaehltesHonorar }),
+      },
+    );
     setOfferteLaeuft(false);
     if (!ok || rumpf.offertId === undefined) {
       setOfferteFehler(rumpf.fehler?.text ?? 'Die Offerte konnte nicht erzeugt werden.');
@@ -297,7 +308,7 @@ export function ProjektAnsicht(
         honorarMax={stand.honorarMax}
         aufwandindikator={aufwandindikatorAnzeige}
         aufwandindikatorUebersteuert={projekt.aufwandindikatorUebersteuerung !== undefined}
-        erzeuge={() => { if (!offerteLaeuft) void erzeugeOfferte(); }}
+        erzeuge={() => { if (!offerteLaeuft) setHonorarModalOffen(true); }}
         laeuft={offerteLaeuft}
         speichernLaeuft={speichernLaeuft}
         berechnungLaeuft={stand.laeuft}
@@ -306,6 +317,21 @@ export function ProjektAnsicht(
           ? {}
           : { honorarAbbruchMeldung: stand.honorarAbbruch.meldung })}
       />
+      {/* Nur montiert, wenn Min/Max vorliegen: `Aggregatleiste` sperrt den auslösenden
+          Knopf ohne vollstaendiges Ergebnis (`gesperrtWeil`), das Modal setzt das voraus. */}
+      {stand.honorarMin !== undefined && stand.honorarMax !== undefined && (
+        <HonorarEingabeDialog
+          offen={honorarModalOffen}
+          honorarMin={stand.honorarMin}
+          honorarMax={stand.honorarMax}
+          verkaufssumme={verkaufssummeAnzeige}
+          schliesse={() => setHonorarModalOffen(false)}
+          bestaetige={(gewaehltesHonorar) => {
+            setHonorarModalOffen(false);
+            void erzeugeOfferte(gewaehltesHonorar);
+          }}
+        />
+      )}
     </main>
   );
 }

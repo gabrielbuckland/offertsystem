@@ -3,9 +3,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
   formatiereAggregat,
+  formatiereHonorarProzent,
   formatiereProzent,
   formatiereScore,
 } from '../../src/format/de-ch.js';
+import { berechneHonorarProzent } from '../../src/model/honorar-eingabe.js';
 import { OfferteDokument } from '../../src/template/OfferteDokument.js';
 import { baueBeispielOfferte } from '../bau/offerte-bauer.js';
 import type { Offer } from '../../src/model/offer.js';
@@ -71,6 +73,26 @@ describe('OfferteDokument — Herkunft und Datengetriebenheit', () => {
     for (const verboten of ['lage_gesamt', 'projektumfang', 'preissegment', 'objektzustand']) {
       expect(QUELLE).not.toContain(verboten);
     }
+  });
+});
+
+describe('OfferteDokument — Honorarbetrag statt Range (Spec 2026-08-29)', () => {
+  it('zeigt den gewaehlten Betrag in Franken UND zusaetzlich als Prozentsatz der '
+    + 'Verkaufssumme, wenn die Offerte einen gewaehlten Betrag fuehrt', () => {
+    const o = beispiel();
+    (o as { aggregates: { gewaehltesHonorar?: unknown } }).aggregates.gewaehltesHonorar = {
+      value: 6_722_733, provenance: 'marketer-decision',
+    };
+    const html = renderToStaticMarkup(<OfferteDokument offerte={o} />);
+    expect(html).toContain(formatiereAggregat(6_722_733));
+    const anteil = berechneHonorarProzent(6_722_733, o.aggregates.totalSalesValue.value);
+    expect(anteil).not.toBeNull();
+    expect(html).toContain(formatiereHonorarProzent(anteil!));
+  });
+
+  it('zeigt keinen Betrag, wenn ein Altartefakt keinen gewaehlten Betrag fuehrt', () => {
+    const html = renderToStaticMarkup(<OfferteDokument offerte={beispiel()} />);
+    expect(html).toContain('Honorarbetrag: —');
   });
 });
 

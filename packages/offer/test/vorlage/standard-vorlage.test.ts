@@ -26,7 +26,7 @@ describe('standardVorlage', () => {
     // Kernplatzhalter der Neubau-Vermarktung sind eingebunden.
     const vorkommen = sammlePlatzhalterIds(standardVorlage());
     for (const id of ['ort', 'anzahlEinheiten', 'verkaufssumme',
-      'honorarMin', 'honorarMax', 'preistabelle', 'auftraggeber']) {
+      'honorar', 'honorarBetrag', 'preistabelle', 'auftraggeber']) {
       expect(vorkommen.some((v) => v.id === id)).toBe(true);
     }
     // Kein Mieter-/Umnutzungsrest aus dem Beispiel.

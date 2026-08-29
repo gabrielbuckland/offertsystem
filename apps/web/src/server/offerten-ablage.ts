@@ -19,8 +19,14 @@ export interface ListenEintrag {
   readonly liegenschaft: string;
   readonly erstelltAm: string;
   readonly verkaufssumme?: number | undefined;
+  // Interne Empfehlung (Herleitung), bleibt gefuehrt fuer Altartefakte ohne gewaehlten
+  // Betrag und als Vergleichswert in dieser Uebersichtsliste (siehe `honorar` unten).
   readonly honorarMin?: number | undefined;
   readonly honorarMax?: number | undefined;
+  // Der vom Vermarkter gewaehlte, der Offerte zugrundeliegende Betrag (Spec 2026-08-29).
+  // Ungesetzt bei einem Altartefakt ohne `aggregates.gewaehltesHonorar` — die Anzeige
+  // faellt dann auf die Range zurueck (`ProjektOfferten.tsx`).
+  readonly honorar?: number | undefined;
   // SHA-256 der Konfiguration, aus der die Offerte entstand (metadata.konfigPruefsumme).
   // Ungesetzt im Fehlerzweig aus demselben Grund wie `projektId`.
   readonly konfigPruefsumme?: string | undefined;
@@ -110,6 +116,8 @@ export async function listeOfferten(verzeichnis: string): Promise<readonly Liste
       verkaufssumme: o.aggregates.totalSalesValue.value,
       honorarMin: o.aggregates.feeRange.value.min,
       honorarMax: o.aggregates.feeRange.value.max,
+      ...(o.aggregates.gewaehltesHonorar === undefined ? {}
+        : { honorar: o.aggregates.gewaehltesHonorar.value }),
       konfigPruefsumme: o.metadata.konfigPruefsumme,
       fehlerhaft: false,
       datei,

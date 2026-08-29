@@ -15,12 +15,13 @@ describe('Provenanced', () => {
     expect(falsch.provenance).toBe('marketer-adjustment');
   });
 
-  it('haelt fuer jede der vier Klassen eine Beschriftung bereit', () => {
+  it('haelt fuer jede der fuenf Klassen eine Beschriftung bereit', () => {
     expect(HERKUNFT_BESCHRIFTUNG).toEqual({
       'pricehubble': 'Bewertung PriceHubble',
       'local-derivation': 'systemseitige Ableitung',
       'marketer-adjustment': 'Anpassung Vermarkter',
       'local-calculation': 'lokale Kalkulation',
+      'marketer-decision': 'Entscheid Vermarkter',
     });
   });
 });

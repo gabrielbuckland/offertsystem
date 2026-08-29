@@ -2,7 +2,7 @@
  * Keine Formel. Datenvertrag der Offerte in fuenf Bereichen (Spec 05 §1.2).
  *
  * Rundungsordnung (E-09): R1 `referenceValuation.marktwert`, R2 `unitPrice`,
- * R3 `feeRange.min/max` sind ganzzahlig. `pricePerSqm`, `basePrice`,
+ * R3 `feeRange.min/max` und `gewaehltesHonorar` sind ganzzahlig. `pricePerSqm`, `basePrice`,
  * `feeBasis.min/max` bleiben ungerundet (Zwischengroessen).
  *
  * Keine Faktorbezeichner: Die Faktorliste ist datengetrieben (I-13) — ein neuer
@@ -148,6 +148,15 @@ export const aggregateValuesSchema = z.object({
     z.object({ min: rappen, max: rappen }).strict(),                // R3
     'local-calculation',
   ),
+  /**
+   * Der EINE Honorarbetrag, den die Offerte dem Eigentuemer nennt (Spec 2026-08-29).
+   * `feeRange` bleibt daneben bestehen — sie ist die interne Empfehlung, keine dem
+   * Eigentuemer zu zeigende Zahl. Herkunft `marketer-decision`, nicht
+   * `local-calculation`: Der Betrag ist eine Eingabe des Vermarkters, keine Ableitung.
+   * Optional, weil `baueOfferte` (E-19/E-20) ihn nicht kennt — er entsteht erst mit der
+   * Bestaetigung im Eingabemodal und wird von der Offert-Route ergaenzt, analog `dokument`.
+   */
+  gewaehltesHonorar: provenancedSchema(rappen, 'marketer-decision').optional(),  // R3
 }).strict();
 
 export const offerMetadataSchema = z.object({

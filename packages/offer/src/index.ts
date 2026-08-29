@@ -40,10 +40,16 @@ export { baueOfferte } from './model/baue-offerte.js';
 export type { OfferteEingang } from './model/baue-offerte.js';
 
 export {
+  berechneHonorarProzent, honorarAbweichung, validiereGewaehltesHonorar,
+} from './model/honorar-eingabe.js';
+export type { HonorarAbweichung, HonorarPruefung } from './model/honorar-eingabe.js';
+
+export {
   formatiereAggregat,
   formatiereBetrag,
   formatiereDatum,
   formatiereFlaeche,
+  formatiereHonorarProzent,
   formatiereProzent,
   formatiereScore,
   formatiereZimmerzahl,

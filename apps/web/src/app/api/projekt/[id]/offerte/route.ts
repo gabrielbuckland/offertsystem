@@ -6,6 +6,8 @@
  * sie die fertige Offerte zusaetzlich ABLEGT. Die Ablage geschieht nur im Erfolgsfall:
  * Weder eine Bewertungsluecke noch ein abgebrochenes Honorar erzeugt ein Artefakt (I-24).
  */
+import { validiereGewaehltesHonorar } from '@offert/offer/src/model/honorar-eingabe.js';
+import { herkunft } from '@offert/offer/src/model/provenance.js';
 import { PlatzhalterFehler, loeseDokumentAuf } from '@offert/offer/src/vorlage/aufloesung.js';
 import { platzhalterWerte } from '@offert/offer/src/vorlage/platzhalter.js';
 import { uebersetzeStufenFehler } from '../../../../../server/fehlertexte.js';
@@ -17,7 +19,7 @@ import { ladeVorlage } from '../../../../../server/vorlagen-ablage.js';
 
 interface Kontext { readonly params: Promise<{ readonly id: string }> }
 
-export async function POST(_anfrage: Request, kontext: Kontext): Promise<Response> {
+export async function POST(anfrage: Request, kontext: Kontext): Promise<Response> {
   // Henne-Ei: siehe Berechnungsroute.
   const vorlaufzeit = holeLaufzeit();
   if (!vorlaufzeit.ok) {
@@ -59,6 +61,26 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
       // Unveraendert durchgereicht, samt `adressat` und ggf. `feldpfad` (s. Berechnungsroute).
       return Response.json({ fehler: lauf.fehler }, { status: lauf.status });
     case 'offerte': {
+      // Honorarbetrag zuerst: Ein falsches Format erzeugt KEIN Artefakt (I-24), analog
+      // den Platzhalterfehlern unten. Geprueft wird nur die Form (Ganzzahl in Rappen);
+      // eine Abweichung von der Honorarrange ist erlaubt — sie ist eine Empfehlung, keine
+      // Schranke (Spec 2026-08-29, honorar-eingabe.ts). Ohne gueltiges JSON gilt der
+      // Betrag als fehlend, nicht als Serverfehler.
+      const koerper: unknown = await anfrage.json().catch(() => undefined);
+      const honorarPruefung = validiereGewaehltesHonorar(
+        (koerper as { readonly gewaehltesHonorar?: unknown } | undefined)?.gewaehltesHonorar,
+      );
+      if (!honorarPruefung.ok) {
+        return Response.json({ fehler: { text: honorarPruefung.text } }, { status: 422 });
+      }
+      const offerteMitHonorar = {
+        ...lauf.offerte,
+        aggregates: {
+          ...lauf.offerte.aggregates,
+          gewaehltesHonorar: herkunft(honorarPruefung.wert, 'marketer-decision'),
+        },
+      };
+
       // Platzhalter-Auflösung beim Finalisieren: ein unauflösbarer Platzhalter erzeugt
       // KEIN Artefakt (I-24), sondern eine benannte Meldung an den Vermarkter.
       //
@@ -83,7 +105,7 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
       try {
         aufgeloest = loeseDokumentAuf(
           inhalt,
-          platzhalterWerte(lauf.offerte, projekt.auftraggeber === undefined
+          platzhalterWerte(offerteMitHonorar, projekt.auftraggeber === undefined
             ? {} : { auftraggeber: projekt.auftraggeber }),
         );
       } catch (fehler) {
@@ -98,7 +120,7 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
         throw fehler;
       }
       const offerte = {
-        ...lauf.offerte,
+        ...offerteMitHonorar,
         dokument: {
           inhalt: aufgeloest,
           vorlageVersion: vorlage.wert.version,

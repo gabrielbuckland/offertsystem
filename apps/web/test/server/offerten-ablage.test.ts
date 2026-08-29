@@ -126,6 +126,24 @@ describe('Lesen und Auflisten', () => {
     expect(liste[0]?.projektId).toBe(o.metadata.projektId);
     expect(liste[0]?.konfigPruefsumme).toBe(o.metadata.konfigPruefsumme);
   });
+
+  it('fuehrt den gewaehlten Honorarbetrag im Listeneintrag, wenn die Offerte einen fuehrt', async () => {
+    const ziel = await verzeichnis();
+    const o = baueBeispielOfferte();
+    o.aggregates.gewaehltesHonorar = { value: 6_000_000, provenance: 'marketer-decision' };
+    await legeOfferteAb(o, ziel);
+    const liste = await listeOfferten(ziel);
+    expect(liste[0]?.honorar).toBe(6_000_000);
+  });
+
+  it('laesst den Honorareintrag weg, wenn die Offerte keinen gewaehlten Betrag fuehrt '
+    + '(Altartefakt)', async () => {
+    const ziel = await verzeichnis();
+    const o = baueBeispielOfferte();
+    await legeOfferteAb(o, ziel);
+    const liste = await listeOfferten(ziel);
+    expect(liste[0]?.honorar).toBeUndefined();
+  });
 });
 
 describe('Ablageform', () => {

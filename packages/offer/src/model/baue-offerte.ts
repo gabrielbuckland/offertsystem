@@ -154,6 +154,9 @@ export function baueOfferte(e: OfferteEingang): Offer {
       scalingFactor: herkunft(h.skalierung, 'local-calculation'),
       feeBasis: herkunft({ min: h.basisMin, max: h.basisMax }, 'local-calculation'),
       feeRange: herkunft({ min: h.honorarMin, max: h.honorarMax }, 'local-calculation'),
+      // `gewaehltesHonorar` fehlt hier bewusst: Dieser Lauf kennt nur die berechnete
+      // Range, keinen Vermarkterentscheid. Die Offert-Route ergaenzt ihn erst nach
+      // Bestaetigung im Eingabemodal, analog `dokument` (siehe offer.ts).
     },
     metadata: {
       offertId: e.meta.offertId,

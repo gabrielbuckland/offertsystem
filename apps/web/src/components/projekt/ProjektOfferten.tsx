@@ -5,13 +5,13 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 // Modulpfad statt Paketindex: Der Index re-exportiert auch die React-Komponenten (.tsx).
-import { formatiereAggregat, formatiereDatum } from '@offert/offer/src/format/de-ch.js';
+import { formatiereDatum } from '@offert/offer/src/format/de-ch.js';
 import type { ListenEintrag } from '../../server/offerten-ablage.js';
 import { LeererZustand } from '../ui/leerer-zustand.js';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../ui/table.js';
-import { referenzAus } from './offerten-logik.js';
+import { honorarProzentZelle, referenzAus } from './offerten-logik.js';
 
 export interface ProjektOffertenProps {
   // Filterung auf `projektId` obliegt dem Aufrufer; die Komponente stellt nur dar.
@@ -33,7 +33,7 @@ export function ProjektOfferten({ eintraege }: ProjektOffertenProps) {
         <TableRow>
           <TableHead>Referenz</TableHead>
           <TableHead>Datum</TableHead>
-          <TableHead>Honorarrange</TableHead>
+          <TableHead>Honorar</TableHead>
           <TableHead>Konfigurationsprüfsumme</TableHead>
         </TableRow>
       </TableHeader>
@@ -45,9 +45,11 @@ export function ProjektOfferten({ eintraege }: ProjektOffertenProps) {
             </TableCell>
             <TableCell>{formatiereDatum(e.erstelltAm)}</TableCell>
             <TableCell>
-              {e.honorarMin === undefined || e.honorarMax === undefined
-                ? '—'
-                : `${formatiereAggregat(e.honorarMin)} – ${formatiereAggregat(e.honorarMax)}`}
+              {/* Prozentsatz der Verkaufssumme statt Frankenbetrag (Spec 2026-08-29):
+                  der Offerte zugrundeliegender Betrag statt der internen Range, wenn
+                  vorhanden. Ein Altartefakt ohne gewaehlten Betrag zeigt ersatzweise die
+                  Range der Herleitung (`honorarProzentZelle`). */}
+              {honorarProzentZelle(e)}
             </TableCell>
             <TableCell className="font-mono text-xs text-muted-foreground">
               {e.konfigPruefsumme ?? '—'}
