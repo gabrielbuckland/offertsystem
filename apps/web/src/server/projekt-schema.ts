@@ -129,6 +129,19 @@ export const projektSchema = z.object({
   // hergeleitete Wert. Die Bereichspruefung [0,1] liegt HIER, der Kern uebernimmt den
   // Wert unveraendert (Kommentar in stufe4-gewichtung.ts).
   aufwandindikatorUebersteuerung: z.number().min(0).max(1).optional(),
+  /**
+   * Ebene 2 des Zwei-Ebenen-Modells: die projektbezogenen Abweichungen von den
+   * Firmenwerten — nur die tatsaechlich uebersteuerten Pfade (Delta), nicht die ganze
+   * Konfiguration. Ein Projekt ohne dieses Feld rechnet mit den reinen Firmenwerten;
+   * die Optionalitaet haelt die abgelegten Bestandsprojekte gueltig (I-24).
+   *
+   * BEWUSST NUR `record(unknown)` UND KEIN NACHBAU DER KONFIGURATIONSFORM: Welche
+   * Pfade uebersteuerbar sind und welche Werte zulaessig, entscheidet allein
+   * `mergeKonfiguration` samt Nachvalidierung im Ladepfad (PE-01). Ein `.strict()`
+   * -Schema hier waere eine zweite Wahrheit darueber und liefe bei jeder
+   * Konfigurationserweiterung aus dem Tritt.
+   */
+  einstellungen: z.record(z.unknown()).optional(),
   // Empfänger der Offerte (Spec 2026-08-27 §1). Optional: bestehende Projekte bleiben
   // gültig; der Platzhalter {auftraggeber} verlangt ihn erst beim Finalisieren.
   auftraggeber: z.string().trim().min(1).optional(),
