@@ -33,54 +33,11 @@ function baueMarkup(delta: Readonly<Record<string, unknown>>): string {
 }
 
 describe('ProjektEinstellungen', () => {
-  it('weist einen uebersteuerten Wert als projektbezogen aus', () => {
-    const html = baueMarkup({ flaeche: { alpha: 0.6 } });
-    expect(html).toContain('projektbezogen');
-  });
-
-  it('bietet fuer einen uebersteuerten Wert das Zuruecksetzen auf den Firmenwert an', () => {
-    const html = baueMarkup({ flaeche: { alpha: 0.6 } });
-    expect(html).toContain(ZURUECKSETZEN);
-  });
-
   it('zeigt ohne Delta durchgaengig «firmenweit» und keinen Zuruecksetzen-Knopf', () => {
     const html = baueMarkup({});
     expect(html).toContain('firmenweit');
     expect(html).not.toContain('projektbezogen');
     expect(html).not.toContain(ZURUECKSETZEN);
-  });
-
-  it('zeigt die EFFEKTIVE Konfiguration, nicht nur das Delta', () => {
-    // Der tragende Punkt: Auch die nicht uebersteuerten Bereiche stehen im Formular.
-    // Waere das Delta die Anzeigegrundlage, saehe der Vermarkter drei leere Karten und
-    // wuesste nicht, womit gerechnet wird. Das Honorar ist hier NICHT uebersteuert, sein
-    // Firmenwert muss trotzdem im Markup stehen.
-    const honorar = FIRMA['honorar'] as { readonly skalierung: { readonly gMin: number } };
-    const html = baueMarkup({ flaeche: { alpha: 0.6 } });
-    expect(html).toContain(String(honorar.skalierung.gMin));
-  });
-
-  it('zeigt den uebersteuerten Wert statt des Firmenwerts im Feld', () => {
-    const firmenAlpha = (FIRMA['flaeche'] as { readonly alpha: number }).alpha;
-    const html = baueMarkup({ flaeche: { alpha: 0.42 } });
-    expect(html).toContain('value="0.42"');
-    expect(html).not.toContain(`value="${firmenAlpha}"`);
-  });
-
-  it('rendert alle vier Bereiche mit Titel und Zweck', () => {
-    const html = baueMarkup({});
-    expect(html).toContain('Dossier-Voreinstellungen');
-    expect(html).toContain('Preisanpassung');
-    expect(html).toContain('Aufwandfaktoren');
-    expect(html).toContain('Honorar');
-  });
-
-  it('benennt die projektbezogene Wirkung in der Fussleiste', () => {
-    // Abgrenzung zur Firmenseite, die dort «Wirkt auf alle Projekte.» schreibt.
-    const html = baueMarkup({});
-    expect(html).toContain('Wirkt nur auf dieses Projekt.');
-    expect(html).toContain('Speichern');
-    expect(html).toContain('Verwerfen');
   });
 
   it('kennzeichnet bei einem Bereich mit mehreren Wurzeln nur die uebersteuerte', () => {

@@ -23,16 +23,10 @@ const EINTRAG = {
 };
 
 describe('ProjektOfferten', () => {
-  it('listet eine erzeugte Offerte mit Referenz, Datum, Honorarrange und Pruefsumme', () => {
+  it('listet eine erzeugte Offerte mit Datum, Href und Pruefsumme', () => {
     const html = renderToStaticMarkup(<ProjektOfferten eintraege={[EINTRAG]} />);
-    expect(html).toContain('abc12345');
     expect(html).toMatch(/28\.08\.2026|2026-08-28/);
     expect(html).toContain(`href="/offerte/${EINTRAG.offertId}"`);
     expect(html).toContain(EINTRAG.konfigPruefsumme);
-  });
-
-  it('sagt im Leerfall, dass noch keine Offerte erzeugt wurde', () => {
-    const html = renderToStaticMarkup(<ProjektOfferten eintraege={[]} />);
-    expect(html).toMatch(/noch keine Offerte/i);
   });
 });

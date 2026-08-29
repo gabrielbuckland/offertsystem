@@ -2,11 +2,9 @@
  * Keine Modellformel. Zuschnittpruefung, Kern-Unversehrtheit und Datengetriebenheit.
  *
  * Die Messung ist WERTLOS, wenn zwischen den Tags Aenderungen liegen, die nicht zur
- * Erweiterung gehoeren: Ein nebenher gelaufener Formatierungslauf verschiebt die
- * Zeilenmetrik um Hunderte Zeilen, ein nebenher gefixter Fehler in einer Kerndatei kippt
- * die Unversehrtheitsaussage und behauptete dann eine Architekturaussage, die die
- * Erweiterung gar nicht getroffen hat. Das Werkzeug VERWEIGERT deshalb die Messung, statt
- * eine stillschweigend falsche Zahl zu liefern.
+ * Erweiterung gehoeren (z. B. ein Formatierungslauf, der die Zeilenmetrik verschiebt, oder
+ * ein Kern-Fix, der die Unversehrtheitsaussage kippt). Das Werkzeug VERWEIGERT deshalb die
+ * Messung, statt eine stillschweigend falsche Zahl zu liefern.
  */
 import { execFileSync } from 'node:child_process';
 import { repoWurzel } from '../shared/artefakt.ts';
@@ -43,11 +41,10 @@ export function pruefeZuschnitt(
 }
 
 /**
- * Kernstufen nach subsec:eval_design_ff1b: Normalisierung, Gewichtung,
- * Ergebnisberechnung. Der Sonderfall aendert `normalization/` bewusst und erhaelt
- * deshalb `kern_unversehrt: false` — kein Widerspruch, sondern genau die Aussage von
- * 6.3: Im Sonderfall kommt EINE Strategie-Klasse hinzu, ohne Aenderung des
- * Pipeline-Kerns. Dafuer steht `kernstufen_pipeline_unveraendert`.
+ * Kernstufen nach subsec:eval_design_ff1b: Normalisierung, Gewichtung, Ergebnisberechnung.
+ * Der Sonderfall aendert `normalization/` bewusst und erhaelt deshalb `kern_unversehrt:
+ * false` — kein Widerspruch, sondern die Aussage von 6.3: EINE Strategie-Klasse kommt
+ * hinzu, ohne Aenderung des Pipeline-Kerns (dafuer `kernstufen_pipeline_unveraendert`).
  */
 export const KERNSTUFEN: readonly RegExp[] = [
   /^packages\/core\/src\/pipeline\//,

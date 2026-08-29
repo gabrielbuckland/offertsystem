@@ -1,14 +1,8 @@
 /**
- * Keine Formel. Zwei-Ebenen-Merge (Spec 02 §2.2, §2.3).
- * Ebene 1 ist die firmenweite Berechnungsbasis, Ebene 2 ein Teilbaum des
- * Projektdatensatzes — keine zweite Konfigurationsdatei. Gesperrt sind seit
- * 2026-08-29 nur noch `meta` und `api` (siehe `GESPERRTE_PFADE`); alles
- * Uebrige ist projektbezogen ueberschreibbar.
- *
- * Der Merge kann Ebene 3 dadurch nicht mehr konstruktionsbedingt ausschliessen.
- * Die Garantie traegt stattdessen die erneute Validierung im Ladepfad
- * (`konfigurations-lader.ts`), die die zusammengefuehrte Basis erneut durch
- * alle drei Pruefebenen schickt.
+ * Keine Formel. Zwei-Ebenen-Merge (Spec 02 §2.2, §2.3). Gesperrt sind nur
+ * `meta` und `api` (siehe `GESPERRTE_PFADE`); alles Uebrige ist projektbezogen
+ * ueberschreibbar. Die Invariante wird nicht hier erzwungen, sondern durch die
+ * Nachvalidierung im Ladepfad (`konfigurations-lader.ts`).
  */
 import { z } from 'zod';
 import { fehler, type KonfigurationsFehler } from './fehlercodes.js';
@@ -17,13 +11,7 @@ import type { OffertKonfiguration } from './validieren.js';
 export interface Preisanpassung {
   readonly faktor: number;
   readonly begruendung: string;
-  /**
-   * Verweist auf die Vorlage, aus der die Anpassung instanziiert wurde. Damit
-   * bleibt in der Offerte erkennbar, ob eine Anpassung aus der Vorlage stammt,
-   * gegenueber der Vorlage veraendert wurde oder frei erfasst ist (A-13).
-   * `| undefined` ist bei exactOptionalPropertyTypes noetig, weil Zod die
-   * optionale Eigenschaft genau so ableitet.
-   */
+  /** Vorlage, aus der die Anpassung stammt (A-13). `| undefined` noetig wegen exactOptionalPropertyTypes. */
   readonly vorlageId?: string | undefined;
 }
 
@@ -47,19 +35,11 @@ export type MergeErgebnis =
   | { readonly ok: false; readonly fehler: readonly KonfigurationsFehler[] };
 
 /**
- * Nicht projektbezogen ueberschreibbar. Seit dem Entwurfsentscheid des Autors vom
- * 2026-08-29 (vom Auftraggeber zu bestaetigen) sind das nur noch zwei Pfade: `meta`
- * traegt Schema- und Konfigversion
- * (ein Projekt darf nicht behaupten, einer anderen Schemaversion zu folgen), `api`
- * traegt Betriebsparameter der Zugriffsschicht und gehoert der IT, nicht dem
- * Auftraggeber (Rollentrennung US-08).
- *
- * ALLES UEBRIGE IST UEBERSTEUERBAR. Damit faellt das fruehere Argument weg, eine
- * projektbezogene Anpassung koenne konstruktionsbedingt keine Invariante verletzen.
- * Die Garantie liegt jetzt bei der Nachvalidierung im Ladepfad
- * (`konfigurations-lader.ts`), die die zusammengefuehrte Basis erneut durch alle drei
- * Pruefebenen schickt und eine verletzende Projektkonfiguration ZURUECKWEIST. Diese
- * Nachvalidierung ist damit tragend und darf nicht uebersprungen werden.
+ * Projektbezogen nicht ueberschreibbar: `meta` (Schema-/Konfigversion — ein
+ * Projekt darf nicht einer anderen Schemaversion folgen) und `api` (Betriebsparameter
+ * der IT, Rollentrennung US-08). Alles Uebrige ist ueberschreibbar; die Garantie liegt
+ * bei der Nachvalidierung im Ladepfad (`konfigurations-lader.ts`), die eine
+ * verletzende Projektkonfiguration zurueckweist.
  */
 export const GESPERRTE_PFADE: readonly string[] = ['meta', 'api'];
 
@@ -110,8 +90,7 @@ function verschmelzeDossierParameter(
       }
       const defaultwert = defaults[schluessel];
       zusammengesetzt[schluessel] = projektwert;
-      // Nur wirksame Ueberschreibungen werden protokolliert; ein ausdrueckliches
-      // null auf einen bereits nicht gesetzten Wert veraendert nichts.
+      // Nur wirksame Ueberschreibungen werden protokolliert.
       if (projektwert !== defaultwert) {
         protokoll.push({
           pfad: `dossierParameter.${wohnungstyp}.${schluessel}`,
@@ -154,7 +133,7 @@ function verschmelzePreisanpassungen(
       }
       continue;
     }
-    // Listen werden immer vollstaendig ersetzt, nie elementweise zusammengefuehrt.
+    // Listen werden vollstaendig ersetzt, nie elementweise zusammengefuehrt.
     ergebnis[wohnungsnummer] = geprueft.data;
     protokoll.push({
       pfad: `preisanpassungen.${wohnungsnummer}`,
@@ -167,17 +146,12 @@ function verschmelzePreisanpassungen(
 
 /**
  * Fuehrt einen Ueberschreibungsteilbaum in die Basis ein und protokolliert jedes
- * geaenderte Blatt mit seinem vollqualifizierten Punktpfad.
- *
- * Objekte werden feldweise zusammengelegt, ARRAYS VOLLSTAENDIG ERSETZT. Die
- * Array-Regel ist die bestehende und bleibt begruendet: Eine elementweise
- * Zusammenfuehrung koennte einen projektbezogen geloeschten Zu-/Abschlag
- * stillschweigend wieder einfuehren.
- *
- * Ein unbekannter Schluessel ist ein Fehler, keine Warnung — sonst verschwaende ein
- * Tippfehler die Uebersteuerung lautlos. Geprueft wird gegen die Schluesselmenge der
- * Basis; offene Woerterbuecher (`aufwandfaktoren`, `dossierDefaults.*bewertungen`)
- * duerfen dagegen neue Schluessel tragen und werden ueber `offen` ausgenommen.
+ * geaenderte Blatt. Objekte werden feldweise zusammengelegt, Arrays vollstaendig
+ * ersetzt — eine elementweise Zusammenfuehrung koennte einen geloeschten
+ * Zu-/Abschlag sonst stillschweigend wieder einfuehren. Ein unbekannter Schluessel
+ * ist ein Fehler, keine Warnung, sonst verschwaende ein Tippfehler lautlos; offene
+ * Woerterbuecher (`aufwandfaktoren`, `dossierDefaults.*bewertungen`) sind ueber
+ * `offen` davon ausgenommen.
  */
 function verschmelzeTeilbaum(
   basiswert: unknown,
@@ -216,11 +190,7 @@ function verschmelzeTeilbaum(
   return ergebnis;
 }
 
-/**
- * Wurzeln, unter denen der Anwender eigene Schluessel anlegen darf. `aufwandfaktoren`
- * ist der tragende Fall: Ein rein konfigurativ ergaenzter Faktor ist der Nachweis fuer
- * FF 1 (A-10) und darf projektbezogen nicht an einer Schluesselpruefung scheitern.
- */
+/** Wurzeln mit frei ergaenzbaren Schluesseln. `aufwandfaktoren` ist der Nachweis fuer FF 1 (A-10). */
 const OFFENE_WURZELN: readonly string[] = ['aufwandfaktoren'];
 
 export function mergeKonfiguration(

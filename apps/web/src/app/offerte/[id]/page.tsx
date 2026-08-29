@@ -1,4 +1,3 @@
-/** Ergebnisseite. Sie laedt das abgelegte Artefakt und stellt es mit Bedienelementen dar. */
 import { ErgebnisDarstellung } from '../../../components/ErgebnisDarstellung.js';
 import { NichtGefunden } from '../../../components/NichtGefunden.js';
 import { verzeichnisAusLaufzeit } from '../../../server/laufzeit.js';

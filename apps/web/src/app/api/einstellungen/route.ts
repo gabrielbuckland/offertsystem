@@ -1,11 +1,7 @@
-/**
- * Schreibpfad der firmenweiten Konfiguration (Spec §6, US-08). Der Rumpf ist die
- * vollstaendige Rohkonfiguration; geschrieben wird nur nach bestandener Validierung
- * (zurueckweisen statt melden, I-21) — siehe `schreibeCompanyDefaults`.
- *
- * Antwortform `befunde` (Pfad + Text) statt `fehler.text`: Die Editoren, die auf diese
- * Route folgen, verankern ihre Meldung am Feld, nicht am gesamten Formular.
- */
+// Schreibpfad der firmenweiten Konfiguration (Spec §6, US-08). Geschrieben wird nur nach
+// bestandener Validierung (I-21, zurueckweisen statt melden). Antwortform `befunde` (Pfad +
+// Text) statt `fehler.text`: die Editoren verankern ihre Meldung am Feld, nicht am
+// gesamten Formular.
 import { holeLaufzeit } from '../../../server/laufzeit.js';
 import { schreibeCompanyDefaults } from '../../../server/einstellungen-ablage.js';
 
@@ -15,8 +11,7 @@ export async function POST(anfrage: Request): Promise<Response> {
     return Response.json({ fehler: { text: laufzeit.meldungen.join(' ') } }, { status: 500 });
   }
 
-  // Ein syntaktisch kaputter Rumpf ist ein Eingabefehler (422), kein Serverfehler —
-  // dieselbe Fehlerklasse wie bei POST /api/projekt und POST /api/offerte.
+  // Ein syntaktisch kaputter Rumpf ist ein Eingabefehler (422), kein Serverfehler.
   let roh: unknown;
   try {
     roh = await anfrage.json();

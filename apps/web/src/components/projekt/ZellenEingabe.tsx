@@ -27,9 +27,8 @@ export function ZellenEingabe({ wert, aendere }: ZellenEingabeProps) {
       onChange={(e) => setzeEntwurf(e.target.value)}
       onBlur={() => {
         const entscheid = entscheideZellenwert(entwurf);
-        // Ein geleertes oder nicht parsierbares Feld verwirft statt eine 0 zu erfinden
-        // (Task-11-Review, Finding 1) — der Entwurf springt auf den bisherigen Wert
-        // zurueck, es wird nichts gemeldet.
+        // Geleertes oder nicht parsierbares Feld verwirft statt eine 0 zu erfinden —
+        // Entwurf springt auf den bisherigen Wert zurueck.
         if (entscheid.art === 'verwerfen') {
           setzeEntwurf(String(wert));
           return;

@@ -3,10 +3,9 @@ import { cn } from '../../lib/utils.js';
 export type HinweisArt = 'fehler' | 'warnung' | 'info' | 'erfolg';
 
 /**
- * Einziges Erscheinungsbild fuer Meldungen (Spec §3): ersetzt die fuenf verstreuten
- * `text-red-600`-Absaetze. Das Fehlermeldungs-KONZEPT bleibt unberuehrt — Texte kommen
- * weiterhin aus der Uebersetzungsschicht, die Verankerung am Feld bleibt Sache des
- * Aufrufers; diese Komponente vereinheitlicht nur Rolle, Farbe und Symbol.
+ * Einziges Erscheinungsbild fuer Meldungen (Spec §3). Vereinheitlicht nur Rolle, Farbe
+ * und Symbol; Texte kommen weiterhin aus der Uebersetzungsschicht, die Verankerung am
+ * Feld bleibt Sache des Aufrufers.
  */
 const ARTEN: Record<HinweisArt, { rolle: 'alert' | 'status'; klasse: string; symbol: string }> = {
   fehler:  { rolle: 'alert',  klasse: 'border-destructive/40 bg-destructive/5 text-destructive', symbol: '✕' },
@@ -20,11 +19,9 @@ export function Hinweis({ art, children, className, rolle }: {
   readonly children: React.ReactNode;
   readonly className?: string;
   /**
-   * Ueberschreibt die Standard-Rolle der Art. Ob eine Meldung unterbrechen muss, ist
-   * eine Eigenschaft der SITUATION, nicht der Art: Eine „warnung“, die das Ziel des
-   * Nutzers blockiert — hier kann ohne Honorarrange keine Offerte entstehen —, braucht
-   * `alert`, obwohl ihre Dringlichkeit gestalterisch eine Warnung bleibt (keine „fehler“-
-   * Rotfaerbung). Deshalb ein eigener Prop statt einer weiteren Art.
+   * Ueberschreibt die Standard-Rolle der Art: Ob eine Meldung unterbrechen muss, ist eine
+   * Eigenschaft der SITUATION, nicht der Art (z. B. eine blockierende „warnung“, die
+   * gestalterisch keine „fehler“-Rotfaerbung braucht).
    */
   readonly rolle?: 'alert' | 'status';
 }) {

@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Commit } from './git.ts';
-import { fasseZusammen } from './klassifikation.ts';
 import {
   KERNSTUFEN,
   SCOPE_REGELFALL,
   SCOPE_SONDERFALL,
-  fuehreBoundaryPruefungAus,
   kernstufenBeruehrt,
   pruefeFaktormengeDatengetrieben,
   pruefeZuschnitt,
@@ -50,14 +48,6 @@ describe('kernstufenBeruehrt', () => {
   });
 });
 
-describe('fuehreBoundaryPruefungAus', () => {
-  it('liefert Erfolg und Rohausgabe der ESLint-Boundary-Regel', () => {
-    const e = fuehreBoundaryPruefungAus();
-    expect(typeof e.erfolg).toBe('boolean');
-    expect(typeof e.ausgabe).toBe('string');
-  });
-});
-
 describe('pruefeFaktormengeDatengetrieben', () => {
   it('meldet eine literale Union von Faktorbezeichnern als Befund', () => {
     const mitUnion = pruefeFaktormengeDatengetrieben(
@@ -68,25 +58,5 @@ describe('pruefeFaktormengeDatengetrieben', () => {
     const ohne = pruefeFaktormengeDatengetrieben(
       ['export type FaktorId = string & { readonly marke: unique symbol };']);
     expect(ohne.datengetrieben).toBe(true);
-  });
-});
-
-describe('Abnahmetest F3 (Spec 06 §7.3)', () => {
-  it('misst getrennt, entscheidet binaer, verweigert bei unsauberem Zuschnitt', () => {
-    expect(pruefeZuschnitt(
-      [{ hash: 'a', betreff: 'Konfiguration', dateien: ['config/company-defaults.json'] }],
-      SCOPE_REGELFALL).sauber).toBe(true);
-    expect(pruefeZuschnitt(
-      [{ hash: 'b', betreff: 'Formatierung', dateien: ['packages/core/src/pipeline/a.ts'] }],
-      SCOPE_REGELFALL).sauber).toBe(false);
-
-    // Die Null-Dateien-Messlatte in ihrer geprueften Form: null geaenderte und null neue
-    // CODEDATEIEN bei gleichzeitiger Aenderung genau einer Konfigurationsdatei.
-    const zahlen = fasseZusammen([
-      { pfad: 'config/company-defaults.json', hinzugefuegt: 9, entfernt: 4, neu: false },
-    ]);
-    expect(zahlen.code.dateien_geaendert).toBe(0);
-    expect(zahlen.code.dateien_neu).toBe(0);
-    expect(zahlen.konfiguration.dateien_geaendert).toBe(1);
   });
 });

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { ApiKonfiguration } from '../src/config/apiKonfiguration.js';
 import {
   pruefeApiKonfiguration,
   pruefeUmgebung,
@@ -26,6 +27,37 @@ describe('Initialisierungspruefung (Spec 04 §2 Regel 2, §6.2)', () => {
     const k = testKonfiguration();
     const kaputt = { ...k, retry: { ...k.retry, backoffFaktor: 0.5 } };
     expect(() => pruefeApiKonfiguration(kaputt)).toThrow(/backoffFaktor/);
+  });
+
+  it.each<[string, (k: ApiKonfiguration) => ApiKonfiguration, RegExp]>([
+    ['eine leere baseUrl', (k) => ({ ...k, baseUrl: '   ' }), /baseUrl/],
+    ['einen leeren Endpunkt', (k) => ({
+      ...k, endpunkte: { ...k.endpunkte, login: '' },
+    }), /endpunkte\.login/],
+    ['ein nichtpositives gesamtbudgetMs', (k) => ({ ...k, gesamtbudgetMs: 0 }), /gesamtbudgetMs/],
+    ['ein nichtpositives tokenGueltigkeitMin', (k) => ({ ...k, tokenGueltigkeitMin: 0 }),
+      /tokenGueltigkeitMin/],
+    ['ein nichtpositives startBackoffMs', (k) => ({
+      ...k, retry: { ...k.retry, startBackoffMs: 0 },
+    }), /startBackoffMs/],
+    ['ein nichtpositives maxBackoffMs', (k) => ({
+      ...k, retry: { ...k.retry, maxBackoffMs: 0 },
+    }), /maxBackoffMs/],
+    ['ein nichtpositives retryAfterMaxSekunden', (k) => ({
+      ...k, retry: { ...k.retry, retryAfterMaxSekunden: 0 },
+    }), /retryAfterMaxSekunden/],
+    ['ein tokenSicherheitsmargeMin >= tokenGueltigkeitMin', (k) => ({
+      ...k, tokenSicherheitsmargeMin: k.tokenGueltigkeitMin,
+    }), /tokenSicherheitsmargeMin/],
+    ['einen ungueltigen jitter-Wert', (k) => ({
+      ...k, retry: { ...k.retry, jitter: 'irgendwas' as ApiKonfiguration['retry']['jitter'] },
+    }), /jitter/],
+    ['leere retryStatuscodes', (k) => ({
+      ...k, retry: { ...k.retry, retryStatuscodes: [] },
+    }), /retryStatuscodes/],
+  ])('weist %s zurueck', (_name, aendere, muster) => {
+    const kaputt = aendere(testKonfiguration());
+    expect(() => pruefeApiKonfiguration(kaputt)).toThrow(muster);
   });
 
   it('verlangt bei VALUATION_PROVIDER=pricehubble die drei Zugangsvariablen', () => {

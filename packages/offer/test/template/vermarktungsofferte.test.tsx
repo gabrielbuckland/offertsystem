@@ -74,4 +74,66 @@ describe('VermarktungsOfferte', () => {
     const html = renderToStaticMarkup(<VermarktungsOfferte offerte={offerte} />);
     expect(html).toContain('<li><p>Erster Absatz</p><p>Zweiter Absatz</p></li>');
   });
+
+  it('rendert eine orderedList analog zur bulletList', () => {
+    const offerte = {
+      ...baueBeispielOfferte(),
+      dokument: {
+        inhalt: {
+          type: 'doc' as const,
+          content: [{
+            type: 'orderedList' as const,
+            content: [{
+              type: 'listItem' as const,
+              content: [
+                { type: 'paragraph' as const, content: [{ type: 'text' as const, text: 'Erster Schritt' }] },
+              ],
+            }],
+          }],
+        },
+        vorlageVersion: '1',
+      },
+    };
+    const html = renderToStaticMarkup(<VermarktungsOfferte offerte={offerte} />);
+    expect(html).toContain('<ol><li><p>Erster Schritt</p></li></ol>');
+  });
+
+  it('bildet die Ueberschriftenebenen 2 und 3 auf h3 und h4 ab (h1 ist der Offert-Titel)', () => {
+    const offerte = {
+      ...baueBeispielOfferte(),
+      dokument: {
+        inhalt: {
+          type: 'doc' as const,
+          content: [
+            { type: 'heading' as const, attrs: { level: 2 as const },
+              content: [{ type: 'text' as const, text: 'Konzept' }] },
+            { type: 'heading' as const, attrs: { level: 3 as const },
+              content: [{ type: 'text' as const, text: 'Detail' }] },
+          ],
+        },
+        vorlageVersion: '1',
+      },
+    };
+    const html = renderToStaticMarkup(<VermarktungsOfferte offerte={offerte} />);
+    expect(html).toContain('<h3>Konzept</h3>');
+    expect(html).toContain('<h4>Detail</h4>');
+  });
+
+  it('rendert die italic-Markierung als <em>', () => {
+    const offerte = {
+      ...baueBeispielOfferte(),
+      dokument: {
+        inhalt: {
+          type: 'doc' as const,
+          content: [{
+            type: 'paragraph' as const,
+            content: [{ type: 'text' as const, text: 'betont', marks: [{ type: 'italic' as const }] }],
+          }],
+        },
+        vorlageVersion: '1',
+      },
+    };
+    const html = renderToStaticMarkup(<VermarktungsOfferte offerte={offerte} />);
+    expect(html).toContain('<em>betont</em>');
+  });
 });

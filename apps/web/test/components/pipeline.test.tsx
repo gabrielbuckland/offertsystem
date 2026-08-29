@@ -1,12 +1,10 @@
 import { readFileSync } from 'node:fs';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { validiereKonfiguration } from '@offert/core';
 import { formatiereAggregat, formatiereScore } from '@offert/offer/src/format/de-ch.js';
 import {
   bauePipelineDaten, type PipelineStufe, type PipelineZeile,
 } from '../../src/components/pipeline/pipeline-daten.js';
-import { PipelineAnsicht } from '../../src/components/pipeline/PipelineAnsicht.js';
 import { baueBeispielOfferte } from '../bau/offerte-bauer.js';
 
 function basis() {
@@ -98,28 +96,5 @@ describe('bauePipelineDaten', () => {
       .toBe(formatiereScore(abgeleitet));
     expect(zeilen.find((z) => z.beschriftung === 'Aufwandindikator D')?.wert)
       .toBe(formatiereScore(h.aggregates.effortIndicator.value));
-  });
-});
-
-describe('PipelineAnsicht', () => {
-  it('verweist je Stufe dezent auf die Einstellungen, ohne dort direkt zu bearbeiten', () => {
-    const html = renderToStaticMarkup(
-      <PipelineAnsicht stufen={bauePipelineDaten(basis())} />);
-    expect(html).toContain('href="/einstellungen/honorar"');
-    expect(html).toContain('href="/einstellungen/faktoren"');
-    expect(html).toContain('Einstellungen');
-    // Die Projektseite fuehrt KEINEN Weg in die Konfiguration ausser dem Verweis — sonst
-    // bearbeitete der Vermarkter aus dem Projekt heraus Werte, die auf alle Projekte
-    // wirken. Die Einstellungen-Uebersicht selbst bettet die Editoren inzwischen direkt
-    // ein (`einstellungen/page.tsx`), statt ueber diese Komponente dorthin zu verlinken.
-    expect(html).not.toContain('Bearbeiten');
-  });
-
-  it('rendert mit Herleitung die Formelzeilen der Honorarstufe', () => {
-    const html = renderToStaticMarkup(
-      <PipelineAnsicht stufen={bauePipelineDaten(basis(), { herleitung: herleitung() })} />);
-    expect(html).toContain('Stufenwahl k');
-    expect(html).toContain('Skalierung g(D)');
-    expect(html).toContain('÷');
   });
 });

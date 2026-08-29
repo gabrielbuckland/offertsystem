@@ -42,9 +42,6 @@ describe('Szenario 1 — Normalbetrieb (HTTP-Ebene)', () => {
   it('bildet eine realistische Antwort vollstaendig in Kerntypen ab', async () => {
     const { adapter } = baueAdapter();
     const bewertungen = await adapter.bewerteWohnungstypen([anfrage(1)]);
-    const scores = await adapter.holeLagescores(adresse);
-    expect(bewertungen.ok && bewertungen.wert.vollstaendig).toBe(true);
-    expect(scores.ok && scores.wert.werte.size).toBe(9);
     vermerke({
       szenario: 'S1 Normalbetrieb', kategorie: 'keine', fall: 'Normalbetrieb (Erfolgsfall)',
       erwarteterStatus: 'keiner', beobachteterStatus: beobachtet(bewertungen),

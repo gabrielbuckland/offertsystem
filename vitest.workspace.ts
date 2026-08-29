@@ -25,11 +25,10 @@ const alias = [
  */
 const MUSTER = 'test/**/*.test.{ts,tsx}';
 
-/** Zentral gesetzt, damit MSW und onUnhandledRequest: 'error' fuer beide
- *  netzberuehrenden Projekte greifen (AK-07, PE-12). */
+// Zentral, damit MSW mit onUnhandledRequest: 'error' fuer beide netzberuehrenden Projekte greift.
 const MSW_VORBEREITUNG = `${wurzel}packages/pricehubble/test/setup/msw.ts`;
 
-/** Setzt Seed und numRuns von fast-check und schreibt die Nachweisartefakte (PE-18). */
+// Setzt Seed/numRuns von fast-check und schreibt die Nachweisartefakte (PE-18).
 const PROPERTY_VORBEREITUNG = `${wurzel}packages/core/test/property/globalSetup.ts`;
 
 interface ProjektOptionen {
@@ -78,8 +77,6 @@ export default defineWorkspace([
     include: ['test/contract/**/*.test.{ts,tsx}'],
     setupFiles: [MSW_VORBEREITUNG],
   }),
-  // Werkzeugtests liegen bei ihrem Werkzeug (tools/eval/**), die uebrigen unter
-  // tools/test/**. Beide Muster sind noetig; PE-12 regelt die Paketablage, nicht
-  // die Werkzeugebene.
+  // Werkzeugtests liegen teils bei ihrem Werkzeug (tools/eval/**), teils unter tools/test/**.
   projekt({ name: 'tools', root: './tools', include: [MUSTER, 'eval/**/*.test.ts'] }),
 ]);

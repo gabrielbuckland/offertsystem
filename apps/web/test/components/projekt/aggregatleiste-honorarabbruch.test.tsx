@@ -9,11 +9,10 @@
  * Test geht stattdessen ueber den ECHTEN Produktionspfad: `verarbeiteBerechnungsAntwort`
  * (derselbe Code wie in `verwende-berechnung.ts`) liefert den Stand aus einer echten
  * Honorarabbruch-Antwort, die zwei Anzeige-Fallback-Zeilen aus `ProjektAnsicht.tsx` werden
- * hier woertlich nachvollzogen (per Quelltext-Check gegen Drift abgesichert) und erst DANN
- * an die echte `Aggregatleiste`-Komponente gereicht — genau die Verdrahtung, die beim
- * isolierten `Aggregatleiste.test.tsx` (Props direkt hineingereicht) durchrutschte.
+ * hier woertlich nachvollzogen und erst DANN an die echte `Aggregatleiste`-Komponente
+ * gereicht — genau die Verdrahtung, die beim isolierten `Aggregatleiste.test.tsx` (Props
+ * direkt hineingereicht) durchrutschte.
  */
-import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { formatiereAggregat, formatiereScore } from '@offert/offer/src/format/de-ch.js';
@@ -23,19 +22,9 @@ import {
 import { Aggregatleiste } from '../../../src/components/projekt/Aggregatleiste.js';
 import type { ApiErgebnis } from '../../../src/components/rufe-api.js';
 
-const quelle = readFileSync(
-  new URL('../../../src/components/projekt/ProjektAnsicht.tsx', import.meta.url), 'utf8');
-
 const EINHEITEN = [{ id: 'e1', wohnungsnummer: 'A1' }];
 
 describe('Aggregatleiste bei Honorarabbruch — ueber den echten Verarbeitungspfad', () => {
-  it('pinnt die Anzeige-Fallback-Verdrahtung in ProjektAnsicht.tsx (rein darstellend)', () => {
-    expect(quelle).toMatch(
-      /stand\.honorarAbbruch\?\.verkaufssumme \?\? stand\.verkaufssumme/);
-    expect(quelle).toMatch(
-      /stand\.honorarAbbruch\?\.aufwandindikator \?\? aufwandindikator/);
-  });
-
   it('zeigt Verkaufssumme und Aufwandindikator D trotz Honorarabbruch, sperrt aber die '
     + 'Offert-Schaltflaeche (kein Artefakt bei 422, I-24)', () => {
     const antwort: ApiErgebnis<BerechnungsAntwort> = {

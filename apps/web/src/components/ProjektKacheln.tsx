@@ -13,9 +13,8 @@ import { LeererZustand } from './ui/leerer-zustand.js';
 
 export interface ProjektKachelnProps {
   readonly eintraege: readonly ProjektEintrag[];
-  // Die Aktion (Dialog-Auslöser) gehört der Seite, nicht dieser Komponente — sie
-  // müsste sonst `NeuesProjekt` importieren und würde damit Darstellung und Formular
-  // koppeln, obwohl beide unabhängig bleiben sollen.
+  // Die Aktion (Dialog-Auslöser) gehört der Seite, nicht dieser Komponente — sonst
+  // koppelte sie Darstellung und Formular.
   readonly leerAktion?: React.ReactNode;
 }
 
@@ -40,9 +39,7 @@ export function ProjektKacheln({ eintraege, leerAktion }: ProjektKachelnProps) {
             className="rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary">
           {e.fehlerhaft ? (
             // `e.datei` bewusst NICHT gezeigt: Der Dateiname traegt die UUID
-            // (`${id}.json`, siehe projekt-ablage.ts) und wuerde die Kennung genau an
-            // der Stelle sichtbar machen, an der die Regel (Spec §2/§3) am ehesten
-            // uebersehen wird.
+            // (`${id}.json`) und wuerde die Kennung sichtbar machen (Spec §2/§3).
             <p className="text-muted-foreground">
               Projekt nicht lesbar. Die Datei muss geprüft werden.
             </p>

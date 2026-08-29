@@ -1,15 +1,7 @@
-/**
- * Reine Logik der Herkunftsanzeige: Welcher Konfigurationspfad wird projektbezogen
- * uebersteuert, und wie setzt man ihn auf den Firmenwert zurueck?
- *
- * Ohne DOM und ohne React, damit die Aussage «dieser Wert weicht ab» ohne gerenderte
- * Oberflaeche pruefbar bleibt — dasselbe Muster wie `spaltenwerte-kaskade.ts`.
- *
- * `setzeZurueck` raeumt leer gewordene Elternobjekte ab. Ohne dieses Abraeumen bliebe
- * ein `{ honorar: { skalierung: {} } }` im Delta stehen; `mergeKonfiguration` liefe
- * zwar sauber durch, aber das Ueberschreibungsprotokoll traege eine Wurzel ohne
- * Wirkung, und die Anzeige meldete faelschlich «uebersteuert».
- */
+// Reine Logik der Herkunftsanzeige: Welcher Konfigurationspfad wird projektbezogen
+// uebersteuert, und wie setzt man ihn auf den Firmenwert zurueck? `setzeZurueck` raeumt
+// leer gewordene Elternobjekte ab, sonst bliebe eine Wurzel ohne Wirkung im Delta stehen
+// und die Anzeige meldete faelschlich «uebersteuert».
 type Delta = Readonly<Record<string, unknown>>;
 
 function istObjekt(wert: unknown): wert is Record<string, unknown> {

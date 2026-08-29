@@ -1,15 +1,10 @@
-/**
- * TipTap-Knoten für die Platzhalter (Spec 2026-08-27 §2). Atomar: Ein Platzhalter wird
- * eingefügt und gelöscht, nie zerschrieben — die Serialisierung entspricht exakt der
- * Zod-Teilmenge in packages/offer (dokument-schema.ts); TipTap bleibt reine
- * Editor-Schicht ohne eigenes Persistenzformat.
- */
+// TipTap-Knoten fuer die Platzhalter (Spec 2026-08-27 §2). Atomar: ein Platzhalter wird
+// eingefuegt und geloescht, nie zerschrieben.
 import { Node, mergeAttributes } from '@tiptap/core';
 import { PLATZHALTER_KATALOG } from '@offert/offer/src/vorlage/platzhalter.js';
 
-// `string` statt der engeren `PLATZHALTER_KATALOG`-Vereinigung (M-1): Nachgeschlagen
-// wird hier mit `node.attrs['id']`, einem rohen Editor-Attribut — dessen Gültigkeit
-// stellt die Zod-Teilmenge (dokument-schema.ts) sicher, nicht dieser Lookup.
+// M-1: `string` statt der engeren `PLATZHALTER_KATALOG`-Vereinigung, da hier mit
+// `node.attrs['id']` (rohes Editor-Attribut) nachgeschlagen wird.
 const BEZEICHNUNG = new Map<string, string>(
   PLATZHALTER_KATALOG.map((e) => [e.id, e.bezeichnung]),
 );

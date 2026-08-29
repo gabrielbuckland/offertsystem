@@ -7,9 +7,8 @@
  * entsteht kein Artefakt (I-24).
  */
 import { berechne, serialisiereEingang } from '@offert/core';
-// Modulpfad statt Paketindex: Der Index re-exportiert auch die React-Komponenten
-// (.tsx). Node leistet fuer JSX kein Type-Stripping (PE-09), und dieser Pfad wird
-// von `tools/beispiel-offerte.ts` unter Node ausgefuehrt. Es bleibt ein Paketimport.
+// Modulpfad statt Paketindex: Der Index re-exportiert auch React-Komponenten (.tsx), fuer
+// die Node kein Type-Stripping leistet (PE-09).
 import { baueOfferte } from '@offert/offer/src/model/baue-offerte.js';
 import { beschaffe, zuEingangsArgumenten } from '../../../server/eingang.js';
 import { erfassungsSchema } from '../../../server/erfassung-schema.js';
@@ -26,9 +25,7 @@ export async function POST(anfrage: Request): Promise<Response> {
   }
   const { konfiguration, fingerabdruck, provider, offertenVerzeichnis } = laufzeit.wert;
 
-  // Ein syntaktisch kaputter Rumpf ist ein Eingabefehler (422), kein Serverfehler —
-  // dieselbe Fehlerklasse wie in der PUT-Route, dort bereits behoben
-  // (docs/offene-punkte-projektansicht.md).
+  // Ein syntaktisch kaputter Rumpf ist ein Eingabefehler (422), kein Serverfehler.
   let roh: unknown;
   try {
     roh = await anfrage.json();

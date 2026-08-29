@@ -1,32 +1,12 @@
 'use client';
 
-/**
- * Gemeinsamer Rahmen aller vier Bereichs-Editoren (dossier/preisanpassung/faktoren/
- * honorar) — Karte mit Titel, Zweck-Satz, dem Formular des Bereichs, sammelfaehigen
- * Befunden und einer Fussleiste mit explizitem Speichern/Verwerfen (Spec §6, kein
- * Autosave — Begruendung in `verwende-einstellungen.ts`).
- *
- * EIGENTUEMER des Bearbeitungszustands: `verwendeEinstellungen` wird GENAU HIER
- * aufgerufen, nicht in den Bereichsseiten (`[bereich]/page.tsx`) und nicht im konkreten
- * Feld-Editor (`Editor`-Prop; HonorarEditor usw., Tasks 15/16). Grund: Die Bereichsseite
- * ist eine Server-Komponente (sie laedt `rohKonfiguration` vom Dateisystem) und darf
- * keine Hooks aufrufen; zwei UNABHAENGIGE Hook-Aufrufe (einer hier, einer im
- * Feld-Editor) haetten zwei getrennte Entwuerfe zur Folge — eine Eingabe im Feld-Editor
- * bliebe dem Speichern-Knopf hier unbekannt. Der Zustand entsteht deshalb EINMAL, aus
- * der rohen Startkonfiguration (`anfang`-Prop, vom Server geladen und damit
- * serialisierbar), und wird dem konkreten Editor explizit als `einstellungen`-Prop
- * gereicht (`<Editor einstellungen={zustand} />`).
- *
- * `Editor` ist eine KOMPONENTEN-Referenz (`BereichsEditor`, `verwende-einstellungen.ts`),
- * kein `children: ReactNode` mit stillschweigend hineingereichter Prop: Eine
- * Server-Komponente darf eine Client-Komponentenreferenz als Prop uebergeben (sie
- * serialisiert als Modulverweis, genau wie ein Element) — `[bereich]/page.tsx` bleibt
- * damit eine Server-Komponente und uebergibt einfach `Editor={HonorarEditor}`. Der
- * Vertrag "welche Props bekommt der Editor" steht dabei an EINER Stelle (`BereichsEditor`)
- * und ist typgeprueft; eine per `cloneElement` in beliebige Kinder injizierte Prop waere
- * das nicht — an der Definition von `HonorarEditor` selbst stuende nirgends, woher
- * `einstellungen` kommt.
- */
+// Gemeinsamer Rahmen aller vier Bereichs-Editoren (Spec §6, kein Autosave — siehe
+// `verwende-einstellungen.ts`). `verwendeEinstellungen` wird GENAU HIER aufgerufen (nicht in
+// der Server-Komponente `[bereich]/page.tsx`, nicht im `Editor`-Prop), damit genau EIN
+// Entwurfsstand existiert; ein zweiter Hook-Aufruf im Feld-Editor liesse dessen Eingaben dem
+// Speichern-Knopf hier unbekannt bleiben. `Editor` ist bewusst eine Komponenten-Referenz
+// (`BereichsEditor`), kein `children`, damit der Props-Vertrag typgeprueft an einer Stelle
+// steht statt per `cloneElement` injiziert zu werden.
 import { useState } from 'react';
 import { Button } from '../ui/button.js';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card.js';
@@ -37,32 +17,17 @@ import { verwendeEinstellungen, type BereichsEditor } from './verwende-einstellu
 export interface EinstellungsEditorProps {
   readonly titel: string;
   readonly zweck: string;
-  /**
-   * Wurzelpfad(e) dieses Bereichs im Konfigurationsbaum. Der Rahmen zeigt Befunde
-   * GENAU auf diesen Pfaden; alles darunter verankert der Feld-Editor an seiner Zeile
-   * (`befundeFuerPfad`). Ein Bereich kann mehrere Wurzeln umfassen — «Preisanpassung»
-   * etwa deckt sowohl `flaeche` als auch `preisanpassung` und `anpassungsVorlagen` ab —
-   * deshalb ein String ODER mehrere.
-   */
+  // Wurzelpfad(e) dieses Bereichs; Befunde darunter verankert der Feld-Editor selbst
+  // (`befundeFuerPfad`). Mehrere Wurzeln moeglich, z. B. «Preisanpassung» deckt `flaeche`,
+  // `preisanpassung` und `anpassungsVorlagen` ab.
   readonly bereichPraefix: string | readonly string[];
-  /** Rohe Startkonfiguration (ganzer Baum) — siehe Dateikommentar zur Aufteilung. */
   readonly anfang: Readonly<Record<string, unknown>>;
-  /** Konkreter Feld-Editor des Bereichs (Tasks 15/16). */
   readonly Editor: BereichsEditor;
 }
 
-/**
- * Befunde, die KEIN Feld-Editor an seiner Zeile verankern kann — die Gegenmenge zu
- * `befundeFuerPfad` (reine Funktion, deshalb ohne DOM pruefbar).
- *
- * Seit Tasks 15/16 zeigt jeder Bereichseditor die Befunde seiner Felder selbst, je Zeile
- * ueber `befundeFuerPfad`. Das ist ein PRAEFIX-Treffer: Ein Befund auf
- * `honorar.stuetzstellen[1].hMin` erschiene an seiner Zeile UND noch einmal in einer
- * Sammelliste des Rahmens — der Nutzer laese zwei Probleme, wo eines ist. Dem Rahmen
- * bleiben genau die zwei ortlosen Formen: der unanhaengige Befund (`pfad === ''`, der
- * Netz-/500-Fallback aus `verwendeEinstellungen`) und ein Befund auf der Bereichswurzel
- * selbst, zu der es keine Formularzeile gibt.
- */
+// Befunde, die kein Feld-Editor an seiner Zeile verankert (Gegenmenge zu `befundeFuerPfad`,
+// die als Praefix-Treffer arbeitet): der ortlose Befund (`pfad === ''`, Netz-/500-Fallback)
+// und ein Befund auf der Bereichswurzel selbst, zu der es keine Formularzeile gibt.
 export function rahmenBefunde<T extends { readonly pfad: string }>(
   befunde: readonly T[], praefixe: readonly string[],
 ): readonly T[] {
@@ -77,17 +42,9 @@ const REITER: ReadonlyArray<{ readonly wert: Reiter; readonly beschriftung: stri
 ];
 
 export function EinstellungsEditor({ titel, zweck, bereichPraefix, anfang, Editor }: EinstellungsEditorProps) {
-  /**
-   * GENAU EIN Aufruf von `verwendeEinstellungen` fuer BEIDE Reiter — der Umschalter
-   * waehlt nur die Darstellung desselben Entwurfsstands. Ein zweiter Hook-Aufruf im
-   * JSON-Zweig haette zwei unabhaengige Entwuerfe zur Folge; der Speichern-Knopf in der
-   * Fussleiste kennte dann die Eingaben des jeweils anderen Reiters nicht, und welcher
-   * der beiden Staende beim Klick gewaenne, haette allein die Aufrufreihenfolge
-   * entschieden. Deshalb steht der Zustand hier, oberhalb der Verzweigung.
-   *
-   * `zustand.aendere` passt namensgleich auf die `aendere`-Prop von `JsonReiter` — die
-   * JSON-Sicht schreibt in denselben Entwurf wie jedes Formularfeld.
-   */
+  // Ein Aufruf von `verwendeEinstellungen` fuer beide Reiter (Formular/JSON) — der
+  // Umschalter waehlt nur die Darstellung desselben Entwurfsstands, damit beide Reiter in
+  // denselben Zustand schreiben.
   const zustand = verwendeEinstellungen(anfang);
   const [reiter, setzeReiter] = useState<Reiter>('formular');
   const praefixe = typeof bereichPraefix === 'string' ? [bereichPraefix] : bereichPraefix;
@@ -118,12 +75,8 @@ export function EinstellungsEditor({ titel, zweck, bereichPraefix, anfang, Edito
         {reiter === 'formular'
           ? <Editor einstellungen={zustand} />
           : (
-            /**
-             * Im JSON-Reiter bekommt `JsonReiter` ALLE Befunde, nicht nur die
-             * rahmenfaehigen: Die zeilenverankerten Meldungen haengen sonst an
-             * Formularzeilen, die hier gar nicht gerendert sind — ein gescheitertes
-             * Speichern bliebe im JSON-Reiter ohne jede Begruendung sichtbar.
-             */
+            // JsonReiter bekommt ALLE Befunde, nicht nur die rahmenfaehigen: die
+            // zeilenverankerten Meldungen haetten sonst keine Formularzeile zum Andocken.
             <JsonReiter
               wert={zustand.entwurf}
               aendere={zustand.aendere}

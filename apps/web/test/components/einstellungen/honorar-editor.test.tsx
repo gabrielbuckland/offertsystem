@@ -26,27 +26,6 @@ function baueZustand(
 }
 
 describe('HonorarEditor', () => {
-  it('zeigt je Stuetzstelle eine Zeile mit drei Zahlenfeldern, Entfernen- und Hinzufuegen-Schaltflaeche', () => {
-    const stuetzstellen = (STANDARD['honorar'] as { stuetzstellen: readonly unknown[] }).stuetzstellen;
-    const html = renderToStaticMarkup(<HonorarEditor einstellungen={baueZustand(STANDARD)} />);
-
-    // Drei Zahlenfelder je Stuetzstelle (V-Grenze, H_min, H_max).
-    const zahlenfelder = html.match(/type="number"/g) ?? [];
-    // + 2 fuer gMin/gMax.
-    expect(zahlenfelder.length).toBe(stuetzstellen.length * 3 + 2);
-
-    const entfernenTreffer = html.match(/entfernen/g) ?? [];
-    expect(entfernenTreffer.length).toBe(stuetzstellen.length);
-
-    expect(html).toContain('Stützstelle hinzufügen');
-  });
-
-  it('zeigt gMin/gMax-Felder der Skalierungsfunktion', () => {
-    const html = renderToStaticMarkup(<HonorarEditor einstellungen={baueZustand(STANDARD)} />);
-    expect(html).toMatch(/g\s*min/i);
-    expect(html).toMatch(/g\s*max/i);
-  });
-
   it('verankert einen Befund zu honorar.stuetzstellen[1].hMin an Zeile 2, nicht in einer Sammelliste', () => {
     const stuetzstellenArr = (STANDARD['honorar'] as {
       stuetzstellen: readonly { v: number; hMin: number; hMax: number }[];

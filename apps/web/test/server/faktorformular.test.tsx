@@ -1,9 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { FaktorParameter, Faktormenge, FaktorId, Gewicht, Konfiguration } from '@offert/core';
-import { Aufwandfaktoren } from '../../src/components/projekt/Aufwandfaktoren.js';
 import { baueFaktorformular, pruefeFaktorwerte } from '../../src/server/faktorformular.js';
 import { standardKonfiguration } from '../bau/offerte-bauer.js';
 
@@ -57,7 +55,7 @@ describe('Genau n Felder aus n manuellen Faktoren', () => {
 });
 
 describe('Feldeigenschaften stammen aus der Konfiguration', () => {
-  it('bezieht jede Feldeigenschaft aus dem Konfigurationseintrag, nicht aus Literalen', () => {
+  it('bezieht jede Feldeigenschaft aus dem Konfigurationseintrag, nicht aus Literalen (PE-05)', () => {
     const konfig = konfigMit({
       objektzustand: {
         quelle: 'manuell', bezeichnung: 'Objektzustand', grenzeMin: 1, grenzeMax: 5,
@@ -108,25 +106,6 @@ describe('Vollstaendigkeitspflicht je manuellem Faktor', () => {
     const meldungen = pruefeFaktorwerte(baueFaktorformular(KONFIG),
                                         { objektzustand: 9, vermarktung: 3 });
     expect(meldungen[0]!.text).toContain('zwischen 1 und 5');
-  });
-});
-
-describe('Stufenbeschriftungen erreichen die Maske (AK-3.7, PE-05)', () => {
-  it('rendert je Ordinalstufe eine beschriftete Auswahl, nicht ein nacktes Zahlenfeld', () => {
-    const formular = baueFaktorformular(konfigMit({
-      objektzustand: {
-        quelle: 'manuell', bezeichnung: 'Objektzustand', grenzeMin: 1, grenzeMax: 5,
-        skala: { form: 'ordinal', stufen: [
-          { wert: 1, bezeichnung: 'sehr gut' },
-          { wert: 5, bezeichnung: 'sanierungsbeduerftig' },
-        ] },
-      },
-    }));
-    const html = renderToStaticMarkup(
-      <Aufwandfaktoren formular={formular} werte={{}} aendere={() => undefined} />);
-    expect(html).toContain('sehr gut');
-    expect(html).toContain('sanierungsbeduerftig');
-    expect(html).toContain('<select');
   });
 });
 

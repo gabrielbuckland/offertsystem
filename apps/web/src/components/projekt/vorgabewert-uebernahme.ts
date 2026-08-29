@@ -1,15 +1,6 @@
 /**
  * Reine Uebernahme-Funktion fuer `spaltenwerte`, getrennt von `AnpassungsSpalten.tsx` und
- * direkt testbar (Muster `spaltenwerte-kaskade.ts`).
- *
- * Traegt den Vorgabewert einer Anpassungsspalte in jene Einheiten ein, die fuer diese
- * Spalte noch KEINEN Wert fuehren — massgeblich ist der fehlende Schluessel in
- * `spaltenwerte`, nicht der Wert selbst. Eine vorhandene 0 ist ein erfasster Wert, kein
- * fehlender (I-24), und bleibt darum unangetastet.
- *
- * Eine Spalte mit `regel` hat KEINEN Vorgabewert (`projekt-schema.ts`: `regel` und
- * `vorgabewert` schliessen sich aus) — es gibt fuer sie nichts zu uebernehmen, die
- * Einheiten bleiben unangetastet.
+ * direkt testbar.
  */
 import type { AnpassungsSpalte, ProjektEinheit } from '../../server/projekt-schema.js';
 

@@ -3,13 +3,12 @@
  *
  * Erwartete Richtung der Margenverschiebung: Der Wirkpfad der Einheitenzahl auf g laeuft
  * ausschliesslich ueber w_umfang; jede Renormalisierung durch Aufnahme eines weiteren
- * Faktors senkt w_umfang und schwaecht damit genau den Pfad, der der Degression
- * entgegenwirkt. Die Marge WAECHST also. Kehrt sich die Richtung um, ist entweder die
- * Herleitung in Spec 02 §7.3 falsch oder das Modell anders gebaut als angenommen — das
- * Werkzeug meldet es als Befund, statt es zu uebergehen.
+ * Faktors senkt w_umfang und schwaecht damit den Pfad, der der Degression entgegenwirkt —
+ * die Marge WAECHST also. Kehrt sich die Richtung um, meldet das Werkzeug es als Befund
+ * statt es zu uebergehen (Spec 02 §7.3).
  *
- * ABWEICHUNG VOM PLAN: Instrument ist `extension-scenario`, nicht
- * `eval/extension-scenario` — der Artefaktschreiber setzt `artifacts/eval/` davor.
+ * Instrument ist `extension-scenario`, nicht `eval/extension-scenario` — der
+ * Artefaktschreiber setzt `artifacts/eval/` davor.
  */
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';

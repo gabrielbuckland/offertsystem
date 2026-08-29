@@ -1,14 +1,8 @@
-/**
- * Keine Formel. Beschaffung und Bau der `EingangsArgumente` (PE-22, PE-23, I-02).
- *
- * Reihenfolge nach Spec 04 §3.1: erst die Lagescores der Projektadresse (einmal je
- * Liegenschaft), dann die Bewertungen je Wohnungstyp. Beides VOR dem Pipeline-Start —
- * `EingangsArgumente.lagescores` ist Pflichtfeld, und Stufe 2a leitet daraus Faktoren ab.
- *
- * Der einzige Ort, an dem `EingangsArgumente` entstehen. `Liegenschaft` wird
- * ausschliesslich ueber `erzeugeLiegenschaft` konstruiert (I-02); eine direkte
- * Objektliteral-Konstruktion umginge die Aggregatinvarianten.
- */
+// Beschaffung und Bau der `EingangsArgumente` (PE-22, PE-23, I-02). Reihenfolge nach Spec 04
+// §3.1: erst Lagescores der Projektadresse, dann Bewertungen je Wohnungstyp, beides VOR dem
+// Pipeline-Start (`lagescores` ist Pflichtfeld, Stufe 2a leitet daraus Faktoren ab). Einziger
+// Ort, an dem `EingangsArgumente` entstehen; `Liegenschaft` ausschliesslich ueber
+// `erzeugeLiegenschaft` (I-02), um die Aggregatinvarianten nicht zu umgehen.
 import {
   erzeugeLiegenschaft,
   type BewertungsAnfrage,
@@ -62,13 +56,8 @@ export async function beschaffe(
   return { ok: true, wert: { buendel: buendel.wert, lagescores: lagescores.wert } };
 }
 
-/**
- * Weglassen statt erfinden, fuer jedes der vier dokumentarischen Felder einzeln (I-09,
- * A-14): derselbe bedingte Spread wie in `projektion.ts` und `baue-offerte.ts`, damit
- * alle drei Stellen gleich lesen. Mit vier unabhaengig optionalen Feldern waere die
- * fruehere Fallunterscheidung ueber alle Kombinationen (vormals drei `if`s plus
- * Fallback fuer zwei Felder) nicht mehr uebersichtlich zu halten.
- */
+// Weglassen statt erfinden, je optionalem Feld einzeln (I-09, A-14): derselbe bedingte
+// Spread wie in `projektion.ts` und `baue-offerte.ts`, damit alle drei Stellen gleich lesen.
 function zuAbschlag(a: Erfassung['einheiten'][number]['anpassungen'][number]): ZuAbschlag {
   return {
     faktor: a.faktor,

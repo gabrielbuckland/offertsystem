@@ -1,28 +1,19 @@
 'use client';
 
 /**
- * Projektbezogene Einstellungen (Ebene 2). Zeigt die EFFEKTIVE Konfiguration — sonst
- * saehe der Vermarkter ein leeres Formular und wuesste nicht, womit gerechnet wird —,
- * speichert aber das DELTA: Nur was von den Firmenwerten abweicht, geht in den Rumpf.
+ * Projektbezogene Einstellungen (Ebene 2). Zeigt die EFFEKTIVE Konfiguration, speichert
+ * aber nur das DELTA zu den Firmenwerten: Waere die effektive Konfiguration gespeichert,
+ * wuerde jedes Projekt beim ersten Speichern zur Vollkopie, eine spaetere Korrektur an
+ * den Firmenwerten erreichte es nie mehr, und das Ueberschreibungsprotokoll (A-13)
+ * meldete jeden Wert als abweichend.
  *
- * Der Unterschied ist tragend. Waere die effektive Konfiguration gespeichert, wuerde
- * jedes Projekt beim ersten Speichern zur Vollkopie, eine spaetere Korrektur an den
- * Firmenwerten erreichte es nie mehr, und das Ueberschreibungsprotokoll — der Beleg
- * fuer A-13 — meldete jeden Wert als abweichend.
+ * Der Entwurf (effektive Konfiguration im Formular) ist die einzige Wahrheit; das Delta
+ * wird bei jedem Rendern neu berechnet (`bildeDelta`) statt als zweiter Zustand
+ * mitgefuehrt — zwei Zustaende koennten auseinanderlaufen.
  *
- * Daraus folgt die Zustandsfuehrung: EINE Wahrheit ist der Entwurf (die effektive
- * Konfiguration, die im Formular steht); das Delta wird daraus bei jedem Rendern neu
- * gerechnet (`bildeDelta`) statt als zweiter Zustand mitgefuehrt. Zwei Zustaende
- * koennten auseinanderlaufen, und dann waere unklar, welcher von beiden die Anzeige und
- * welcher die Ablage bestimmt. Weil das Delta abgeleitet ist, meldet das
- * Herkunftsabzeichen auch eine noch NICHT gespeicherte Uebersteuerung bereits als
- * «projektbezogen» — genau die Aussage, die der Nutzer beim Bearbeiten braucht.
- *
- * Eigener Speicherpfad statt `verwendeEinstellungen`: Jener Hook schreibt fest gegen
- * `POST /api/einstellungen` und damit FIRMENWEIT. Hier geht der Rumpf an
- * `POST /api/projekt/<id>/einstellungen` und enthaelt das Delta, nicht den Entwurf. Die
- * generationsgesicherte Zustandsmaschine (`baueSpeicherSteuerung`) wird dagegen geteilt —
- * das Problem ueberholter Antworten ist an beiden Stellen dasselbe.
+ * Eigener Speicherpfad statt `verwendeEinstellungen`: dieser Hook speichert fest gegen
+ * `POST /api/projekt/<id>/einstellungen` (Delta), nicht firmenweit. Die
+ * generationsgesicherte Zustandsmaschine (`baueSpeicherSteuerung`) wird geteilt.
  */
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Button } from '../ui/button.js';
@@ -38,10 +29,8 @@ import {
   type SpeicherErgebnis,
   type VerwendeEinstellungenErgebnis,
 } from './verwende-einstellungen.js';
-// Bewusst aus `app/(anwendung)/einstellungen/`: Die Bereichszuordnung ist
-// Routing-Metadatum und bleibt dort, weil `components/einstellungen/` vom
-// Architekturtest auf fest verdrahtete Konfigurationsbezeichner gescannt wird
-// (Dateikommentar in `bereiche.ts`). Importiert, nicht verschoben.
+// Bewusst aus `app/(anwendung)/einstellungen/`: `components/einstellungen/` wird vom
+// Architekturtest auf fest verdrahtete Konfigurationsbezeichner gescannt.
 import { BEREICHE } from '../../app/(anwendung)/einstellungen/bereiche.js';
 
 export interface ProjektEinstellungenProps {
@@ -73,9 +62,8 @@ async function schreibeProjektEinstellungen(
   if (antwort.status === 422 && antwort.rumpf.befunde !== undefined) {
     return { ok: false, befunde: antwort.rumpf.befunde };
   }
-  // Netzausfall (Status 0) und Serverfehler ohne Befundform landen gemeinsam hier: Es
-  // gibt keinen Feldanker, dem sich «der Server ist nicht erreichbar» zuordnen liesse
-  // (I-24) — also genau EIN unanhaengiger Befund. Gleiche Regel wie firmenweit.
+  // Netzausfall und Serverfehler ohne Befundform landen gemeinsam hier: kein Feldanker
+  // fuer «Server nicht erreichbar» (I-24), also ein unabhaengiger Befund.
   return {
     ok: false,
     befunde: [{ pfad: '', text: 'Die Projekteinstellungen konnten nicht gespeichert werden.' }],
@@ -104,12 +92,9 @@ export function ProjektEinstellungen({ projektId, firmenwerte, delta }: ProjektE
     () => effektiveKonfiguration(firmenwerte, delta), [firmenwerte, delta],
   );
   const [entwurf, setzeEntwurf] = useState<Readonly<Record<string, unknown>>>(anfang);
-  /**
-   * Der zuletzt ABGELEGTE Stand — in normalisierter Form, also so, wie `bildeDelta` ihn
-   * schreiben wuerde. Der rohe `delta`-Prop taugt nicht als Vergleichsbasis: Traege er
-   * eine wirkungslose leere Wurzel, meldete die Fussleiste schon beim Oeffnen eine
-   * Aenderung, die niemand vorgenommen hat.
-   */
+  // Zuletzt abgelegter Stand, normalisiert wie `bildeDelta` ihn schreiben wuerde. Der
+  // rohe `delta`-Prop taugt nicht als Vergleichsbasis: eine wirkungslose leere Wurzel
+  // darin meldete die Fussleiste schon beim Oeffnen faelschlich als Aenderung.
   const [abgelegt, setzeAbgelegt] = useState<Readonly<Record<string, unknown>>>(
     () => bildeDelta(anfang, firmenwerte),
   );
@@ -120,9 +105,8 @@ export function ProjektEinstellungen({ projektId, firmenwerte, delta }: ProjektE
   const aktuellesDelta = useMemo(() => bildeDelta(entwurf, firmenwerte), [entwurf, firmenwerte]);
   const geaendert = JSON.stringify(aktuellesDelta) !== JSON.stringify(abgelegt);
 
-  // Der gesendete Stand, damit `aufErgebnis` weiss, was der Erfolg bestaetigt. Ein
-  // ueberholter Speicherversuch kann hier nicht falsch quittieren: `baueSpeicherSteuerung`
-  // verwirft dessen Antwort, bevor `aufErgebnis` ueberhaupt laeuft.
+  // Gesendeter Stand, damit `aufErgebnis` weiss, was der Erfolg bestaetigt.
+  // `baueSpeicherSteuerung` verwirft ueberholte Antworten vor `aufErgebnis`.
   const gesendet = useRef<Readonly<Record<string, unknown>>>({});
   const steuerung = useRef<ReturnType<typeof baueSpeicherSteuerung> | undefined>(undefined);
   if (steuerung.current === undefined) {
@@ -165,12 +149,9 @@ export function ProjektEinstellungen({ projektId, firmenwerte, delta }: ProjektE
     setzeBefunde([]);
   }, [firmenwerte, abgelegt]);
 
-  /**
-   * Setzt EINE Bereichswurzel auf den Firmenwert zurueck. Der Weg fuehrt bewusst ueber
-   * das Delta und nicht ueber ein Zurueckkopieren des Teilbaums: `setzeZurueck` raeumt
-   * leer gewordene Elternknoten mit ab, und das anschliessende erneute Einlegen stellt
-   * sicher, dass auch eine noch ungespeicherte Bearbeitung derselben Wurzel verschwindet.
-   */
+  // Setzt eine Bereichswurzel auf den Firmenwert zurueck, ueber das Delta statt ueber
+  // ein Zurueckkopieren: `setzeZurueck` raeumt leer gewordene Elternknoten mit ab und
+  // entfernt so auch noch ungespeicherte Bearbeitung derselben Wurzel.
   const setzeWurzelZurueck = useCallback((pfad: string) => {
     steuerung.current?.vermerkeAenderung();
     setzeEntwurf(effektiveKonfiguration(firmenwerte, setzeZurueck(aktuellesDelta, pfad)));

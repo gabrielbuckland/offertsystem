@@ -2,11 +2,9 @@ import * as React from 'react';
 
 import { cn } from '../../lib/utils.js';
 
-/**
- * Bewusst ein natives <select>: keiner der geplanten Aufrufer braucht ein eigenes
- * Dropdown-Menu, und ein natives Element bleibt ohne Radix-Abhaengigkeit tastatur- und
- * screenreaderfaehig.
- */
+// Bewusst ein natives <select> statt Radix: kein Aufrufer braucht ein eigenes
+// Dropdown-Menu, und ein natives Element bleibt ohne Zusatzabhaengigkeit tastatur- und
+// screenreaderfaehig.
 function Select({ className, children, ...props }: React.ComponentProps<'select'>) {
   return (
     <select

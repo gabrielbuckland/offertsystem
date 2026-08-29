@@ -1,13 +1,8 @@
 /**
- * Keine Formel. Die einzige Stelle, an der Umgebung, Konfigurationslader, Adapter und
- * Ablageort zusammenkommen (PE-24).
- *
- * Zwei Aufrufstellen bedeuteten zwei Konfigurationsstaende innerhalb eines Laufs; die
- * Pruefsumme in den Metadaten belegte dann nicht mehr, womit gerechnet wurde (E-26).
- *
- * Der `api`-Block stammt aus dem Ladeergebnis und wird dem Adapter uebergeben (PE-17):
- * Der Kern kennt ihn nicht, und der Adapter laedt ihn nicht selbst. Route Handler und
- * Seiten rufen ausschliesslich diese Funktion auf.
+ * Die einzige Stelle, an der Umgebung, Konfigurationslader, Adapter und Ablageort
+ * zusammenkommen (PE-24) — zwei Aufrufstellen bedeuteten zwei Konfigurationsstaende
+ * innerhalb eines Laufs, die Pruefsumme belegte dann nicht mehr, womit gerechnet wurde
+ * (E-26). Route Handler und Seiten rufen ausschliesslich diese Funktion auf.
  */
 import { resolve } from 'node:path';
 import type { Konfiguration } from '@offert/core';
@@ -52,9 +47,7 @@ export function holeLaufzeit(
     ueberschreibungen,
   });
   if (!geladen.ok) {
-    // Der Fehlertyp ist textlos (E-03); die Anzeigefassung entsteht in Aufgabe 12.
-    // Hier reicht die maschinenlesbare Form aus Code, Pfad und Parametern — sie
-    // benennt die Stelle, ohne eine zweite Textquelle aufzumachen.
+    // Fehlertyp ist textlos (E-03); maschinenlesbare Form aus Code, Pfad und Parametern.
     return {
       ok: false,
       meldungen: geladen.fehler.map(
@@ -71,8 +64,8 @@ export function holeLaufzeit(
       ...(umgebung.wert.phPassword === undefined ? {} : { PH_PASSWORD: umgebung.wert.phPassword }),
       ...(umgebung.wert.phDossierId === undefined ? {} : { PH_DOSSIER_ID: umgebung.wert.phDossierId }),
     },
-    // PE-17: Rohblock aus dem Ladeergebnis. Die Strukturgleichheit mit
-    // `ApiKonfiguration` prueft `pruefeApiKonfiguration` innerhalb der Fabrik.
+    // PE-17: Strukturgleichheit mit `ApiKonfiguration` prueft `pruefeApiKonfiguration`
+    // innerhalb der Fabrik.
     geladen.api as ApiKonfiguration,
   );
 
@@ -91,7 +84,6 @@ export function holeLaufzeit(
 }
 
 /**
- * Bequemlichkeit fuer Seiten und Route Handler, die nur den Ablageort brauchen.
  * Wirft bewusst: Eine Seite ohne gueltige Umgebung darf nicht mit einem Vorgabepfad
  * weiterlaufen — sie wuerde sonst in einem anderen Verzeichnis lesen als geschrieben
  * wurde (E-14, I-24).
@@ -105,13 +97,9 @@ export function verzeichnisAusLaufzeit(): string {
 /**
  * Projektbewusste Laufzeit: dieselbe Form wie `holeLaufzeit`, aber mit dem
  * Einstellungs-Delta des Projekts zusammengefuehrt (Ebene 2 des Zwei-Ebenen-Modells).
- *
- * BEWUSST EIN ZWEITER EINSTIEG STATT EINES OPTIONALEN PARAMETERS AN `holeLaufzeit`:
- * Ein Parameter haette jede der zwoelf bestehenden Aufrufstellen zur
- * Entscheidungsstelle gemacht, ob sie projektbezogen rechnen muss — und ein
- * vergessener Parameter haette still mit Firmenwerten gerechnet, ohne dass es jemand
- * saehe. Getrennte Namen machen die Wahl an der Aufrufstelle sichtbar. PE-24 bleibt
- * gewahrt, weil diese Funktion `holeLaufzeit` aufruft und nur den Merge ergaenzt.
+ * Bewusst ein zweiter Einstieg statt eines optionalen Parameters an `holeLaufzeit`: ein
+ * vergessener Parameter haette sonst still mit Firmenwerten gerechnet; getrennte Namen
+ * machen die Wahl an der Aufrufstelle sichtbar.
  */
 export function holeProjektLaufzeit(
   projekt: { readonly einstellungen?: Readonly<Record<string, unknown>> | undefined },

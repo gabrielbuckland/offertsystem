@@ -8,11 +8,9 @@ export interface AggregatleisteProps {
   readonly honorarMin: number | undefined;
   readonly honorarMax: number | undefined;
   readonly aufwandindikator: number | undefined;
-  /** Wahr, wenn D vom Vermarkter uebersteuert ist (Basisinformationen) — der Ausweis
-   *  unterscheidet den gesetzten vom abgeleiteten Wert. */
   readonly aufwandindikatorUebersteuert?: boolean;
-  /** Nur gesetzt bei E-04 (Verkaufssumme ausserhalb der Staffel) — Text kommt fertig
-   *  uebersetzt aus der Route, diese Komponente uebersetzt nicht nach. */
+  // E-04: nur bei Verkaufssumme ausserhalb der Staffel gesetzt; Text kommt fertig
+  // uebersetzt aus der Route.
   readonly honorarAbbruchMeldung?: string;
   readonly erzeuge: () => void;
   readonly laeuft: boolean;
@@ -21,13 +19,9 @@ export interface AggregatleisteProps {
   readonly zeigeRechenweg: () => void;
 }
 
-/**
- * Eine nackte Kommazahl sagt dem Vermarkter nichts (Rueckmeldung Auftraggeber
- * 2026-08-28): Die kleine Skala verortet D zwischen seinen fachlichen Polen 0 (gering)
- * und 1 (hoch), ohne Schwellen zu erfinden — die Zuordnung ist monoton (I-15/I-16), mehr
- * behauptet die Darstellung nicht. Der Fuellstand wird nur fuers Zeichnen begrenzt: Der
- * E-04-Teilerfolg kann ein D ausserhalb von [0, 1] anzeigen, der Zahlwert bleibt ehrlich.
- */
+// Verortet D zwischen seinen fachlichen Polen 0 (gering) und 1 (hoch), Zuordnung monoton
+// (I-15/I-16). Der Fuellstand wird nur fuers Zeichnen begrenzt: D kann ausserhalb [0, 1]
+// liegen (E-04), der angezeigte Zahlwert bleibt ehrlich.
 function AufwandindikatorSkala({ wert }: { readonly wert: number }) {
   const anteil = Math.min(1, Math.max(0, wert));
   return (
@@ -46,13 +40,8 @@ function AufwandindikatorSkala({ wert }: { readonly wert: number }) {
   );
 }
 
-/**
- * Ein fehlendes Aggregat wird als solches ausgewiesen und nicht als Null dargestellt:
- * Null ist ein gueltiger Rechenwert, «noch nicht berechnet» ist keiner (I-24).
- *
- * Sticky Fusszeile (Design-Spec §4): bleibt beim Scrollen der langen Einheitentabelle
- * sichtbar, damit Verkaufssumme/Honorarrange/Offert-Schaltflaeche immer erreichbar sind.
- */
+// I-24: fehlendes Aggregat wird als solches ausgewiesen, nicht als Null (Null ist ein
+// gueltiger Rechenwert). Sticky Fusszeile (Design-Spec §4).
 export function Aggregatleiste(
   {
     verkaufssumme, honorarMin, honorarMax, aufwandindikator, aufwandindikatorUebersteuert,
@@ -63,9 +52,8 @@ export function Aggregatleiste(
   const vollstaendig = verkaufssumme !== undefined
     && honorarMin !== undefined && honorarMax !== undefined;
 
-  // Schliesst die 400-ms-Luecke (docs/offene-punkte-projektansicht.md): waehrend
-  // Speichern/Neuberechnung darf der zuletzt angezeigte, jetzt veraltete Stand nicht
-  // in eine Offerte ueberfuehrt werden koennen — die Begruendung steht dabei als Text.
+  // Waehrend Speichern/Neuberechnung darf der zuletzt angezeigte, jetzt veraltete Stand
+  // nicht in eine Offerte ueberfuehrt werden koennen.
   const gesperrtWeil = speichernLaeuft || berechnungLaeuft
     ? 'Änderungen werden gespeichert und neu berechnet …'
     : !vollstaendig ? 'Es liegt noch kein vollständiges Ergebnis vor.' : undefined;
@@ -104,10 +92,8 @@ export function Aggregatleiste(
         </Button>
         <div className="flex flex-col items-end gap-1">
           {honorarAbbruchMeldung !== undefined && (
-            // `rolle="alert"` unabhaengig von der (fuer den Auftraggeber bewusst nicht
-            // roten) Warnfarbe: E-04 ist kein Eingabefehler, blockiert aber das Ziel
-            // (keine Honorarrange, keine Offerte) und verlangt deshalb sofortige
-            // Aufmerksamkeit statt der stillen `status`-Rolle der Art „warnung“.
+            // E-04 blockiert das Ziel (keine Honorarrange/Offerte), daher `rolle="alert"`
+            // trotz nicht-roter Warnfarbe statt der stillen `status`-Rolle.
             <Hinweis art="warnung" rolle="alert">{honorarAbbruchMeldung}</Hinweis>
           )}
           <Button type="button" onClick={erzeuge} disabled={gesperrtWeil !== undefined || laeuft}>

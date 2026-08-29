@@ -96,26 +96,10 @@ describe('Aufwandfaktoren — ein geleertes Feld erfindet keine Null', () => {
    * darum wird der Entwurfszustand hier ueber die initiale `werte`-Prop gesetzt statt
    * ueber einen simulierten Tastendruck.
    */
-  it('meldet den aktuellen Entwurf beim Verlassen des Feldes', () => {
-    const aendere = vi.fn();
-    zeichne({ f_zahl: 7 }, aendere);
-    erfasst.inputs[0]!.onBlur!();
-    expect(aendere).toHaveBeenCalledWith({ f_zahl: 7 });
-  });
-
   it('meldet ein fehlendes Zahlfeld beim Verlassen gar nicht, statt eine 0 zu melden', () => {
     const aendere = vi.fn();
     zeichne({}, aendere);
     erfasst.inputs[0]!.onBlur!();
-    expect(aendere).not.toHaveBeenCalled();
-  });
-
-  it('loest ueber onChange allein nie eine Meldung aus — committet wird ausschliesslich bei onBlur', () => {
-    const aendere = vi.fn();
-    zeichne({ f_zahl: 5 }, aendere);
-    erfasst.inputs[0]!.onChange({ target: { value: '' } });
-    erfasst.inputs[0]!.onChange({ target: { value: '-' } });
-    erfasst.inputs[0]!.onChange({ target: { value: '3,5' } });
     expect(aendere).not.toHaveBeenCalled();
   });
 

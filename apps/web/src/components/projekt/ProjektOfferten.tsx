@@ -1,17 +1,10 @@
-/**
- * Offerten dieses Projekts. Schliesst `listeOfferten()` wieder an, das seit dem Umbau
- * auf die Projektansicht von keiner Seite mehr aufgerufen wurde: Eine einmal erzeugte
- * Offerte war in der Oberflaeche nicht wieder auffindbar.
- *
- * Die Pruefsumme steht bewusst in der Liste. Sie belegt an der Oberflaeche, dass jede
- * Offerte ihren eigenen eingefrorenen Konfigurationsstand traegt
- * (`metadata.konfigurationsAbdruck`) — deshalb aendert eine spaetere Anpassung der
- * Firmen- oder Projekteinstellungen an einer abgelegten Offerte nichts.
- */
+// Offerten dieses Projekts. Die Pruefsumme steht bewusst in der Liste: sie belegt, dass
+// jede Offerte ihren eigenen eingefrorenen Konfigurationsstand traegt
+// (`metadata.konfigurationsAbdruck`) — eine spaetere Anpassung der Firmen- oder
+// Projekteinstellungen aendert an einer abgelegten Offerte nichts.
 import Link from 'next/link';
 import type { Route } from 'next';
-// Modulpfad statt Paketindex: Der Index re-exportiert auch die React-Komponenten
-// (.tsx); dieselbe Begruendung wie in offerten-ablage.ts und Aggregatleiste.tsx.
+// Modulpfad statt Paketindex: Der Index re-exportiert auch die React-Komponenten (.tsx).
 import { formatiereAggregat, formatiereDatum } from '@offert/offer/src/format/de-ch.js';
 import type { ListenEintrag } from '../../server/offerten-ablage.js';
 import { LeererZustand } from '../ui/leerer-zustand.js';
@@ -21,8 +14,7 @@ import {
 import { referenzAus } from './offerten-logik.js';
 
 export interface ProjektOffertenProps {
-  // Die Filterung auf `projektId` obliegt dem Aufrufer (Seite) — die Komponente
-  // stellt nur dar, was ihr uebergeben wird (Task 11, Schnittstellenvorgabe).
+  // Filterung auf `projektId` obliegt dem Aufrufer; die Komponente stellt nur dar.
   readonly eintraege: readonly ListenEintrag[];
 }
 

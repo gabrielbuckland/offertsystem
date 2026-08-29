@@ -3,17 +3,15 @@
  *
  * Laufzeit: `node --experimental-strip-types` (Node >= 22.6, PE-09). Kein `tsx`.
  *
- * EINZIGES Skript mit echtem API-Zugriff. Nie Teil von `verify` oder `test`.
- * Es verbraucht kontingentierte Abrufe, verlangt Zugangsdaten und veraendert
- * versioniertes Testmaterial; ein Testlauf, der Fixtures veraendert, waere zudem
- * nicht reproduzierbar.
+ * EINZIGES Skript mit echtem API-Zugriff, nie Teil von `verify` oder `test`: Es
+ * verbraucht kontingentierte Abrufe, verlangt Zugangsdaten und veraendert versioniertes
+ * Testmaterial (waere sonst nicht reproduzierbar).
  *
  * Einziger zulaessiger Weg, auf dem Dateien unter `fixtures/pricehubble/recorded/`
- * entstehen; von Hand abgelegte Dateien sind unzulaessig, weil ihre Herkunft dann
- * nicht belegt waere. Genau EIN Durchlauf je Endpunkt.
+ * entstehen — von Hand abgelegte Dateien waeren in ihrer Herkunft nicht belegt.
  *
- * Die Importe sind relativ, weil Node das Type-Stripping fuer `node_modules`
- * verweigert (PE-09, PE-11).
+ * Importe sind relativ, weil Node das Type-Stripping fuer `node_modules` verweigert
+ * (PE-09, PE-11).
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';

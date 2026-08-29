@@ -1,15 +1,7 @@
-/**
- * Schreibweg der PROJEKTBEZOGENEN Ebene (Ebene 2 des Zwei-Ebenen-Modells). Der Rumpf
- * ist das Delta — nur die uebersteuerten Pfade, nicht die ganze Konfiguration.
- *
- * Zurueckweisen statt melden (I-21): Geschrieben wird erst, NACHDEM das Delta mit den
- * Firmenwerten zusammengefuehrt und die zusammengefuehrte Konfiguration durch alle drei
- * Pruefebenen gelaufen ist. Es existiert kein Zeitfenster, in dem ein Projekt mit einer
- * invariantenverletzenden Konfiguration abgelegt waere.
- *
- * Antwortform `befunde` (Pfad + Text) wie bei der firmenweiten Route: Die Editoren
- * verankern ihre Meldung am Feld, nicht am Formular.
- */
+// Schreibweg der PROJEKTBEZOGENEN Ebene (Ebene 2 des Zwei-Ebenen-Modells). Der Rumpf ist das
+// Delta — nur die uebersteuerten Pfade. Zurueckweisen statt melden (I-21): geschrieben wird
+// erst, NACHDEM das Delta mit den Firmenwerten zusammengefuehrt und durch alle drei
+// Pruefebenen gelaufen ist.
 import { holeLaufzeit, holeProjektLaufzeit } from '../../../../../server/laufzeit.js';
 import { ladeProjekt, speichereProjekt } from '../../../../../server/projekt-ablage.js';
 

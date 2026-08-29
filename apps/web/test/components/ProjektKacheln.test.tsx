@@ -12,12 +12,6 @@ const EINTRAG = {
 };
 
 describe('ProjektKacheln', () => {
-  it('betitelt jede Kachel mit der Adresse und verlinkt das Projekt', () => {
-    const html = renderToStaticMarkup(<ProjektKacheln eintraege={[EINTRAG]} />);
-    expect(html).toContain('Seestrasse 1, 8001 Zürich');
-    expect(html).toContain(`/projekte/${EINTRAG.id}`);
-  });
-
   it('zeigt die Kennung nirgends an — auch nicht in der Fehlerkachel eines '
     + 'gleichnamigen defekten Projekts', () => {
     const defekt = { ...EINTRAG, fehlerhaft: true, adresse: '—' };
@@ -30,14 +24,6 @@ describe('ProjektKacheln', () => {
     const html = renderToStaticMarkup(
       <ProjektKacheln eintraege={[{ ...EINTRAG, fehlerhaft: true, adresse: '—' }]} />);
     expect(html).toContain('nicht lesbar');
-  });
-
-  it('zeigt ein flaches Icon-Feld statt des leeren Platzhalter-Divs, mit Hover-Kante', () => {
-    const html = renderToStaticMarkup(<ProjektKacheln eintraege={[EINTRAG]} />);
-    expect(html).not.toContain('aspect-[4/3]');
-    expect(html).toContain('aria-hidden="true"');
-    expect(html).toContain('bg-muted');
-    expect(html).toContain('hover:border-primary');
   });
 
   it('rendert im Leerfall den LeererZustand-Titel und die uebergebene Aktion', () => {

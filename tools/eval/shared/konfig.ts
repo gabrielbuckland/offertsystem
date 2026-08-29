@@ -1,16 +1,13 @@
 /**
- * Keine Modellformel — mit einer benannten Ausnahme (`normiereMitKappung`, siehe unten).
+ * Keine Modellformel — Ausnahme: `normiereMitKappung` (siehe unten).
  *
- * EINE Stelle, an der eine Werkzeugvariante die Validierung passiert. Damit ist die
- * globale Randbedingung «kein Werkzeug rechnet eine unzulaessige Konfiguration» (I-21)
- * nicht an jedem Aufrufort neu zu erfuellen, und der Nachweis haengt an einer einzigen,
- * getesteten Funktion.
+ * EINE Stelle, an der eine Werkzeugvariante die Validierung passiert: Die globale
+ * Randbedingung «kein Werkzeug rechnet eine unzulaessige Konfiguration» (I-21) haengt so
+ * an einer einzigen, getesteten Funktion statt an jedem Aufrufort neu.
  *
- * ABWEICHUNG VOM PLAN, bewusst: Der Kern wird mit `.ts`-Endung importiert, nicht mit
- * `.js`. Das ist die im Werkzeugverzeichnis bereits etablierte Form
- * (`tools/eval/config-validation.ts`); sie laeuft ohne Aufloesungshaken sowohl unter
- * `node --experimental-strip-types` als auch unter Vitest. `allowImportingTsExtensions`
- * ist in `tools/tsconfig.json` gesetzt.
+ * Import mit `.ts`-Endung statt `.js`: laeuft ohne Aufloesungshaken sowohl unter
+ * `node --experimental-strip-types` als auch unter Vitest (`allowImportingTsExtensions`
+ * in `tools/tsconfig.json`).
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -37,11 +34,8 @@ export type Validierung =
   | { readonly ok: true; readonly wert: Konfiguration; readonly rohWert: RohKonfiguration }
   | { readonly ok: false; readonly fehler: readonly KonfigurationsFehler[] };
 
-/**
- * Kapselt PE-01: `parseKonfiguration` liefert Kerntyp und validierte Rohform als Paar.
- * `wert` ist der Kerntyp (Rechengrundlage), `rohWert` die Rohform (Variantenbildung) —
- * Varianten werden auf der Rohform gebildet, weil nur sie Eingabe der Validierung ist.
- */
+/** PE-01: `wert` ist der Kerntyp (Rechengrundlage), `rohWert` die Rohform, auf der
+ * Varianten gebildet werden, weil nur sie Eingabe der Validierung ist. */
 export function validiere(roh: unknown): Validierung {
   const ergebnis = parseKonfiguration(roh);
   return ergebnis.ok
@@ -74,10 +68,9 @@ export function sortiereMap<T>(
 }
 
 /**
- * Gesucht wird ueber Quelle und Quellschluessel, NICHT ueber den Faktorbezeichner: Ein
- * fest verdrahteter Bezeichner waere genau die faktorspezifische Sonderbehandlung, die
- * I-13 ausschliesst. Der Faktorschluessel darf beliebig heissen; massgeblich ist, dass er
- * die Einheitenzahl verarbeitet (PE-03).
+ * Suche ueber Quelle/Quellschluessel, nicht ueber den Faktorbezeichner: Ein fest
+ * verdrahteter Bezeichner waere die faktorspezifische Sonderbehandlung, die I-13
+ * ausschliesst (PE-03).
  */
 export function findeUmfangfaktor(k: Konfiguration): Umfangfaktor | null {
   for (const [faktorId, parameter] of sortiereMap(k.faktoren)) {
@@ -91,10 +84,9 @@ export function findeUmfangfaktor(k: Konfiguration): Umfangfaktor | null {
 /**
  * eq:normalisierung inkl. aeusserer Kappung; `min > max` ist gewollte Umpolung.
  *
- * Das ist eine ZWEITIMPLEMENTIERUNG derselben Formel. Sie ist zulaessig und hier
- * erwuenscht, weil der Margen-Rechner analytisch arbeitet und keinen Pipeline-Durchlauf
- * verwendet (Spec 06 §7.2); ein eigener Test prueft sie gegen die Normalisierungsstufe
- * des Kerns, sodass ein Auseinanderlaufen auffaellt.
+ * Zweitimplementierung derselben Formel, bewusst: Der Margen-Rechner arbeitet analytisch
+ * ohne Pipeline-Durchlauf (Spec 06 §7.2); ein Test prueft sie gegen die
+ * Normalisierungsstufe des Kerns.
  */
 export function normiereMitKappung(roh: number, min: number, max: number): number {
   if (min === max) throw new Error('CFG_NORM_BOUNDS: min und max sind identisch');

@@ -1,31 +1,16 @@
 'use client';
 
 /**
- * Merkmale, die fuer das GANZE Neubau-Projekt gelten und deshalb nicht je Referenzobjekt
- * erfasst werden (Rueckmeldung Auftraggeber): Baujahr, Auftraggeber und der
- * Aufwandindikator D. Eine Aenderung des Baujahrs hier schreibt denselben Wert in JEDES
- * vorhandene Referenzobjekt (`ProjektAnsicht.tsx`, `parametrisierung.baujahr`) — dort
- * steht das Feld weiterhin, weil `RepraesentativeParametrisierung` (packages/core) es je
- * Wohnungstyp an PriceHubble sendet; dieser Block ist nur die EINE Erfassungsstelle dafuer
- * statt eines gleichen Felds in jedem Referenzobjekt. Neue Referenzobjekte
- * (Anlegen-Dialog, `Referenzobjekte.tsx`) uebernehmen `baujahr` ebenso, statt bei 0 zu
- * beginnen.
+ * Merkmale fuer das GANZE Neubau-Projekt statt je Referenzobjekt: Baujahr, Auftraggeber,
+ * Aufwandindikator D. Eine Aenderung des Baujahrs schreibt denselben Wert in JEDES
+ * vorhandene Referenzobjekt (`parametrisierung.baujahr`), da `RepraesentativeParametrisierung`
+ * (packages/core) es je Wohnungstyp an PriceHubble sendet; dies ist nur die eine
+ * Erfassungsstelle dafuer. Neue Referenzobjekte uebernehmen `baujahr` ebenso.
  *
- * `auftraggeber` (Spec 2026-08-27 §1) sitzt hier mit, weil er wie das Baujahr ein
- * Merkmal des GANZEN Projekts ist, nicht eines Referenzobjekts oder einer Einheit —
- * Erfassungsstelle des Empfaengers, den der Platzhalter `{auftraggeber}` (Task 2)
- * im Offerttext auffuellt.
- *
- * Aufwandindikator D (Rueckmeldung Auftraggeber 2026-08-28): Das Feld zeigt den aus den
- * PriceHubble-Lagescores und den abgeleiteten Projektgroessen hergeleiteten Wert als
- * Vorschlag und laesst den Vermarkter ihn uebersteuern. Die Rangfolge ist dieselbe wie
- * bei den Zu-/Abschlagsspalten (`wirksamer-wert.ts`): Die ANWESENHEIT der Uebersteuerung
- * entscheidet — ein geleertes Feld kehrt zur Ableitung zurueck, statt eine Zahl zu
- * erfinden.
- *
- * Der Projektstand lebt genau einmal (`verwendeProjekt`) — jeder Block aendert nur
- * seinen Ausschnitt und ruft dafuer `aendere` mit dem VOLLEN Projekt auf, damit die
- * Persistenz an einer einzigen Stelle (PUT) bleibt.
+ * D-Feld zeigt den aus PriceHubble-Lagescores/Projektgroessen hergeleiteten Wert als
+ * Vorschlag, Vermarkter kann uebersteuern — ANWESENHEIT der Uebersteuerung entscheidet
+ * (wie bei Zu-/Abschlagsspalten, `wirksamer-wert.ts`), ein geleertes Feld kehrt zur
+ * Ableitung zurueck statt eine Zahl zu erfinden.
  */
 import { useEffect, useState } from 'react';
 import { formatiereScore } from '@offert/offer/src/format/de-ch.js';
@@ -54,11 +39,8 @@ export type AufwandindikatorEntscheid =
   | { readonly art: 'verwerfen' };
 
 /**
- * Reine Commit-Entscheidung beim Verlassen des D-Felds (Muster `zellen-logik.ts`):
  * Ein geleertes Feld LOESCHT die Uebersteuerung (Rueckkehr zur Ableitung) — anders als
  * bei den Zahlfeldern ist Leeren hier eine gueltige Absicht, kein Tippzwischenstand.
- * Ein nicht parsierbarer oder ausserhalb [0,1] liegender Entwurf verwirft; das Schema
- * (`projekt-schema.ts`) wiese ihn ohnehin zurueck, dann aber erst beim Speichern.
  */
 export function entscheideAufwandindikator(entwurf: string): AufwandindikatorEntscheid {
   if (entwurf.trim() === '') return { art: 'loeschen' };
@@ -75,8 +57,8 @@ export function ProjektBasisinformationen(
   }: ProjektBasisinformationenProps,
 ) {
   const [entwurf, setzeEntwurf] = useState(baujahr === undefined ? '' : String(baujahr));
-  // Wie `ZellenEingabe`: von aussen kommende Aenderungen (Neuladen des Projekts) muessen
-  // nachgezogen werden, sonst zeigte das Feld nach einem Blur einen veralteten Entwurf.
+  // Wie `ZellenEingabe`: von aussen kommende Aenderungen muessen nachgezogen werden,
+  // sonst zeigt das Feld nach einem Blur einen veralteten Entwurf.
   useEffect(() => { setzeEntwurf(baujahr === undefined ? '' : String(baujahr)); }, [baujahr]);
 
   const [auftraggeberEntwurf, setzeAuftraggeberEntwurf] = useState(auftraggeber ?? '');
@@ -102,9 +84,8 @@ export function ProjektBasisinformationen(
             onChange={(e) => setzeEntwurf(e.target.value)}
             onBlur={() => {
               const entscheid = entscheideZellenwert(entwurf);
-              // Ein geleertes oder nicht parsierbares Feld verwirft statt eine 0 zu
-              // erfinden (gleiches Muster wie `ZellenEingabe`) — 0 waere hier zudem kein
-              // plausibles Baujahr.
+              // Geleertes/nicht parsierbares Feld verwirft statt eine 0 zu erfinden — 0
+              // waere hier zudem kein plausibles Baujahr.
               if (entscheid.art === 'verwerfen') {
                 setzeEntwurf(baujahr === undefined ? '' : String(baujahr));
                 return;

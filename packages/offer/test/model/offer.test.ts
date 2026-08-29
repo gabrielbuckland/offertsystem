@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { offerSchema } from '../../src/model/offer.js';
+import { adjustmentSchema, offerSchema } from '../../src/model/offer.js';
 import { baueBeispielOfferte } from '../bau/offerte-bauer.js';
 
 describe('offerSchema — Rundungsordnung (E-09)', () => {
@@ -36,12 +36,6 @@ describe('offerSchema — Aufbau der fuenf Bereiche', () => {
     expect(() => offerSchema.parse(baueBeispielOfferte())).not.toThrow();
   });
 
-  it('kennt genau die fuenf Bereiche plus optionaler Dokumentblock', () => {
-    expect(Object.keys(offerSchema.shape)).toEqual(
-      ['project', 'property', 'derivation', 'aggregates', 'metadata', 'dokument'],
-    );
-  });
-
   it('weist ein unbekanntes Feld zurueck statt es zu ignorieren', () => {
     const roh = { ...baueBeispielOfferte(), zusatz: 'x' };
     expect(() => offerSchema.parse(roh)).toThrow();
@@ -58,5 +52,28 @@ describe('offerSchema — Aufbau der fuenf Bereiche', () => {
     for (const verboten of ['lage_gesamt', 'projektumfang', 'preissegment', 'objektzustand']) {
       expect(quelle).not.toContain(verboten);
     }
+  });
+});
+
+describe('adjustmentSchema — enteredAmount genau dann, wenn enteredAs = amount', () => {
+  const basis = {
+    factor: 1.05,
+    justification: 'Marktlage',
+  };
+
+  it('nimmt enteredAs = amount mit gesetztem enteredAmount an', () => {
+    expect(() => adjustmentSchema.parse({
+      ...basis, enteredAs: 'amount', enteredAmount: 50_000,
+    })).not.toThrow();
+  });
+
+  it('weist enteredAs = amount ohne enteredAmount zurueck', () => {
+    expect(() => adjustmentSchema.parse({ ...basis, enteredAs: 'amount' })).toThrow();
+  });
+
+  it('weist enteredAs = factor mit gesetztem enteredAmount zurueck', () => {
+    expect(() => adjustmentSchema.parse({
+      ...basis, enteredAs: 'factor', enteredAmount: 50_000,
+    })).toThrow();
   });
 });

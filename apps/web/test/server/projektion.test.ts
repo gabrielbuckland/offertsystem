@@ -79,32 +79,29 @@ describe('projiziere', () => {
     expect(e.wert.einheiten[0]!.anpassungen).toEqual([]);
   });
 
-  it('leitet eine Position aus der Regel ab, ohne dass ein Spaltenwert erfasst ist', () => {
-    const p = projektMitRegel({ stockwerk: 2 }, {});
-    const ergebnis = projiziere(p, { 'E-1': 100_000_00 });
-    expect(ergebnis.ok).toBe(true);
-    if (!ergebnis.ok) return;
-    const anpassungen = ergebnis.wert.einheiten[0]!.anpassungen;
-    expect(anpassungen).toHaveLength(1);
-    expect(anpassungen[0]!.regel).toEqual({
-      merkmal: 'stockwerk', merkmalswert: 2, bereich: 2, regelwert: 2000000,
+  it('delegiert die Regel-/Uebersteuerungsauswertung an ermittleWirksamenWert (Smoke-Test)', () => {
+    // Die Feinlogik (Regel vs. Uebersteuerung, fehlender Merkmalswert, 0-Werte als
+    // gueltiges Ergebnis) ist bereits vollstaendig in wirksamer-wert.test.ts abgedeckt,
+    // da projiziere() nur an ermittleWirksamenWert delegiert. Hier genuegt der Nachweis,
+    // dass die Uebersteuerung samt Regelspur unveraendert durchgereicht wird und dass ein
+    // wirksamer Wert von 0 — egal ob aus Regel oder Zelle — projektionsseitig zu keiner
+    // Position fuehrt.
+    const uebersteuert = projiziere(projektMitRegel({ stockwerk: 1 }, { 'S-1': 500000 }), { 'E-1': 100_000_00 });
+    expect(uebersteuert.ok).toBe(true);
+    if (!uebersteuert.ok) return;
+    const anpassung = uebersteuert.wert.einheiten[0]!.anpassungen[0]!;
+    expect(anpassung.uebersteuert).toBe(true);
+    expect(anpassung.regel).toEqual({
+      merkmal: 'stockwerk', merkmalswert: 1, bereich: 1, regelwert: 1000000,
     });
-  });
 
-  it('erzeugt keine Position, wenn der wirksame Wert 0 ist — gleich ob aus Regel oder Zelle', () => {
-    // Der Merkmalswert (3) ist bewusst NICHT 0 — sonst waere dieser Test von einer
-    // Regression ununterscheidbar, die einen falsy Merkmalswert faelschlich als
-    // "fehlend" behandelt (`if (!merkmalswert) ...` statt `=== undefined`). Erst ein
-    // Bereich, dessen TREFFERWERT 0 ist, bei einem Merkmalswert ungleich 0, pinnt "0 ist
-    // ein gueltiges Ergebnis, keine Position" wirklich.
-    const ausRegel = projiziere(
+    const nullAusRegel = projiziere(
       projektMitBereichen({ stockwerk: 3 }, {}, [{ unter: 5, wert: 0 }, { wert: 999 }]),
       { 'E-1': 100_000_00 },
     );
-    expect(ausRegel.ok && ausRegel.wert.einheiten[0]!.anpassungen).toHaveLength(0);
-
-    const ausZelle = projiziere(projektMitRegel({ stockwerk: 2 }, { 'S-1': 0 }), { 'E-1': 100_000_00 });
-    expect(ausZelle.ok && ausZelle.wert.einheiten[0]!.anpassungen).toHaveLength(0);
+    const nullAusZelle = projiziere(projektMitRegel({ stockwerk: 2 }, { 'S-1': 0 }), { 'E-1': 100_000_00 });
+    expect(nullAusRegel.ok && nullAusRegel.wert.einheiten[0]!.anpassungen).toHaveLength(0);
+    expect(nullAusZelle.ok && nullAusZelle.wert.einheiten[0]!.anpassungen).toHaveLength(0);
   });
 
   it('wertet einen Merkmalswert von 0 korrekt aus, statt ihn als fehlend zu behandeln', () => {
@@ -125,33 +122,6 @@ describe('projiziere', () => {
   it('erzeugt keine Position, wenn der Merkmalswert fehlt', () => {
     const ergebnis = projiziere(projektMitRegel({}, {}), { 'E-1': 100_000_00 });
     expect(ergebnis.ok && ergebnis.wert.einheiten[0]!.anpassungen).toHaveLength(0);
-  });
-
-  it('lässt eine erfasste Uebersteuerung trotz fehlendem Merkmalswert nicht verloren gehen', () => {
-    // Bug aus dem Review: `merkmalswert === undefined` darf die bereits erfasste
-    // Uebersteuerung nicht verschlucken — bestehende Spaltenwerte muessen gueltig
-    // bleiben, auch wenn eine Regel neu mit dem Merkmal verknuepft wird und der
-    // Merkmalswert an dieser Einheit (noch) fehlt.
-    const p = projektMitRegel({}, { 'S-1': 500000 });
-    const ergebnis = projiziere(p, { 'E-1': 100_000_00 });
-    expect(ergebnis.ok).toBe(true);
-    if (!ergebnis.ok) return;
-    const anpassungen = ergebnis.wert.einheiten[0]!.anpassungen;
-    expect(anpassungen).toHaveLength(1);
-    expect(anpassungen[0]).not.toHaveProperty('regel');
-    expect(anpassungen[0]).not.toHaveProperty('uebersteuert');
-  });
-
-  it('gibt Uebersteuerung und Regelspur gemeinsam in die Anpassung durch', () => {
-    const p = projektMitRegel({ stockwerk: 1 }, { 'S-1': 500000 });
-    const ergebnis = projiziere(p, { 'E-1': 100_000_00 });
-    expect(ergebnis.ok).toBe(true);
-    if (!ergebnis.ok) return;
-    const anpassung = ergebnis.wert.einheiten[0]!.anpassungen[0]!;
-    expect(anpassung.uebersteuert).toBe(true);
-    expect(anpassung.regel).toEqual({
-      merkmal: 'stockwerk', merkmalswert: 1, bereich: 1, regelwert: 1000000,
-    });
   });
 
   it('reicht Regelspur und Uebersteuerung auch bei einer regelgetriebenen relativ-Spalte durch', () => {

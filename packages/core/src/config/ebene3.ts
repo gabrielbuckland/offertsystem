@@ -136,10 +136,9 @@ function pruefeAnpassungsVorlagen(konfiguration: RohKonfiguration): Konfiguratio
 }
 
 /**
- * Analog zur Doppelpruefung in `pruefeAnpassungsVorlagen`: Die Oberflaeche
- * (`MerkmalEditor.tsx`) verhindert eine Kollision bei der Neuanlage, kann aber eine bereits
- * gespeicherte Konfiguration nicht rueckwirkend heilen (z. B. nach direkter Bearbeitung der
- * JSON-Datei). Ohne diese Pruefung wuerden zwei Tabellenspalten denselben
+ * Die Oberflaeche verhindert eine Kollision bei der Neuanlage, kann aber eine bereits
+ * gespeicherte Konfiguration nicht rueckwirkend heilen (z. B. nach direkter Bearbeitung
+ * der JSON-Datei). Ohne diese Pruefung wuerden zwei Tabellenspalten denselben
  * `merkmalswerte`-Schluessel schreiben und React saehe doppelte Keys.
  */
 function pruefeMerkmale(konfiguration: RohKonfiguration): KonfigurationsFehler[] {
@@ -160,11 +159,9 @@ function pruefeMerkmale(konfiguration: RohKonfiguration): KonfigurationsFehler[]
 
 /**
  * Ebene 3 und nicht 2: Die Pruefung blickt ueber das einzelne Feld hinaus — auf die
- * Merkmalsliste, auf die z-Grenzen und auf die Erfassungsform derselben Vorlage.
- *
- * Die Wertschranke wird hier VORVERLEGT: Eine Staffel, die fuer irgendeinen Bereich
- * einen unzulaessigen Zuschlag vorsieht, ist schon beim Laden falsch und nicht erst,
- * wenn zufaellig eine Einheit in diesen Bereich faellt.
+ * Merkmalsliste, auf die z-Grenzen und auf die Erfassungsform derselben Vorlage. Die
+ * Wertschranke wird hier vorverlegt: Eine Staffel mit unzulaessigem Zuschlag ist schon
+ * beim Laden falsch, nicht erst wenn zufaellig eine Einheit in diesen Bereich faellt.
  */
 function pruefeBereichsregeln(konfiguration: RohKonfiguration): KonfigurationsFehler[] {
   const befunde: KonfigurationsFehler[] = [];

@@ -11,10 +11,9 @@ export const dynamic = 'force-dynamic';
 /**
  * Reihenfolge der Pipeline-Stufen (US-09/A-10) fuer die Uebersicht: Stufe 3
  * (Normalisierung) und Stufe 4 (Gewichtung) teilen sich einen Bereich (`faktoren`) — ein
- * Faktor traegt Min/Max UND Gewicht in einem Editor, siehe `FaktorenEditor`. Zwei
- * eingebettete Editoren fuer denselben Bereich haetten zwei unabhaengige Entwuerfe zur
- * Folge (`EinstellungsEditor`-Dateikommentar); deshalb genau EIN Editor pro Bereich,
- * mit dem Stufenlabel, das er inhaltlich abdeckt.
+ * Faktor traegt Min/Max UND Gewicht in einem Editor. Zwei eingebettete Editoren fuer
+ * denselben Bereich haetten zwei unabhaengige Entwuerfe zur Folge, deshalb genau EIN
+ * Editor pro Bereich.
  */
 const PIPELINE_REIHENFOLGE: ReadonlyArray<{ readonly stufenLabel: string; readonly bereich: Bereich }> = [
   { stufenLabel: 'Stufe 1 · Eingabe', bereich: 'dossier' },
@@ -29,9 +28,7 @@ export default async function EinstellungenSeite() {
     return <main><h1>Firmeneinstellungen</h1><p>{laufzeit.meldungen.join(' ')}</p></main>;
   }
   const rohKonfiguration = laufzeit.wert.rohKonfiguration;
-  // Typerhalten dieselbe `OffertKonfiguration`, die der Lader validiert hat
-  // (laufzeit.ts baut sie ueber `as unknown as Record<string, unknown>` ab) — der
-  // Rueckweg spiegelt das (PE-01: die Pruefung, nicht diese Seite, buergt fuer die Form).
+  // Rueckweg zur `OffertKonfiguration`, die der Lader bereits validiert hat (PE-01).
   const api = (rohKonfiguration as unknown as OffertKonfiguration).api;
 
   return (
@@ -43,8 +40,7 @@ export default async function EinstellungenSeite() {
       />
       <div className="mb-2 flex items-baseline justify-between">
         <h1 className="text-2xl font-semibold">Firmeneinstellungen</h1>
-        {/* Offerttext-Vorlage (Spec 2026-08-27 §3) ist kein Pipeline-Bereich wie die
-            vier Karten unten (kein Zahlenwert, sondern Fliesstext mit Platzhaltern) —
+        {/* Offerttext-Vorlage ist kein Pipeline-Bereich (Fliesstext statt Zahlenwert) —
             deshalb eigene Seite statt eines fuenften inline eingebetteten Editors. */}
         <a href="/einstellungen/vorlage" className="text-sm text-primary underline">
           Offertvorlage bearbeiten
@@ -55,10 +51,8 @@ export default async function EinstellungenSeite() {
         sie nicht für sich übersteuert.
       </p>
 
-      {/* Untereinander statt nebeneinander (Rueckmeldung Auftraggeber): Jede Stufe der
-          Berechnungs-Pipeline ist hier direkt inline editierbar — kein Umweg mehr ueber
-          eine separate Editor-Seite. Die Reihenfolge folgt der Pipeline, ein Pfeil nach
-          unten haelt den Fluss sichtbar. */}
+      {/* Untereinander statt nebeneinander: Reihenfolge folgt der Pipeline, ein Pfeil
+          nach unten haelt den Fluss sichtbar. */}
       <div className="flex flex-col gap-4">
         {PIPELINE_REIHENFOLGE.map((eintrag, index) => {
           const bereich = BEREICHE[eintrag.bereich];
@@ -84,14 +78,8 @@ export default async function EinstellungenSeite() {
         })}
       </div>
 
-      {/* Rollentrennung (US-08, Spec §6): Die API-Anbindung ist Betriebsparameter, kein
-          Einstellungswert des Auftraggebers. Lesend statt editierbar, weil eine falsch
-          gesetzte Basis-URL oder ein zu knapper Timeout nicht durch die Editor-Validierung
-          abgefangen wird, sondern erst beim naechsten PriceHubble-Aufruf durchschlaegt —
-          das Risiko bleibt bei der IT, die die Konfigurationsdatei direkt pflegt.
-          `cursor-not-allowed` markiert die Werte bewusst als nicht editierbar — im
-          Unterschied zu den echten Eingabefeldern der Pipeline-Karten oben, die denselben
-          Zeilenaufbau (dt/dd) verwenden koennten, aber tatsaechliche Formularelemente sind. */}
+      {/* Rollentrennung (US-08, Spec §6): API-Anbindung ist Betriebsparameter der IT,
+          kein Einstellungswert des Auftraggebers — lesend statt editierbar. */}
       <Card className="mt-8">
         <CardHeader>
           <CardTitle>Technische Parameter (API)</CardTitle>

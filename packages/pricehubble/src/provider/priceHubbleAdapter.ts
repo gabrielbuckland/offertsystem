@@ -8,12 +8,11 @@
  *   3. je Wohnungstyp streng sequenziell: E3 PATCH -> E4 POST -> isValuationStale pruefen
  *
  * Schritt 3 ist zwingend sequenziell: Das Dossier haelt zu jedem Zeitpunkt GENAU EINE
- * Parametrisierung und ist kein Container fuer mehrere Wohneinheiten. Nach dem PATCH
- * fuer Typ t+1 ist die Bewertung des Typs t serverseitig nicht mehr abrufbar.
+ * Parametrisierung. Nach dem PATCH fuer Typ t+1 ist die Bewertung des Typs t serverseitig
+ * nicht mehr abrufbar.
  *
- * Einschraenkung R-01: Der Prototyp arbeitet gegen ein fixes Test-Dossier; dessen
- * Adresse ist unveraenderlich. Die erfasste Projektadresse wirkt daher ausschliesslich
- * auf E5, nicht auf die Bewertung.
+ * R-01: Der Prototyp arbeitet gegen ein fixes Test-Dossier mit unveraenderlicher Adresse.
+ * Die erfasste Projektadresse wirkt daher nur auf E5, nicht auf die Bewertung.
  */
 import type {
   Adresse,

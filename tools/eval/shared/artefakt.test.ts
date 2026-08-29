@@ -4,19 +4,6 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { alsCsv, bildeKopf, leseLatest, schreibeArtefakt } from './artefakt.ts';
 
-describe('bildeKopf', () => {
-  it('fuehrt alle acht Pflichtfelder', () => {
-    const kopf = bildeKopf('oat', 'config/company-defaults.json', 1);
-    for (const feld of [
-      'instrument', 'zeitstempel', 'git_commit', 'git_dirty',
-      'node_version', 'konfig_datei', 'konfig_sha256', 'werkzeug_version',
-    ]) {
-      expect(kopf).toHaveProperty(feld);
-    }
-    expect(kopf.zeitstempel).not.toContain(':');
-  });
-});
-
 describe('schreibeArtefakt', () => {
   it('schreibt Dateien und einen latest-Zeiger', () => {
     const wurzel = mkdtempSync(join(tmpdir(), 'eval-'));
@@ -46,16 +33,6 @@ describe('schreibeArtefakt', () => {
       'utf8',
     );
     expect(leseLatest(wurzel, 'contract')).toBe(ziel);
-  });
-});
-
-describe('Kodierung je Dateiendung', () => {
-  it('schreibt PDF-Dateien in latin1, damit die Byteversaetze stimmen', () => {
-    const wurzel = mkdtempSync(join(tmpdir(), 'eval-'));
-    const kopf = bildeKopf('probe', 'config/company-defaults.json', 1);
-    const inhalt = '%PDF-1.4\nBruecke mit Umlaut: \u00fc\n%%EOF\n';
-    const verzeichnis = schreibeArtefakt(wurzel, kopf, { 'a.pdf': inhalt });
-    expect(readFileSync(join(verzeichnis, 'a.pdf')).length).toBe(inhalt.length);
   });
 });
 

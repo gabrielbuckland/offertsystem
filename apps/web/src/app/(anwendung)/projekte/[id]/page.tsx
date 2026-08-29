@@ -23,8 +23,7 @@ export default async function ProjektSeite({ params }: Props) {
   const projekt = await ladeProjekt(id, laufzeit.wert.projekteVerzeichnis).catch(() => null);
   if (projekt === null) notFound();
   const { konfiguration, rohKonfiguration } = laufzeit.wert;
-  // Filterung auf dieses Projekt liegt beim Aufrufer (Task 11, Schnittstellenvorgabe) —
-  // `listeOfferten` liefert ungefiltert alle Projekte.
+  // `listeOfferten` liefert ungefiltert alle Projekte; Filterung liegt beim Aufrufer.
   const alleOfferten = await listeOfferten(laufzeit.wert.offertenVerzeichnis);
   const offerten = alleOfferten.filter((eintrag) => eintrag.projektId === id);
   return (
@@ -49,9 +48,9 @@ export default async function ProjektSeite({ params }: Props) {
       <ProjektAnsicht
         projekt={projekt}
         faktorformular={baueFaktorformular(konfiguration)}
-        // Basis der Pipeline-Stufen im Rechenweg-Block (Task 9/7); dieselbe Rohkonfiguration,
-        // aus der `rohKonfiguration` in laufzeit.ts bereits fuer den Konfigurationsabdruck
-        // (PE-04) durch `unknown` geschleust wird — hier symmetrisch zurueckgeschaerft.
+        // Basis der Pipeline-Stufen im Rechenweg-Block; dieselbe Rohkonfiguration, die
+        // `rohKonfiguration` in laufzeit.ts bereits fuer den Konfigurationsabdruck (PE-04)
+        // durch `unknown` schleust — hier symmetrisch zurueckgeschaerft.
         konfigurationBasis={rohKonfiguration as unknown as OffertKonfiguration}
       />
       <section className="mt-6">

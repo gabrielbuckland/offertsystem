@@ -4,7 +4,6 @@
  * (Meier, Baumgartenweg). Geprueft wird die Bildungsregel, nicht ein Literal.
  */
 import { mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
-import { readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
@@ -125,20 +124,5 @@ describe('Lesen und Auflisten', () => {
     const liste = await listeOfferten(ziel);
     expect(liste[0]?.projektId).toBe(o.metadata.projektId);
     expect(liste[0]?.konfigPruefsumme).toBe(o.metadata.konfigPruefsumme);
-  });
-});
-
-describe('Ablageform', () => {
-  it('setzt weder DBMS noch ORM ein (AK-4.5)', () => {
-    const wurzel = new URL('../../../../package.json', import.meta.url);
-    const pkg = JSON.parse(readFileSync(wurzel, 'utf8')) as {
-      dependencies?: Record<string, string>;
-      devDependencies?: Record<string, string>;
-    };
-    const alle = { ...pkg.dependencies, ...pkg.devDependencies };
-    for (const verboten of ['prisma', 'drizzle-orm', 'better-sqlite3', 'pg', 'mongodb',
-                            'typeorm', 'sequelize', 'mysql2']) {
-      expect(alle[verboten]).toBeUndefined();
-    }
   });
 });

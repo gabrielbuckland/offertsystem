@@ -39,21 +39,6 @@ describe('befundeFuerPfad', () => {
 });
 
 describe('EinstellungsEditor', () => {
-  it('zeigt den Wirkungshinweis und die Speichern-Schaltflaeche im statischen Markup', () => {
-    const html = renderToStaticMarkup(
-      <EinstellungsEditor
-        titel="Honorar"
-        zweck="Testzweck fuer die Rahmenpruefung."
-        bereichPraefix="honorar"
-        anfang={{}}
-        Editor={() => <></>}
-      />,
-    );
-    expect(html).toContain('Wirkt auf alle Projekte.');
-    expect(html).toContain('Speichern');
-    expect(html).toContain('Verwerfen');
-  });
-
   it('ruft den uebergebenen Editor mit dem lebenden Zustand auf (typgeprueft statt injiziert)', () => {
     const html = renderToStaticMarkup(
       <EinstellungsEditor

@@ -1,15 +1,9 @@
 /**
- * Keine Formel. Dateibasierte Ablage der Projekte (Arbeitsstaende).
- *
- * Bewusster Unterschied zur Offertenablage: Projekte sind VERAENDERLICH, Offerten bleiben
- * append-only. Die Offerte ist das Nachweisartefakt, das belegt, was zum Zeitpunkt der
- * Erzeugung galt; ein Projekt ist der Arbeitsstand davor. Waeren beide veraenderlich,
- * verlaere die Reproduzierbarkeitsaussage aus US-13 ihren Traeger.
- *
- * Der Dateiname ist die Kennung, nicht die Adresse: Ein Projekt wird umbenannt, wenn sich
- * die Adresse korrigiert, und ein wandernder Dateiname verlaere die Zuordnung.
- *
- * Kein DBMS und kein ORM (AK-4.5).
+ * Dateibasierte Ablage der Projekte (Arbeitsstaende). Bewusster Unterschied zur
+ * Offertenablage: Projekte sind VERAENDERLICH, Offerten bleiben append-only — die Offerte
+ * belegt, was zum Zeitpunkt der Erzeugung galt (US-13). Der Dateiname ist die Kennung,
+ * nicht die Adresse, da diese sich nachtraeglich korrigieren laesst. Kein DBMS, kein ORM
+ * (AK-4.5).
  */
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs/promises';
@@ -31,11 +25,9 @@ export interface ProjektEintrag {
 
 type Adresse = Projekt['adresse'];
 
-// Monoton statt eines blossen `new Date().toISOString()`: Zwei Aufrufe kurz
-// hintereinander (etwa `legeProjektAn` gefolgt von einem sofortigen `speichereProjekt`)
-// koennen auf dieselbe Millisekunde fallen. `geaendertAm` traegt aber die Sortierung
-// der Projektuebersicht (Produkteigenschaft) — ein Gleichstand darf die Reihenfolge
-// nicht dem Dateisystem ueberlassen.
+// Monoton statt eines blossen `new Date().toISOString()`: Zwei schnell aufeinander
+// folgende Aufrufe koennen auf dieselbe Millisekunde fallen, `geaendertAm` traegt aber
+// die Sortierung der Projektuebersicht.
 let letzterZeitpunkt = 0;
 
 function jetzt(): string {
@@ -58,10 +50,8 @@ export async function speichereProjekt(projekt: Projekt, verzeichnis: string): P
 
 /**
  * Die Konfiguration ist ein Pflichtargument, kein optionales: Der Spaltenschnitt eines
- * neuen Projekts ist aus den firmenweiten Vorlagen VORBELEGT (US-04 AK 5, E-25). Waere das
- * Argument optional, blieben Aufrufer ohne Konfiguration typkorrekt und legten weiterhin
- * spaltenlose Projekte an — genau der Zustand, in dem `vorbelegteSpalten` zwar existierte,
- * aber von niemandem ausser seinem eigenen Test aufgerufen wurde.
+ * neuen Projekts ist aus den firmenweiten Vorlagen VORBELEGT (US-04 AK 5, E-25). Ein
+ * optionales Argument liesse Aufrufer typkorrekt spaltenlose Projekte anlegen.
  */
 export async function legeProjektAn(
   adresse: Adresse, verzeichnis: string, konfiguration: Konfiguration,
@@ -99,10 +89,9 @@ export async function listeProjekte(verzeichnis: string): Promise<readonly Proje
   const liste: ProjektEintrag[] = [];
   for (const datei of dateien) {
     const inhalt = await fs.readFile(join(verzeichnis, datei), 'utf8');
-    // `JSON.parse` gehoert in denselben Fehlerpfad wie `safeParse`: Ein Datei-Fragment
-    // mit kaputter JSON-Syntax ist ebenso ein schemawidriges Artefakt wie eines mit
-    // gueltiger Syntax und fehlenden Feldern — I-24 kennzeichnet es, statt die ganze
-    // Liste abbrechen zu lassen.
+    // `JSON.parse` gehoert in denselben Fehlerpfad wie `safeParse`: kaputte JSON-Syntax
+    // ist ebenso ein schemawidriges Artefakt wie gueltige Syntax mit fehlenden Feldern
+    // (I-24), markiert statt die ganze Liste abbrechen zu lassen.
     let roh: unknown;
     try {
       roh = JSON.parse(inhalt);

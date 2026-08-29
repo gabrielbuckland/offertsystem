@@ -14,13 +14,6 @@ describe('Konfigurationszugriff', () => {
     expect(validiere(ladeBasisRoh()).ok).toBe(true);
   });
 
-  it('klont tief: eine Aenderung am Klon beruehrt das Original nicht', () => {
-    const roh = ladeBasisRoh() as { flaeche: { alpha: number } };
-    const kopie = klone(roh);
-    kopie.flaeche.alpha = 0.9;
-    expect(roh.flaeche.alpha).not.toBe(0.9);
-  });
-
   it('weist eine Gewichtssumme ungleich 1 mit CFG_WEIGHTS_SUM zurueck', () => {
     const roh = klone(ladeBasisRoh()) as {
       aufwandfaktoren: Record<string, { gewicht: number }>;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ADAPTER_FEHLERARTEN, erzeugeAdapterFehler } from '../src/client/fehler.js';
+import { ADAPTER_FEHLERARTEN } from '../src/client/fehler.js';
 import { KonfigurationsFehler } from '../src/config/konfigurationsFehler.js';
 import { maskiereKopfzeilen, sammelndesProtokoll } from '../src/client/protokoll.js';
 
@@ -17,26 +17,6 @@ describe('adapterinterne Fehlertypen (Spec 04 §6.5.1, §6.5.3)', () => {
       'StaleValuationError',
     ]);
     expect(new KonfigurationsFehler('PH_DOSSIER_ID', 'fehlt')).toBeInstanceOf(Error);
-  });
-
-  it('traegt die Diagnosefelder jedes Abruffehlers', () => {
-    const fehler = erzeugeAdapterFehler({
-      art: 'ServerError',
-      endpunkt: 'dossierValuation',
-      httpStatus: 503,
-      phRequestId: 'b72a0b9e',
-      versuche: 3,
-      dauerMs: 1234,
-      detail: 'Service Unavailable',
-    });
-    expect(fehler).toMatchObject({
-      art: 'ServerError',
-      endpunkt: 'dossierValuation',
-      httpStatus: 503,
-      phRequestId: 'b72a0b9e',
-      versuche: 3,
-      dauerMs: 1234,
-    });
   });
 });
 

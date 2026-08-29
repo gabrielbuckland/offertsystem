@@ -1,14 +1,10 @@
 /**
  * Keine Formel. Platzhalter-Auflösung beim Finalisieren (Spec 2026-08-27 §2).
  *
- * Reine Funktion Dokument+Werte -> Dokument: Sie läuft genau EINMAL, beim Finalisieren —
- * das abgelegte Artefakt enthält das Ergebnis, nie die Vorlage (US-13: das Archiv darf
- * nicht vom Renderer-Stand abhängen). Deshalb wird hier geworfen statt markiert: Eine
- * Offerte mit einem unaufgelösten Platzhalter wäre ein halbes Artefakt (I-24).
- *
- * Das Ergebnis wird abschliessend gegen `aufgeloestesDokumentSchema` geprüft — die
- * Behauptung «keine Platzhalter mehr enthalten» steht damit im Schema, nicht nur im
- * Ablauf dieser Funktion.
+ * Reine Funktion Dokument+Werte -> Dokument, läuft genau EINMAL beim Finalisieren — das
+ * abgelegte Artefakt enthält das Ergebnis, nie die Vorlage (US-13). Deshalb wird hier
+ * geworfen statt markiert: Ein unaufgelöster Platzhalter wäre ein halbes Artefakt (I-24).
+ * Das Ergebnis wird abschliessend gegen `aufgeloestesDokumentSchema` geprüft.
  */
 import {
   aufgeloestesDokumentSchema,

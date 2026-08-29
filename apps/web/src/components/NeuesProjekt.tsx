@@ -38,9 +38,6 @@ export function NeuesProjekt() {
   async function anlegen() {
     setLaedt(true);
     setMeldung(undefined);
-    // `rufeApi` ersetzt den rohen `fetch` + `.json()`-Cast: Netzfehler (die vorher
-    // unbehandelt blieben, siehe rufe-api.ts) fuehren jetzt zu `ok: false` statt zu
-    // einer stillen, unbehandelten Ablehnung.
     const { ok, rumpf } = await rufeApi<AnlegenAntwort>('/api/projekt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -54,14 +51,8 @@ export function NeuesProjekt() {
     router.push(`/projekte/${rumpf.id}` as Route);
   }
 
-  /**
-   * Der Dialog lebt als DOM-Knoten weiter, wenn er geschlossen wird — ohne dieses
-   * Zuruecksetzen zeigte das erneute Oeffnen die zuletzt erfasste Adresse und eine
-   * laengst erledigte Fehlermeldung. «Neues Projekt» beginnt bei leeren Feldern.
-   *
-   * Am `close`-Ereignis des Dialogs statt am «Abbrechen»-Knopf, weil das Dialogelement
-   * sich auch ohne diesen Knopf schliessen laesst (Escape-Taste).
-   */
+  // Am `close`-Ereignis statt am «Abbrechen»-Knopf, da sich der Dialog auch per
+  // Escape-Taste schliessen laesst; der Dialog-Knoten lebt sonst mit alten Werten weiter.
   function setzeZurueck() {
     setAdresse(LEER);
     setMeldung(undefined);

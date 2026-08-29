@@ -1,16 +1,10 @@
 'use client';
 
-/**
- * Editor fuer «Preisanpassung & Vorlagen» (Task 15) — deckt DREI unabhaengige
- * Konfigurationswurzeln ab (`flaeche`, `preisanpassung`, `anpassungsVorlagen`), siehe
- * `BEREICHE.preisanpassung.praefix` in `[bereich]/page.tsx`. Der Editor kennt nur die
- * FORM dieser Teilbaeume (lokale, schmale Typisierungen), keine Konfigurationsbezeichner
- * — der Server prueft beim Speichern die eigentliche Wahrheit.
- *
- * `begruendungPflicht` erscheint als gesperrte Zeile ohne Eingabeelement: Die
- * Begruendungspflicht ist eine fachliche Vorgabe (Spec §6), kein einstellbarer Wert —
- * ein Eingabefeld dafuer wuerde eine Wahlmoeglichkeit vortaeuschen, die es nicht gibt.
- */
+// Editor fuer «Preisanpassung & Vorlagen» — deckt drei unabhaengige Konfigurationswurzeln
+// ab (`flaeche`, `preisanpassung`, `anpassungsVorlagen`). Kennt nur die Form dieser
+// Teilbaeume, keine Konfigurationsbezeichner — der Server prueft beim Speichern die
+// eigentliche Wahrheit. `begruendungPflicht` erscheint als gesperrte Zeile ohne
+// Eingabeelement: fachliche Vorgabe (Spec §6), kein einstellbarer Wert.
 import { Trash2 } from 'lucide-react';
 import { Fragment, type ReactElement } from 'react';
 import type { Bereichsregel, Merkmal } from '@offert/core';
@@ -45,15 +39,13 @@ interface VorlageRoh {
   readonly vorgabefaktor: number;
   readonly erfassungsform: 'relativ' | 'absolut';
   readonly begruendungVorschlag: string;
-  /** Traegt die Vorlage eine Regel, ist `vorgabefaktor` zwingend 0 (Ebene 3) — die
-   *  Eingabe dafuer wird deshalb ausgeblendet statt nur deaktiviert. */
+  // Traegt die Vorlage eine Regel, ist `vorgabefaktor` zwingend 0 (Ebene 3).
   readonly regel?: Bereichsregel;
 }
 
 const SPALTENANZAHL = 6;
 
-/** Kleinbuchstaben, Nicht-Alphanumerisches zu `_` — wie bei bestehenden Vorlagen-IDs
- *  in der Konfiguration (z. B. `erdgeschoss_gartensitzplatz`). */
+// Kleinbuchstaben, Nicht-Alphanumerisches zu `_` — wie bestehende Vorlagen-IDs.
 function ableiteVorlagenId(bezeichnung: string): string {
   return bezeichnung.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 }
@@ -109,13 +101,8 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
     schreibe({ anpassungsVorlagen: vorlagen.map((v, i) => (i === index ? { ...v, regel } : v)) });
   }
 
-  /**
-   * Schaltet die Regel je Vorlage EIN/AUS statt sie ueber `aendereVorlage` (blosses
-   * Merge-Patch) zu setzen: Ein Merge kann das Feld `regel` setzen, aber nicht wieder
-   * entfernen — und bei aktiver Regel muss `vorgabefaktor` zwingend 0 sein (Ebene 3),
-   * sonst weist die Konfiguration die Vorlage als «Regel und Vorgabewert nebeneinander»
-   * zurueck.
-   */
+  // Schaltet die Regel EIN/AUS statt sie per Merge-Patch (`aendereVorlage`) zu setzen: ein
+  // Merge kann `regel` setzen, aber nicht wieder entfernen.
   function schalteRegel(index: number, aktiv: boolean): void {
     schreibe({
       anpassungsVorlagen: vorlagen.map((v, i) => {
@@ -172,8 +159,6 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
             />
           </div>
         </div>
-        {/* Keine Checkbox, kein Schalter: der Wert ist fachlich fix (Spec §6), kein
-            einstellbarer Zustand. */}
         <p className="text-sm text-muted-foreground">
           Die Begründungspflicht ist aktiv und fachlich nicht abschaltbar.
         </p>
@@ -202,13 +187,12 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
               const zeilenBefunde = befundeFuerPfad(einstellungen.befunde, `anpassungsVorlagen[${index}]`);
               const regelAktiv = vorlage.regel !== undefined;
               return (
-                // Index statt `id` als Key: zwei frisch hinzugefuegte, noch unbenannte
-                // Vorlagen tragen kurzzeitig dieselbe abgeleitete ID.
+                // Index statt `id` als Key: zwei frisch hinzugefuegte Vorlagen tragen
+                // kurzzeitig dieselbe abgeleitete ID.
                 <Fragment key={index}>
                   <TableRow>
                     <TableCell>
-                      {/* Nur lesend: `id` ist Referenzziel von `vorlageId` in bestehenden
-                          Offerten und darf nicht ueber diesen Editor veraendert werden. */}
+                      {/* Nur lesend: `id` ist Referenzziel von `vorlageId` in bestehenden Offerten. */}
                       <Input value={vorlage.id} readOnly disabled className="h-8 w-full" />
                     </TableCell>
                     <TableCell>
@@ -240,9 +224,8 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
                           />
                           Regel verwenden
                         </label>
-                        {/* Bei aktiver Regel bestimmt die Staffel den Wert — die Eingabe
-                            wird ausgeblendet statt nur gesperrt, sonst weist Ebene 3 die
-                            Konfiguration ab («Regel und Vorgabewert nebeneinander»). */}
+                        {/* Ausgeblendet statt gesperrt: Regel und Vorgabewert nebeneinander
+                            weist Ebene 3 zurueck. */}
                         {!regelAktiv && (
                           <ZellenEingabe
                             wert={faktorZuProzent(vorlage.vorgabefaktor)}
