@@ -42,11 +42,15 @@ export type LaufzeitErgebnis =
 
 export function holeLaufzeit(
   quelle: Readonly<Record<string, string | undefined>> = process.env,
+  ueberschreibungen: Readonly<Record<string, unknown>> = {},
 ): LaufzeitErgebnis {
   const umgebung = leseUmgebung(quelle);
   if (!umgebung.ok) return { ok: false, meldungen: umgebung.meldungen };
 
-  const geladen = ladeKonfiguration({ pfad: umgebung.wert.companyDefaultsPfad });
+  const geladen = ladeKonfiguration({
+    pfad: umgebung.wert.companyDefaultsPfad,
+    ueberschreibungen,
+  });
   if (!geladen.ok) {
     // Der Fehlertyp ist textlos (E-03); die Anzeigefassung entsteht in Aufgabe 12.
     // Hier reicht die maschinenlesbare Form aus Code, Pfad und Parametern — sie
@@ -96,4 +100,22 @@ export function verzeichnisAusLaufzeit(): string {
   const laufzeit = holeLaufzeit();
   if (!laufzeit.ok) throw new Error(laufzeit.meldungen.join(' '));
   return laufzeit.wert.offertenVerzeichnis;
+}
+
+/**
+ * Projektbewusste Laufzeit: dieselbe Form wie `holeLaufzeit`, aber mit dem
+ * Einstellungs-Delta des Projekts zusammengefuehrt (Ebene 2 des Zwei-Ebenen-Modells).
+ *
+ * BEWUSST EIN ZWEITER EINSTIEG STATT EINES OPTIONALEN PARAMETERS AN `holeLaufzeit`:
+ * Ein Parameter haette jede der zwoelf bestehenden Aufrufstellen zur
+ * Entscheidungsstelle gemacht, ob sie projektbezogen rechnen muss — und ein
+ * vergessener Parameter haette still mit Firmenwerten gerechnet, ohne dass es jemand
+ * saehe. Getrennte Namen machen die Wahl an der Aufrufstelle sichtbar. PE-24 bleibt
+ * gewahrt, weil diese Funktion `holeLaufzeit` aufruft und nur den Merge ergaenzt.
+ */
+export function holeProjektLaufzeit(
+  projekt: { readonly einstellungen?: Readonly<Record<string, unknown>> | undefined },
+  quelle: Readonly<Record<string, string | undefined>> = process.env,
+): LaufzeitErgebnis {
+  return holeLaufzeit(quelle, projekt.einstellungen ?? {});
 }
