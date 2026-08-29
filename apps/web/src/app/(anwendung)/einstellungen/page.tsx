@@ -58,7 +58,18 @@ export default async function EinstellungenSeite() {
       {/* Untereinander statt nebeneinander (Rueckmeldung Auftraggeber): Jede Stufe der
           Berechnungs-Pipeline ist hier direkt inline editierbar — kein Umweg mehr ueber
           eine separate Editor-Seite. Die Reihenfolge folgt der Pipeline, ein Pfeil nach
-          unten haelt den Fluss sichtbar. */}
+          unten haelt den Fluss sichtbar.
+
+          BEKANNTE GRENZE (offener Punkt, Gesamtreview 2026-08-29, Befund W-6): Jede der
+          vier Karten baut ueber `EinstellungsEditor` ihren EIGENEN Entwurf aus demselben
+          `anfang` und POSTet beim Speichern die GESAMTE Konfiguration daraus. Nach dem
+          Speichern gibt es kein `router.refresh()`, die anderen drei Karten behalten also
+          ihren urspruenglichen `anfang`. Wer nacheinander zwei Karten speichert,
+          ueberschreibt damit die zuerst gespeicherte Aenderung still. Der Defekt liegt vor
+          dem Zwei-Ebenen-Umbau; seine Behebung heisst, den Entwurf ueber alle vier Karten
+          hinweg an EINER Stelle zu fuehren (oder je Karte nur ihren Teilbaum zu senden)
+          und ist eine Umstrukturierung des Editor-Rahmens — bewusst nicht Teil dieser
+          Fix-Runde. Bis dahin gilt: eine Karte aendern, speichern, Seite neu laden. */}
       <div className="flex flex-col gap-4">
         {PIPELINE_REIHENFOLGE.map((eintrag, index) => {
           const bereich = BEREICHE[eintrag.bereich];
