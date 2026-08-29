@@ -19,6 +19,11 @@ describe('istUebersteuert', () => {
     expect(istUebersteuert({}, 'flaeche.alpha')).toBe(false);
     expect(istUebersteuert(undefined, 'flaeche.alpha')).toBe(false);
   });
+
+  it('meldet ein leer geraeumtes Elternobjekt als firmenweit', () => {
+    // Zustand, den setzeZurueck hinterlassen kann: Schluessel vorhanden, Inhalt leer.
+    expect(istUebersteuert({ honorar: {} }, 'honorar')).toBe(false);
+  });
 });
 
 describe('setzePfad', () => {
@@ -45,5 +50,10 @@ describe('setzeZurueck', () => {
   it('behaelt Geschwister unter demselben Elternteil', () => {
     expect(setzeZurueck({ flaeche: { alpha: 0.6 }, preisanpassung: { zMin: -0.3 } },
       'flaeche.alpha')).toEqual({ preisanpassung: { zMin: -0.3 } });
+  });
+
+  it('laesst ein Delta unveraendert, wenn der Pfad gar nicht gesetzt ist', () => {
+    const vorher = { flaeche: { alpha: 0.6 } };
+    expect(setzeZurueck(vorher, 'honorar.skalierung.gMax')).toEqual(vorher);
   });
 });
