@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, it, expect } from 'vitest';
-import { alleStrategien } from '../../src/modell/normalisierung.js';
+import { alleStrategien } from '../../src/normalization/registry.js';
 import { skalierung } from '../../src/modell/skalierung.js';
 import { toleranzFuer } from '../../src/config/toleranzen.js';
 import { faktorId } from '../../src/domain/ids.js';

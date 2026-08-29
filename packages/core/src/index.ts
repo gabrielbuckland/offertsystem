@@ -124,8 +124,8 @@ export {
   type Bereich, type Bereichsregel, type Bereichstreffer,
 } from './modell/bereichsregel.js';
 export { gewichteteFlaeche } from './modell/flaeche.js';
-export { alleStrategien, loeseStrategieAuf } from './modell/normalisierung.js';
-export type { NormalisierterFaktor, Normalisierungsstrategie } from './modell/normalisierung.js';
+export { alleStrategien, loeseStrategieAuf } from './normalization/registry.js';
+export type { NormalisierterFaktor, Normalisierungsstrategie } from './normalization/strategie.js';
 export { skalierung } from './modell/skalierung.js';
 export { beschafferFuer } from './pipeline/beschaffer.js';
 export type { Beschaffer, BeschaffungsKontext, VermarkterFaktoren } from './pipeline/beschaffer.js';
