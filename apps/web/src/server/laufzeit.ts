@@ -10,7 +10,7 @@
  * Seiten rufen ausschliesslich diese Funktion auf.
  */
 import { resolve } from 'node:path';
-import type { Konfiguration } from '@offert/core';
+import type { Konfiguration, KonfigurationsFehler } from '@offert/core';
 import {
   createValuationProvider,
   type ApiKonfiguration,
@@ -34,7 +34,22 @@ export interface Laufzeit {
   readonly projekteVerzeichnis: string;
 }
 
-export type LaufzeitFehler = { readonly ok: false; readonly meldungen: readonly string[] };
+export type LaufzeitFehler = {
+  readonly ok: false;
+  readonly meldungen: readonly string[];
+  /**
+   * Die UNUEBERSETZTEN Konfigurationsbefunde, sofern der Fehlschlag aus dem Ladepfad
+   * stammt. `meldungen` bleibt die Maschinenform fuer Protokoll und Seitenkopf; wer dem
+   * Benutzer eine am Feld verankerte Meldung zeigen will, braucht dagegen Code, Pfad und
+   * Parameter im Original — sonst muesste er sie aus dem Meldungstext zurueckparsen, und
+   * genau das waere die zweite Uebersetzungsquelle, die `zuBefunden`/`textFuer`
+   * (`einstellungen-ablage.ts`) vermeiden sollen.
+   *
+   * Fehlt bei einem Umgebungsfehler (`leseUmgebung`): Dort gibt es keinen
+   * Konfigurationspfad, an dem sich etwas verankern liesse.
+   */
+  readonly fehler?: readonly KonfigurationsFehler[];
+};
 
 export type LaufzeitErgebnis =
   | { readonly ok: true; readonly wert: Laufzeit }
@@ -60,6 +75,7 @@ export function holeLaufzeit(
       meldungen: geladen.fehler.map(
         (f) => `${f.code} bei ${f.pfad}: ${JSON.stringify(f.parameter)}`,
       ),
+      fehler: geladen.fehler,
     };
   }
 

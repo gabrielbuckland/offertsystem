@@ -8,10 +8,26 @@
  * invariantenverletzenden Konfiguration abgelegt waere.
  *
  * Antwortform `befunde` (Pfad + Text) wie bei der firmenweiten Route: Die Editoren
- * verankern ihre Meldung am Feld, nicht am Formular.
+ * verankern ihre Meldung am Feld, nicht am Formular. Dafuer laeuft die Uebersetzung ueber
+ * DENSELBEN `zuBefunden`-Weg wie firmenweit (`einstellungen-ablage.ts`) — ein eigener
+ * Weg hier hatte zuvor jeden Befund pauschal auf `'(konfiguration)'` verankert, und keine
+ * Bereichskarte konnte ihn zeigen.
  */
-import { holeLaufzeit, holeProjektLaufzeit } from '../../../../../server/laufzeit.js';
+import { zuBefunden, type EinstellungsBefund } from '../../../../../server/einstellungen-ablage.js';
+import {
+  holeLaufzeit, holeProjektLaufzeit, type LaufzeitFehler,
+} from '../../../../../server/laufzeit.js';
 import { ladeProjekt, speichereProjekt } from '../../../../../server/projekt-ablage.js';
+
+/**
+ * Ein Umgebungsfehler traegt keine `fehler`-Liste (siehe `LaufzeitFehler`). Er bekommt
+ * deshalb den unanhaengigen Pfad `''` — dieselbe Form, die die Oberflaeche bereits fuer
+ * Netz- und Serverfehler kennt und in jeder Bereichskarte zeigt.
+ */
+function befundeAus(fehlschlag: LaufzeitFehler): readonly EinstellungsBefund[] {
+  if (fehlschlag.fehler !== undefined) return zuBefunden(fehlschlag.fehler);
+  return fehlschlag.meldungen.map((text) => ({ pfad: '', text }));
+}
 
 interface Kontext { readonly params: Promise<{ readonly id: string }> }
 
@@ -45,9 +61,7 @@ export async function POST(anfrage: Request, kontext: Kontext): Promise<Response
   // Schluessel oder eine verletzte Invariante auf.
   const geprueft = holeProjektLaufzeit({ einstellungen: roh as Record<string, unknown> });
   if (!geprueft.ok) {
-    return Response.json(
-      { befunde: geprueft.meldungen.map((text) => ({ pfad: '(konfiguration)', text })) },
-      { status: 422 });
+    return Response.json({ befunde: befundeAus(geprueft) }, { status: 422 });
   }
 
   await speichereProjekt(

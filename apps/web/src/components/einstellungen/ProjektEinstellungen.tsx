@@ -31,7 +31,9 @@ import { Hinweis } from '../ui/hinweis.js';
 import { rufeApi } from '../rufe-api.js';
 import { rahmenBefunde } from './EinstellungsEditor.js';
 import { istUebersteuert, setzeZurueck } from './herkunft.js';
-import { bildeDelta, effektiveKonfiguration } from './projekt-einstellungen-logik.js';
+import {
+  bildeDelta, effektiveKonfiguration, unverankerteBefunde,
+} from './projekt-einstellungen-logik.js';
 import {
   baueSpeicherSteuerung,
   type EinstellungsBefund,
@@ -85,6 +87,40 @@ async function schreibeProjektEinstellungen(
 /** Wurzelpfade eines Bereichs — ein Bereich kann mehrere umfassen (`bereiche.ts`). */
 function wurzeln(praefix: string | readonly string[]): readonly string[] {
   return typeof praefix === 'string' ? [praefix] : praefix;
+}
+
+/**
+ * Auffangblock fuer Befunde, die KEINE Bereichskarte verankern kann — als eigene
+ * Komponente, damit sich genau diese Anzeige ohne Zustandsmaschine und ohne
+ * Hook-Testbibliothek rendern und pruefen laesst (`renderToStaticMarkup`).
+ *
+ * Der Pfad steht mit im Text: Ein ortloser Befund traegt sonst keinen Hinweis darauf,
+ * WORAUF er sich bezieht — bei einem gesperrten Pfad (`api`) ist genau das die
+ * Kerninformation.
+ */
+export function BefundAuffang(
+  { befunde, wurzeln: bereichsWurzeln }: {
+    readonly befunde: readonly EinstellungsBefund[];
+    readonly wurzeln: readonly string[];
+  },
+) {
+  const ortlos = unverankerteBefunde(befunde, bereichsWurzeln);
+  if (ortlos.length === 0) return null;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Nicht gespeichert</CardTitle>
+        <CardDescription>Diese Befunde lassen sich keinem Feld zuordnen.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {ortlos.map((befund, index) => (
+          <Hinweis key={`${befund.pfad}-${index}`} art="fehler">
+            {`${befund.pfad}: ${befund.text}`}
+          </Hinweis>
+        ))}
+      </CardContent>
+    </Card>
+  );
 }
 
 function Herkunftsabzeichen({ uebersteuert }: { readonly uebersteuert: boolean }) {
@@ -184,6 +220,10 @@ export function ProjektEinstellungen({ projektId, firmenwerte, delta }: ProjektE
     entwurf, geaendert, speichert, pruefsumme, befunde, aendere, speichere, verwerfe,
   };
 
+  // Alle Bereichswurzeln zusammen — die Menge, gegen die der Auffangblock entscheidet,
+  // ob ein Befund ueberhaupt irgendwo verankert erscheint.
+  const alleWurzeln = Object.values(BEREICHE).flatMap((bereich) => wurzeln(bereich.praefix));
+
   return (
     <div className="flex flex-col gap-4">
       <Hinweis art="info">
@@ -238,6 +278,11 @@ export function ProjektEinstellungen({ projektId, firmenwerte, delta }: ProjektE
           </Card>
         );
       })}
+
+      {/* Auffangblock: Befunde, die keine Bereichskarte verankern kann (gesperrter Pfad,
+          Rumpffehler, unbekannter Wurzelschluessel). Ohne ihn bliebe ein abgelehntes
+          Delta auf dem Bildschirm vollstaendig unsichtbar. */}
+      <BefundAuffang befunde={befunde} wurzeln={alleWurzeln} />
 
       <Card>
         <CardFooter className="flex flex-wrap items-center justify-between gap-3 pt-6">

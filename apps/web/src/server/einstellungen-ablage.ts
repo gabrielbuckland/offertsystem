@@ -54,7 +54,14 @@ function textFuer(befund: KonfigurationsFehler): string {
   return parameter === '' ? befund.code : `${befund.code}: ${parameter}`;
 }
 
-function zuBefunden(fehler: readonly KonfigurationsFehler[]): EinstellungsBefund[] {
+/**
+ * DER Uebersetzungsweg von `KonfigurationsFehler` nach `EinstellungsBefund` — exportiert,
+ * damit ihn auch die projektbezogene Schreibroute (`api/projekt/[id]/einstellungen`)
+ * benutzt statt eines eigenen. Zwei Wege haetten fuer denselben Fehler zwei Ergebnisse
+ * geliefert: hier Feldpfad plus Anzeigefassung, dort ein pauschaler Formularanker und die
+ * Rohform aus `laufzeit.ts` — und die Editoren koennten den zweiten nirgends verankern.
+ */
+export function zuBefunden(fehler: readonly KonfigurationsFehler[]): EinstellungsBefund[] {
   return fehler.map((f) => ({ pfad: f.pfad, text: textFuer(f) }));
 }
 

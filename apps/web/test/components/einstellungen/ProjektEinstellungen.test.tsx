@@ -2,7 +2,9 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { ProjektEinstellungen } from '../../../src/components/einstellungen/ProjektEinstellungen.js';
+import {
+  BefundAuffang, ProjektEinstellungen,
+} from '../../../src/components/einstellungen/ProjektEinstellungen.js';
 
 /**
  * Nur Darstellung ueber `renderToStaticMarkup` (gleiches Muster wie `shell.test.tsx` und
@@ -94,10 +96,62 @@ describe('ProjektEinstellungen', () => {
     expect(firmenweit.length).toBeGreaterThan(1);
   });
 
+  it('bindet den Auffangblock fuer nicht verankerbare Befunde ein (K-1)', () => {
+    // Quelltextnahe Verdrahtungspruefung nach demselben Vorgehen wie
+    // `ProjektAnsicht.test.ts`: Befunde entstehen erst nach einem gescheiterten
+    // Speicherversuch und damit im Zustand, der ohne Hook-Testbibliothek nicht
+    // herstellbar ist. Die Anzeige selbst prueft `BefundAuffang` unten direkt.
+    const quelle = readFileSync(resolve(
+      import.meta.dirname,
+      '../../../src/components/einstellungen/ProjektEinstellungen.tsx',
+    ), 'utf8');
+    expect(quelle).toMatch(/<BefundAuffang befunde=\{befunde\}/);
+  });
+
   it('meldet eine wirkungslose leere Delta-Wurzel nicht als Uebersteuerung', () => {
     // `{ honorar: {} }` legt keinen Wert ein; `bildeDelta` raeumt die Wurzel ab, das
     // Abzeichen darf sie deshalb nicht als abweichend melden.
     const html = baueMarkup({ honorar: {} });
     expect(html).not.toContain('projektbezogen');
+  });
+});
+
+describe('BefundAuffang (K-1)', () => {
+  const WURZELN = ['dossierDefaults', 'flaeche', 'aufwandfaktoren', 'honorar'];
+
+  it('zeigt einen Befund, den keine Bereichskarte verankern kann', () => {
+    // `api` ist bewusst kein Bereich der Oberflaeche — ein Befund darauf war zuvor
+    // nirgends sichtbar, und ein abgelehntes Delta wirkte wie ein erfolgreiches
+    // Speichern.
+    const html = renderToStaticMarkup(
+      <BefundAuffang
+        befunde={[{ pfad: 'api', text: 'projektbezogen nicht überschreibbar' }]}
+        wurzeln={WURZELN}
+      />,
+    );
+    expect(html).toContain('projektbezogen nicht überschreibbar');
+    expect(html).toContain('api');
+  });
+
+  it('wiederholt einen Befund nicht, den bereits eine Bereichskarte traegt', () => {
+    const html = renderToStaticMarkup(
+      <BefundAuffang
+        befunde={[{ pfad: 'honorar.stuetzstellen[1].hMin', text: 'Degression verletzt.' }]}
+        wurzeln={WURZELN}
+      />,
+    );
+    expect(html).toBe('');
+  });
+
+  it('ueberlaesst den unanhaengigen Befund (leerer Pfad) den Bereichskarten', () => {
+    // `pfad: ''` ist der Netz-/500-Fallback; `rahmenBefunde` zeigt ihn in jeder Karte.
+    // Der Auffangblock darf ihn nicht ein zweites Mal bringen.
+    const html = renderToStaticMarkup(
+      <BefundAuffang
+        befunde={[{ pfad: '', text: 'Nicht gespeichert.' }]}
+        wurzeln={WURZELN}
+      />,
+    );
+    expect(html).toBe('');
   });
 });

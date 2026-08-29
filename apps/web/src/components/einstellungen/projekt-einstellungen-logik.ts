@@ -83,6 +83,32 @@ export function bildeDelta(
   return baueDelta(entwurf, firmenwerte, true);
 }
 
+/**
+ * Befunde, die KEINE Bereichskarte zeigen kann — der Auffangblock der Projektebene.
+ *
+ * Die Karten decken zwei Anzeigeregeln ab: der Rahmen zeigt den unanhaengigen Befund
+ * (`pfad === ''`) und einen Befund genau auf einer Bereichswurzel (`rahmenBefunde`), die
+ * Feld-Editoren zeigen alles darunter (`befundeFuerPfad`). Was ausserhalb JEDER
+ * Bereichswurzel liegt, faellt durch beide Regeln: ein gesperrter Pfad (`api`, `meta`),
+ * ein Rumpf-Befund (`(rumpf)`) oder ein unbekannter Schluessel auf der Wurzel. Ohne
+ * Auffangblock quittierte die Oberflaeche ein gescheitertes Speichern kommentarlos — der
+ * Benutzer klickte «Speichern», nichts geschah sichtbar, und er hielt den Vorgang fuer
+ * erfolgreich.
+ *
+ * Die Bereichswurzeln kommen als Parameter herein und stehen NICHT als Literale hier:
+ * Dieser Ordner wird vom Architekturtest auf fest verdrahtete Konfigurationsbezeichner
+ * gescannt, und die Zuordnung lebt ohnehin in `bereiche.ts`.
+ */
+export function unverankerteBefunde<T extends { readonly pfad: string }>(
+  befunde: readonly T[], wurzeln: readonly string[],
+): readonly T[] {
+  return befunde.filter((befund) => befund.pfad !== '' && !wurzeln.some(
+    (wurzel) => befund.pfad === wurzel
+      || befund.pfad.startsWith(`${wurzel}.`)
+      || befund.pfad.startsWith(`${wurzel}[`),
+  ));
+}
+
 function baueDelta(entwurf: Baum, firmenwerte: Baum, wurzel: boolean): Record<string, unknown> {
   const delta: Record<string, unknown> = {};
   for (const [schluessel, wert] of Object.entries(entwurf)) {
