@@ -5,10 +5,12 @@
 import type { StrategieBezeichner } from './bezeichner.js';
 import { minMax } from './min-max.js';
 import type { Normalisierungsstrategie } from './strategie.js';
+import { wurzelMinMax } from './wurzel-min-max.js';
 import { zScore } from './z-score.js';
 
 const register: Readonly<Record<StrategieBezeichner, Normalisierungsstrategie>> = Object.freeze({
   'min-max': minMax,
+  'wurzel-min-max': wurzelMinMax,
   'z-score': zScore,
 });
 

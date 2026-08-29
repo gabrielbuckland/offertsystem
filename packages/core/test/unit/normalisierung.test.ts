@@ -82,6 +82,7 @@ describe('loeseStrategieAuf ist total (S-07)', () => {
     expect(loeseStrategieAuf('z-score').bezeichner).toBe('z-score');
   });
   it('macht das Register fuer I-22 aufzaehlbar', () => {
-    expect(alleStrategien().map((s) => s.bezeichner).sort()).toEqual(['min-max', 'z-score']);
+    expect(alleStrategien().map((s) => s.bezeichner).sort())
+      .toEqual(['min-max', 'wurzel-min-max', 'z-score']);
   });
 });
