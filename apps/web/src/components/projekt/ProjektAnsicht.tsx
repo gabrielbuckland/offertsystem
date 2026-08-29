@@ -43,7 +43,6 @@ import { entferneSpaltenwert } from './spaltenwerte-kaskade.js';
 import { uebernehmeVorgabewert } from './vorgabewert-uebernahme.js';
 import { Aufwandfaktoren } from './Aufwandfaktoren.js';
 import { Aggregatleiste } from './Aggregatleiste.js';
-import { Brotkrume } from '../shell/Brotkrume.js';
 import { Hinweis, type HinweisArt } from '../ui/hinweis.js';
 import { StatusZeile } from '../ui/status-zeile.js';
 import { rufeApi } from '../rufe-api.js';
@@ -191,11 +190,9 @@ export function ProjektAnsicht(
 
   return (
     <main>
-      <Brotkrume stufen={[
-        { beschriftung: 'Projekte', href: '/projekte' },
-        { beschriftung: `${projekt.adresse.strasse} ${projekt.adresse.hausnummer}, `
-          + `${projekt.adresse.plz} ${projekt.adresse.ort}` },
-      ]} />
+      {/* Die Brotkrume liegt seit Task 8 (Fix-Runde 1) auf Seitenebene
+          (`projekte/[id]/page.tsx`), nicht hier: Sie ist Navigationskontext und gehoert
+          zur Route, die diese Client-Komponente einbettet, nicht zum Inhalt selbst. */}
       <header className="mb-6">
         <h1 className="text-2xl font-semibold">
           {projekt.adresse.strasse} {projekt.adresse.hausnummer}, {projekt.adresse.plz}{' '}

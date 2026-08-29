@@ -35,7 +35,8 @@ export default async function ProjektSeite({ params }: Props) {
       <div className="mb-2 flex items-center justify-between">
         <Brotkrume stufen={[
           { beschriftung: 'Projekte', href: '/projekte' },
-          { beschriftung: `${projekt.adresse.strasse} ${projekt.adresse.hausnummer}` },
+          { beschriftung: `${projekt.adresse.strasse} ${projekt.adresse.hausnummer}, `
+            + `${projekt.adresse.plz} ${projekt.adresse.ort}` },
         ]}
         />
         <Link
