@@ -47,8 +47,9 @@ export type MergeErgebnis =
   | { readonly ok: false; readonly fehler: readonly KonfigurationsFehler[] };
 
 /**
- * Nicht projektbezogen ueberschreibbar. Seit der Auftraggeber-Rueckmeldung vom
- * 2026-08-29 sind das nur noch zwei Pfade: `meta` traegt Schema- und Konfigversion
+ * Nicht projektbezogen ueberschreibbar. Seit dem Entwurfsentscheid des Autors vom
+ * 2026-08-29 (vom Auftraggeber zu bestaetigen) sind das nur noch zwei Pfade: `meta`
+ * traegt Schema- und Konfigversion
  * (ein Projekt darf nicht behaupten, einer anderen Schemaversion zu folgen), `api`
  * traegt Betriebsparameter der Zugriffsschicht und gehoert der IT, nicht dem
  * Auftraggeber (Rollentrennung US-08).
