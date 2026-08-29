@@ -266,7 +266,10 @@ export function ProjektEinstellungen({ projektId, firmenwerte, delta }: ProjektE
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Editor einstellungen={zustand} />
+              {/* `ebene="projekt"` sperrt genau die Aktionen, die das Delta-Modell nicht
+                  ausdruecken kann (Entfernen eines Firmenschluessels) — siehe
+                  `Bearbeitungsebene` in `verwende-einstellungen.ts`. */}
+              <Editor einstellungen={zustand} ebene="projekt" />
               {bereichsBefunde.length > 0 && (
                 <div className="space-y-2">
                   {bereichsBefunde.map((befund, index) => (

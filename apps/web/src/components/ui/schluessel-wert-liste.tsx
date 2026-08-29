@@ -26,10 +26,18 @@ import {
 export interface SchluesselWertListeProps {
   readonly eintraege: Readonly<Record<string, string>>;
   readonly aendere: (naechste: Readonly<Record<string, string>>) => void;
+  /**
+   * Blendet die Entfernen-Spalte aus und zeigt stattdessen `sperrgrund`. Gedacht fuer
+   * Aufrufer, deren Speichermodell ein Entfernen nicht ausdruecken kann (das
+   * projektbezogene Delta, siehe `Bearbeitungsebene`) — dort waere der Knopf ein stiller
+   * No-Op. Die Komponente selbst entscheidet das nicht; sie kennt kein Speichermodell.
+   */
+  readonly entfernenGesperrt?: boolean | undefined;
+  readonly sperrgrund?: string | undefined;
 }
 
 export function SchluesselWertListe(
-  { eintraege, aendere }: SchluesselWertListeProps,
+  { eintraege, aendere, entfernenGesperrt = false, sperrgrund }: SchluesselWertListeProps,
 ): ReactElement {
   const [neuerSchluessel, setzeNeuenSchluessel] = useState('');
   const [neuerWert, setzeNeuenWert] = useState('');
@@ -62,18 +70,23 @@ export function SchluesselWertListe(
             onChange={(e) => aendereWert(schluessel, e.target.value)}
             className="h-8 flex-1"
           />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="size-8"
-            aria-label="entfernen"
-            onClick={() => entferneEintrag(schluessel)}
-          >
-            <Trash2 className="size-4" />
-          </Button>
+          {!entfernenGesperrt && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              aria-label="entfernen"
+              onClick={() => entferneEintrag(schluessel)}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          )}
         </div>
       ))}
+      {entfernenGesperrt && sperrgrund !== undefined && (
+        <p className="text-xs text-muted-foreground">{sperrgrund}</p>
+      )}
       <div className="flex items-center gap-2">
         <Input
           value={neuerSchluessel}

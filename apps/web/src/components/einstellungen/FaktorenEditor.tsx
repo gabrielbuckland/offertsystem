@@ -49,8 +49,12 @@ type AufwandfaktorenRoh = Readonly<Record<string, FaktorRoh>>;
  *  aber ohne einen davon zu nennen. */
 const SCHLUESSEL_MUSTER = /^[a-z][a-zA-Z0-9_]*$/;
 
-export function FaktorenEditor({ einstellungen }: BereichsEditorProps): ReactElement {
+export function FaktorenEditor({ einstellungen, ebene = 'firma' }: BereichsEditorProps): ReactElement {
   const faktoren = einstellungen.entwurf['aufwandfaktoren'] as AufwandfaktorenRoh;
+  // Das Entfernen eines Faktors ist auf der Projektebene nicht ausdrueckbar (Delta-Modell,
+  // `Bearbeitungsebene`); HINZUFUEGEN dagegen schon — `aufwandfaktoren` ist im Kern-Merge
+  // eine offene Wurzel und traegt neue Schluessel.
+  const entfernenMoeglich = ebene === 'firma';
   const [neuerSchluessel, setzeNeuerSchluessel] = useState('');
   const [neueQuelle, setzeNeueQuelle] = useState<'manuell' | 'lagescore'>('manuell');
   const [neuerQuellSchluessel, setzeNeuerQuellSchluessel] = useState('');
@@ -130,15 +134,22 @@ export function FaktorenEditor({ einstellungen }: BereichsEditorProps): ReactEle
                 <span className="rounded-full border border-border px-2 py-0.5 text-xs uppercase text-muted-foreground">
                   {faktor.quelle}
                 </span>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  title="Projekte, die diesen Faktor erfasst haben, behalten den Wert; er geht nicht mehr in D ein."
-                  onClick={() => entferneFaktor(schluessel)}
-                >
-                  entfernen
-                </Button>
+                {entfernenMoeglich ? (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    title="Projekte, die diesen Faktor erfasst haben, behalten den Wert; er geht nicht mehr in D ein."
+                    onClick={() => entferneFaktor(schluessel)}
+                  >
+                    entfernen
+                  </Button>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    Entfernen ist nur firmenweit möglich: Ein Projekt speichert seine
+                    Abweichungen und kann einen Firmenwert übersteuern, nicht streichen.
+                  </span>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 <div className="space-y-1">

@@ -69,8 +69,11 @@ const LISTEN_FELDER: ReadonlyArray<{ readonly feld: ListenFeld; readonly beschri
   { feld: 'qualitaetsbewertungen', beschriftung: 'Qualitätsbewertungen' },
 ];
 
-export function DossierEditor({ einstellungen }: BereichsEditorProps): ReactElement {
+export function DossierEditor({ einstellungen, ebene = 'firma' }: BereichsEditorProps): ReactElement {
   const dossier = einstellungen.entwurf['dossierDefaults'] as DossierDefaultsRoh;
+  // Wie beim FaktorenEditor: Das Entfernen eines Firmenschluessels aus einem offenen
+  // Woerterbuch ist im projektbezogenen Delta nicht ausdrueckbar (`Bearbeitungsebene`).
+  const entfernenGesperrt = ebene === 'projekt';
 
   function schreibeDossier(naechster: Partial<DossierDefaultsRoh>): void {
     einstellungen.aendere({
@@ -126,6 +129,9 @@ export function DossierEditor({ einstellungen }: BereichsEditorProps): ReactElem
           <SchluesselWertListe
             eintraege={dossier[feld]}
             aendere={(naechste) => schreibeDossier({ [feld]: naechste })}
+            entfernenGesperrt={entfernenGesperrt}
+            sperrgrund={'Entfernen ist nur firmenweit möglich: Ein Projekt speichert '
+              + 'seine Abweichungen und kann einen Firmenwert übersteuern, nicht streichen.'}
           />
         </div>
       ))}
