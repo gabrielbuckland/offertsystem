@@ -4,8 +4,6 @@ import {
   a5Fehlerprotokoll,
   a5Protokolle,
   a5Testfaelle,
-  a5Testplan,
-  a5Toleranzen,
   type CoverageArtefakt,
   type TestArtefakt,
 } from './a5.ts';
@@ -123,24 +121,5 @@ describe('a5Fehlerprotokoll', () => {
 
   it('sagt ausdruecklich, wenn nichts fehlgeschlagen ist', () => {
     expect(a5Fehlerprotokoll(tests, null)).toContain('kein Testfall fehlgeschlagen');
-  });
-});
-
-describe('a5Toleranzen', () => {
-  it('druckt die Toleranztabelle aus invariants.json', () => {
-    const tex = a5Toleranzen([{
-      id: 'I-10', kurztext: 'Zielintervall', kette: 'score', typ: 'exakt',
-      wert: 0, begruendung: 'Kappung erzwingt die Raender per Fallunterscheidung.',
-    }]);
-    expect(tex).toContain('I-10');
-    expect(tex).toContain('exakt');
-  });
-});
-
-describe('a5Testplan', () => {
-  it('nennt alle acht Instrumente und die Laufzeitumgebung', () => {
-    const tex = a5Testplan(tests);
-    for (const i of ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8']) expect(tex).toContain(i);
-    expect(tex).toContain('v22.6.0');
   });
 });

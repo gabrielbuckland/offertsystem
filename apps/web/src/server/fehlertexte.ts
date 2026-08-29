@@ -1,23 +1,16 @@
 /**
- * Keine Formel. Uebersetzungsschicht Fehlercode -> Anzeigetext (E-03).
- *
- * Der Kern kennt keine Anzeigesprache; er kennt Sachverhalte. Die Texte liegen hier als
- * Vorlagen und duerfen ausschliesslich Platzhalter verwenden, die der Kern auch
- * uebergibt — Spec 03 §8 ist insoweit Vertragsbestandteil. Ein Text im Kern waere in der
- * Berechnungskette nicht austauschbar und ausserdem nicht uebersetzbar.
+ * Uebersetzungsschicht Fehlercode -> Anzeigetext (E-03). Der Kern kennt keine
+ * Anzeigesprache, nur Sachverhalte; Texte liegen hier als Vorlagen und duerfen nur
+ * Platzhalter verwenden, die der Kern auch uebergibt (Spec 03 §8).
  *
  * `KERN_VORLAGEN` ist als `Record<BerechnungsFehlerCode, Vorlage>` typisiert: Ein neuer
- * Code bricht die Uebersetzung bei der Uebersetzung, nicht erst zur Laufzeit.
- *
- * Platzhalter sind Daten, keine Strings: Die Formatierung laeuft ueber dieselben
- * Formatierer wie die Offerte, damit Zahlen im Fehlertext und im Dokument gleich aussehen.
+ * Code bricht die Uebersetzung beim Kompilieren, nicht erst zur Laufzeit.
  */
 import type {
   AggregatFehler, AggregatFehlerCode, BerechnungsFehlerCode, ProviderFehler, StufenFehler,
 } from '@offert/core';
-// Modulpfad statt Paketindex: Der Index re-exportiert die React-Komponenten (.tsx);
-// Node leistet fuer JSX kein Type-Stripping (PE-09). Serverseitige Module, die unter
-// Node laufen sollen, binden die Formatierer deshalb ueber ihren Modulpfad ein.
+// Modulpfad statt Paketindex: Der Index re-exportiert React-Komponenten (.tsx), fuer die
+// Node kein Type-Stripping leistet (PE-09).
 import { formatiereAggregat, formatiereProzent, formatiereScore } from '@offert/offer/src/format/de-ch.js';
 
 export interface AngezeigterFehler {
@@ -106,8 +99,7 @@ const aggregatListe = (p: AggregatParameter, k: string): string =>
 /**
  * Uebersetzung fuer `erzeugeLiegenschaft`s Aggregatfehler (`liegenschaft.ts`) — strukturelle
  * Maengel im Projektstand (doppelte Wohnungsnummer, Referenzobjekt ohne Einheit etc.), noch
- * vor der eigentlichen Berechnung. Ohne diese Vorlagen zeigte die Oberflaeche den rohen
- * Fehlercode samt JSON-Parametern an (`eingang.ts`s frueheres `zuText`).
+ * vor der eigentlichen Berechnung.
  */
 export const AGGREGAT_VORLAGEN: Record<AggregatFehlerCode, (p: AggregatParameter) => string> = {
   KEINE_EINHEIT: () => 'Für die Liegenschaft ist noch keine Einheit erfasst.',
@@ -138,19 +130,12 @@ export function uebersetzeAggregatFehler(fehler: readonly AggregatFehler[]): str
 }
 
 /**
- * Ladezeitcodes ohne Laufzeitzwilling (E-16).
+ * Ladezeitcodes ohne Laufzeitzwilling (E-16). Jede Vorlage nennt nur Groessen, die im
+ * `KonfigurationsFehler` tatsaechlich stehen (Trap: `verfuegbare` ist ein fertiger String,
+ * kein Array — `.join` darauf wirft).
  *
- * Die drei Saetze wurden neu gefasst, weil sie ueber Sachverhalte sprachen, die der Kern
- * an dieser Stelle gar nicht meldet: eine Stufenliste, die er nie schickt, einen
- * Faktornamen, den die Schemapruefung nicht kennt, eine letzte Stuetzstelle, die es im
- * Fehlerfall nicht gibt. Sie lasen dadurch `undefined`/`NaN` — und
- * `CFG_STRATEGY_UNKNOWN` warf sogar, weil `verfuegbare` ein String ist und `liste`
- * darauf `.join` aufrief. Jede Vorlage nennt jetzt genau die Groessen, die im
- * `KonfigurationsFehler` stehen.
- *
- * Den Feldanker liefert der `pfad` des Befunds, nicht der Text: Welcher Faktor bzw.
- * welche Stuetzstelle gemeint ist, steht dort (z. B.
- * `aufwandfaktoren.lage_gesamt.strategie`). Die Saetze wiederholen ihn nicht.
+ * Den Feldanker liefert der `pfad` des Befunds, nicht der Text; die Saetze wiederholen ihn
+ * nicht.
  */
 export const KONFIG_VORLAGEN = {
   // Kern liefert `bezeichner` und `verfuegbare` — letzteres als fertigen String, nicht

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ladeReferenz } from '../helper/referenz.js';
 import { dokumentiere } from '../helper/dokumentiere.js';
 import { gewichteteFlaeche } from '../../src/modell/flaeche.js';
-import { loeseStrategieAuf } from '../../src/modell/normalisierung.js';
+import { loeseStrategieAuf } from '../../src/normalization/registry.js';
 import { skalierung } from '../../src/modell/skalierung.js';
 import { bildeHonorarrange } from '../../src/pipeline/stufe5-honorar.js';
 import { berechneVerkaufssumme } from '../../src/pipeline/stufe2-verkaufssumme.js';

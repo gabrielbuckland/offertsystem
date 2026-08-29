@@ -1,14 +1,8 @@
 /**
- * Keine Formel. Erfassungsschema als FUNKTION der Konfiguration (US-01, I-01, I-06, I-07).
- *
- * Ein Artefakt fuer Typen und Laufzeitpruefung; keine zweite Regelmenge im Formular. Die
- * Grenzen fuer die Anpassungssumme stammen aus `preisanpassung`, nicht aus einem Literal:
- * Ein im Code gefuehrter Grenzwert waere ein zweiter Konfigurationsort und wuerde beim
- * naechsten Konfigwechsel stillschweigend danebenliegen.
- *
- * Die Aggregatregeln (Eindeutigkeit der Wohnungsnummer, genau ein Typ je Zimmerzahl)
- * stehen in `superRefine` auf Aggregatebene und nicht je Feld — eine Kollision ist eine
- * Aussage ueber die Menge, nicht ueber einen einzelnen Wert.
+ * Erfassungsschema als FUNKTION der Konfiguration (US-01, I-01, I-06, I-07). Grenzen fuer
+ * die Anpassungssumme stammen aus `preisanpassung`, nicht aus einem Literal, sonst waere
+ * das ein zweiter Konfigurationsort. Aggregatregeln (Eindeutigkeit Wohnungsnummer, ein
+ * Typ je Zimmerzahl) stehen in `superRefine` auf Aggregatebene, nicht je Feld.
  */
 import type { Konfiguration } from '@offert/core';
 import { z } from 'zod';
@@ -35,9 +29,7 @@ export function erfassungsSchema(k: Konfiguration) {
     erfassterBetrag: z.number().int().optional(),
     begruendung: z.string().trim().min(k.preisanpassung.begruendungMinLaenge),
     vorlageId: z.string().optional(),
-    // Dokumentarisch: Nachweis, aus welcher Regel/Uebersteuerung der Faktor stammt
-    // (`wirksamer-wert.ts`). Fliesst in keine Formel ein, sonst gaebe es eine zweite
-    // Berechnung ueber denselben Wert.
+    // Dokumentarisch (`wirksamer-wert.ts`); fliesst in keine Formel ein.
     regel: z.object({
       merkmal: z.string().min(1),
       merkmalswert: z.number(),
@@ -66,14 +58,8 @@ export function erfassungsSchema(k: Konfiguration) {
   });
 
   return z.object({
-    // Projektangaben: nur die Kennung des erzeugenden Projekts (Spec 05 §8). Kundenname
-    // und Kontaktangaben sind nicht Gegenstand des Prototyps -- er berechnet den
-    // Kalkulationsteil, adressiert aber keinen Empfaenger. UUID, nicht blosser Freitext:
-    // `projekt-schema.ts` fuehrt die Projekt-Id als `z.string().uuid()` (Spec 05 §8), und
-    // `packages/offer` verlangt dieselbe Form (offer.ts). Eine laxere Fassung hier liesse
-    // eine Eingabe durch, die erst nach dem vollstaendigen Berechnungslauf in `baueOfferte`
-    // an `offerSchema.parse` scheiterte -- ein unbehandelter Fehler statt einer
-    // feldverankerten Meldung.
+    // UUID statt Freitext (Spec 05 §8): `packages/offer` verlangt dieselbe Form, eine
+    // laxere Fassung liesse eine Eingabe erst spaeter in `baueOfferte` scheitern.
     projekt: z.object({
       projektId: z.string().uuid(),
     }).strict(),

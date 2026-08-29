@@ -50,8 +50,8 @@ const SkalaSchema = z.object({
   stufen: z.array(z.object({ wert: z.number(), bezeichnung: z.string() })),
 });
 
-// Rein strukturelle Pruefung. Die drei fachlichen Pruefebenen sind beim Laden gelaufen
-// (P1), und die Identitaet der Kopie belegt `metadata.konfigPruefsumme` (PE-04).
+// Rein strukturelle Pruefung. Die drei fachlichen Pruefebenen sind beim Laden gelaufen,
+// und die Identitaet der Kopie belegt `metadata.konfigPruefsumme` (PE-04).
 const KonfigurationsKopieSchema = z.object({
   meta: z.object({
     schemaVersion: z.number(), konfigVersion: z.string(),

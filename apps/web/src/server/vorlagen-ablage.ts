@@ -1,18 +1,10 @@
-/**
- * Keine Formel. Dateibasierte Ablage der Offerttext-Vorlage (Spec 2026-08-27 §1).
- *
- * Fehlende Datei ist KEIN Fehler, sondern der Auslieferungszustand: Es gilt die
- * eingebaute Neubau-Standardvorlage. Geschrieben wird nur nach bestandener Prüfung
- * (zurückweisen statt melden, I-21) — Schema UND Katalogzugehörigkeit jedes
- * Platzhalters, denn eine Vorlage mit unbekanntem Platzhalter liesse JEDES
- * Finalisieren scheitern; der richtige Zeitpunkt für die Meldung ist das Speichern.
- *
- * Katalogzugehörigkeit wird pro Knotenart geprüft (M-1): Ein INLINE-Platzhalter mit
- * `id: 'preistabelle'` wäre zwar im Katalog gelistet, aber die Auflösung
- * (aufloesung.ts) kennt ihn nur als eigenen Blockknoten (`platzhalterTabelle`) — als
- * inline-Text-Platzhalter bliebe er beim Finalisieren unauflösbar, obwohl er die
- * Speicherprüfung bestünde. `sammlePlatzhalterIds` liefert deshalb die Knotenart mit.
- */
+// Dateibasierte Ablage der Offerttext-Vorlage (Spec 2026-08-27 §1). Fehlende Datei ist kein
+// Fehler, sondern der Auslieferungszustand (eingebaute Neubau-Standardvorlage gilt).
+// Geschrieben wird nur nach bestandener Pruefung: I-21 zurueckweisen statt melden (eine
+// Vorlage mit unbekanntem Platzhalter liesse jedes Finalisieren scheitern), M-1
+// Katalogzugehoerigkeit pro Knotenart (ein inline-Platzhalter `preistabelle` ist im Katalog
+// gelistet, aber nur als Blockknoten aufloesbar — `sammlePlatzhalterIds` liefert daher die
+// Knotenart mit).
 import * as fs from 'node:fs/promises';
 import {
   offertDokumentSchema, sammlePlatzhalterIds, type OffertDokument,
@@ -36,18 +28,14 @@ const vorlagenDateiSchema = z.object({
   inhalt: offertDokumentSchema,
 }).strict();
 
-/** Rumpfschema fuer das Schreiben: `version` wird entgegengenommen, aber ignoriert
- *  (I-5) — die abgelegte Version bestimmt ausschliesslich der Server. */
+// I-5: `version` wird entgegengenommen, aber ignoriert — die abgelegte Version bestimmt
+// ausschliesslich der Server.
 const vorlagenSchreibRumpfSchema = z.object({
   version: z.string().optional(),
   inhalt: offertDokumentSchema,
 }).strict();
 
-/**
- * `Ergebnis<T>` statt Wurf (I-4): Ein defektes Artefakt (kaputtes JSON, Schemabruch)
- * ist ein Befund, keine Ausnahme — die Aufrufer (beide API-Routen) uebersetzen ihn in
- * eine benannte Meldung statt in eine unbehandelte 500.
- */
+// I-4: `Ergebnis<T>` statt Wurf — ein defektes Artefakt ist ein Befund, keine Ausnahme.
 export async function ladeVorlage(pfad: string): Promise<Ergebnis<VorlagenDatei>> {
   const roh = await fs.readFile(pfad, 'utf8').catch(() => undefined);
   if (roh === undefined) {
@@ -95,18 +83,14 @@ export async function schreibeVorlage(roh: unknown, pfad: string): Promise<Schre
       })),
     };
   }
-  // I-5: Die Version identifiziert die Vorlage inhaltlich (dasselbe Mittel wie
-  // `konfigPruefsumme`, kanonisch.ts) statt eine vom Client mitgesendete Zahl
-  // unveraendert zu uebernehmen — sonst triege jedes Artefakt dieselbe «1», egal wie
-  // oft die Vorlage inhaltlich geaendert wurde, und ein POST mit `version: "42"`
-  // schriebe diesen Wert unbesehen fest.
+  // I-5: Version identifiziert die Vorlage inhaltlich (wie `konfigPruefsumme`) statt eine
+  // vom Client mitgesendete Zahl unveraendert zu uebernehmen.
   const datei: VorlagenDatei = {
     version: bildePruefsumme(geparst.data.inhalt),
     inhalt: geparst.data.inhalt,
   };
-  // I-3: atomar (Temp + rename) statt eines direkten `writeFile`, das bei einem
-  // Abbruch mitten im Schreiben oder zwei gleichzeitigen POSTs eine abgeschnittene
-  // Datei zurueckliesse; `schreibeAtomar` legt das Zielverzeichnis bei Bedarf an.
+  // I-3: atomar (Temp + rename) statt direktem `writeFile`, das bei Abbruch oder
+  // gleichzeitigen POSTs eine abgeschnittene Datei zurueckliesse.
   await schreibeAtomar(pfad, `${JSON.stringify(datei, null, 2)}\n`);
   return { ok: true };
 }

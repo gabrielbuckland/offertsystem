@@ -1,15 +1,13 @@
 'use client';
 
 /**
- * Editor fuer den Teilbaum `aufwandfaktoren` (Task 16) — Herkunft, Normalisierung und
- * Gewichtung der Faktoren, aus denen sich der Aufwandindikator D ergibt (Spec §6).
+ * Editor fuer den Teilbaum `aufwandfaktoren` — Herkunft, Normalisierung und Gewichtung der
+ * Faktoren, aus denen sich der Aufwandindikator D ergibt (Spec §6).
  *
- * Der Editor kennt nur die FORM des Teilbaums (`FaktorRoh`, lokal und schmal, analog
- * `HonorarEditor`s `HonorarRoh`), keine Konfigurationsbezeichner — alles iteriert ueber
- * `Object.entries(entwurf.aufwandfaktoren)`. Ein Architekturtest (Task 17) scannt genau
- * diesen Ordner auf woertlich verdrahtete Faktor-/Vorlagen-/Konfigurationsbezeichner;
- * die neun gueltigen `lagescore`-Quellschluessel (PriceHubble, I-26) erscheinen deshalb
- * NUR als Platzhaltertext einer Eingabe, nie in einer Verzweigung des Codes.
+ * Kennt nur die FORM des Teilbaums (`FaktorRoh`), keine Konfigurationsbezeichner — ein
+ * Architekturtest scannt diesen Ordner auf woertlich verdrahtete Bezeichner. Die neun
+ * gueltigen `lagescore`-Quellschluessel (PriceHubble, I-26) erscheinen deshalb NUR als
+ * Platzhaltertext, nie in einer Verzweigung des Codes.
  */
 import { Trash2 } from 'lucide-react';
 import { Fragment, useState, type ReactElement } from 'react';
@@ -44,13 +42,15 @@ interface FaktorRoh {
 
 type AufwandfaktorenRoh = Readonly<Record<string, FaktorRoh>>;
 
-/** Neuer Schluessel muss dem Bezeichnermuster der Konfiguration folgen (Kleinbuchstabe
- *  zuerst, danach alphanumerisch/`_`) — dieselbe Form wie bestehende Faktorschluessel,
- *  aber ohne einen davon zu nennen. */
+/** Bezeichnermuster der Konfiguration: Kleinbuchstabe zuerst, danach alphanumerisch/`_`. */
 const SCHLUESSEL_MUSTER = /^[a-z][a-zA-Z0-9_]*$/;
 
-export function FaktorenEditor({ einstellungen }: BereichsEditorProps): ReactElement {
+export function FaktorenEditor({ einstellungen, ebene = 'firma' }: BereichsEditorProps): ReactElement {
   const faktoren = einstellungen.entwurf['aufwandfaktoren'] as AufwandfaktorenRoh;
+  // Das Entfernen eines Faktors ist auf der Projektebene nicht ausdrueckbar (Delta-Modell,
+  // `Bearbeitungsebene`); HINZUFUEGEN dagegen schon — `aufwandfaktoren` ist im Kern-Merge
+  // eine offene Wurzel und traegt neue Schluessel.
+  const entfernenMoeglich = ebene === 'firma';
   const [neuerSchluessel, setzeNeuerSchluessel] = useState('');
   const [neueQuelle, setzeNeueQuelle] = useState<'manuell' | 'lagescore'>('manuell');
   const [neuerQuellSchluessel, setzeNeuerQuellSchluessel] = useState('');
@@ -105,8 +105,7 @@ export function FaktorenEditor({ einstellungen }: BereichsEditorProps): ReactEle
   }
 
   const gewichtssumme = Object.values(faktoren).reduce((summe, faktor) => summe + faktor.gewicht, 0);
-  // Gleitkomma-Rauschen (0.1 + 0.2 !== 0.3) darf die Warnung nicht faelschlich ausloesen
-  // — dieselbe Toleranz-Groessenordnung wie die Anzeige-Rundung in `faktoren-logik.ts`.
+  // Gleitkomma-Rauschen (0.1 + 0.2 !== 0.3) darf die Warnung nicht faelschlich ausloesen.
   const summeStimmt = Math.abs(gewichtssumme - 1) < 1e-6;
 
   return (
@@ -130,15 +129,22 @@ export function FaktorenEditor({ einstellungen }: BereichsEditorProps): ReactEle
                 <span className="rounded-full border border-border px-2 py-0.5 text-xs uppercase text-muted-foreground">
                   {faktor.quelle}
                 </span>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  title="Projekte, die diesen Faktor erfasst haben, behalten den Wert; er geht nicht mehr in D ein."
-                  onClick={() => entferneFaktor(schluessel)}
-                >
-                  entfernen
-                </Button>
+                {entfernenMoeglich ? (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    title="Projekte, die diesen Faktor erfasst haben, behalten den Wert; er geht nicht mehr in D ein."
+                    onClick={() => entferneFaktor(schluessel)}
+                  >
+                    entfernen
+                  </Button>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    Entfernen ist nur firmenweit möglich: Ein Projekt speichert seine
+                    Abweichungen und kann einen Firmenwert übersteuern, nicht streichen.
+                  </span>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 <div className="space-y-1">
@@ -178,10 +184,8 @@ export function FaktorenEditor({ einstellungen }: BereichsEditorProps): ReactEle
                 </div>
               </div>
               {faktor.quelle === 'lagescore' && (
-                // Min/Max duerfen bei einem Lagescore VERTAUSCHT stehen: bei manchen
-                // Lagescores bedeutet ein hoeherer Rohwert weniger Aufwand — die
-                // Reihenfolge min/max TRAEGT die Polung, ein Tausch waere ein
-                // fachlicher Fehler, kein Tippfehler.
+                // Min/Max duerfen bei einem Lagescore VERTAUSCHT stehen: die Reihenfolge
+                // traegt die Polung, ein Tausch waere ein fachlicher Fehler, kein Tippfehler.
                 <p className="text-sm text-muted-foreground">
                   Min kann hier grösser als Max sein: Die Reihenfolge legt die Polung
                   des Lagescores fest (steigt der Aufwand mit dem Rohwert oder sinkt

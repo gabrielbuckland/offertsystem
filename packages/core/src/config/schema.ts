@@ -78,8 +78,7 @@ const AnpassungsVorlageSchema = z.object({
   id: z.string().regex(BEZEICHNER_MUSTER),
   bezeichnung: z.string().min(1),
   vorgabefaktor: z.number(),
-  // Vorgabe 'relativ' haelt bestehende Konfigurationsdateien gueltig; sie ist genau das,
-  // was `spalten-vorbelegung.ts` bisher fest verdrahtet hat.
+  // Vorgabe 'relativ' haelt bestehende Konfigurationsdateien gueltig.
   erfassungsform: z.enum(['relativ', 'absolut']).default('relativ'),
   begruendungVorschlag: z.string(),
   regel: BereichsregelSchema.optional(),
@@ -92,13 +91,9 @@ const ReferenzverteilungSchema = z.object({
 }).strict();
 
 /**
- * Rein deskriptive Beschreibung einer ordinalen Erfassungsskala (PE-05, E-24).
- * Sie geht in KEINE Formel ein — dieselbe Stellung wie `bezeichnung`. Ihr Zweck
- * ist die datengetriebene Faktorerfassung: Die Oberflaeche liest die
- * Stufenbeschriftungen aus der Konfiguration, statt sie zu kodieren.
- *
- * Ohne dieses Feld wiese das .strict()-Schema eine Konfiguration mit `skala`
- * zurueck, und die Beschriftungen waeren nur ueber Codeaenderungen erreichbar.
+ * Rein deskriptive Beschreibung einer ordinalen Erfassungsskala (PE-05, E-24),
+ * geht in keine Formel ein. Zweck: die Oberflaeche liest die Stufenbeschriftungen
+ * aus der Konfiguration statt sie zu kodieren.
  */
 const SkalaSchema = z.object({
   form: z.literal('ordinal'),
@@ -169,11 +164,7 @@ const ApiSchema = z.object({
     retryStatuscodes: z.array(z.number()),
   }).strict(),
   tokenGueltigkeitMin: z.number(),
-  /**
-   * Vorlaufzeit, um die ein Token vor Ablauf erneuert wird (PE-06). P3 liest das
-   * Feld; ohne es im .strict()-Schema wuerde eine Konfiguration, die es fuehrt,
-   * zurueckgewiesen. Vorgabewert der Standardkonfiguration: 30 Minuten.
-   */
+  /** Vorlaufzeit, um die ein Token vor Ablauf erneuert wird (PE-06). Standard: 30 Minuten. */
   tokenSicherheitsmargeMin: z.number(),
 }).strict();
 

@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, it } from 'vitest';
-import { loeseStrategieAuf } from '../../src/modell/normalisierung.js';
+import { loeseStrategieAuf } from '../../src/normalization/registry.js';
 import { faktorId } from '../../src/domain/ids.js';
 import { gewicht } from '../../src/domain/geld.js';
 import { pruefeProperty } from './protokoll.js';

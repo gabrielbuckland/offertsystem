@@ -2,10 +2,10 @@ import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { schreibeNachweisArtefakt } from './nachweis/schreibeArtefakt.js';
+import { schreibeNachweisArtefakt } from './nachweis/schreibe-artefakt.js';
 
 describe('Nachweisartefakt (PE-18)', () => {
-  it('schreibt Artefakt und latest.json-Zeiger', () => {
+  it('schreibt Artefakt und latest.json-Zeiger in ein eigenes Zeitstempelverzeichnis je Lauf', () => {
     const wurzel = mkdtempSync(join(tmpdir(), 'artefakt-'));
     const pfad = schreibeNachweisArtefakt(wurzel, 'contract', {
       systemverhalten: 'Contract-Schemata gegen Fixtures',
@@ -17,6 +17,7 @@ describe('Nachweisartefakt (PE-18)', () => {
       wirkung: 'detektiv',
       fixtures_herkunft: 'synthetisch',
     });
+    expect(pfad).toMatch(/contract[/\\][^/\\]+[/\\]contract\.json$/);
 
     const artefakt = JSON.parse(readFileSync(pfad, 'utf8')) as Record<string, unknown>;
     expect(artefakt['ergebnis']).toBe('pass');
@@ -27,18 +28,5 @@ describe('Nachweisartefakt (PE-18)', () => {
       readFileSync(join(wurzel, 'contract', 'latest.json'), 'utf8'),
     ) as { readonly pfad: string };
     expect(zeiger.pfad).toContain('contract.json');
-  });
-
-  it('legt je Lauf ein eigenes Zeitstempelverzeichnis an', () => {
-    const wurzel = mkdtempSync(join(tmpdir(), 'artefakt-'));
-    const a = schreibeNachweisArtefakt(wurzel, 'integration', {
-      systemverhalten: 'a',
-      fehlerstatus: 'keiner',
-      pipelineZustand: 'abgeschlossen',
-      ergebnis: 'pass',
-      anzahlTests: 1,
-      laufzeitMs: 1,
-    });
-    expect(a).toMatch(/integration[/\\][^/\\]+[/\\]integration\.json$/);
   });
 });

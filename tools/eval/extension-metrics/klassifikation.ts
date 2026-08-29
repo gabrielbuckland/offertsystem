@@ -1,18 +1,17 @@
 /**
  * Keine Modellformel. Messfilter der Erweiterbarkeitsmessung (E-15, Spec 06 §7.3).
  *
- * ALLEINIGE ZUSTAENDIGKEIT (PE-16): Es gibt im Repositorium genau eine Implementierung
- * der Messfilter und genau einen Ort, an dem die Null-Dateien-Messlatte definiert ist.
+ * ALLEINIGE ZUSTAENDIGKEIT (PE-16): genau eine Implementierung der Messfilter, genau ein
+ * Ort fuer die Null-Dateien-Messlatte.
  *
  * Gemessen wird getrennt nach vier Kategorien. Ohne diese Trennung waere das Ergebnis
  * definitionsgemaess groesser als null, weil das Erweiterungsszenario eine geaenderte
- * Konfiguration und eine zusaetzliche verletzende Variante mitbringt. Die
+ * Konfiguration und eine zusaetzliche verletzende Variante mitbringt — die
  * Null-Dateien-Messlatte bezieht sich allein auf `code`.
  *
  * Testhilfen liegen nach E-14 ausdruecklich NICHT unter `src/**;/__fixtures__/`; ein
- * solcher Pfad fiele in die Kategorie `code` und entwertete die Messung. Der
- * Klassifizierer meldet ihn deshalb als eigenen Befund, statt ihn stillschweigend
- * mitzuzaehlen.
+ * solcher Pfad fiele sonst in die Kategorie `code` und entwertete die Messung. Der
+ * Klassifizierer meldet ihn deshalb als eigenen Befund.
  */
 export type Kategorie = 'code' | 'konfiguration' | 'test' | 'sonstiges';
 

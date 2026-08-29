@@ -9,7 +9,7 @@
 import { PlatzhalterFehler, loeseDokumentAuf } from '@offert/offer/src/vorlage/aufloesung.js';
 import { platzhalterWerte } from '@offert/offer/src/vorlage/platzhalter.js';
 import { uebersetzeStufenFehler } from '../../../../../server/fehlertexte.js';
-import { holeLaufzeit } from '../../../../../server/laufzeit.js';
+import { holeLaufzeit, holeProjektLaufzeit } from '../../../../../server/laufzeit.js';
 import { legeOfferteAb } from '../../../../../server/offerten-ablage.js';
 import { ladeProjekt } from '../../../../../server/projekt-ablage.js';
 import { fuehreProjektlauf } from '../../../../../server/projekt-lauf.js';
@@ -18,12 +18,26 @@ import { ladeVorlage } from '../../../../../server/vorlagen-ablage.js';
 interface Kontext { readonly params: Promise<{ readonly id: string }> }
 
 export async function POST(_anfrage: Request, kontext: Kontext): Promise<Response> {
-  const laufzeit = holeLaufzeit(); // PE-24: eine Verdrahtung
+  // Henne-Ei: siehe Berechnungsroute.
+  const vorlaufzeit = holeLaufzeit();
+  if (!vorlaufzeit.ok) {
+    return Response.json({ fehler: { text: vorlaufzeit.meldungen.join(' ') } }, { status: 500 });
+  }
+  const { id } = await kontext.params;
+
+  const vorabProjekt = await ladeProjekt(id, vorlaufzeit.wert.projekteVerzeichnis)
+    .catch(() => null);
+  if (vorabProjekt === null) {
+    return Response.json({ fehler: { text: `Projekt ${id} nicht gefunden.` } }, { status: 404 });
+  }
+  // Laufzeit erst NACH dem Projekt: Die effektive Konfiguration haengt am Delta des
+  // Projekts (Ebene 2). Ein invariantenverletzendes Delta faellt hier als 500 mit
+  // Codeliste auf, bevor gerechnet wird (I-21).
+  const laufzeit = holeProjektLaufzeit(vorabProjekt);
   if (!laufzeit.ok) {
     return Response.json({ fehler: { text: laufzeit.meldungen.join(' ') } }, { status: 500 });
   }
   const { offertenVerzeichnis } = laufzeit.wert;
-  const { id } = await kontext.params;
 
   const lauf = await fuehreProjektlauf(id, laufzeit.wert);
   switch (lauf.art) {
@@ -45,14 +59,11 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
       // Unveraendert durchgereicht, samt `adressat` und ggf. `feldpfad` (s. Berechnungsroute).
       return Response.json({ fehler: lauf.fehler }, { status: lauf.status });
     case 'offerte': {
-      // Platzhalter-Auflösung beim Finalisieren (Spec 2026-08-27 §2): Das Artefakt
-      // trägt den aufgelösten Text; ein unauflösbarer Platzhalter erzeugt KEIN
-      // Artefakt (I-24), sondern eine benannte Meldung an den Vermarkter.
+      // Platzhalter-Auflösung beim Finalisieren: ein unauflösbarer Platzhalter erzeugt
+      // KEIN Artefakt (I-24), sondern eine benannte Meldung an den Vermarkter.
       //
-      // I-4: `ladeProjekt` (bei einem zwischenzeitlich verschwundenen/defekten
-      // Projektartefakt) und `ladeVorlage` (jetzt ein `Ergebnis`, siehe vorlagen-ablage.ts)
-      // koennen beide fehlschlagen; ohne diesen Fang traege das eine unbehandelte 500,
-      // obwohl die Route fuer jeden anderen Fehlerpfad hier eine benannte Meldung fuehrt.
+      // I-4: `ladeProjekt` und `ladeVorlage` koennen beide fehlschlagen; ohne diesen Fang
+      // traege das eine unbehandelte 500 statt einer benannten Meldung.
       let projekt;
       try {
         projekt = await ladeProjekt(id, laufzeit.wert.projekteVerzeichnis);

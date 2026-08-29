@@ -4,12 +4,11 @@ import { AppShell } from '../../src/components/shell/AppShell.js';
 import { Brotkrume } from '../../src/components/shell/Brotkrume.js';
 
 describe('AppShell', () => {
-  it('traegt Wortmarke und beide Navigationsziele', () => {
-    const html = renderToStaticMarkup(<AppShell><p>Inhalt</p></AppShell>);
-    expect(html).toContain('Offertsystem');
-    expect(html).toContain('href="/projekte"');
-    expect(html).toContain('href="/einstellungen"');
-    expect(html).toContain('Inhalt');
+  it('fuehrt keinen zentralen Einstellungspunkt mehr in der Kopfleiste', () => {
+    const markup = renderToStaticMarkup(<AppShell><p>Inhalt</p></AppShell>);
+    expect(markup).toContain('Projekte');
+    // Einstellungen gelten je Ebene und sind dort erreichbar, wo sie wirken.
+    expect(markup).not.toContain('>Einstellungen<');
   });
 });
 

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { backoffWartezeitMs } from '../src/client/backoff.js';
-import { bewerteRetryAfter, leseRetryAfterMs } from '../src/client/retryAfter.js';
+import { bewerteRetryAfter, leseRetryAfterMs } from '../src/client/retry-after.js';
 import { erzeugeZufallsquelle } from '../src/client/zufall.js';
-import { testKonfiguration } from './testKonfiguration.js';
+import { testKonfiguration } from './test-konfiguration.js';
 
 describe('Backoff (Spec 04 §6.2, §6.3)', () => {
   const ohneJitter = testKonfiguration({

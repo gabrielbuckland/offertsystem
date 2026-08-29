@@ -1,8 +1,4 @@
-/**
- * Duenner Adapter (Brief §5.1): laden, drucken, ausliefern. Die Namensbildung steht in
- * `server/pdf-dateiname.ts`, damit sie ohne laufenden Server pruefbar ist — eine
- * `route.ts` darf ausser den Handlern nichts exportieren.
- */
+// Duenner Adapter (Brief §5.1): laden, drucken, ausliefern.
 import { druckeOfferte } from '@offert/offer/src/pdf/drucke-offerte.js';
 import { verzeichnisAusLaufzeit } from '../../../../../server/laufzeit.js';
 import { ladeOfferte } from '../../../../../server/offerten-ablage.js';

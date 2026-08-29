@@ -1,8 +1,5 @@
-/**
- * Zusammenbauschicht. Nur hier treffen Konfiguration, Provider-Implementierung
- * und Vorlage aufeinander; nur hier werden Umgebungsvariablen gelesen
- * (Spec 01 §7.2) und die Konfigurationspruefsumme gebildet (E-26).
- */
+// Zusammenbauschicht: nur hier treffen Konfiguration, Provider-Implementierung und Vorlage
+// aufeinander (Spec 01 §7.2, E-26).
 export const PAKET_NAME = '@offert/web';
 
 export { bildePruefsumme, kanonischSerialisieren } from './kanonisch.js';

@@ -14,7 +14,7 @@ import { execSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { leereZwischenspeicher } from '../../src/server/konfigurations-lader.js';
-import { holeLaufzeit } from '../../src/server/laufzeit.js';
+import { holeLaufzeit, holeProjektLaufzeit } from '../../src/server/laufzeit.js';
 
 const WURZEL = resolve(import.meta.dirname, '../../../..');
 const STANDARD = `${WURZEL}/config/company-defaults.json`;
@@ -74,5 +74,34 @@ describe('Verdrahtung von Umgebung, Konfiguration, Adapter und Ablage', () => {
     if (!mock.ok || !fixture.ok) return;
     expect(mock.wert.provider.constructor.name)
       .not.toBe(fixture.wert.provider.constructor.name);
+  });
+
+  it('rechnet ohne Delta identisch zur firmenweiten Laufzeit', () => {
+    const firma = holeLaufzeit(PFADE);
+    const projekt = holeProjektLaufzeit({}, PFADE);
+    expect(firma.ok && projekt.ok).toBe(true);
+    if (!firma.ok || !projekt.ok) return;
+    expect(projekt.wert.fingerabdruck.konfigPruefsumme)
+      .toBe(firma.wert.fingerabdruck.konfigPruefsumme);
+  });
+
+  it('laesst das Delta auf Kerntyp und Pruefsumme durchschlagen', () => {
+    const firma = holeLaufzeit(PFADE);
+    const projekt = holeProjektLaufzeit(
+      { einstellungen: { flaeche: { alpha: 0.6 } } }, PFADE);
+    expect(firma.ok && projekt.ok).toBe(true);
+    if (!firma.ok || !projekt.ok) return;
+    expect(projekt.wert.konfiguration.flaeche.alpha).toBe(0.6);
+    expect(projekt.wert.fingerabdruck.konfigPruefsumme)
+      .not.toBe(firma.wert.fingerabdruck.konfigPruefsumme);
+    expect(projekt.wert.fingerabdruck.ueberschreibungen).toHaveLength(1);
+  });
+
+  it('meldet ein invariantenverletzendes Delta als Laufzeitfehler', () => {
+    const ergebnis = holeProjektLaufzeit(
+      { einstellungen: { aufwandfaktoren: { lage_gesamt: { gewicht: 0.7 } } } }, PFADE);
+    expect(ergebnis.ok).toBe(false);
+    if (ergebnis.ok) return;
+    expect(ergebnis.meldungen.join(' ')).toContain('CFG_WEIGHTS_SUM');
   });
 });

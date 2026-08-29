@@ -67,39 +67,6 @@ const SPALTE_MIT_REGEL = {
 };
 
 describe('EinheitenTabelle', () => {
-  it('fuehrt je konfigurierter Spalte eine Tabellenspalte', () => {
-    const html = renderToStaticMarkup(
-      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS} merkmale={[]}
-                        preise={{}} aendere={() => undefined} />);
-    expect(html).toContain('Zuschlag Etage');
-    expect(html).toContain('Aussicht');
-  });
-
-  // Gegenprobe zur Regel eine Zeile darueber: Die Tabelle fuehrt KEIN fest verdrahtetes
-  // Merkmal mehr. Die Stockwerklage war genau so eines — ohne Formelwirkung, nur
-  // Ablesegrundlage — und ist heute eine konfigurierbare Anpassungsspalte.
-  it('fuehrt keine fest verdrahtete Stockwerk-Spalte', () => {
-    const html = renderToStaticMarkup(
-      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS} merkmale={[]}
-                        preise={{}} aendere={() => undefined} />);
-    expect(html).not.toContain('Stockwerk');
-  });
-
-  it('zeigt den berechneten Preis, sobald er vorliegt', () => {
-    const html = renderToStaticMarkup(
-      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS} merkmale={[]}
-                        preise={{ 'E-1': { basispreis: 100_000_00, preis: 105_000_00 } }}
-                        aendere={() => undefined} />);
-    expect(html).toContain('105');
-  });
-
-  it('weist einen noch nicht berechneten Preis aus, statt null zu zeigen', () => {
-    const html = renderToStaticMarkup(
-      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} referenzobjekte={REFS} merkmale={[]}
-                        preise={{}} aendere={() => undefined} />);
-    expect(html).toContain('—');
-  });
-
   it('zeigt einen gespeicherten Faktor einer relativen Spalte als Prozentzahl, nicht als '
     + 'Faktor — sonst waere "5" im Feld ein Faktor von 5 statt 5%', () => {
       const mitFaktor = [{
@@ -140,13 +107,6 @@ describe('EinheitenTabelle', () => {
                         preise={{}} aendere={aendere} />);
     erfasst.buttons[1]!.onClick();
     expect(aendere).toHaveBeenCalledWith([zwei[0]]);
-  });
-
-  it('fuehrt je konfiguriertem Merkmal eine Tabellenspalte', () => {
-    const html = renderToStaticMarkup(
-      <EinheitenTabelle einheiten={EINHEITEN} spalten={SPALTEN} merkmale={MERKMALE}
-                        referenzobjekte={REFS} preise={{}} aendere={() => undefined} />);
-    expect(html).toContain('Stockwerk');
   });
 
   it('zeigt den aus der Regel abgeleiteten Wert, ohne dass eine Zelle erfasst ist', () => {

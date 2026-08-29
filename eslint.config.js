@@ -1,8 +1,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
-// tools/ ist Teil der Quellenmenge (PE-20): Dort entstehen Negativmatrix und
-// Nachweisartefakt; ungeprueft liefe der Code, der die Nachweise erzeugt.
+// tools/ ist Teil der Quellenmenge (PE-20): Dort entstehen Negativmatrix und Nachweisartefakt.
 const QUELLEN = ['packages/**/*.{ts,tsx}', 'apps/**/*.{ts,tsx}', 'tools/**/*.ts'];
 
 // Wiederholt in jedem Block, weil no-restricted-imports nicht additiv ist:
@@ -12,19 +11,11 @@ const KEINE_RELATIVEN_PAKETPFADE = {
   message: 'Pakete werden ausschliesslich ueber @offert/* importiert.',
 };
 
-// Produktivcode des Kerns darf nicht aus `test/` importieren.
-//
-// Der Plan formulierte das Verbot als `['../*', '../../*']`. Das trifft die
-// Absicht nicht: `no-restricted-imports` wertet `group` mit gitignore-Semantik
-// aus, wo `../*` das *Verzeichnis* `../..` und damit den gesamten Paketinhalt
-// erfasst — auch den voellig regulaeren Weg `test/**` -> `src/**`, den jeder
-// Kerntest geht. Die Kante ueber die Paketgrenze deckt ohnehin
-// KEINE_RELATIVEN_PAKETPFADE ab; hier bleibt die eine Kante zu verbieten, die
-// R1 wirklich meint: src/ zieht Testcode herein.
-//
-// Dateibezogen formuliert (Endungsmuster statt Verzeichnismuster), weil sich
-// unterhalb eines ausgeschlossenen *Verzeichnisses* keine Datei wieder
-// aufnehmen liesse — die Ausnahme aus PE-10 waere sonst wirkungslos.
+// Verbietet src/ -> test/ Importe. Dateibezogen (Endungsmuster statt Verzeichnismuster)
+// formuliert, weil `no-restricted-imports` `group` mit gitignore-Semantik auswertet: ein
+// Verzeichnismuster wie `../*` erfasst den ganzen Paketinhalt und traefe damit auch den
+// regulaeren Weg `test/**` -> `src/**`. Ausserdem liesse sich unterhalb eines
+// ausgeschlossenen Verzeichnisses keine Datei per Ausnahme wieder aufnehmen (PE-10).
 const KEIN_TESTCODE_IN_SRC = [
   '../**/test/**/*.ts', '../**/test/**/*.tsx',
   '../**/test/**/*.js', '../**/test/**/*.mjs',
@@ -44,10 +35,8 @@ export default tseslint.config(
     ],
   },
   js.configs.recommended,
-  // `no-undef` ist auf TypeScript redundant und meldet auf Dateien ausserhalb
-  // eines TS-Projekts (vitest.workspace.ts, vitest.config.ts) faelschlich
-  // eingebaute Web-Globale wie `URL`. Unaufgeloeste Bezeichner findet `tsc`
-  // schaerfer und mit Typinformation.
+  // `no-undef` ist auf TypeScript redundant und meldet auf Nicht-Projekt-Dateien
+  // (vitest.*.ts) faelschlich Web-Globale wie `URL`; `tsc` prueft das schaerfer.
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: { parser: tseslint.parser },
@@ -63,27 +52,23 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unsafe-assignment': 'error',
 
-      // Der Unterstrich-Praefix ist die projektweite Kennzeichnung fuer
-      // absichtlich ungenutzte Bezeichner. TypeScript selbst behandelt sie unter
-      // `noUnusedParameters` bereits so; ohne diese Angleichung meldete ESLint
-      // genau die Stellen, die `tsc` bewusst durchlaesst.
+      // Unterstrich-Praefix = projektweite Kennzeichnung fuer absichtlich ungenutzt,
+      // analog zu TypeScripts `noUnusedParameters`.
       '@typescript-eslint/no-unused-vars': ['error', {
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
         caughtErrorsIgnorePattern: '^_',
       }],
 
-      // Eine Methode, die einen Port mit Promise-Rueckgabe erfuellt, ist aus
-      // Vertragsgruenden `async` — auch wenn ihre Testfassung nichts erwartet.
-      // Die Regel forderte hier eine Verrenkung (`Promise.resolve`) ohne
-      // fachlichen Gewinn und wuerde die Implementierung vom Port entkoppeln.
+      // Eine Portmethode mit Promise-Rueckgabe bleibt vertragsgemaess `async`, auch wenn
+      // eine Testfassung nichts awaitet.
       '@typescript-eslint/require-await': 'off',
     },
   },
 
   // R1a — Der Berechnungskern ist nach aussen abhaengigkeitsfrei (NFA-02, I-03, I-23).
-  // Gilt fuer das GANZE Paket, Tests eingeschlossen: Ein Kerntest, der ein Schwesterpaket
-  // oder React hereinzoege, machte die Abhaengigkeitsfreiheit zur blossen Absichtserklaerung.
+  // Gilt fuer das GANZE Paket inkl. Tests, sonst waere die Abhaengigkeitsfreiheit
+  // nur eine Absichtserklaerung.
   {
     files: ['packages/core/**/*.{ts,tsx}'],
     rules: {
@@ -111,13 +96,9 @@ export default tseslint.config(
   },
 
   // R1b — Zusaetzlich fuer den QUELLCODE des Kerns: kein Dateisystem, keine Pruefsumme,
-  // kein Testcode. Der Geltungsbereich endet bewusst an `src/`.
-  //
-  // Die Property-Infrastruktur unter `test/property/` schreibt die Nachweisartefakte, die
-  // PE-18 verlangt, und liest dafuer `node:fs`. Ein paketweites Verbot zwaenge dazu, den
-  // Artefaktschreiber ausserhalb des Pakets anzusiedeln — die Aussage «der Kern liest
-  // nicht vom Dateisystem» wuerde dadurch nicht wahrer, nur die Ablage unuebersichtlicher.
-  // Wiederholt werden die Muster aus R1a, weil `no-restricted-imports` nicht additiv ist.
+  // kein Testcode. Geltungsbereich endet bewusst an `src/`, weil `test/property/` fuer die
+  // PE-18-Nachweisartefakte legitim `node:fs` braucht. Muster aus R1a wiederholt, da
+  // `no-restricted-imports` nicht additiv ist.
   {
     files: ['packages/core/src/**/*.{ts,tsx}'],
     rules: {
@@ -184,8 +165,7 @@ export default tseslint.config(
     },
   },
 
-  // R3 — Relativpfade in Schwesterpakete, systemweit; die Paketverbote aus R1/R2
-  // werden oben wiederholt, weil no-restricted-imports nicht additiv ist.
+  // R3 — Relativpfade in Schwesterpakete, systemweit.
   {
     files: ['apps/**/*.{ts,tsx}'],
     rules: {
@@ -199,13 +179,8 @@ export default tseslint.config(
   },
 
   // Zugangsdaten werden ausschliesslich in apps/web/src/server gelesen (Spec 01 §7.2).
-  //
-  // Der Geltungsbereich ist `src/**`, nicht das ganze Paket: Die Zusage betrifft den
-  // ausgelieferten Code. Die Property-Infrastruktur unter `packages/core/test/property/`
-  // liest `FC_SEED` — das ist der von Spec 06 §4.2 vorgeschriebene Seed-Mechanismus und
-  // keine verdeckte Konfigurationsquelle des Kerns. Ein Verbot dort zwaenge dazu, den
-  // Seed anders hereinzureichen, ohne dass die Aussage «der Kern liest keine Umgebung»
-  // dadurch staerker wuerde.
+  // Geltungsbereich `src/**`, nicht das ganze Paket: `packages/core/test/property/` liest
+  // legitim `FC_SEED` (Spec 06 §4.2, Property-Seed), keine verdeckte Konfigurationsquelle.
   {
     files: ['packages/*/src/**/*.{ts,tsx}'],
     rules: {
@@ -218,20 +193,14 @@ export default tseslint.config(
     },
   },
 
-  // Die .mjs-Dateien des Aufloesungshakens laufen ausserhalb der TypeScript-
-  // Projekte und werden deshalb nicht typgeprueft gelintet.
+  // Die .mjs-Dateien laufen ausserhalb der TypeScript-Projekte, daher ungeprueft.
   { files: ['tools/**/*.mjs'], rules: { 'no-undef': 'off' } },
 
-  // Benannte Ausnahme fuer GENAU eine Datei (PE-10, Pfad nach PE-25). P2s
-  // Toleranzmodul liest die Invariantendefinitionen aus
-  // test/property/invariants.json. Der Pfad verlaesst src/, was R1 sonst verbietet.
-  //
-  // Die naheliegende Alternative — die JSON-Datei nach src/ verschieben — ist
-  // abzulehnen: Sie machte die Toleranzdatei zu Code. Der Messfilter der
-  // Erweiterbarkeitsmessung zaehlt alles unter packages/*/src/** als Code; eine
-  // Toleranzanpassung im Erweiterungsszenario schluege dann auf die
-  // Null-Dateien-Messlatte durch. E-15 verlangt genau das Gegenteil, und E-17
-  // verlangt genau eine Toleranzquelle — die auf der Testseite liegen muss.
+  // Benannte Ausnahme fuer GENAU eine Datei (PE-10, Pfad nach PE-25): Das Toleranzmodul
+  // liest Invariantendefinitionen aus test/property/invariants.json, was R1 sonst
+  // verbietet. Die JSON-Datei nach src/ zu verschieben waere keine Verbesserung — sie
+  // zaehlte dann als Code und schluege bei der Erweiterbarkeitsmessung (E-15) auf die
+  // Null-Dateien-Messlatte durch; E-17 verlangt die Toleranzquelle auf der Testseite.
   {
     files: ['packages/core/src/config/toleranzen.ts'],
     rules: {

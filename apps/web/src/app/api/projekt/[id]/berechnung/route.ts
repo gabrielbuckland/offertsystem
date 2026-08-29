@@ -2,25 +2,37 @@
  * Duenner Adapter: Laufzeit holen, `fuehreProjektlauf` fragen, das Ergebnis in eine
  * Antwort uebersetzen. Er rechnet nicht und formatiert nicht.
  *
- * Der zweistufige Rechenweg selbst steht in `server/projekt-lauf.ts` (PE-21) — er ist
- * mit der Offert-Route geteilt. Diese Route unterscheidet sich von jener nur noch darin,
- * was sie mit dem Ergebnis tut: Es entsteht KEIN Artefakt. Sie antwortet nur.
- *
- * Die Antwort reicht die Herleitung des Offert-Schemas durch (`derivation`/`aggregates`),
- * statt ein zweites Datenbild derselben Zahlen aufzubauen.
+ * Der zweistufige Rechenweg (PE-21) steht in `server/projekt-lauf.ts` und ist mit der
+ * Offert-Route geteilt; diese Route erzeugt nur kein Artefakt, sondern antwortet.
  */
 import { uebersetzeStufenFehler } from '../../../../../server/fehlertexte.js';
-import { holeLaufzeit } from '../../../../../server/laufzeit.js';
+import { holeLaufzeit, holeProjektLaufzeit } from '../../../../../server/laufzeit.js';
+import { ladeProjekt } from '../../../../../server/projekt-ablage.js';
 import { fuehreProjektlauf } from '../../../../../server/projekt-lauf.js';
 
 interface Kontext { readonly params: Promise<{ readonly id: string }> }
 
 export async function POST(_anfrage: Request, kontext: Kontext): Promise<Response> {
-  const laufzeit = holeLaufzeit(); // PE-24: eine Verdrahtung
+  // Henne-Ei: Das Projektverzeichnis kommt erst aus der firmenweiten Laufzeit, das
+  // Projekt-Delta fuer die Berechnung erst aus dem geladenen Projekt — daher zwei
+  // Aufrufe (`holeLaufzeit`/`holeProjektLaufzeit`) statt einem.
+  const vorlaufzeit = holeLaufzeit();
+  if (!vorlaufzeit.ok) {
+    return Response.json({ fehler: { text: vorlaufzeit.meldungen.join(' ') } }, { status: 500 });
+  }
+  const { id } = await kontext.params;
+
+  const projekt = await ladeProjekt(id, vorlaufzeit.wert.projekteVerzeichnis).catch(() => null);
+  if (projekt === null) {
+    return Response.json({ fehler: { text: `Projekt ${id} nicht gefunden.` } }, { status: 404 });
+  }
+  // Laufzeit erst NACH dem Projekt: Die effektive Konfiguration haengt am Delta des
+  // Projekts (Ebene 2). Ein invariantenverletzendes Delta faellt hier als 500 mit
+  // Codeliste auf, bevor gerechnet wird (I-21).
+  const laufzeit = holeProjektLaufzeit(projekt);
   if (!laufzeit.ok) {
     return Response.json({ fehler: { text: laufzeit.meldungen.join(' ') } }, { status: 500 });
   }
-  const { id } = await kontext.params;
 
   const lauf = await fuehreProjektlauf(id, laufzeit.wert);
   switch (lauf.art) {
@@ -61,6 +73,9 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
         honorarMin: o.aggregates.feeRange.value.min,
         honorarMax: o.aggregates.feeRange.value.max,
         herleitung: { derivation: o.derivation, aggregates: o.aggregates },
+        // Weist den PROJEKTBEZOGENEN Konfigurationsstand aus (Ebene 2), nicht den
+        // Firmenstand — massgeblich fuer den Nachvollzug, mit welchem Delta gerechnet wurde.
+        metadaten: { konfigPruefsumme: o.metadata.konfigPruefsumme },
       }, { status: 200 });
     }
   }

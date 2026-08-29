@@ -1,14 +1,9 @@
 'use client';
 
-/**
- * Verwaltet die firmenweiten Merkmale. Die Kennung wird aus der Bezeichnung abgeleitet
- * und ist danach schreibgeschuetzt: Sie ist der Anker, ueber den eine Bereichsregel ihr
- * Merkmal findet (`regel.merkmal`), und eine nachtraegliche Umbenennung liesse jede
- * darauf verweisende Regel ins Leere laufen.
- *
- * Typ aus `@offert/core` wie in `BereichsregelEditor.tsx` — siehe dortiger Kommentar
- * zur Wahl zwischen Kern- und Projektartefakt-Typ.
- */
+// Verwaltet die firmenweiten Merkmale. Die Kennung wird aus der Bezeichnung abgeleitet und
+// ist danach schreibgeschuetzt: sie ist der Anker, ueber den eine Bereichsregel ihr Merkmal
+// findet (`regel.merkmal`); eine nachtraegliche Umbenennung liesse jede darauf verweisende
+// Regel ins Leere laufen.
 import { Trash2 } from 'lucide-react';
 import type { Merkmal } from '@offert/core';
 import { Button } from '../ui/button.js';
@@ -22,7 +17,6 @@ export interface MerkmalEditorProps {
   readonly aendere: (merkmale: readonly Merkmal[]) => void;
 }
 
-/** Gleiches Muster wie `ableiteVorlagenId` in PreisanpassungEditor.tsx. */
 export function ableiteMerkmalId(bezeichnung: string): string {
   const roh = bezeichnung.trim().toLowerCase()
     .replace(/[äöü]/g, (z) => ({ ä: 'ae', ö: 'oe', ü: 'ue' }[z] ?? z))
@@ -31,14 +25,9 @@ export function ableiteMerkmalId(bezeichnung: string): string {
   return /^[a-z]/.test(roh) ? roh : `m_${roh}`;
 }
 
-/**
- * Naechste Kennung fuer ein neu hinzugefuegtes Merkmal, kollisionsfrei ueber den Lebenszyklus
- * der Liste hinweg — analog zu `erzeugeSpaltenIdFolge` (AnpassungsSpalten.tsx): Ein Zaehler
- * `merkmale.length + 1` kollidiert, sobald zwischendurch ein Merkmal geloescht wurde (zwei
- * hinzufuegen, das erste loeschen, wieder hinzufuegen ergibt zweimal `merkmal_2`). Die
- * Kennung wird deshalb aus der hoechsten bereits vergebenen `merkmal_<n>`-Kennung abgeleitet,
- * nicht aus der aktuellen Listenlaenge.
- */
+// Kennung aus der hoechsten bereits vergebenen `merkmal_<n>`-Kennung, nicht aus der
+// Listenlaenge: `merkmale.length + 1` kollidiert, sobald zwischendurch ein Merkmal geloescht
+// wurde.
 export function naechsteMerkmalId(merkmale: readonly Merkmal[]): string {
   const hoechste = merkmale.reduce((max, m) => {
     const treffer = /^merkmal_(\d+)$/.exec(m.id);

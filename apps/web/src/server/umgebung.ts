@@ -1,18 +1,12 @@
 /**
- * Einziger Ort, an dem Umgebungsvariablen gelesen werden (Spec 01 §7.2).
- * Kein Rueckfall auf Ersatzwerte: Fehlen bei VALUATION_PROVIDER=pricehubble die
- * Zugangsdaten, bricht der Start ab. I-24 und NFA-10 verbieten, ohne
- * Referenzbewertung ein Ergebnis zu erzeugen; ein stiller Rueckfall auf Mock-
- * oder Fixture-Daten im Live-Betrieb waere in der Offerte nicht erkennbar.
+ * Einziger Ort, an dem Umgebungsvariablen gelesen werden (Spec 01 §7.2). Kein Rueckfall
+ * auf Ersatzwerte: Fehlen bei VALUATION_PROVIDER=pricehubble die Zugangsdaten, bricht der
+ * Start ab (I-24, NFA-10) — ein stiller Rueckfall auf Mock-/Fixture-Daten im Live-Betrieb
+ * waere in der Offerte nicht erkennbar.
  *
- * Die Vorgabepfade werden gegen die Wurzel des Arbeitsbereichs aufgeloest, nicht
- * gegen `process.cwd()`. Grund: `next dev` laeuft mit `apps/web` als
- * Arbeitsverzeichnis. Relative Vorgaben zeigten dadurch auf
- * `apps/web/config/company-defaults.json` und `apps/web/data/offerten` -- die
- * Erfassung brach mit CFG_SCHEMA_TYPE ab, und Offerten waeren im Paket der
- * Zugriffsschicht statt in der Ablage des Arbeitsbereichs gelandet. Die
- * Werkzeuge unter `tools/` leiten ihre Wurzel seit jeher aus `import.meta.url`
- * ab; die Zugriffsschicht tut es damit genauso.
+ * Vorgabepfade werden gegen die Wurzel des Arbeitsbereichs aufgeloest, nicht gegen
+ * `process.cwd()`: `next dev` laeuft mit `apps/web` als Arbeitsverzeichnis, relative
+ * Vorgaben zeigten sonst auf `apps/web/config/...` statt auf die Ablage des Arbeitsbereichs.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve } from 'node:path';

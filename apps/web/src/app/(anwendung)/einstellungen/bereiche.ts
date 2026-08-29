@@ -5,23 +5,16 @@ import { PreisanpassungEditor } from '../../../components/einstellungen/Preisanp
 import type { BereichsEditor } from '../../../components/einstellungen/verwende-einstellungen.js';
 
 /**
- * Die vier Bereiche entsprechen den Editor-Pfaden aus `PipelineAnsicht`
- * (`pipeline-daten.ts`, dort ebenso als fester Vier-Werte-Aufzaehlung typisiert — diese
- * Zuordnung ist Routing-Metadatum, kein Faktor-/Vorlagenbezeichner im Sinn der Regel
- * "kein Konfigurationsbezeichner fest verdrahtet in components/einstellungen/", die nur
- * fuer den Inhalt der Editoren gilt).
- *
+ * Die vier Bereiche entsprechen den Editor-Pfaden aus `PipelineAnsicht` (`pipeline-daten.ts`).
  * `praefix` kann mehrere Konfigurationswurzeln nennen: «Preisanpassung» deckt sowohl
- * `flaeche` (α) als auch `preisanpassung` (zMin/zMax/Begruendung) und
- * `anpassungsVorlagen` ab, siehe `baueStufeVerkaufssumme` in `pipeline-daten.ts`.
+ * `flaeche` (α) als auch `preisanpassung` (zMin/zMax/Begruendung) und `anpassungsVorlagen`
+ * ab, siehe `baueStufeVerkaufssumme` in `pipeline-daten.ts`.
  *
  * DIESE ZUORDNUNG BLEIBT BEWUSST HIER UND WANDERT NICHT NACH `components/einstellungen/`:
- * Genau dieser Ordner wird von einem Architekturtest (Task 17) auf fest verdrahtete
- * Konfigurationsbezeichner gescannt, und Werte wie `honorar`/`aufwandfaktoren` SIND
- * solche Bezeichner. Als Routing-Metadatum (sowohl der Bereichsseite als auch der
- * Einstellungen-Uebersicht, die seit der Zusammenlegung beide denselben Editor inline
- * einbetten) faellt die Zuordnung nicht unter das Verbot — im Editor-Ordner selbst
- * waere sie es. Bitte nicht "aufraeumend" verschieben.
+ * Ein Architekturtest scannt genau diesen Ordner auf fest verdrahtete Konfigurations-
+ * bezeichner, und Werte wie `honorar`/`aufwandfaktoren` SIND solche Bezeichner. Als
+ * Routing-Metadatum faellt die Zuordnung hier nicht unter das Verbot — im Editor-Ordner
+ * selbst waere sie es. Bitte nicht "aufraeumend" verschieben.
  */
 export const BEREICHE = {
   dossier: {

@@ -1,12 +1,8 @@
 /**
  * Keine Formel. PDF-Export durch Druck DERSELBEN gerenderten Seite (Brief §5.7, I-25).
  *
- * Playwright druckt die Vorlage; es erzeugt das Dokument nicht neu. Damit ist die Zusage
- * «PDF und HTML zeigen dieselben Zahlen» konstruktiv gesichert statt nachtraeglich
- * geprueft — es gibt keinen zweiten Renderpfad, der abweichen koennte.
- *
- * Playwright dient hier ausschliesslich dem PDF-Export, nicht dem Oberflaechentest
- * (Kapitel 4.4).
+ * Playwright druckt die Vorlage, erzeugt das Dokument nicht neu — «PDF und HTML zeigen
+ * dieselben Zahlen» ist damit konstruktiv gesichert statt nachtraeglich geprueft.
  *
  * Die Browserfabrik ist injizierbar, damit der Druckablauf ohne echten Browser pruefbar
  * ist: Ein Test, der Chromium startet, prueft Playwright, nicht diesen Code.

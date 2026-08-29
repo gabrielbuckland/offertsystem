@@ -1,9 +1,7 @@
 /**
  * Reine Entscheidungslogik der Einheitentabelle, getrennt von den React-Komponenten
  * (`ZellenEingabe.tsx`, `EinheitenTabelle.tsx`), damit sie ohne DOM-Ereignisse testbar
- * ist. `renderToStaticMarkup` haengt keine Handler an — ein reiner Rendering-Test haette
- * also nie gezeigt, dass ein geleertes Feld faelschlich auf 0 fiel (Task-11-Review,
- * Finding 4).
+ * ist.
  */
 
 export type Zellentscheid =
@@ -50,11 +48,10 @@ export function prozentZuFaktor(prozent: number): number {
 /**
  * Rappen -> Franken fuer die Anzeige. Kehrbild von `frankenZuRappen`.
  *
- * `basispreis` (Stufe 2 des Kerns) und `erfassterBetrag`/absolute `spaltenwerte` fuehren
- * Rappen (`erfassung-schema.ts`: `erfassterBetrag: z.number().int()`) — eine Kolonne, die
+ * `basispreis` und `erfassterBetrag`/absolute `spaltenwerte` fuehren Rappen
+ * (`erfassung-schema.ts`: `erfassterBetrag: z.number().int()`) — eine Kolonne, die
  * "(CHF)" beschriftet und den Rappen-Wert unskaliert anzeigt, ist um den Faktor 100 zu
- * klein/gross. Genau derselbe Fehler wie bei den Prozentspalten, nur bei Franken statt
- * Prozent (Task-11-Review, Fix Round 2).
+ * klein/gross.
  */
 export function rappenZuFranken(rappen: number): number {
   return rappen / 100;

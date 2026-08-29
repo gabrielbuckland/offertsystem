@@ -2,24 +2,18 @@
  * Keine Modellformel; Variantenbildung fuer den OAT-Lauf (Spec 06 §7.1).
  *
  * Sechs Dimensionen, je vier Stufen (-20/-10/+10/+20 Prozent). Varianten entstehen auf der
- * ROHFORM, weil nur sie Eingabe der Validierung ist (PE-01); jede Variante wird als letzter
- * Schritt durch dieselbe dreistufige Pruefung geschickt wie der Ladepfad (I-21). Keine
- * Variante erreicht das Hauptprogramm, ohne den Ladepfad passiert zu haben.
+ * ROHFORM, weil nur sie Eingabe der Validierung ist (PE-01); jede Variante durchlaeuft
+ * zuletzt denselben Ladepfad wie im Betrieb (I-21).
  *
- * Zu D4 — warum die SPANNE und nicht beide Grenzen einzeln: Ein gemeinsames Skalieren
- * beider Grenzen verschoebe bei `min != 0` zugleich Lage und Breite des
- * Saettigungsbereichs; die gemessene Wirkung waere nicht mehr einer Groesse zuzuordnen.
- * Skaliert wird deshalb die Spanne um den Mittelpunkt. Die Umpolung (`min > max`) bleibt
- * erhalten, weil die Vorzeichen der Abstaende unberuehrt bleiben — genau die Eigenschaft,
- * die I-13 verlangt.
+ * D4 — skaliert wird die SPANNE um den Mittelpunkt, nicht beide Grenzen einzeln: Sonst
+ * verschoebe sich bei `min != 0` zugleich Lage und Breite des Saettigungsbereichs, und die
+ * Wirkung waere keiner Groesse mehr zuzuordnen. Die Umpolung (`min > max`) bleibt erhalten,
+ * da die Vorzeichen der Abstaende unberuehrt bleiben (I-13).
  *
- * Zu D5 — `gMin` bleibt fest: Bei negativem delta waere I-16 (`gMin <= 1 <= gMax`) sonst
- * sofort verletzt und die Dimension nicht messbar.
+ * D5 — `gMin` bleibt fest: sonst verletzte ein negatives delta sofort I-16 (`gMin <= 1 <= gMax`).
  *
- * Zu D6 — die Stuetzstelle k = 0 bleibt unberuehrt. `V_0 = 0` ist die Untergrenze des
- * Definitionsbereichs; ein skaliertes `V_0 > 0` erzeugte einen undefinierten Bereich
- * unterhalb der ersten Stufe. `H^(0)` bleibt aus demselben Grund fest — es ist das
- * Grundhonorar, das die Degression traegt, und seine Mitskalierung vermengte D6 mit D5.
+ * D6 — Stuetzstelle k = 0 bleibt unberuehrt (`V_0 = 0` ist die Untergrenze des
+ * Definitionsbereichs); `H^(0)` bleibt aus demselben Grund fest, sonst vermengte sich D6 mit D5.
  */
 import { sortiereNachSchluessel } from '../shared/artefakt.ts';
 import { klone, validiere } from '../shared/konfig.ts';

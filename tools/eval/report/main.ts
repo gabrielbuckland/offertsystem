@@ -30,15 +30,16 @@ export interface Laufoptionen {
   /** Ohne Beispiel-Offerte laufen lassen; die Pruefung wird dann uebersprungen. */
   readonly ohneOfferte?: boolean;
   /**
-   * Abweichender Ort der Abdeckungsdatei. Gebraucht wird das im eigenen Abnahmetest:
-   * Er laeuft INNERHALB des Testlaufs, der die Datei erst am Ende schreibt — ohne diese
-   * Moeglichkeit pruefte der Test den Stand des vorigen Laufs oder gar keinen.
+   * Abweichender Ort der Abdeckungsdatei, gebraucht im eigenen Abnahmetest: Er laeuft
+   * INNERHALB des Testlaufs, der die Datei erst am Ende schreibt.
    */
   readonly coveragePfad?: string;
 }
 
 export function hauptlauf(opt: Laufoptionen = {}): readonly string[] {
-  const main = opt.main ?? process.env['BA_MAIN'] ?? null;
+  // `undefined` laesst die Umgebung zu; ausdrueckliches `null` heisst "kein MAIN" und
+  // darf nicht aus der Umgebung nachgefuellt werden.
+  const main = opt.main !== undefined ? opt.main : (process.env['BA_MAIN'] ?? null);
   if (main === null || main === '') {
     throw new Error(
       'BA_MAIN ist nicht gesetzt. Der Generator schreibt nach MAIN/appendix/generated und '

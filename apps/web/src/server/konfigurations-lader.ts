@@ -1,16 +1,10 @@
 /**
- * Konfigurationslader (Spec 02 §6, E-26).
- * Liest die firmenweite Berechnungsbasis vom Dateisystem, laesst sie von
- * `parseKonfiguration` pruefen und auf den Kerntyp abbilden, fuehrt die
- * projektbezogenen Ueberschreibungen zusammen und bildet die SHA-256-Pruefsumme
- * der effektiven Konfiguration.
- *
- * ZUSTAENDIGKEIT (PE-01): Die Abbildung Rohform -> Kerntyp gehoert dem Kern und
- * wird von P2 gebaut; hier wird sie AUFGERUFEN. Dateizugriff und Pruefsumme
- * bleiben hier, weil der Kern weder node:fs noch node:crypto kennen darf (R1).
- *
- * Die Pruefung laeuft beim Laden und weist zurueck, BEVOR gerechnet wird (I-21).
- * Es gibt keinen --force-Pfad, keinen Warnmodus und keine Teiluebernahme.
+ * Konfigurationslader (Spec 02 §6, E-26). Liest die firmenweite Berechnungsbasis vom
+ * Dateisystem, prueft/bildet sie ueber `parseKonfiguration` auf den Kerntyp ab (PE-01,
+ * dieser Lader ruft nur auf), fuehrt projektbezogene Ueberschreibungen zusammen und
+ * bildet die SHA-256-Pruefsumme. Dateizugriff/Pruefsumme bleiben hier, weil der Kern
+ * weder node:fs noch node:crypto kennen darf (R1). Pruefung weist zurueck BEVOR gerechnet
+ * wird (I-21) — kein --force, kein Warnmodus, keine Teiluebernahme.
  */
 import { readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -18,7 +12,6 @@ import {
   fehler,
   mergeKonfiguration,
   parseKonfiguration,
-  validiereKonfiguration,
   type EffektiveKonfiguration,
   type Konfiguration,
   type KonfigurationsFehler,
@@ -35,10 +28,7 @@ export interface LadeOptionen {
 
 /**
  * Kurzausweis des Konfigurationsstands (PE-04). NICHT zu verwechseln mit
- * `konfigurationsAbdruck`: So heisst projektweit die EINGEBETTETE KOPIE der
- * Konfiguration, die E-26 verlangt und aus der US-10 und US-13 den Nachvollzug
- * ziehen. Hier steht nur der Ausweis; die Pruefsumme traegt das eigene Feld
- * `konfigPruefsumme`, gegen das der Evaluationsplan prueft.
+ * `konfigurationsAbdruck` (die eingebettete Kopie der Konfiguration, E-26).
  */
 export interface KonfigurationsFingerabdruck {
   readonly konfigVersion: string;
@@ -51,7 +41,6 @@ export type LadeErgebnis =
   | {
       readonly ok: true;
       readonly konfiguration: EffektiveKonfiguration;
-      /** Kerntyp aus parseKonfiguration; Eingang der Pipeline. */
       readonly kern: Konfiguration;
       /** Unveraenderter api-Rohblock fuer den Adapter (PE-17). */
       readonly api: RohApiKonfiguration;
@@ -66,11 +55,8 @@ interface ZwischenspeicherEintrag {
   readonly kern: Konfiguration;
 }
 
-/**
- * Prozessweiter Zwischenspeicher. Die zuletzt gueltige Konfiguration bleibt in
- * Kraft, wenn ein Nachladen scheitert: Der Eintrag wird nur bei erfolgreicher
- * Validierung ersetzt.
- */
+/** Prozessweiter Zwischenspeicher; Eintrag wird nur bei erfolgreicher Validierung ersetzt,
+ *  scheitert ein Nachladen bleibt die zuletzt gueltige Konfiguration in Kraft. */
 const zwischenspeicher = new Map<string, ZwischenspeicherEintrag>();
 
 export function leereZwischenspeicher(): void {
@@ -117,17 +103,13 @@ export function ladeKonfiguration(optionen: LadeOptionen): LadeErgebnis {
     } catch {
       return { ok: false, fehler: dateifehler(absolut, 'kein gueltiges JSON') };
     }
-    // Eine einzige Stelle prueft und bildet ab (PE-01). Der Lader baut die
-    // Abbildung nicht nach; taete er es, gaebe es zwei Wahrheiten darueber,
-    // was 'minmax' im Kern bedeutet.
+    // Eine einzige Stelle prueft und bildet ab (PE-01).
     const geparst = parseKonfiguration(roh);
     if (!geparst.ok) {
-      // Die verletzende Datei wird zurueckgewiesen und wird nicht aktiv; ein
-      // vorhandener Zwischenspeichereintrag bleibt unangetastet in Kraft.
+      // Verletzende Datei wird zurueckgewiesen; ein vorhandener Zwischenspeichereintrag
+      // bleibt unangetastet in Kraft.
       return { ok: false, fehler: geparst.fehler };
     }
-    // `parseKonfiguration` liefert beides in einem Traeger (KonfigurationsAbbildung);
-    // der Plan notierte hier noch `geparst.roh`/`geparst.wert` einer aelteren Fassung.
     basis = geparst.wert.roh;
     kern = geparst.wert.kern;
     zwischenspeicher.set(absolut, { mtimeMs, groesse, basis, kern });
@@ -136,12 +118,12 @@ export function ladeKonfiguration(optionen: LadeOptionen): LadeErgebnis {
   const zusammengefuehrt = mergeKonfiguration(basis, optionen.ueberschreibungen ?? {});
   if (!zusammengefuehrt.ok) return { ok: false, fehler: zusammengefuehrt.fehler };
 
-  // Regel 5 aus Spec 02 §2.3: Nach dem Merge gilt erneut die volle Validierung.
-  // Der Merge kann Ebene 3 nicht verletzen, weil keine invariantenrelevante
-  // Groesse ueberschreibbar ist; die erneute Pruefung ist dennoch vorgesehen,
-  // damit die Aussage nicht von der Vollstaendigkeit der Sperrliste abhaengt.
-  const nachpruefung = validiereKonfiguration(zusammengefuehrt.wert.basis);
-  if (!nachpruefung.ok) return { ok: false, fehler: nachpruefung.fehler };
+  // Regel 5 aus Spec 02 §2.3: Nach dem Merge gilt erneut die volle Pruefung (I-21) — eine
+  // projektbezogene Uebersteuerung kann eine Invariante verletzen. `parseKonfiguration`
+  // statt `validiereKonfiguration`, da es zugleich den Kerntyp der zusammengefuehrten
+  // Basis liefert (PE-01). Bewusst UNBEDINGT, nicht nur bei nichtleerem Protokoll.
+  const nachgeparst = parseKonfiguration(zusammengefuehrt.wert.basis);
+  if (!nachgeparst.ok) return { ok: false, fehler: nachgeparst.fehler };
 
   const effektiv = zusammengefuehrt.wert;
   const fingerabdruck: KonfigurationsFingerabdruck = {
@@ -158,7 +140,7 @@ export function ladeKonfiguration(optionen: LadeOptionen): LadeErgebnis {
   return {
     ok: true,
     konfiguration: effektiv,
-    kern,
+    kern: nachgeparst.wert.kern,
     // PE-17: Der Rohblock geht unveraendert an die Zugriffsschicht weiter, die
     // ihn beim Erzeugen des Adapters uebergibt. Der Kern kennt ihn nicht.
     api: effektiv.basis.api,

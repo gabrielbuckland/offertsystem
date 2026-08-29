@@ -78,9 +78,8 @@ function feld(wert: string | null): string {
 }
 
 function bezeichner(f: Testfall): string {
-  // Gedankenstrich-Einschuebe aus Suite-/Testnamen werden fuer den Bericht in
-  // Kommata ueberfuehrt (Stilregel des Berichts); die Testnamen im Code bleiben
-  // unveraendert.
+  // Gedankenstrich-Einschuebe aus Suite-/Testnamen werden fuer den Bericht in Kommata
+  // ueberfuehrt (Stilregel); die Testnamen im Code bleiben unveraendert.
   const text = `${f.suite === null ? '' : `${f.suite}: `}${f.name}`;
   return latexEscape(text.replace(/\s+—\s+/gu, ', '));
 }

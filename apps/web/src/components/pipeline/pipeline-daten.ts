@@ -2,14 +2,21 @@
  * Reine Datenaufbereitung fuer die Rechenweg-Ansicht (US-09/A-10): fuenf feste Stufen in
  * Rechenreihenfolge, deren Inhalte ausschliesslich durch Iteration ueber die Konfiguration
  * bzw. eine optionale Herleitung entstehen. Kein Faktor-, Vorlagen- oder
- * Konfigurationsschluessel ist hier woertlich verdrahtet — ein Architekturtest (Task 17)
- * prueft das ueber diesen Ordner. Keine React-/Node-Importe: die Funktion laeuft
- * unveraendert im Browser.
+ * Konfigurationsschluessel ist hier woertlich verdrahtet — ein Architekturtest prueft das
+ * ueber diesen Ordner. Keine React-/Node-Importe: die Funktion laeuft unveraendert im
+ * Browser.
  *
- * Jede Formelzeile zeigt den AUSDRUCK mit den tatsaechlich eingesetzten Werten und als
- * Ergebnis den Wert, den der Kern berechnet hat — hier wird nichts nachgerechnet, nur
- * ausgewiesen (I-24). Die Reihenfolge der Zeilen folgt der Reihenfolge der Rechnung.
+ * Jede Formelzeile zeigt den Ausdruck mit den tatsaechlich eingesetzten Werten und den
+ * vom Kern berechneten Wert — hier wird nichts nachgerechnet, nur ausgewiesen (I-24).
+ *
+ * Jede Zeile, die einen Konfigurationswert zeigt, weist zusaetzlich aus, ob dieser
+ * firmenweit gilt oder projektbezogen uebersteuert ist (A-13). Die Auskunft kommt
+ * ausschliesslich aus dem Ueberschreibungsprotokoll des Zwei-Ebenen-Merge, nie aus einer
+ * festen Annahme: Eine fest verdrahtete Herkunft waere eine Aussage ueber die
+ * Konfiguration, die diese Datei nicht treffen kann. Zeilen ohne Konfigurationsbezug
+ * (Rechenergebnisse) fuehren gar keine Herkunft.
  */
+import { GESPERRTE_PFADE } from '@offert/core';
 import type { OffertKonfiguration, UeberschreibungsProtokoll } from '@offert/core';
 import type { AggregateValues, PriceDerivation } from '@offert/offer/src/model/offer.js';
 import {
@@ -88,15 +95,58 @@ function formatiereRohwert(wert: unknown): string {
   return String(wert);
 }
 
-/** Prueft, ob ein Dossier-Feld ueber `dossierParameter.<Wohnungstyp>.<Feld>` ueberschrieben wurde. */
-function istProjektbezogen(
-  feldname: string,
+/**
+ * Vergleicht den Bezugspfad einer Zeile mit dem Pfad eines Protokolleintrags,
+ * segmentweise. `*` im Bezugspfad steht fuer genau ein beliebiges Segment
+ * (`dossierParameter.*.stockwerk`).
+ *
+ * Verglichen wird in BEIDE Richtungen, weil das Protokoll gleichzeitig feiner und
+ * groeber sein kann als die angezeigte Zeile: Der Merge protokolliert jedes geaenderte
+ * Blatt einzeln (`honorar.skalierung.gMin` trifft die Zeile «Skalierungsbereich g»),
+ * ersetzt Arrays und neu angelegte Teilbaeume aber als Ganzes
+ * (`aufwandfaktoren.<faktor>` trifft die Skalenzeile desselben Faktors). Es genuegt
+ * deshalb, dass der kuerzere Pfad ein Praefix des laengeren ist.
+ */
+function pfadeUeberlappen(bezugspfad: string, protokollpfad: string): boolean {
+  const bezug = bezugspfad.split('.');
+  const eintrag = protokollpfad.split('.');
+  const gemeinsam = Math.min(bezug.length, eintrag.length);
+  for (let i = 0; i < gemeinsam; i += 1) {
+    if (bezug[i] !== '*' && bezug[i] !== eintrag[i]) return false;
+  }
+  return true;
+}
+
+/**
+ * Projektbezogen uebersteuerbar ist jede Wurzel, die der Kern nicht sperrt. Die Liste
+ * der Wurzeln wird deshalb aus `GESPERRTE_PFADE` abgeleitet und hier bewusst NICHT
+ * erneut aufgezaehlt: Eine zweite Wahrheit ueber zulaessige Konfigurationspfade waere
+ * genau die Fehlerquelle, aus der die falsche Herkunftsanzeige entstanden ist.
+ */
+function istUebersteuerbar(bezugspfad: string): boolean {
+  return !GESPERRTE_PFADE.includes(bezugspfad.split('.')[0] ?? bezugspfad);
+}
+
+/**
+ * Wahr, wenn mindestens einer der Bezugspfade der Zeile projektbezogen uebersteuert
+ * wurde. Traegt die Herkunftsanzeige des Rechenwegs (A-13) und wird deshalb
+ * ausgewiesen, damit sie unabhaengig von der Darstellung pruefbar bleibt.
+ */
+export function istProjektbezogen(
+  bezugspfade: readonly string[],
   ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
 ): boolean {
   if (ueberschreibungen === undefined) return false;
-  return ueberschreibungen.some(
-    (u) => u.pfad.startsWith('dossierParameter.') && u.pfad.endsWith(`.${feldname}`),
-  );
+  return bezugspfade.some((bezug) => istUebersteuerbar(bezug)
+    && ueberschreibungen.some((u) => pfadeUeberlappen(bezug, u.pfad)));
+}
+
+/** Herkunft einer Zeile aus ihren Bezugspfaden — keine Zeile verdrahtet sie fest. */
+function herkunft(
+  ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
+  ...bezugspfade: readonly string[]
+): 'firmenweit' | 'projekt' {
+  return istProjektbezogen(bezugspfade, ueberschreibungen) ? 'projekt' : 'firmenweit';
 }
 
 function baueStufeEingabe(
@@ -107,7 +157,10 @@ function baueStufeEingabe(
   const zeilen: PipelineZeile[] = Object.entries(defaults).map(([feldname, wert]) => ({
     beschriftung: feldname,
     wert: formatiereRohwert(wert),
-    herkunft: istProjektbezogen(feldname, ueberschreibungen) ? 'projekt' : 'firmenweit',
+    // Zwei Wege fuehren zu einem projektbezogenen Dossier-Wert: die Voreinstellung
+    // selbst oder der Wert eines einzelnen Wohnungstyps.
+    herkunft: herkunft(ueberschreibungen,
+      `dossierDefaults.${feldname}`, `dossierParameter.*.${feldname}`),
   }));
   return {
     nr: 1,
@@ -140,7 +193,9 @@ function beschreibeAnpassung(a: {
 }
 
 function baueStufeVerkaufssumme(
-  basis: OffertKonfiguration, herleitung: Herleitung | undefined,
+  basis: OffertKonfiguration,
+  herleitung: Herleitung | undefined,
+  ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
 ): PipelineStufe {
   const alpha = basis.flaeche.alpha;
   const { zMin, zMax } = basis.preisanpassung;
@@ -150,12 +205,12 @@ function baueStufeVerkaufssumme(
       {
         beschriftung: 'Gewicht der Aussenfläche α',
         wert: formatiereScore(alpha),
-        herkunft: 'firmenweit',
+        herkunft: herkunft(ueberschreibungen, 'flaeche.alpha'),
       },
       {
         beschriftung: 'Zulässige Zu-/Abschlagssumme je Einheit',
         wert: `${formatiereProzent(zMin)} bis ${formatiereProzent(zMax)}`,
-        herkunft: 'firmenweit',
+        herkunft: herkunft(ueberschreibungen, 'preisanpassung.zMin', 'preisanpassung.zMax'),
       },
     ],
   }];
@@ -250,14 +305,31 @@ function sortierteFaktoren(basis: OffertKonfiguration) {
   return Object.entries(basis.aufwandfaktoren).sort(([a], [b]) => a.localeCompare(b));
 }
 
+/**
+ * Bezugspfade der Skalenzeile eines Faktors: Die Zeile zeigt Grenzen und Strategie, also
+ * markiert sie nur eine Uebersteuerung genau dieser Felder — ein projektbezogen
+ * geaendertes Gewicht faerbt die Skalenzeile nicht ein, sondern die Beitragszeile in
+ * Stufe 4. Ein vollstaendig neu angelegter Faktor wird ueber das Praefix mitgetroffen.
+ */
+function skalenpfade(faktorSchluessel: string): readonly string[] {
+  return [
+    `aufwandfaktoren.${faktorSchluessel}.min`,
+    `aufwandfaktoren.${faktorSchluessel}.max`,
+    `aufwandfaktoren.${faktorSchluessel}.strategie`,
+  ];
+}
+
 function baueStufeNormalisierung(
-  basis: OffertKonfiguration, herleitung: Herleitung | undefined,
+  basis: OffertKonfiguration,
+  herleitung: Herleitung | undefined,
+  ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
 ): PipelineStufe {
   const zeilen: PipelineZeile[] = herleitung === undefined
-    ? sortierteFaktoren(basis).map(([, faktor]) => ({
+    ? sortierteFaktoren(basis).map(([schluessel, faktor]) => ({
         beschriftung: faktor.bezeichnung,
         ausdruck: `Skala ${formatiereScore(faktor.min)} bis ${formatiereScore(faktor.max)}`,
         wert: FEHLT,
+        herkunft: herkunft(ueberschreibungen, ...skalenpfade(schluessel)),
       }))
     : herleitung.aggregates.effortFactors.map((ef) => ({
         beschriftung: ef.bezeichnung,
@@ -269,6 +341,8 @@ function baueStufeNormalisierung(
           : `Rohwert ${formatiereScore(ef.rawValue)}, Skala `
             + `${formatiereScore(ef.grenzeMin)} bis ${formatiereScore(ef.grenzeMax)} (${ef.strategie})`,
         wert: `${formatiereScore(ef.normalised)}${ef.gekappt ? ' (gekappt)' : ''}`,
+        // `id` ist der Konfigurationsschluessel des Faktors, den der Kern mitfuehrt.
+        herkunft: herkunft(ueberschreibungen, ...skalenpfade(ef.id)),
       }));
   return {
     nr: 3,
@@ -284,19 +358,22 @@ function baueStufeGewichtung(
   basis: OffertKonfiguration,
   herleitung: Herleitung | undefined,
   uebersteuert: boolean,
+  ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
 ): PipelineStufe {
   const beitragszeilen: PipelineZeile[] = herleitung === undefined
-    ? sortierteFaktoren(basis).map(([, faktor]) => ({
+    ? sortierteFaktoren(basis).map(([schluessel, faktor]) => ({
         beschriftung: faktor.bezeichnung,
         ausdruck: `Gewicht ${formatiereProzent(faktor.gewicht)}`,
         wert: FEHLT,
         anteil: faktor.gewicht,
+        herkunft: herkunft(ueberschreibungen, `aufwandfaktoren.${schluessel}.gewicht`),
       }))
     : herleitung.aggregates.effortFactors.map((ef) => ({
         beschriftung: ef.bezeichnung,
         ausdruck: `${formatiereScore(ef.weight)} × ${formatiereScore(ef.normalised)}`,
         wert: formatiereScore(ef.beitrag),
         anteil: ef.beitrag,
+        herkunft: herkunft(ueberschreibungen, `aufwandfaktoren.${ef.id}.gewicht`),
       }));
 
   const gewichtssumme = herleitung === undefined
@@ -351,7 +428,9 @@ function baueStufeGewichtung(
 }
 
 function baueStufeHonorar(
-  basis: OffertKonfiguration, herleitung: Herleitung | undefined,
+  basis: OffertKonfiguration,
+  herleitung: Herleitung | undefined,
+  ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
 ): PipelineStufe {
   const { gMin, gMax } = basis.honorar.skalierung;
   const stuetzstellen = basis.honorar.stuetzstellen;
@@ -363,12 +442,13 @@ function baueStufeHonorar(
       wert: `${String(stuetzstellen.length)} Stützstellen, `
         + `${erste === undefined ? FEHLT : formatiereAggregat(erste.v)} bis `
         + `${letzte === undefined ? FEHLT : formatiereAggregat(letzte.v)} Verkaufssumme`,
-      herkunft: 'firmenweit',
+      herkunft: herkunft(ueberschreibungen, 'honorar.stuetzstellen'),
     },
     {
       beschriftung: 'Skalierungsbereich g',
       wert: `${formatiereScore(gMin)} bis ${formatiereScore(gMax)}`,
-      herkunft: 'firmenweit',
+      herkunft: herkunft(ueberschreibungen,
+        'honorar.skalierung.gMin', 'honorar.skalierung.gMax'),
     },
   ];
 
@@ -449,11 +529,13 @@ export function bauePipelineDaten(
   extras?: PipelineExtras,
 ): readonly PipelineStufe[] {
   const herleitung = extras?.herleitung;
+  const ueberschreibungen = extras?.ueberschreibungen;
   return [
-    baueStufeEingabe(basis, extras?.ueberschreibungen),
-    baueStufeVerkaufssumme(basis, herleitung),
-    baueStufeNormalisierung(basis, herleitung),
-    baueStufeGewichtung(basis, herleitung, extras?.aufwandindikatorUebersteuert === true),
-    baueStufeHonorar(basis, herleitung),
+    baueStufeEingabe(basis, ueberschreibungen),
+    baueStufeVerkaufssumme(basis, herleitung, ueberschreibungen),
+    baueStufeNormalisierung(basis, herleitung, ueberschreibungen),
+    baueStufeGewichtung(
+      basis, herleitung, extras?.aufwandindikatorUebersteuert === true, ueberschreibungen),
+    baueStufeHonorar(basis, herleitung, ueberschreibungen),
   ];
 }

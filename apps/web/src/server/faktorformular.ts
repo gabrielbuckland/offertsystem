@@ -1,14 +1,6 @@
-/**
- * Keine Formel. Formularbeschreibung aus der Faktorkonfiguration (E-24, AK-3.7).
- *
- * Das Formular wird ERZEUGT, nicht geschrieben. Es existiert keine Komponente, kein
- * Feldname und kein Textbaustein, der einen einzelnen Faktorbezeichner nennt — eine
- * solche Stelle waere genau die Codedatei, die die Null-Dateien-Messung aus 6.3
- * ausschliessen soll.
- *
- * Gelesen wird der KERNTYP `Konfiguration.faktoren`, nicht die Rohkonfiguration: Die
- * Abbildung Rohform -> Kerntyp hat genau einen Ort (PE-01).
- */
+// Formularbeschreibung aus der Faktorkonfiguration (E-24, AK-3.7). Das Formular wird ERZEUGT,
+// nicht geschrieben — keine Stelle nennt einen einzelnen Faktorbezeichner fest. Gelesen wird
+// der KERNTYP `Konfiguration.faktoren`, nicht die Rohkonfiguration (Abbildung: PE-01).
 import type { Konfiguration } from '@offert/core';
 import type { Feldmeldung } from './feldmeldungen.js';
 

@@ -1,22 +1,12 @@
 'use client';
 
-/**
- * Bearbeitet die Staffel einer Anpassungsvorlage. Die Anzeige folgt derselben Regel wie
- * `AnpassungsSpalten.tsx`: gezeigt und erfasst wird die Einheit, in der ein Mensch denkt
- * (Prozent bei 'relativ', Franken bei 'absolut'), abgelegt die des Kerns (Faktor bzw.
- * Rappen). Zwei verschiedene Skalen fuer dieselbe Groesse waren schon einmal der Fehler,
- * der den Faktor 100 verursacht hat.
- *
- * Der Restfall ist die letzte Zeile und traegt bewusst KEINE Schwelleneingabe: Er ist
- * das, was die Auswertung total macht, und darf nicht wegkonfiguriert werden.
- *
- * Typen kommen aus `@offert/core`, nicht aus `server/projekt-schema.js`: Dieser Editor
- * bearbeitet die firmenweite Konfiguration (`anpassungsVorlagen`/`merkmale` im Entwurf
- * von `verwendeEinstellungen`), nicht ein Projektartefakt. Beide Module fuehren einen
- * strukturell fast identischen Typ `Bereichsregel` — hier ist der aus dem Kern der
- * richtige, weil er exakt die Form ist, die `pruefeBereiche`/`werteBereichsregelAus`
- * (ebenfalls aus dem Kern) erwarten.
- */
+// Bearbeitet die Staffel einer Anpassungsvorlage. Gezeigt/erfasst wird die Einheit, in der
+// ein Mensch denkt (Prozent bei 'relativ', Franken bei 'absolut'), abgelegt die des Kerns
+// (Faktor bzw. Rappen) — Skalen nicht mischen, das hat schon einmal den Faktor-100-Fehler
+// verursacht. Restfall (letzte Zeile) traegt bewusst KEINE Schwelleneingabe: er ist das, was
+// die Auswertung total macht, und darf nicht wegkonfiguriert werden. Typen kommen aus
+// `@offert/core`, nicht aus `server/projekt-schema.js`: dieser Editor bearbeitet die
+// firmenweite Konfiguration, nicht ein Projektartefakt.
 import { Trash2 } from 'lucide-react';
 import { pruefeBereiche, type Bereichsregel, type Merkmal } from '@offert/core';
 import { Button } from '../ui/button.js';

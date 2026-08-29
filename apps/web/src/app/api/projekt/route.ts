@@ -15,9 +15,7 @@ export async function POST(anfrage: Request): Promise<Response> {
   if (!laufzeit.ok) {
     return Response.json({ fehler: { text: laufzeit.meldungen.join(' ') } }, { status: 500 });
   }
-  // Ein syntaktisch kaputter Rumpf ist ein Eingabefehler (422), kein Serverfehler —
-  // dieselbe Fehlerklasse wie in der PUT-Route, dort bereits behoben
-  // (docs/offene-punkte-projektansicht.md).
+  // Ein syntaktisch kaputter Rumpf ist ein Eingabefehler (422), kein Serverfehler.
   let roh: unknown;
   try {
     roh = await anfrage.json();

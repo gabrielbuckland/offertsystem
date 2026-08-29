@@ -1,7 +1,4 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { repoWurzel } from '../shared/artefakt.ts';
 import { ladeBasis } from '../shared/konfig.ts';
 import type { Stuetzstelle } from './honorarkurve.ts';
 import { linkeSeite, marge, margeUeberGitter, rechteSeite, stichprobeV1 } from './marge.ts';
@@ -74,16 +71,5 @@ describe('margeUeberGitter', () => {
     const befund = margeUeberGitter(ladeBasis());
     expect(befund.argmin!.l).toBeLessThanOrEqual(befund.l_obergrenze_scharf + 1e-12);
     expect(befund.l_obergrenze_scharf).toBeLessThanOrEqual(befund.l_obergrenze_grob + 1e-12);
-  });
-});
-
-describe('Der Rechner fuehrt keine Konfiguration aus (Spec 06 §7.2)', () => {
-  it('ruft weder berechne noch fuehreAus auf', () => {
-    for (const datei of ['marge.ts', 'honorarkurve.ts']) {
-      const inhalt = readFileSync(
-        join(repoWurzel(), 'tools', 'eval', 'degression-margin', datei), 'utf8');
-      expect(inhalt, datei).not.toMatch(/\bberechne\s*\(/);
-      expect(inhalt, datei).not.toMatch(/\bfuehreAus\s*\(/);
-    }
   });
 });

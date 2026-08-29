@@ -26,7 +26,7 @@ const PIPELINE_REIHENFOLGE: ReadonlyArray<{ readonly stufenLabel: string; readon
 export default async function EinstellungenSeite() {
   const laufzeit = holeLaufzeit();
   if (!laufzeit.ok) {
-    return <main><h1>Einstellungen</h1><p>{laufzeit.meldungen.join(' ')}</p></main>;
+    return <main><h1>Firmeneinstellungen</h1><p>{laufzeit.meldungen.join(' ')}</p></main>;
   }
   const rohKonfiguration = laufzeit.wert.rohKonfiguration;
   // Typerhalten dieselbe `OffertKonfiguration`, die der Lader validiert hat
@@ -36,9 +36,13 @@ export default async function EinstellungenSeite() {
 
   return (
     <main>
-      <Brotkrume stufen={[{ beschriftung: 'Einstellungen' }]} />
-      <div className="mb-6 flex items-baseline justify-between">
-        <h1 className="text-2xl font-semibold">Einstellungen</h1>
+      <Brotkrume stufen={[
+        { beschriftung: 'Projekte', href: '/projekte' },
+        { beschriftung: 'Firmeneinstellungen' },
+      ]}
+      />
+      <div className="mb-2 flex items-baseline justify-between">
+        <h1 className="text-2xl font-semibold">Firmeneinstellungen</h1>
         {/* Offerttext-Vorlage (Spec 2026-08-27 §3) ist kein Pipeline-Bereich wie die
             vier Karten unten (kein Zahlenwert, sondern Fliesstext mit Platzhaltern) —
             deshalb eigene Seite statt eines fuenften inline eingebetteten Editors. */}
@@ -46,11 +50,26 @@ export default async function EinstellungenSeite() {
           Offertvorlage bearbeiten
         </a>
       </div>
+      <p className="mb-6 text-sm text-muted-foreground">
+        Diese Werte gelten für alle neuen und laufenden Projekte, sofern ein Projekt
+        sie nicht für sich übersteuert.
+      </p>
 
       {/* Untereinander statt nebeneinander (Rueckmeldung Auftraggeber): Jede Stufe der
           Berechnungs-Pipeline ist hier direkt inline editierbar — kein Umweg mehr ueber
           eine separate Editor-Seite. Die Reihenfolge folgt der Pipeline, ein Pfeil nach
-          unten haelt den Fluss sichtbar. */}
+          unten haelt den Fluss sichtbar.
+
+          BEKANNTE GRENZE (offener Punkt, Gesamtreview 2026-08-29, Befund W-6): Jede der
+          vier Karten baut ueber `EinstellungsEditor` ihren EIGENEN Entwurf aus demselben
+          `anfang` und POSTet beim Speichern die GESAMTE Konfiguration daraus. Nach dem
+          Speichern gibt es kein `router.refresh()`, die anderen drei Karten behalten also
+          ihren urspruenglichen `anfang`. Wer nacheinander zwei Karten speichert,
+          ueberschreibt damit die zuerst gespeicherte Aenderung still. Der Defekt liegt vor
+          dem Zwei-Ebenen-Umbau; seine Behebung heisst, den Entwurf ueber alle vier Karten
+          hinweg an EINER Stelle zu fuehren (oder je Karte nur ihren Teilbaum zu senden)
+          und ist eine Umstrukturierung des Editor-Rahmens — bewusst nicht Teil dieser
+          Fix-Runde. Bis dahin gilt: eine Karte aendern, speichern, Seite neu laden. */}
       <div className="flex flex-col gap-4">
         {PIPELINE_REIHENFOLGE.map((eintrag, index) => {
           const bereich = BEREICHE[eintrag.bereich];

@@ -161,4 +161,28 @@ describe('projektSchema', () => {
     if (ergebnis.success) return;
     expect(JSON.stringify(ergebnis.error.issues)).toContain('MERKMAL_UNBEKANNT');
   });
+
+  it('nimmt ein Einstellungs-Delta an', () => {
+    const ergebnis = projektSchema.safeParse({
+      ...beispiel(),
+      einstellungen: { flaeche: { alpha: 0.6 } },
+    });
+    expect(ergebnis.success).toBe(true);
+    if (!ergebnis.success) return;
+    expect(ergebnis.data.einstellungen).toEqual({ flaeche: { alpha: 0.6 } });
+  });
+
+  it('bleibt ohne Einstellungs-Delta gueltig — Bestandsartefakte (I-24)', () => {
+    const ergebnis = projektSchema.safeParse(beispiel());
+    expect(ergebnis.success).toBe(true);
+    if (!ergebnis.success) return;
+    expect(ergebnis.data.einstellungen).toBeUndefined();
+  });
+
+  it('weist ein Delta zurueck, das kein Objekt an der Wurzel ist', () => {
+    const ergebnis = projektSchema.safeParse({
+      ...beispiel(), einstellungen: [1, 2, 3],
+    });
+    expect(ergebnis.success).toBe(false);
+  });
 });

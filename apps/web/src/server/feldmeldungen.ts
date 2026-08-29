@@ -6,9 +6,8 @@
  * HTTP-Statuscodes und Stapelverfolgungen erreichen die Oberflaeche nie.
  */
 import type { Konfiguration } from '@offert/core';
-// Modulpfad statt Paketindex: Der Index re-exportiert die React-Komponenten (.tsx);
-// Node leistet fuer JSX kein Type-Stripping (PE-09). Serverseitige Module, die unter
-// Node laufen sollen, binden die Formatierer deshalb ueber ihren Modulpfad ein.
+// Modulpfad statt Paketindex: Der Index re-exportiert React-Komponenten (.tsx), fuer
+// die Node kein Type-Stripping leistet (PE-09).
 import { formatiereProzent, formatiereZimmerzahl } from '@offert/offer/src/format/de-ch.js';
 import type { z } from 'zod';
 import { erfassungsSchema } from './erfassung-schema.js';
@@ -52,9 +51,8 @@ function standardtext(feldpfad: string, issue: z.ZodIssue, k: Konfiguration): st
     case 'ort':
     case 'name':
       return 'Dieses Feld ist ein Pflichtfeld.';
-    // UUID statt Freitext (Spec 05 §8, projekt-schema.ts): eine leere Eingabe UND ein
-    // falsch geformter Wert muessen dieselbe feldverankerte Meldung ergeben, keinen
-    // unbehandelten Fehler nach dem Berechnungslauf.
+    // UUID statt Freitext (Spec 05 §8): leere Eingabe und falsch geformter Wert muessen
+    // dieselbe feldverankerte Meldung ergeben.
     case 'projektId':
       return 'Die Projekt-Kennung muss eine gueltige UUID sein.';
     default:

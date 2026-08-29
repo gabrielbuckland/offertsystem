@@ -1,32 +1,17 @@
 'use client';
 
 /**
- * Erster Block der Detailseite (Design-Spec §4): Referenzobjekte je Wohnungstyp mit
- * ihren bezogenen Bewertungen. Der Abruf ist ein eigener Klick (`rufeAb`), keine
- * Nebenwirkung des Renderns — er verbraucht Anbieter-Guthaben (NFA-12, I-27), das darf
- * nicht beim blossen Anzeigen der Seite geschehen.
+ * Referenzobjekte je Wohnungstyp mit ihren bezogenen Bewertungen. Der Abruf ist ein
+ * eigener Klick (`rufeAb`), keine Nebenwirkung des Renderns — er verbraucht
+ * Anbieter-Guthaben (NFA-12, I-27).
  *
- * Der Anlegen-Dialog fragt neben Zimmerzahl und Wohnflaeche optional auch gleich die
- * Anzahl Wohnungen dieses Typs ab und erzeugt sie ueber `erzeugeEinheiten` mit (Rueck-
- * meldung Auftraggeber: der separate, vorgelagerte Block "Einheiten anlegen" entfaellt
- * dafuer als ERSTER Schritt). `aendere` traegt deshalb BEIDE Arrays auf einmal statt nur
- * `referenzobjekte`: Ein zweiter, unabhaengiger Aufruf gegen `einheiten` liefe im selben
- * Tick gegen den noch alten `projekt`-Stand der aufrufenden Seite und liesse den
- * jeweils anderen Aufruf verschwinden (React batcht State-Updates, es gibt zwischen den
- * beiden keinen Re-Render). `EinheitenGenerator` bleibt daneben bestehen, jetzt aber
- * unterhalb der Einheitentabelle — fuer das Nacherfassen weiterer Wohnungen eines
- * bereits bestehenden Typs.
+ * `aendere` traegt Referenzobjekte UND Einheiten in einem Aufruf: zwei unabhaengige
+ * Aufrufe im selben Tick liefen gegen denselben alten `projekt`-Stand und liessen
+ * einander verschwinden (React batcht State-Updates ohne Re-Render dazwischen).
  *
- * KEINE aufklappbare Detailzeile mehr (Rueckmeldung Auftraggeber, ehemals
- * `ParametrisierungsDetail.tsx`, entfernt): Baujahr gilt jetzt PROJEKTWEIT
- * (`ProjektBasisinformationen.tsx`) statt je Referenzobjekt; Zustand und Qualitaet
- * gelten bei Neubauprojekten firmenweit als feststehend
- * (`dossierDefaults.zustandsbewertungen`/`.qualitaetsbewertungen`, s. `config/README.md`);
- * Energielabel, Anzahl Badezimmer, Lift und
- * Heizungsart bleiben bei ihren Platzhaltern, weil PriceHubble sie nicht als
- * Pflichtfelder fuehrt (Rueckmeldung Auftraggeber). `dossierDefaults` bleibt deshalb
- * eine Prop dieser Komponente — nicht mehr fuer eine Herkunftsauszeichnung, sondern als
- * Quelle von Zustand/Qualitaet fuer neu angelegte Referenzobjekte (`fuegeHinzu`).
+ * Baujahr gilt projektweit (`ProjektBasisinformationen.tsx`); Zustand/Qualitaet gelten
+ * firmenweit als feststehend (`dossierDefaults`); Energielabel, Badezimmer, Lift und
+ * Heizungsart sind keine PriceHubble-Pflichtfelder und bleiben Platzhalter.
  */
 import { Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -51,14 +36,12 @@ import { ZellenEingabe } from './ZellenEingabe.js';
 export interface ReferenzobjekteProps {
   readonly referenzobjekte: readonly Referenzobjekt[];
   readonly einheiten: readonly ProjektEinheit[];
-  // Vorbelegung neu erzeugter Einheiten (Task 10, `einheiten-generator.ts`) — dieselbe
-  // Rolle wie in `EinheitenGenerator`.
+  // Vorbelegung neu erzeugter Einheiten, s. `einheiten-generator.ts`.
   readonly spalten: readonly AnpassungsSpalte[];
-  // Quelle von Zustand/Qualitaet neuer Referenzobjekte (`fuegeHinzu`), s. Dateikommentar.
+  // Quelle von Zustand/Qualitaet neuer Referenzobjekte (`fuegeHinzu`).
   readonly dossierDefaults: DossierDefaults;
-  // Projektweites Baujahr (`ProjektBasisinformationen.tsx`) — `undefined`, solange es
-  // noch nicht erfasst ist; ein neues Referenzobjekt bekommt dann 0 (derselbe
-  // Platzhalter wie zuvor, kein erfundenes Baujahr).
+  // `undefined`, solange das Baujahr noch nicht erfasst ist; ein neues Referenzobjekt
+  // bekommt dann 0 statt eines erfundenen Baujahrs.
   readonly baujahr: number | undefined;
   readonly aendere: (
     referenzobjekte: readonly Referenzobjekt[], einheiten: readonly ProjektEinheit[],
@@ -75,18 +58,11 @@ function ersetze(
 }
 
 /**
- * Die Merkmale, die den Wohnungstyp bestimmen, sind an Ort und Stelle editierbar
- * (Design-Spec §4). Ohne sie liesse sich ueber die Oberflaeche nur EIN Wohnungstyp
- * fuehren: Jedes weitere Referenzobjekt truege die Vorgaben des ersten, und der Kern
- * wiese das Paar mit ZIMMERZAHL_MEHRFACH zurueck — das Mehrtypenmodell, auf dem die
- * ganze Auslegung beruht, waere durch die Oberflaeche nicht erreichbar.
- *
- * Bewusst nicht alle zehn Felder der `parametrisierung`, und ohne Stockwerk (das bei
- * einem Referenzobjekt immer 0 ist, s. o.): Erfasst wird in der Hauptzeile nur, was den
- * Typ unterscheidet und in die Bewertungsanfrage eingeht. Zahlen laufen ueber
- * `ZellenEingabe`, damit ein geleertes Feld verworfen wird, statt auf 0 zu fallen
- * (`entscheideZellenwert`) — bei der Zimmerzahl waere die erfundene 0 zudem ein
- * schemawidriger Wert (`min(1)`).
+ * Merkmale, die den Wohnungstyp bestimmen, sind an Ort und Stelle editierbar: ohne sie
+ * liesse sich ueber die Oberflaeche nur ein Wohnungstyp fuehren, und der Kern wiese
+ * das Paar mit ZIMMERZAHL_MEHRFACH zurueck. Zahlen laufen ueber `ZellenEingabe`, damit
+ * ein geleertes Feld verworfen wird statt auf 0 zu fallen (`entscheideZellenwert`) —
+ * bei der Zimmerzahl waere die erfundene 0 zudem schemawidrig (`min(1)`).
  */
 export function Referenzobjekte({
   referenzobjekte, einheiten, spalten, dossierDefaults, baujahr, aendere, rufeAb, abrufLaeuft,
@@ -132,9 +108,8 @@ export function Referenzobjekte({
       dossierDefaults.zustandsbewertungen, dossierDefaults.qualitaetsbewertungen);
     const naechsteReferenzobjekte = [...referenzobjekte, neues];
     const anzahl = anzahlWohnungenAusEntwurf(entwurfAnzahl);
-    // `erzeugeEinheiten` erkennt eine Wunsch-`referenzobjektId` nur, wenn sie in der
-    // uebergebenen Referenzobjekt-Liste steht — deshalb `naechsteReferenzobjekte`
-    // (mit `neues`), nicht das alte `referenzobjekte`.
+    // `erzeugeEinheiten` erkennt die Wunsch-`referenzobjektId` nur, wenn sie in der
+    // uebergebenen Liste steht — deshalb `naechsteReferenzobjekte` (mit `neues`).
     const neueEinheiten = anzahl === 0 ? [] : erzeugeEinheiten(
       [{ referenzobjektId: neues.id, anzahl }], naechsteReferenzobjekte, einheiten, spalten);
     aendere(naechsteReferenzobjekte, [...einheiten, ...neueEinheiten]);
@@ -176,9 +151,7 @@ export function Referenzobjekte({
         ref={dialogRef}
         aria-label="Referenzobjekt hinzufügen"
         // `m-auto` haelt die Zentrierung explizit: Tailwinds Preflight setzt `margin: 0`
-        // auf praktisch jedes Element und ueberschreibt damit die UA-Voreinstellung
-        // `dialog:modal { margin: auto }`, die ein natives `<dialog>` sonst zentriert
-        // (der Effekt betrifft `NeuesProjekt.tsx`s Dialog ebenso, dort mitkorrigiert).
+        // und ueberschreibt damit die UA-Regel `dialog:modal { margin: auto }`.
         className="m-auto rounded-lg border border-border bg-background p-6 backdrop:bg-foreground/30"
       >
         <div className="grid gap-4">

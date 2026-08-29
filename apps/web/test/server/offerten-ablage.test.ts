@@ -3,8 +3,8 @@
  * (Muster Immobilien AG, Musterstrasse) statt dem im Plan notierten Beispiel
  * (Meier, Baumgartenweg). Geprueft wird die Bildungsregel, nicht ein Literal.
  */
-import { mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
+import { mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
@@ -116,6 +116,15 @@ describe('Lesen und Auflisten', () => {
     await legeOfferteAb(o, ziel);
     const geladen = await ladeOfferte(o.metadata.offertId, ziel);
     expect(geladen.aggregates.feeRange.value).toEqual(o.aggregates.feeRange.value);
+  });
+
+  it('fuehrt die Projektkennung und die Konfigurationspruefsumme im Listeneintrag', async () => {
+    const ziel = await verzeichnis();
+    const o = baueBeispielOfferte();
+    await legeOfferteAb(o, ziel);
+    const liste = await listeOfferten(ziel);
+    expect(liste[0]?.projektId).toBe(o.metadata.projektId);
+    expect(liste[0]?.konfigPruefsumme).toBe(o.metadata.konfigPruefsumme);
   });
 });
 

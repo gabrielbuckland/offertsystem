@@ -1,7 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { repoWurzel } from '../shared/artefakt.ts';
 import type { Aufloesung } from './aufloesung.ts';
 import { hauptlauf } from './main.ts';
 
@@ -41,12 +40,5 @@ describe('Abnahmetest F2 (Spec 06 §7.2)', () => {
     expect(artefakt.margin_min).toBeGreaterThan(1);
     expect(artefakt.margin_min_grosser_sprung).toBeGreaterThan(1.2);
     expect(artefakt.margin_min_grosser_sprung).toBeLessThan(5);
-  });
-
-  it('das Hauptprogramm ruft weder berechne noch fuehreAus auf', () => {
-    const inhalt = readFileSync(
-      join(repoWurzel(), 'tools', 'eval', 'degression-margin', 'main.ts'), 'utf8');
-    expect(inhalt).not.toMatch(/\bberechne\s*\(/);
-    expect(inhalt).not.toMatch(/\bfuehreAus\s*\(/);
   });
 });

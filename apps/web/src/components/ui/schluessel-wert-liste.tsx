@@ -4,14 +4,9 @@
  * Generische Schluessel-Wert-Liste mit Hinzufuegen/Entfernen/Bearbeiten fuer offene
  * Records (Zod `z.record(z.string())`), deren Zeilenzahl nicht feststeht — z. B.
  * `zustandsbewertungen`/`qualitaetsbewertungen` in `Referenzobjekt['parametrisierung']`
- * und in `DossierDefaults`. Bis Task 19 existierte diese Logik zweifach: als
- * `BewertungsTabelle` in `ParametrisierungsDetail.tsx` (Team A) und als `KeyWertListe` in
- * `DossierEditor.tsx` (Team B), unabhaengig voneinander entwickelt. Diese Fassung
- * vereint beide Interaktionsmuster: eine bestehende Zeile bleibt am Schluessel fixiert,
- * ihr Wert laesst sich aber direkt bearbeiten (Team B), waehrend die Neu-Zeile Schluessel
- * UND Wert gemeinsam entgegennimmt (Team A) — kein Feature einer der Vorlagen geht
- * verloren. Die Komponente kennt keine Domaenenbegriffe (kein "Bewertung", kein
- * "Dossier"): sie bleibt generisch ueber den ihr uebergebenen Record, siehe Brief.
+ * und in `DossierDefaults`. Eine bestehende Zeile bleibt am Schluessel fixiert, ihr Wert
+ * laesst sich direkt bearbeiten; die Neu-Zeile nimmt Schluessel UND Wert gemeinsam
+ * entgegen. Kennt keine Domaenenbegriffe, bleibt generisch ueber den uebergebenen Record.
  */
 import { Trash2 } from 'lucide-react';
 import { useState, type ReactElement } from 'react';
@@ -26,16 +21,23 @@ import {
 export interface SchluesselWertListeProps {
   readonly eintraege: Readonly<Record<string, string>>;
   readonly aendere: (naechste: Readonly<Record<string, string>>) => void;
+  /**
+   * Blendet die Entfernen-Spalte aus und zeigt stattdessen `sperrgrund`. Gedacht fuer
+   * Aufrufer, deren Speichermodell ein Entfernen nicht ausdruecken kann (das
+   * projektbezogene Delta, siehe `Bearbeitungsebene`) — dort waere der Knopf ein stiller
+   * No-Op. Die Komponente selbst entscheidet das nicht; sie kennt kein Speichermodell.
+   */
+  readonly entfernenGesperrt?: boolean | undefined;
+  readonly sperrgrund?: string | undefined;
 }
 
 export function SchluesselWertListe(
-  { eintraege, aendere }: SchluesselWertListeProps,
+  { eintraege, aendere, entfernenGesperrt = false, sperrgrund }: SchluesselWertListeProps,
 ): ReactElement {
   const [neuerSchluessel, setzeNeuenSchluessel] = useState('');
   const [neuerWert, setzeNeuenWert] = useState('');
 
-  // Die drei Entscheidungen stehen als reine Funktionen daneben und sind dort direkt
-  // getestet; hier bleibt nur die Verdrahtung ans Ereignis.
+  // Die drei Entscheidungen stehen als reine, getestete Funktionen daneben.
   function aendereWert(schluessel: string, wert: string): void {
     aendere(naechsteEintraegeNachWertaenderung(eintraege, schluessel, wert));
   }
@@ -62,18 +64,23 @@ export function SchluesselWertListe(
             onChange={(e) => aendereWert(schluessel, e.target.value)}
             className="h-8 flex-1"
           />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="size-8"
-            aria-label="entfernen"
-            onClick={() => entferneEintrag(schluessel)}
-          >
-            <Trash2 className="size-4" />
-          </Button>
+          {!entfernenGesperrt && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              aria-label="entfernen"
+              onClick={() => entferneEintrag(schluessel)}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          )}
         </div>
       ))}
+      {entfernenGesperrt && sperrgrund !== undefined && (
+        <p className="text-xs text-muted-foreground">{sperrgrund}</p>
+      )}
       <div className="flex items-center gap-2">
         <Input
           value={neuerSchluessel}

@@ -1,15 +1,8 @@
 'use client';
 
-/**
- * Berechnungsablauf der Detailseite, aus `ProjektAnsicht.tsx` herausgezogen (Spec §3):
- * Der Zustand ist damit an einer Stelle nachvollziehbar, statt ueber drei Absaetze in der
- * Klammerkomponente verstreut.
- *
- * `verarbeiteBerechnungsAntwort` ist bewusst als reine Funktion von `verwendeBerechnung`
- * getrennt: Das Repo fuehrt kein jsdom und keine Hook-Testbibliothek (`environment: 'node'`
- * in vitest.workspace.ts), die Entscheidungslogik laesst sich so ohne DOM mit Literalen
- * pruefen — analog zu `antwort-rumpf.ts`/`zellen-logik.ts`.
- */
+// `verarbeiteBerechnungsAntwort` ist bewusst als reine Funktion von `verwendeBerechnung`
+// getrennt: kein jsdom/Hook-Testbibliothek im Repo (`environment: 'node'`), die
+// Entscheidungslogik laesst sich so ohne DOM pruefen — analog `antwort-rumpf.ts`/`zellen-logik.ts`.
 import { useCallback, useRef, useState } from 'react';
 import type { Projekt } from '../../server/projekt-schema.js';
 import { rufeApi, type ApiErgebnis } from '../rufe-api.js';
@@ -17,13 +10,11 @@ import { baueSpeicherwarteschlange, type Speicherwarteschlange } from './verwend
 import type { Preis } from './EinheitenTabelle.js';
 
 /**
- * Antwortform von `POST /api/projekt/[id]/berechnung` (Task 5, `server/projekt-lauf.ts`).
- * `herleitung` traegt dieselbe Herleitung wie das Offert-Artefakt (`derivation`/
- * `aggregates`) durch — die Oberflaeche baut daraus kein zweites, eigenes Datenbild.
+ * Antwortform von `POST /api/projekt/[id]/berechnung` (`server/projekt-lauf.ts`).
  * `unvollstaendig` und `honorarAbbruch` kommen beide mit Status 200: Ersteres bedeutet
  * fehlende Referenzobjekte/Einheiten (I-24, kein Fehler), Letzteres eine Verkaufssumme
- * ausserhalb der konfigurierten Staffel (E-04) — Wohnungspreise und Aufwandindikator
- * bleiben dabei gueltig, nur die Honorarrange fehlt.
+ * ausserhalb der Staffel (E-04) — Preise/Aufwandindikator bleiben gueltig, nur die
+ * Honorarrange fehlt.
  */
 export interface BerechnungsAntwort {
   readonly einheiten?: readonly {
@@ -43,8 +34,7 @@ export interface BerechnungsAntwort {
     readonly positionen: readonly { readonly wohnungsnummer: string; readonly preis: number }[];
     readonly meldung: string;
   };
-  /** Fehlerform variiert je Ursache in der Route (Stufenfehler vs. blosser Text); fuer
-   *  die Anzeige zaehlt ausschliesslich `text` (siehe `LaufFehler` in `projekt-lauf.ts`). */
+  /** Fuer die Anzeige zaehlt ausschliesslich `text` (siehe `LaufFehler` in `projekt-lauf.ts`). */
   readonly fehler?: { readonly text: string };
 }
 
@@ -60,8 +50,7 @@ export interface BerechnungsStand {
 }
 
 // `herleitung`/`honorarAbbruch` sind optionale Felder (`exactOptionalPropertyTypes`):
-// „nicht vorhanden“ heisst hier, den Schluessel wegzulassen, nicht `undefined`
-// zuzuweisen.
+// „nicht vorhanden“ heisst den Schluessel weglassen, nicht `undefined` zuweisen.
 const OHNE_AGGREGATE: Omit<BerechnungsStand, 'laeuft'> = {
   preise: {},
   verkaufssumme: undefined,
@@ -72,12 +61,9 @@ const OHNE_AGGREGATE: Omit<BerechnungsStand, 'laeuft'> = {
 
 /**
  * Reine Verarbeitung des Antwortrumpfs, ohne Netzwerk und ohne React-Zustand. Vier
- * Faelle: Erfolg (Preise/Aggregate/Herleitung), `unvollstaendig` (I-24, kein Fehler),
- * `honorarAbbruch` (E-04, kein Fehler) und eine fehlgeschlagene Antwort.
- *
- * `einheiten` ist der Projektstand, gegen den die Antwort gelesen wird: Der Erfolgsfall
- * bringt die Einheitenkennung selbst mit, das E-04-Teilergebnis nur die Wohnungsnummer —
- * die Zuordnung Nummer -> Kennung kann deshalb allein der Client leisten.
+ * Faelle: Erfolg, `unvollstaendig` (I-24, kein Fehler), `honorarAbbruch` (E-04, kein
+ * Fehler), fehlgeschlagene Antwort. `einheiten` liefert die Zuordnung Wohnungsnummer ->
+ * Einheitenkennung, die das E-04-Teilergebnis selbst nicht mitbringt.
  */
 export function verarbeiteBerechnungsAntwort(
   antwort: ApiErgebnis<BerechnungsAntwort>,
@@ -101,13 +87,10 @@ export function verarbeiteBerechnungsAntwort(
   }
 
   if (rumpf.honorarAbbruch !== undefined) {
-    // E-04: Kein Eingabefehler. Wohnungspreise und D bleiben gueltig, nur die Honorarrange
-    // fehlt — die Preise MUESSEN deshalb sichtbar bleiben (Spec §5). Die Route fuehrt sie
-    // in `honorarAbbruch.positionen`, dort aber nach Wohnungsnummer statt nach
-    // Einheitenkennung (das Offert-Schema kennt nur die Nummer). Den Bezug zur Kennung,
-    // auf die die Tabelle zugreift, stellt allein der Client her — er haelt die Einheiten.
-    // `basispreis` bleibt weg: Das Teilergebnis fuehrt keinen, und ein erfundener waere
-    // eine Zahl ohne Herleitung; diese eine Spalte zeigt «—».
+    // E-04: Preise bleiben gueltig und muessen sichtbar bleiben (Spec §5). Route fuehrt
+    // sie nach Wohnungsnummer statt Kennung (Offert-Schema kennt nur die Nummer); der
+    // Client stellt den Bezug her. `basispreis` bleibt weg, da das Teilergebnis keinen
+    // fuehrt (Spalte zeigt «—»).
     const nachNummer = new Map(einheiten.map((e) => [e.wohnungsnummer, e.id]));
     const teilpreise: Record<string, Preis> = {};
     for (const position of rumpf.honorarAbbruch.positionen) {
@@ -132,23 +115,17 @@ export function verarbeiteBerechnungsAntwort(
       honorarMin: rumpf.honorarMin,
       honorarMax: rumpf.honorarMax,
       fehler: undefined,
-      // Nur gesetzt, wenn vorhanden — sonst wuerde `exactOptionalPropertyTypes` eine
-      // explizite `undefined`-Zuweisung auf dem optionalen Feld verlangen.
+      // Nur gesetzt wenn vorhanden (`exactOptionalPropertyTypes`).
       ...(rumpf.herleitung !== undefined ? { herleitung: rumpf.herleitung } : {}),
     },
   };
 }
 
 /**
- * Haelt den Berechnungsstand und stellt ihn ueber dieselbe Speicherwarteschlange wie in
- * `verwende-projekt.ts` sicher: hoechstens ein Versuch gleichzeitig unterwegs, waehrend
- * eines Versuchs eintreffende Stände werden zusammengefasst und nur der NEUESTE gesendet.
- *
- * Eigene Warteschlange statt der Speicher-Warteschlange aus `verwendeProjekt`: dieselbe
- * Ueberschneidungs-Gefahr besteht hier ein zweites Mal — eine langsame aeltere
- * Berechnungsantwort darf eine schnellere neuere nicht ueberschreiben. Die Loesung ist
- * identisch (`baueSpeicherwarteschlange`), aber ein eigener Zustand: Speichern und
- * Berechnen sind unabhaengige Netzwerkvorgaenge mit unabhaengigem Erfolg/Fehlschlag.
+ * Haelt den Berechnungsstand ueber eine eigene Speicherwarteschlange (wie in
+ * `verwende-projekt.ts`): hoechstens ein Versuch gleichzeitig, eine langsame aeltere
+ * Antwort darf eine schnellere neuere nicht ueberschreiben. Eigener Zustand, da Speichern
+ * und Berechnen unabhaengige Netzwerkvorgaenge sind.
  */
 export function verwendeBerechnung(): {
   readonly stand: BerechnungsStand;
@@ -167,8 +144,7 @@ export function verwendeBerechnung(): {
         return ok;
       },
       {
-        // `laeuft` haengt Task 9 an die Offert-Schaltflaeche (waehrend einer laufenden
-        // Berechnung darf keine Offerte auf einem noch nicht aktuellen Stand entstehen).
+        // `laeuft` blockiert die Offert-Schaltflaeche waehrend einer laufenden Berechnung.
         aufStatusWechsel: (laeuft) => setStand((vorher) => ({ ...vorher, laeuft })),
         aufFehler: () => undefined,
       },

@@ -1,14 +1,12 @@
 'use client';
 
 /**
- * Aufwandfaktoren-Formular der Detailseite (Design-Spec §6.3): datengetrieben aus
- * `baueFaktorformular(konfiguration).felder` erzeugt, keine feste Faktorliste im Code.
- * Ein hier aufgezaehlter Faktorbezeichner waere genau die Codeaenderung, die die
- * Null-Dateien-Messung aus §6.3 (ein neuer Faktor ohne Codeaenderung) ausschliessen
- * wuerde.
+ * Aufwandfaktoren-Formular (Design-Spec §6.3): datengetrieben aus
+ * `baueFaktorformular(konfiguration).felder` erzeugt, keine feste Faktorliste im Code —
+ * ein neuer Faktor soll ohne Codeaenderung funktionieren.
  *
- * Darunter die `anzeigeFaktoren`: sie werden nicht erfasst, sondern in der
- * Faktorermittlung (Lagescore/Ableitung) hergeleitet, darum reine Anzeige.
+ * `anzeigeFaktoren` werden nicht erfasst, sondern in der Faktorermittlung
+ * (Lagescore/Ableitung) hergeleitet, darum reine Anzeige.
  */
 import { useEffect, useState } from 'react';
 import {
@@ -30,10 +28,9 @@ export interface AufwandfaktorenProps {
 }
 
 /**
- * `Number('')` ist 0 und `Number.isFinite(0)` wahr — ein geleertes Feld wurde hier bisher
- * als erfasste Null gemeldet, und der Kern gewichtet eine Null bereitwillig. Dieselbe
- * Stelle, fuer die `entscheideZellenwert` geschrieben wurde (siehe zellen-logik.ts); die
- * Lehre stand bisher nur in der Datei, in der der Fehler gemeldet worden war.
+ * `Number('')` ist 0 und `Number.isFinite(0)` wahr: ein geleertes Feld wuerde ohne
+ * `entscheideZellenwert` als erfasste Null gemeldet, und der Kern gewichtet eine Null
+ * bereitwillig (siehe zellen-logik.ts).
  */
 function meldeGueltige(entwurf: string, aendere: (wert: number) => void): void {
   const entscheid = entscheideZellenwert(entwurf);
@@ -47,8 +44,7 @@ function OrdinalFeld(
     readonly aendere: (wert: number) => void;
   },
 ) {
-  // Ein Select hat keinen Tipp-Zwischenzustand — anders als ZahlFeld unten braucht es
-  // darum keinen lokalen Entwurf und bleibt bei `onChange`.
+  // Ein Select hat keinen Tipp-Zwischenzustand, darum kein lokaler Entwurf wie in ZahlFeld.
   return (
     <Select
       id={`faktor-${feld.faktorId}`}
@@ -70,17 +66,14 @@ export type ZahlfeldEntscheid =
   | { readonly art: 'beibehalten'; readonly wert: number | undefined };
 
 /**
- * Reine Commit-Entscheidung fuer `ZahlFeld` beim Verlassen des Feldes — herausgeloest aus
- * der Komponente, damit sie ohne DOM/Handler-Attrappen testbar ist (Muster
- * `zellen-logik.ts`, Task-11-Review Finding). Nutzt `entscheideZellenwert` fuer die
- * Parse-Regel (dieselbe wie `ZellenEingabe`): ein leerer oder nicht parsierbarer Entwurf
- * committet nicht, sondern faellt auf den bisherigen — moeglicherweise weiterhin
- * fehlenden — Wert zurueck, statt eine Zahl zu erfinden.
+ * Reine Commit-Entscheidung fuer `ZahlFeld` beim Verlassen des Feldes, testbar ohne
+ * DOM/Handler-Attrappen (Muster `zellen-logik.ts`). Ein leerer oder nicht parsierbarer
+ * Entwurf committet nicht, sondern faellt auf den bisherigen Wert zurueck.
  *
  * Die Feldgrenzen (`untergrenze`/`obergrenze`) sind bewusst NICHT Teil dieser Entscheidung:
- * ein parsierbarer, aber ausserhalb der Grenzen liegender Wert wird — wie bisher — trotzdem
- * committet und erst danach ueber `pruefeFaktorwerte`/`Hinweis` sichtbar gemacht. Dieselbe
- * Aufgabenteilung wie im Rest des Formulars: Parsierung hier, Bereichspruefung dort.
+ * ein ausserhalb der Grenzen liegender, aber parsierbarer Wert wird trotzdem committet und
+ * erst danach ueber `pruefeFaktorwerte`/`Hinweis` sichtbar gemacht — Parsierung hier,
+ * Bereichspruefung dort.
  */
 export function entscheideZahlfeldCommit(
   entwurf: string, aktuellerWert: number | undefined,
@@ -92,14 +85,11 @@ export function entscheideZahlfeldCommit(
 
 /**
  * Haelt den Eingabewert lokal und meldet ihn erst beim Verlassen des Feldes (Muster
- * `ZellenEingabe.tsx`). Ohne lokalen Zustand ist das Feld ueber `value={wert ?? ''}`
- * direkt vom Projektstand kontrolliert: Ein geleertes Feld meldet ueber `onChange` sofort
- * `entscheideZellenwert('')` -> `verwerfen`, nichts aendert sich am Projektstand, und die
- * Anzeige springt im selben Tastendruck auf den alten Wert zurueck — ein Feld liesse sich
- * so nie leeren, um eine neue Zahl zu tippen (docs/offene-punkte-projektansicht.md). Der
- * Abgleich per useEffect holt Aenderungen nach, die von aussen kommen (z. B. Formular-
- * Reset). Die eigentliche Commit-Entscheidung steckt in `entscheideZahlfeldCommit` oben,
- * hier bleibt nur die React-Verdrahtung.
+ * `ZellenEingabe.tsx`). Ohne lokalen Zustand waere das Feld ueber `value={wert ?? ''}`
+ * direkt vom Projektstand kontrolliert: Ein geleertes Feld wuerde sofort auf `verwerfen`
+ * fallen, nichts am Projektstand aendern, und die Anzeige springt im selben Tastendruck auf
+ * den alten Wert zurueck — ein Feld liesse sich so nie leeren. Der Abgleich per useEffect
+ * holt Aenderungen nach, die von aussen kommen (z. B. Formular-Reset).
  */
 function ZahlFeld(
   { feld, wert, aendere }: {
@@ -138,9 +128,8 @@ export function Aufwandfaktoren({ formular, werte, aendere }: AufwandfaktorenPro
     aendere({ ...werte, [faktorId]: wert });
   }
 
-  // `pruefeFaktorwerte` ist dieselbe reine Pruefung wie serverseitig vor der Berechnung
-  // (server/faktorformular.ts) — hier client-seitig fuer die feldnahe Vorschau genutzt,
-  // nicht als Ersatz fuer die serverseitige Validierung.
+  // Dieselbe reine Pruefung wie serverseitig (server/faktorformular.ts), hier nur fuer die
+  // feldnahe Vorschau, nicht als Ersatz fuer die serverseitige Validierung.
   const meldungen = pruefeFaktorwerte(formular, werte);
   function meldungFuer(faktorId: string): string | undefined {
     return meldungen.find((m) => m.feldpfad === `aufwandfaktoren.${faktorId}`)?.text;

@@ -2,7 +2,8 @@
 // FaktorId; kein faktorspezifischer Zweig (I-13). Sonderfaelle: S-01, S-02.
 import { fehlschlag, ok, type Result } from '../domain/result.js';
 import { stufenFehler, type StufenFehler } from '../fehler/stufenfehler.js';
-import { loeseStrategieAuf, type NormalisierterFaktor } from '../modell/normalisierung.js';
+import { loeseStrategieAuf } from '../normalization/registry.js';
+import type { NormalisierterFaktor } from '../normalization/strategie.js';
 import { sortiereNachSchluessel } from '../util/sortierung.js';
 import type { GeschlossenerEingang } from './stufe2a-abgeleitete.js';
 

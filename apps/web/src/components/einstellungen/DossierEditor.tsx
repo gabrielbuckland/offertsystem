@@ -1,17 +1,8 @@
 'use client';
 
-/**
- * Editor fuer den Teilbaum `dossierDefaults` (Task 16) — firmenweite Voreinstellungen
- * fuer neue Projekte. Die drei Primitivfelder (`flaecheInnen`, `flaecheAussen`,
- * `stockwerk` numerisch; `energielabel` textuell) legen bei leerem Feld `null` ab —
- * «leer lassen = keine Voreinstellung» (Spec §6), kein erfundener Nullwert.
- *
- * `zustandsbewertungen`/`qualitaetsbewertungen` sind offene Schluessel-Wert-Listen
- * (`Record<string, string>`), deren Zeilenzahl nicht feststeht — dasselbe Muster wie
- * `ParametrisierungsDetail` (Task 10, `components/projekt/`); seit Task 19 gemeinsam in
- * `components/ui/schluessel-wert-liste.tsx` (`SchluesselWertListe`) implementiert statt
- * hier eigenstaendig dupliziert.
- */
+// Editor fuer den Teilbaum `dossierDefaults` — firmenweite Voreinstellungen fuer neue
+// Projekte. Die Zahlen-/Textfelder legen bei leerem Feld `null` ab: «leer lassen = keine
+// Voreinstellung» (Spec §6), kein erfundener Nullwert.
 import { useEffect, useState, type ReactElement } from 'react';
 import { Hinweis } from '../ui/hinweis.js';
 import { Input } from '../ui/input.js';
@@ -19,13 +10,9 @@ import { Label } from '../ui/label.js';
 import { SchluesselWertListe } from '../ui/schluessel-wert-liste.js';
 import { befundeFuerPfad, type BereichsEditorProps } from './verwende-einstellungen.js';
 
-/**
- * Feld mit lokalem Eingabepuffer (Muster `ZellenEingabe.tsx`): meldet erst beim
- * Verlassen des Felds, damit ein Tastendruck nicht bei jeder Ziffer den Entwurf
- * umschreibt. Anders als `ZellenEingabe`/`entscheideZellenwert` verwirft ein leeres
- * Feld hier NICHT (kein Zurueckspringen auf den alten Wert) — leer ist das gueltige
- * Zielergebnis "keine Voreinstellung" (`null`).
- */
+// Meldet erst beim Verlassen des Felds (Muster `ZellenEingabe.tsx`). Anders als
+// `entscheideZellenwert` verwirft ein leeres Feld hier NICHT — leer ist das gueltige
+// Zielergebnis "keine Voreinstellung" (`null`).
 function NullbaresFeld({ wert, aendere, typ = 'text' }: {
   readonly wert: string;
   readonly aendere: (text: string) => void;
@@ -69,8 +56,11 @@ const LISTEN_FELDER: ReadonlyArray<{ readonly feld: ListenFeld; readonly beschri
   { feld: 'qualitaetsbewertungen', beschriftung: 'Qualitätsbewertungen' },
 ];
 
-export function DossierEditor({ einstellungen }: BereichsEditorProps): ReactElement {
+export function DossierEditor({ einstellungen, ebene = 'firma' }: BereichsEditorProps): ReactElement {
   const dossier = einstellungen.entwurf['dossierDefaults'] as DossierDefaultsRoh;
+  // Wie beim FaktorenEditor: Das Entfernen eines Firmenschluessels aus einem offenen
+  // Woerterbuch ist im projektbezogenen Delta nicht ausdrueckbar (`Bearbeitungsebene`).
+  const entfernenGesperrt = ebene === 'projekt';
 
   function schreibeDossier(naechster: Partial<DossierDefaultsRoh>): void {
     einstellungen.aendere({
@@ -79,10 +69,6 @@ export function DossierEditor({ einstellungen }: BereichsEditorProps): ReactElem
     });
   }
 
-  // Leerer (getrimmter) Text legt `null` ab statt einer erfundenen 0 — dieselbe
-  // Leer-heisst-fehlend-Regel wie bei `entscheideZellenwert`, hier aber bewusst OHNE
-  // dessen "verwerfen bei ungueltig": ein Voreinstellungsfeld darf jederzeit auf
-  // "keine Vorgabe" zurueckgesetzt werden.
   function aendereZahlenfeld(feld: ZahlenFeld, text: string): void {
     const getrimmt = text.trim();
     if (getrimmt.length === 0) { schreibeDossier({ [feld]: null }); return; }
@@ -126,6 +112,9 @@ export function DossierEditor({ einstellungen }: BereichsEditorProps): ReactElem
           <SchluesselWertListe
             eintraege={dossier[feld]}
             aendere={(naechste) => schreibeDossier({ [feld]: naechste })}
+            entfernenGesperrt={entfernenGesperrt}
+            sperrgrund={'Entfernen ist nur firmenweit möglich: Ein Projekt speichert '
+              + 'seine Abweichungen und kann einen Firmenwert übersteuern, nicht streichen.'}
           />
         </div>
       ))}

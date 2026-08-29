@@ -1,20 +1,12 @@
 /**
  * Keine Formel. Datenvertrag der Offerte in fuenf Bereichen (Spec 05 §1.2).
- * Gerechnet wird hier nicht; das Schema haelt fest, WELCHE Groessen in welcher
- * Rundungsstufe erscheinen duerfen.
  *
- * Rundungsordnung (E-09), im Typ verankert statt im Kommentar:
- *   R1 — `referenceValuation.marktwert` (Uebernahme des Referenzwerts), ganzzahlig
- *   R2 — `unitPrice` (Wohnungspreis je Einheit), ganzzahlig
- *   R3 — `feeRange.min/max` (Honorarrange nach g(D)), ganzzahlig
- * Ungerundet bleiben `pricePerSqm`, `basePrice`, `feeBasis.min/max` — sie sind
- * Zwischengroessen, und ein vierter Rundungspunkt entstuende sonst durch die
- * Hintertuer der Serialisierung.
+ * Rundungsordnung (E-09): R1 `referenceValuation.marktwert`, R2 `unitPrice`,
+ * R3 `feeRange.min/max` sind ganzzahlig. `pricePerSqm`, `basePrice`,
+ * `feeBasis.min/max` bleiben ungerundet (Zwischengroessen).
  *
- * Keine Faktorbezeichner: Die Faktorliste ist datengetrieben (I-13). Ein Schema, das
- * einen einzelnen Aufwandfaktor als eigenes Feld fuehrte, machte die
- * Null-Dateien-Messlatte aus 6.3 unhaltbar — ein neuer Faktor aendert die
- * Konfiguration, nicht diese Datei.
+ * Keine Faktorbezeichner: Die Faktorliste ist datengetrieben (I-13) — ein neuer
+ * Aufwandfaktor aendert die Konfiguration, nicht dieses Schema.
  */
 import { z } from 'zod';
 import { provenancedSchema } from './provenance.js';
@@ -25,13 +17,10 @@ const rappenGenau = z.number().finite();               // ungerundeter Zwischenw
 const quadratmeter = z.number().finite().positive();
 
 /**
- * Erster Bereich der Offerte. Fuehrt die Kennung des erzeugenden Projekts (Spec 05 §8),
- * keine Referenznummer: Ein Projekt kann mehrere Offerten hervorbringen, `projektId` ist
- * also keine Dublette von `offertId`, sondern haelt die Herkunft nachvollziehbar. Ein
- * Projekt identifiziert sich gegenueber Menschen ueber Adresse und Datum (Spec 05 §2) —
- * beides steht bereits in `property` bzw. `metadata.erstelltAm`. Kundenname und
- * Kontaktangaben sind bewusst nicht Bestandteil des Prototyps -- er berechnet den
- * Kalkulationsteil und adressiert keinen Empfaenger.
+ * Erster Bereich der Offerte: Kennung des erzeugenden Projekts (Spec 05 §8).
+ * `projektId` ist keine Dublette von `offertId` — ein Projekt kann mehrere Offerten
+ * hervorbringen. Kundenname/Kontakt bewusst nicht Teil des Prototyps: Er berechnet
+ * den Kalkulationsteil und adressiert keinen Empfaenger.
  */
 export const projectDataSchema = z.object({
   projektId: z.string().uuid(),
@@ -59,16 +48,15 @@ export const adjustmentSchema = z.object({
   enteredAmount: rappen.optional(),
   justification: z.string().min(1),                    // Pflichtfeld, US-04, I-09
   vorlageId: z.string().min(1).optional(),             // dokumentarisch, Spec 02 §3.4.1
-  /** Nachweis der Regel, aus der der Wert stammt. Rein dokumentarisch, geht in keine
-   *  Formel ein — und erscheint bewusst NICHT im gerenderten Dokument: Die Offerte geht
-   *  an den Eigentuemer, die Preislogik des Vermarkters gehoert nicht hinein. */
+  /** Nachweis der Regel, aus der der Wert stammt; rein dokumentarisch, erscheint
+   *  bewusst NICHT im gerenderten Dokument (geht an den Eigentuemer, nicht an den
+   *  Vermarkter). */
   regel: z.object({
     merkmal: z.string().min(1),
     merkmalswert: z.number(),
     bereich: z.number().int().nonnegative(),
     regelwert: z.number(),
   }).strict().optional(),
-  /** Der Vermarkter hat den Regelwert an dieser Einheit uebersteuert. */
   uebersteuert: z.literal(true).optional(),
 }).strict().refine(
   (a) => (a.enteredAs === 'amount') === (a.enteredAmount !== undefined),
@@ -171,29 +159,24 @@ export const offerMetadataSchema = z.object({
     bewertungsdatum: z.string().min(1),
     konfidenzklasse: z.enum(['poor', 'medium', 'good']),
   }).strict()).min(1),
-  /**
-   * Eingebettete **Kopie** der Konfiguration, kein Verweis — sonst verfehlt US-10/US-13
-   * beim naechsten Konfigwechsel. Der Name bezeichnet projektweit die Kopie; der
-   * Kurzausweis heisst bei P1 `KonfigurationsFingerabdruck` (PE-04).
-   */
+  /** Eingebettete Kopie der Konfiguration, kein Verweis — sonst verfehlt US-10/US-13
+   *  beim naechsten Konfigwechsel. Kurzausweis heisst bei P1 `KonfigurationsFingerabdruck`
+   *  (PE-04). */
   konfigurationsAbdruck: z.record(z.unknown()),
   konfigVersion: z.string().min(1),
   /** SHA-256 der kanonisch serialisierten Konfiguration, eigenes Feld (E-26, PE-04). */
   konfigPruefsumme: z.string().regex(/^[0-9a-f]{64}$/),
-  /**
-   * Ergebnis von `serialisiereEingang(EingangsArgumente)` aus @offert/core (PE-08) —
-   * nicht die Formulardaten. Bezugsquelle des Reproduktionstests (Spec 06 §9);
-   * `deserialisiereEingang` fuehrt sie ohne Umweg ueber die Erfassung zurueck.
-   */
+  /** Ergebnis von `serialisiereEingang(EingangsArgumente)` aus @offert/core (PE-08),
+   *  nicht die Formulardaten. Basis des Reproduktionstests (Spec 06 §9);
+   *  `deserialisiereEingang` fuehrt sie zurueck. */
   berechnungsEingabe: z.record(z.unknown()),
 }).strict();
 
 /**
- * Kundengerichteter Offerttext (Spec 2026-08-27 §1): das Ergebnis der
- * Platzhalter-Auflösung, NIE die Vorlage — das Artefakt ist selbsttragend und hängt
- * nicht vom Vorlagen- oder Renderer-Stand ab (US-13). Optional, damit vor dieser
- * Erweiterung abgelegte Artefakte gültig bleiben (I-24). `auftraggeber` steht hier und
- * nicht im Offert-Kern, weil er Empfängerangabe des Dokuments ist, keine Rechengrösse.
+ * Kundengerichteter Offerttext (Spec 2026-08-27 §1): Ergebnis der Platzhalter-Aufloesung,
+ * NIE die Vorlage — selbsttragend, unabhaengig vom Vorlagenstand (US-13). Optional, damit
+ * Altartefakte gueltig bleiben (I-24). `auftraggeber` steht hier statt im Offert-Kern,
+ * da Empfaengerangabe des Dokuments, keine Rechengroesse.
  */
 export const offertDokumentBlockSchema = z.object({
   inhalt: aufgeloestesDokumentSchema,

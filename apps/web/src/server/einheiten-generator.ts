@@ -1,21 +1,15 @@
 /**
- * Keine Formel. Erzeugt Einheitenzeilen aus Wuenschen der Form «2 mal 3.5 Zimmer».
+ * Erzeugt Einheitenzeilen aus Wuenschen der Form «2 mal 3.5 Zimmer». Flaechen starten bei
+ * null, nicht bei einem geratenen Wert — ein Vorgabewert wuerde einen erfassten Wert
+ * vortaeuschen.
  *
- * Der Generator bildet die Arbeitsweise des Auftraggebers ab: Zuerst steht die
- * Zusammensetzung des Projekts fest, danach werden die Flaechen eingetragen. Flaechen
- * starten deshalb bei null und nicht bei einem geratenen Wert — ein Vorgabewert wuerde
- * einen erfassten Wert vortaeuschen.
- *
- * Die Kennung (`id`) wird UNABHAENGIG von der Wohnungsnummer vergeben. Die Wohnungsnummer
- * ist ein vom Nutzer editierbares Anzeigefeld (Einheitentabelle, Task 11); die Kennung ist
- * hingegen der Schluessel, unter dem Basispreis und Anpassungen gefuehrt werden
- * (projektion.ts, berechnung/route.ts). Waere die Kennung aus der Nummer abgeleitet, wuerde
- * eine Umbenennung, die eine Nummer freigibt, plus eine spaetere Neuvergabe derselben Nummer
- * an eine andere Einheit zwei Einheiten dieselbe Kennung geben — mit stiller
- * Preisverwechslung als Folge, weil `projektSchema` nur auf die Wohnungsnummer prueft. Der
- * Zaehler liest deshalb die hoechste bereits vergebene KENNUNG, nicht die Wohnungsnummer.
- * Kennungen aus der Zeit vor diesem Fix (`E-W-001`) matchen das neue Muster nicht und zaehlen
- * als 0 — der Zaehler beginnt dann bei 1, ohne mit ihnen zu kollidieren.
+ * Die Kennung (`id`) wird UNABHAENGIG von der Wohnungsnummer vergeben: Die Wohnungsnummer
+ * ist ein editierbares Anzeigefeld, die Kennung dagegen der Schluessel, unter dem
+ * Basispreis und Anpassungen gefuehrt werden (projektion.ts, berechnung/route.ts). Waere
+ * die Kennung aus der Nummer abgeleitet, koennten zwei Einheiten nach Umbenennung/
+ * Neuvergabe derselben Nummer dieselbe Kennung erhalten — mit stiller Preisverwechslung,
+ * weil `projektSchema` nur auf die Wohnungsnummer prueft. Der Zaehler liest deshalb die
+ * hoechste bereits vergebene KENNUNG, nicht die Wohnungsnummer.
  */
 import type { AnpassungsSpalte, ProjektEinheit, Referenzobjekt } from './projekt-schema.js';
 
@@ -25,16 +19,10 @@ export interface Wunsch {
 }
 
 /**
- * Der Vorgabewert einer Spalte ist ihre Antwort auf «was gilt hier ueblicherweise» und
- * wird beim Anlegen einer Einheit uebernommen — sonst waere er ein Bedienelement ohne
- * Wirkung. Er traegt dieselbe Groesse wie `spaltenwerte` selbst (Faktor bei 'relativ',
- * Rappen bei 'absolut'), die Uebernahme ist deshalb eine Kopie und keine Umrechnung.
- *
- * Ein Vorgabewert von 0 wird NICHT eingetragen: `projiziere` ueberspringt ihn ohnehin,
- * und eine Null im Artefakt sieht aus wie eine erfasste Entscheidung, ist aber keine.
- *
- * Eine Spalte mit `regel` hat KEINEN Vorgabewert (schliessen sich im Schema aus,
- * `projekt-schema.ts`) — fuer sie wird nichts vorbelegt.
+ * Der Vorgabewert einer Spalte wird beim Anlegen einer Einheit uebernommen (Kopie, keine
+ * Umrechnung — dieselbe Groesse wie `spaltenwerte`: Faktor bei 'relativ', Rappen bei
+ * 'absolut'). Ein Vorgabewert von 0 wird NICHT eingetragen: `projiziere` ueberspringt ihn
+ * ohnehin, und eine Null im Artefakt saehe aus wie eine erfasste Entscheidung.
  */
 function vorbelegteSpaltenwerte(
   spalten: readonly AnpassungsSpalte[],
@@ -42,11 +30,8 @@ function vorbelegteSpaltenwerte(
   const werte: Record<string, number> = {};
   for (const s of spalten) {
     // Eine Spalte mit Regel wird NICHT vorbelegt: Der Spaltenwert ist ab jetzt die
-    // Uebersteuerung der Regel, und eine vorbelegte Uebersteuerung an jeder neuen
-    // Einheit stellte die Regel still, bevor sie je greift. Das Schema schliesst
-    // `regel` und `vorgabewert` zwar bereits gegenseitig aus (`projekt-schema.ts`),
-    // die Bedingung steht trotzdem explizit hier: Sie ist der eigentliche Grund fuer
-    // das Verhalten, nicht ein Nebeneffekt der Schemapruefung.
+    // Uebersteuerung der Regel, und eine vorbelegte Uebersteuerung stellte sie still,
+    // bevor sie je greift.
     if (s.regel !== undefined) continue;
     if (s.vorgabewert !== undefined && s.vorgabewert !== 0) werte[s.id] = s.vorgabewert;
   }

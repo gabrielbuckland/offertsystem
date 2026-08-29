@@ -15,10 +15,15 @@ export default async function ProjekteSeite() {
     <main>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Projekte</h1>
-        {/* Im Leerfall traegt `ProjektKacheln` den Ausloeser ueber `leerAktion` — ein
-            zweiter, gleichzeitig sichtbarer Ausloeser haette doppelte Feld-IDs im
-            <dialog>. */}
-        {eintraege.length > 0 && <NeuesProjekt />}
+        <div className="flex items-center gap-3">
+          <a href="/einstellungen" className="text-sm text-primary underline">
+            Firmeneinstellungen
+          </a>
+          {/* Im Leerfall traegt `ProjektKacheln` den Ausloeser ueber `leerAktion` — ein
+              zweiter, gleichzeitig sichtbarer Ausloeser haette doppelte Feld-IDs im
+              <dialog>. */}
+          {eintraege.length > 0 && <NeuesProjekt />}
+        </div>
       </div>
       <ProjektKacheln eintraege={eintraege} leerAktion={<NeuesProjekt />} />
     </main>

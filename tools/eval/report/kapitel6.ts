@@ -420,7 +420,7 @@ export function p5Integration(integration: LaufArtefakt): string {
     throw new Error(
       'Integrations-Artefakt ohne kategorien: Der Nachweis je Fehlerkategorie '
       + '(sec:integrationstests) braucht eine Zeile je gefahrener Kategorie. '
-      + 'Testlauf mit aktuellem ff2Szenarien.test.ts wiederholen.',
+      + 'Testlauf mit aktuellem ff2-szenarien.test.ts wiederholen.',
     );
   }
   const zeilen = kategorien.map((k) => [

@@ -1,15 +1,8 @@
 /**
- * Keine Formel. Erzeugung der Laufmetadaten (E-29).
- *
- * Weder Kern noch Adapter erzeugen Bezeichner oder Zeitstempel: Sonst lieferten zwei
- * Laeufe derselben Eingabe verschiedene Artefakte, und I-14 waere praktisch unpruefbar.
- * Beides entsteht genau hier und wird hineingereicht.
- *
- * Die Pruefsumme wird UEBERNOMMEN, nicht gebildet (PE-04): Sie entsteht einmal im Lader
- * aus der kanonisch serialisierten effektiven Konfiguration. Eine zweite Serialisierung
- * ueber dasselbe Objekt liefe bei der ersten Abweichung — Behandlung von `undefined`,
- * `Map`, Zahlformat — auseinander, und die Pruefsumme in den Metadaten belegte dann
- * etwas anderes als die des Laders.
+ * Erzeugung der Laufmetadaten (E-29). Weder Kern noch Adapter erzeugen Bezeichner oder
+ * Zeitstempel, sonst lieferten zwei Laeufe derselben Eingabe verschiedene Artefakte
+ * (I-14 unpruefbar). Pruefsumme wird UEBERNOMMEN, nicht gebildet (PE-04) — sie entsteht
+ * einmal im Lader; eine zweite Serialisierung koennte abweichen.
  */
 import { randomUUID } from 'node:crypto';
 import type { KonfigurationsFingerabdruck } from './konfigurations-lader.js';

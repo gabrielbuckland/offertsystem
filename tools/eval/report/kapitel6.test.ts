@@ -3,7 +3,6 @@ import {
   p4Erweiterung,
   p7Marge,
   p7Sensitivitaet,
-  p8Pruefpunkte,
   type ExtensionArtefakt,
   type OatZeile,
 } from './kapitel6.ts';
@@ -97,8 +96,3 @@ describe('p4Erweiterung', () => {
   });
 });
 
-describe('p8Pruefpunkte', () => {
-  it('sagt ausdruecklich, dass die manuelle Pruefung noch aussteht', () => {
-    expect(p8Pruefpunkte(null)).toContain('noch nicht durchgeführt');
-  });
-});

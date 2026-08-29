@@ -22,10 +22,29 @@ export interface EinstellungsBefund {
   readonly text: string;
 }
 
+/**
+ * Bearbeitungsebene des Editors. Sie steuert AUSSCHLIESSLICH Aktionen, die das
+ * Delta-Modell der Projektebene nicht ausdruecken kann.
+ *
+ * Konkret das ENTFERNEN eines Firmenschluessels aus einem Woerterbuch
+ * (`aufwandfaktoren.<id>`, `dossierDefaults.*bewertungen.<schluessel>`): `bildeDelta`
+ * iteriert ueber die Schluessel des Entwurfs, ein dort fehlender Schluessel erzeugt
+ * deshalb keinen Delta-Eintrag — dieselbe Grenze wie im Kern-Merge, der Werte nur
+ * ueberlagert und keine Form fuer «dieser Schluessel soll hier fehlen» kennt. Firmenweit
+ * wird dagegen die vollstaendige Konfiguration geschrieben; dort ist das Entfernen
+ * ausdrueckbar und bleibt erlaubt.
+ *
+ * Der Knopf wird deshalb auf der Projektebene GESPERRT, nicht stillschweigend wirkungslos
+ * gelassen: Knopf da, Wirkung weg ist die schlechteste der drei Varianten.
+ */
+export type Bearbeitungsebene = 'firma' | 'projekt';
+
 /** Props, die jeder konkrete Bereichs-Editor (HonorarEditor, FaktorenEditor, ...;
  *  Tasks 15/16) entgegennimmt. */
 export interface BereichsEditorProps {
   readonly einstellungen: VerwendeEinstellungenErgebnis;
+  /** Fehlt auf der firmenweiten Seite; dort gilt `'firma'` als Vorgabe. */
+  readonly ebene?: Bearbeitungsebene | undefined;
 }
 
 /**

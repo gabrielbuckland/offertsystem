@@ -109,7 +109,7 @@ genommen, weil das System bewusst keine `chf_pro_quadratmeter`-Erfassungsform
 fuehrt (Abgrenzung oben) und die Bereichsregel deshalb nur zwischen `relativ`
 und `absolut` waehlen kann. `stockwerk` zaehlt **0-basiert** (Erdgeschoss = 0)
 und bildet damit direkt auf PriceHubbles `floorNumber` ab (siehe
-`dossierBody()` in `packages/pricehubble/src/acl/bewertungMapper.ts`).
+`dossierBody()` in `packages/pricehubble/src/acl/bewertung-mapper.ts`).
 
 Die resultierende Staffel: Erdgeschoss +8600 CHF, 1. Obergeschoss 0 CHF
 (Referenzpunkt), 2. Obergeschoss +8600 CHF, ab dem 3. Obergeschoss (Restfall)

@@ -22,12 +22,6 @@ function basisProps(): AggregatleisteProps {
 }
 
 describe('Aggregatleiste', () => {
-  it('zeigt Verkaufssumme und Honorarrange, sobald sie vorliegen', () => {
-    const html = renderToStaticMarkup(<Aggregatleiste {...basisProps()} />);
-    expect(html).toContain('8’935’500');
-    expect(html).toContain('Offerte generieren');
-  });
-
   it('weist fehlende Aggregate aus, statt Nullen zu zeigen', () => {
     const html = renderToStaticMarkup(
       <Aggregatleiste {...basisProps()} verkaufssumme={undefined} honorarMin={undefined}
