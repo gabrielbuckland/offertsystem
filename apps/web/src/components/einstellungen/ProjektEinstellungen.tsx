@@ -30,6 +30,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Hinweis } from '../ui/hinweis.js';
 import { rufeApi } from '../rufe-api.js';
 import { rahmenBefunde } from './EinstellungsEditor.js';
+import { JsonReiter } from './JsonReiter.js';
 import { istUebersteuert, setzeZurueck } from './herkunft.js';
 import {
   bildeDelta, effektiveKonfiguration, unverankerteBefunde,
@@ -88,6 +89,27 @@ async function schreibeProjektEinstellungen(
 function wurzeln(praefix: string | readonly string[]): readonly string[] {
   return typeof praefix === 'string' ? [praefix] : praefix;
 }
+
+type Reiter = 'formular' | 'json';
+
+/**
+ * Entwurf §4 verlangt den Umschalter auf BEIDEN Ebenen. Auf der Projektebene hat er eine
+ * zweite Achse: Bearbeitet wird das DELTA (das ist es, was abgelegt wird), zur Kontrolle
+ * ansehen laesst sich die EFFEKTIVE Konfiguration — die aber nur lesend, weil ein
+ * Zurueckschreiben der Vollform aus jedem Projekt eine Vollkopie machte und das
+ * Ueberschreibungsprotokoll (Beleg fuer A-13) jeden Wert als abweichend meldete.
+ */
+type JsonSicht = 'delta' | 'effektiv';
+
+const REITER: ReadonlyArray<{ readonly wert: Reiter; readonly beschriftung: string }> = [
+  { wert: 'formular', beschriftung: 'Formular' },
+  { wert: 'json', beschriftung: 'JSON' },
+];
+
+const JSON_SICHTEN: ReadonlyArray<{ readonly wert: JsonSicht; readonly beschriftung: string }> = [
+  { wert: 'delta', beschriftung: 'Abweichungen (bearbeitbar)' },
+  { wert: 'effektiv', beschriftung: 'Effektive Konfiguration (nur lesend)' },
+];
 
 /**
  * Auffangblock fuer Befunde, die KEINE Bereichskarte verankern kann — als eigene
@@ -149,6 +171,8 @@ export function ProjektEinstellungen({ projektId, firmenwerte, delta }: ProjektE
   const [abgelegt, setzeAbgelegt] = useState<Readonly<Record<string, unknown>>>(
     () => bildeDelta(anfang, firmenwerte),
   );
+  const [reiter, setzeReiter] = useState<Reiter>('formular');
+  const [jsonSicht, setzeJsonSicht] = useState<JsonSicht>('delta');
   const [speichert, setzeSpeichert] = useState(false);
   const [pruefsumme, setzePruefsumme] = useState<string | undefined>(undefined);
   const [befunde, setzeBefunde] = useState<readonly EinstellungsBefund[]>([]);
@@ -232,7 +256,73 @@ export function ProjektEinstellungen({ projektId, firmenwerte, delta }: ProjektE
         nicht übersteuerten Firmeneinstellung wirken hier weiterhin.
       </Hinweis>
 
-      {Object.entries(BEREICHE).map(([schluessel, bereich]) => {
+      {/* Ein Umschalter fuer die GANZE Ebene, nicht je Karte wie firmenweit: Hier gibt es
+          genau einen Entwurf und eine Fussleiste, und das JSON, um das es geht, ist das
+          Delta des Projekts als Ganzes — nicht der Ausschnitt einer Bereichskarte. */}
+      <div role="tablist" aria-label="Darstellung" className="flex gap-1">
+        {REITER.map((eintrag) => (
+          <Button
+            key={eintrag.wert}
+            type="button"
+            role="tab"
+            aria-selected={reiter === eintrag.wert}
+            variant={reiter === eintrag.wert ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setzeReiter(eintrag.wert)}
+          >
+            {eintrag.beschriftung}
+          </Button>
+        ))}
+      </div>
+
+      {reiter === 'json' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>JSON</CardTitle>
+            <CardDescription>
+              Derselbe Entwurfsstand wie im Formular — die Fussleiste speichert in beiden
+              Ansichten dasselbe.
+            </CardDescription>
+            <div role="tablist" aria-label="JSON-Sicht" className="flex gap-1 pt-2">
+              {JSON_SICHTEN.map((eintrag) => (
+                <Button
+                  key={eintrag.wert}
+                  type="button"
+                  role="tab"
+                  aria-selected={jsonSicht === eintrag.wert}
+                  variant={jsonSicht === eintrag.wert ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setzeJsonSicht(eintrag.wert)}
+                >
+                  {eintrag.beschriftung}
+                </Button>
+              ))}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              {jsonSicht === 'delta'
+                ? 'Nur die Abweichungen von den Firmenwerten — genau das, was abgelegt wird.'
+                : 'Die zusammengeführte Konfiguration, mit der gerechnet wird. Nur lesend; '
+                  + 'bearbeitet wird das Delta.'}
+            </p>
+            {/* `key` erzwingt ein Neuaufsetzen beim Umschalten: `JsonReiter` haelt seinen
+                Rohtext lokal (der Cursor darf beim Tippen nicht springen) und uebernaehme
+                den Wechsel der Sicht sonst nicht. */}
+            <JsonReiter
+              key={jsonSicht}
+              wert={jsonSicht === 'delta' ? aktuellesDelta : entwurf}
+              aendere={(naechstesDelta) => aendere(
+                effektiveKonfiguration(firmenwerte, naechstesDelta),
+              )}
+              schreibbar={jsonSicht === 'delta'}
+              befunde={befunde}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {reiter === 'formular' && Object.entries(BEREICHE).map(([schluessel, bereich]) => {
         const praefixe = wurzeln(bereich.praefix);
         const bereichsBefunde = rahmenBefunde(befunde, praefixe);
         const Editor = bereich.Editor;

@@ -28,10 +28,12 @@
  * `einstellungen` kommt.
  */
 import { useState } from 'react';
+import { GESPERRTE_PFADE } from '@offert/core';
 import { Button } from '../ui/button.js';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card.js';
 import { Hinweis } from '../ui/hinweis.js';
 import { JsonReiter } from './JsonReiter.js';
+import { mitWurzeln, ohneWurzeln } from './json-reiter-logik.js';
 import { verwendeEinstellungen, type BereichsEditor } from './verwende-einstellungen.js';
 
 export interface EinstellungsEditorProps {
@@ -124,9 +126,18 @@ export function EinstellungsEditor({ titel, zweck, bereichPraefix, anfang, Edito
              * Formularzeilen, die hier gar nicht gerendert sind — ein gescheitertes
              * Speichern bliebe im JSON-Reiter ohne jede Begruendung sichtbar.
              */
+            /* Die gesperrten Wurzeln werden ausgeblendet und beim Zurueckschreiben aus
+             * dem unveraenderten Bestand wieder eingesetzt. Sonst hoebe der JSON-Reiter
+             * die Rollentrennung auf, die dieselbe Seite im Formular fuehrt: `api` ist
+             * dort bewusst nur lesend (Betriebsparameter der IT, US-08), waere hier aber
+             * ueber JEDE der vier Karten editier- und speicherbar gewesen — der
+             * Auftraggeber haette die Basis-URL auf einen fremden Host stellen koennen,
+             * und `schreibeCompanyDefaults` haette das als gueltiges Feld angenommen. */
             <JsonReiter
-              wert={zustand.entwurf}
-              aendere={zustand.aendere}
+              wert={ohneWurzeln(zustand.entwurf, GESPERRTE_PFADE)}
+              aendere={(naechster) => zustand.aendere(
+                mitWurzeln(naechster, zustand.entwurf, GESPERRTE_PFADE),
+              )}
               schreibbar
               befunde={zustand.befunde}
             />

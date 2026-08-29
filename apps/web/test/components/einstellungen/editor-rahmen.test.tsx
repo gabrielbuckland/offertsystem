@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import {
@@ -70,6 +71,24 @@ describe('EinstellungsEditor', () => {
     expect(html).toContain('wert');
   });
 
+  it('fuehrt die gesperrten Wurzeln nicht in den JSON-Reiter (W-1)', () => {
+    /**
+     * Der JSON-Reiter liegt hinter einem Umschalter im Client-Zustand und ist ohne
+     * Hook-Testbibliothek nicht zu oeffnen; geprueft wird deshalb quelltextnah, wie in
+     * `ProjektAnsicht.test.ts`. Die Aussage selbst ist scharf: `zustand.entwurf` ist die
+     * VOLLE Rohkonfiguration; ging sie ungefiltert an den schreibbaren Reiter, war `api`
+     * ueber jede der vier Karten editier- und speicherbar — die Rollentrennung aus US-08
+     * haette danach nur noch im Formularreiter existiert.
+     */
+    const quelle = readFileSync(new URL(
+      '../../../src/components/einstellungen/EinstellungsEditor.tsx', import.meta.url,
+    ), 'utf8');
+    expect(quelle).toContain('wert={ohneWurzeln(zustand.entwurf, GESPERRTE_PFADE)}');
+    expect(quelle).toContain('mitWurzeln(naechster, zustand.entwurf, GESPERRTE_PFADE)');
+    expect(quelle).not.toContain('wert={zustand.entwurf}');
+    // Die Sperrliste wird bezogen, nicht nachgebaut — keine zweite Wahrheit.
+    expect(quelle).toContain("import { GESPERRTE_PFADE } from '@offert/core'");
+  });
 });
 
 describe('rahmenBefunde (Naht Rahmen <-> Feld-Editor)', () => {

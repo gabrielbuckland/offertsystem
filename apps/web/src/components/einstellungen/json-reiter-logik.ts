@@ -33,3 +33,41 @@ export function ausText(roh: string): JsonLeseErgebnis {
   }
   return { ok: true, wert: geparst as Record<string, unknown> };
 }
+
+/**
+ * Blendet ganze Wurzeln aus der JSON-Sicht aus. Zusammen mit `mitWurzeln` haelt das die
+ * Rollentrennung auch im JSON-Reiter durch: Ein Bereich, der im Formular nur lesend
+ * gezeigt wird, darf nicht ueber den Umweg des Rohtextes editierbar werden.
+ *
+ * Die Wurzelliste kommt als Parameter herein und steht nicht als Literal hier — die
+ * einzige Wahrheit darueber, was projektbezogen bzw. durch den Auftraggeber
+ * unveraenderlich ist, ist `GESPERRTE_PFADE` im Kern.
+ */
+export function ohneWurzeln(
+  wert: Readonly<Record<string, unknown>>, wurzeln: readonly string[],
+): Record<string, unknown> {
+  const ergebnis: Record<string, unknown> = {};
+  for (const [schluessel, inhalt] of Object.entries(wert)) {
+    if (wurzeln.includes(schluessel)) continue;
+    ergebnis[schluessel] = inhalt;
+  }
+  return ergebnis;
+}
+
+/**
+ * Gegenstueck zu `ohneWurzeln`: setzt die ausgeblendeten Wurzeln aus dem unveraenderten
+ * Bestand wieder ein. Ein im Rohtext trotzdem eingetippter gesperrter Schluessel wird
+ * dabei verworfen — sonst waere die Sperre eine blosse Anzeigekosmetik, die sich durch
+ * Tippen umgehen liesse.
+ */
+export function mitWurzeln(
+  bearbeitet: Readonly<Record<string, unknown>>,
+  bestand: Readonly<Record<string, unknown>>,
+  wurzeln: readonly string[],
+): Record<string, unknown> {
+  const ergebnis = ohneWurzeln(bearbeitet, wurzeln);
+  for (const wurzel of wurzeln) {
+    if (Object.hasOwn(bestand, wurzel)) ergebnis[wurzel] = bestand[wurzel];
+  }
+  return ergebnis;
+}

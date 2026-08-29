@@ -143,6 +143,30 @@ describe('ProjektEinstellungen', () => {
   });
 });
 
+describe('JSON-Reiter der Projektebene (W-2)', () => {
+  it('bietet den Umschalter Formular/JSON an', () => {
+    // Entwurf §4 verlangt den Umschalter auf BEIDEN Ebenen; umgesetzt war er nur
+    // firmenweit, wodurch der Nur-Lese-Zweig von `JsonReiter` toter Produktionscode war.
+    const html = baueMarkup({});
+    expect(html).toContain('aria-label="Darstellung"');
+    expect(html).toContain('>JSON<');
+    expect(html).toContain('>Formular<');
+  });
+
+  it('verdrahtet das Delta schreibbar und die effektive Konfiguration nur lesend', () => {
+    // Der Umschalter liegt im Client-Zustand; quelltextnahe Verdrahtungspruefung wie in
+    // `ProjektAnsicht.test.ts`. Die Richtung ist die tragende Aussage: Bearbeitet wird
+    // das Delta — waere die effektive Konfiguration schreibbar, machte jedes Speichern
+    // aus dem Projekt eine Vollkopie.
+    const quelle = readFileSync(resolve(
+      import.meta.dirname,
+      '../../../src/components/einstellungen/ProjektEinstellungen.tsx',
+    ), 'utf8');
+    expect(quelle).toContain("wert={jsonSicht === 'delta' ? aktuellesDelta : entwurf}");
+    expect(quelle).toContain("schreibbar={jsonSicht === 'delta'}");
+  });
+});
+
 describe('Entfernen auf Projektebene (K-3)', () => {
   /**
    * `bildeDelta` iteriert ueber die Schluessel des Entwurfs; ein im Entwurf GELOESCHTER
