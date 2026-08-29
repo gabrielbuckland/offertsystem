@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { DossierResponseSchema } from '../../src/schema/dossierResponse.js';
-import { LocationScoresResponseSchema } from '../../src/schema/locationScoresResponse.js';
-import { LoginResponseSchema } from '../../src/schema/loginResponse.js';
-import { ValuationResponseSchema } from '../../src/schema/valuationResponse.js';
+import { DossierResponseSchema } from '../../src/schema/dossier-response.js';
+import { LocationScoresResponseSchema } from '../../src/schema/location-scores-response.js';
+import { LoginResponseSchema } from '../../src/schema/login-response.js';
+import { ValuationResponseSchema } from '../../src/schema/valuation-response.js';
 import { ladeFixture } from '../fixtures.js';
 
 describe('Contract-Schema — tolerant nach oben (Spec 04 §5.3)', () => {

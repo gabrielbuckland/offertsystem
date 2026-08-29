@@ -1,11 +1,11 @@
 import type { LagescoreName, WohnungstypId } from '@offert/core';
 import { describe, expect, it } from 'vitest';
-import { KonfigurationsFehler } from '../src/config/konfigurationsFehler.js';
-import { MockValuationProvider } from '../src/provider/mockValuationProvider.js';
-import { PriceHubbleAdapter } from '../src/provider/priceHubbleAdapter.js';
+import { KonfigurationsFehler } from '../src/config/konfigurations-fehler.js';
+import { MockValuationProvider } from '../src/provider/mock-valuation-provider.js';
+import { PriceHubbleAdapter } from '../src/provider/pricehubble-adapter.js';
 import { createValuationProvider } from '../src/provider/factory.js';
-import { anfrage, adresse } from './adapterHilfen.js';
-import { testKonfiguration } from './testKonfiguration.js';
+import { anfrage, adresse } from './adapter-hilfen.js';
+import { testKonfiguration } from './test-konfiguration.js';
 
 describe('Provider-Auswahl ohne Codeaenderung (US-14, E-12, AK-17)', () => {
   it('waehlt ohne gesetzte Variable den Interface-Mock', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { anfrage, adresse, baueAdapter } from './adapterHilfen.js';
+import { anfrage, adresse, baueAdapter } from './adapter-hilfen.js';
 
 /**
  * I-27 / NFA-12: Die Abrufzahl skaliert mit der Zahl der Wohnungstypen `T`, nicht mit

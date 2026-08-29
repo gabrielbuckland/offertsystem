@@ -4,7 +4,7 @@
  * steht bewusst nicht in dieser Aufzaehlung (§6.5.3, E-02).
  *
  * Die Reihenfolge ist verbindlich: Sie ist zugleich die Zeilenfolge der
- * Abbildungstabelle in `acl/fehlerUebersetzung.ts`.
+ * Abbildungstabelle in `acl/fehler-uebersetzung.ts`.
  */
 export const ADAPTER_FEHLERARTEN = [
   'AuthError',

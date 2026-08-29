@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { ApiKonfiguration } from '../src/config/apiKonfiguration.js';
+import type { ApiKonfiguration } from '../src/config/api-konfiguration.js';
 import {
   pruefeApiKonfiguration,
   pruefeUmgebung,
-} from '../src/config/apiKonfiguration.js';
-import { KonfigurationsFehler } from '../src/config/konfigurationsFehler.js';
-import { testKonfiguration } from './testKonfiguration.js';
+} from '../src/config/api-konfiguration.js';
+import { KonfigurationsFehler } from '../src/config/konfigurations-fehler.js';
+import { testKonfiguration } from './test-konfiguration.js';
 
 describe('Initialisierungspruefung (Spec 04 §2 Regel 2, §6.2)', () => {
   it('akzeptiert eine vollstaendige Konfiguration', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ADAPTER_FEHLERARTEN } from '../src/client/fehler.js';
-import { KonfigurationsFehler } from '../src/config/konfigurationsFehler.js';
+import { KonfigurationsFehler } from '../src/config/konfigurations-fehler.js';
 import { maskiereKopfzeilen, sammelndesProtokoll } from '../src/client/protokoll.js';
 
 describe('adapterinterne Fehlertypen (Spec 04 §6.5.1, §6.5.3)', () => {

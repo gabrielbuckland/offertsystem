@@ -3,11 +3,11 @@
  * (Spec 04 §6.3, §6.4). Saemtliche Parameter stammen aus `config.api.*`; im Code steht
  * keine Zahlenkonstante fuer Zeitlimit, Backoff oder Versuchszahl (E-13, G-4).
  */
-import type { ApiKonfiguration } from '../config/apiKonfiguration.js';
+import type { ApiKonfiguration } from '../config/api-konfiguration.js';
 import { backoffWartezeitMs } from './backoff.js';
 import type { AdapterFehler, AdapterFehlerArt, EndpunktName } from './fehler.js';
 import type { Protokoll } from './protokoll.js';
-import { bewerteRetryAfter } from './retryAfter.js';
+import { bewerteRetryAfter } from './retry-after.js';
 import type { Uhr } from './uhr.js';
 import type { Zufallsquelle } from './zufall.js';
 

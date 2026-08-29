@@ -1,5 +1,5 @@
 /** Keine Formel. Auswertung des `Retry-After`-Headers (Spec 04 §6.4). */
-import type { RetryKonfiguration } from '../config/apiKonfiguration.js';
+import type { RetryKonfiguration } from '../config/api-konfiguration.js';
 
 export type RetryAfterEntscheid =
   | { readonly modus: 'warten'; readonly wartezeitMs: number }

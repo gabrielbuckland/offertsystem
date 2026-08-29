@@ -6,7 +6,7 @@
  * uebergeben wurde — bewusst doppelt zu P1s Ladezeitpruefung, weil der Adapter auch
  * programmatisch aufgerufen werden kann.
  */
-import { KonfigurationsFehler } from './konfigurationsFehler.js';
+import { KonfigurationsFehler } from './konfigurations-fehler.js';
 
 /** Endpunktschablonen; `{dossierId}` wird zur Laufzeit ersetzt (Spec 04 §1.1). */
 export interface Endpunkte {

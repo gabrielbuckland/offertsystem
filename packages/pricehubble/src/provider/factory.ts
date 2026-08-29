@@ -23,15 +23,15 @@ import {
   pruefeUmgebung,
   type AdapterUmgebung,
   type ApiKonfiguration,
-} from '../config/apiKonfiguration.js';
-import { HttpClient } from '../client/httpClient.js';
+} from '../config/api-konfiguration.js';
+import { HttpClient } from '../client/http-client.js';
 import { stdoutProtokoll } from '../client/protokoll.js';
-import { TokenVerwaltung } from '../client/tokenVerwaltung.js';
+import { TokenVerwaltung } from '../client/token-verwaltung.js';
 import { Warteschlange } from '../client/warteschlange.js';
 import { systemUhr } from '../client/uhr.js';
 import { jitterStromAusLaufSeed } from '../client/zufall.js';
-import { MockValuationProvider } from './mockValuationProvider.js';
-import { PriceHubbleAdapter } from './priceHubbleAdapter.js';
+import { MockValuationProvider } from './mock-valuation-provider.js';
+import { PriceHubbleAdapter } from './pricehubble-adapter.js';
 
 export interface FactoryOptionen {
   /** Lauf-Seed; der Jitter-Strom ist daraus als `seed XOR 1` abgeleitet (E-27). */

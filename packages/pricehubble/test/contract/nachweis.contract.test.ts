@@ -1,11 +1,11 @@
 import { fileURLToPath } from 'node:url';
 import { afterAll, expect, it } from 'vitest';
-import { DossierResponseSchema } from '../../src/schema/dossierResponse.js';
-import { LocationScoresResponseSchema } from '../../src/schema/locationScoresResponse.js';
-import { LoginResponseSchema } from '../../src/schema/loginResponse.js';
-import { ValuationResponseSchema } from '../../src/schema/valuationResponse.js';
+import { DossierResponseSchema } from '../../src/schema/dossier-response.js';
+import { LocationScoresResponseSchema } from '../../src/schema/location-scores-response.js';
+import { LoginResponseSchema } from '../../src/schema/login-response.js';
+import { ValuationResponseSchema } from '../../src/schema/valuation-response.js';
 import { ladeFixture } from '../fixtures.js';
-import { schreibeNachweisArtefakt } from '../nachweis/schreibeArtefakt.js';
+import { schreibeNachweisArtefakt } from '../nachweis/schreibe-artefakt.js';
 
 const FAELLE = [
   ['loginResponse', LoginResponseSchema, 'synthetic/auth/login.success.json'],

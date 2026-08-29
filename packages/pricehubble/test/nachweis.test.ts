@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { schreibeNachweisArtefakt } from './nachweis/schreibeArtefakt.js';
+import { schreibeNachweisArtefakt } from './nachweis/schreibe-artefakt.js';
 
 describe('Nachweisartefakt (PE-18)', () => {
   it('schreibt Artefakt und latest.json-Zeiger in ein eigenes Zeitstempelverzeichnis je Lauf', () => {

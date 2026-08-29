@@ -1,7 +1,7 @@
 import type { WohnungstypId } from '@offert/core';
 import { HttpResponse, http } from 'msw';
 import { describe, expect, it } from 'vitest';
-import { anfrage, baueAdapter } from './adapterHilfen.js';
+import { anfrage, baueAdapter } from './adapter-hilfen.js';
 import { TEST_DOSSIER_ID, ladeFixture } from './fixtures.js';
 import { BASIS } from './msw/handlers.js';
 import { mswServer } from './msw/server.js';

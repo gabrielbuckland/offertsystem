@@ -25,20 +25,20 @@ import type {
   ValuationProvider,
   WohnungstypId,
 } from '@offert/core';
-import { aufLagescores } from '../acl/lagescoreMapper.js';
-import { aufReferenzbewertung, dossierBody } from '../acl/bewertungMapper.js';
-import { uebersetzeFehler } from '../acl/fehlerUebersetzung.js';
-import { verifiziereGesendetePatchFelder } from '../acl/patchVerifikation.js';
-import type { ApiKonfiguration } from '../config/apiKonfiguration.js';
+import { aufLagescores } from '../acl/lagescore-mapper.js';
+import { aufReferenzbewertung, dossierBody } from '../acl/bewertung-mapper.js';
+import { uebersetzeFehler } from '../acl/fehler-uebersetzung.js';
+import { verifiziereGesendetePatchFelder } from '../acl/patch-verifikation.js';
+import type { ApiKonfiguration } from '../config/api-konfiguration.js';
 import type { AdapterFehler, EndpunktName } from '../client/fehler.js';
-import type { HttpClient, RohAntwort } from '../client/httpClient.js';
+import type { HttpClient, RohAntwort } from '../client/http-client.js';
 import type { Protokoll } from '../client/protokoll.js';
-import type { TokenVerwaltung } from '../client/tokenVerwaltung.js';
+import type { TokenVerwaltung } from '../client/token-verwaltung.js';
 import type { Uhr } from '../client/uhr.js';
 import type { Warteschlange } from '../client/warteschlange.js';
-import { DossierResponseSchema } from '../schema/dossierResponse.js';
-import { LocationScoresResponseSchema } from '../schema/locationScoresResponse.js';
-import { ValuationResponseSchema, type ValuationResponse } from '../schema/valuationResponse.js';
+import { DossierResponseSchema } from '../schema/dossier-response.js';
+import { LocationScoresResponseSchema } from '../schema/location-scores-response.js';
+import { ValuationResponseSchema, type ValuationResponse } from '../schema/valuation-response.js';
 
 export interface AdapterAbhaengigkeiten {
   readonly konfiguration: ApiKonfiguration;

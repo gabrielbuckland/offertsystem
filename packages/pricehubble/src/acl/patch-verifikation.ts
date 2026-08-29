@@ -5,7 +5,7 @@
  * Bewertung auf einem anderen Objekt, als der Vermarkter erfasst hat.
  * Abweichung ⇒ ContractViolation.
  */
-import type { DossierBody } from './bewertungMapper.js';
+import type { DossierBody } from './bewertung-mapper.js';
 
 /** Toleranz fuer Gleitkommaflaechen (Spec 04 §5.4). */
 const TOLERANZ = 1e-9;

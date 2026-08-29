@@ -1,11 +1,11 @@
 import { fileURLToPath } from 'node:url';
 import { HttpResponse, http } from 'msw';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { anfrage, adresse, baueAdapter } from './adapterHilfen.js';
+import { anfrage, adresse, baueAdapter } from './adapter-hilfen.js';
 import { TEST_DOSSIER_ID, ladeFixture } from './fixtures.js';
 import { BASIS } from './msw/handlers.js';
 import { mswServer } from './msw/server.js';
-import { schreibeNachweisArtefakt, type KategorieZeile } from './nachweis/schreibeArtefakt.js';
+import { schreibeNachweisArtefakt, type KategorieZeile } from './nachweis/schreibe-artefakt.js';
 
 const DOSSIER = `${BASIS}/api/v1/dossiers/${TEST_DOSSIER_ID}`;
 const VALUATION = `${DOSSIER}/valuation`;

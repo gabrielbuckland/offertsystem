@@ -17,9 +17,9 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { anonymisiere } from '../packages/pricehubble/src/acl/anonymisierung.js';
-import { HttpClient } from '../packages/pricehubble/src/client/httpClient.js';
+import { HttpClient } from '../packages/pricehubble/src/client/http-client.js';
 import { stdoutProtokoll } from '../packages/pricehubble/src/client/protokoll.js';
-import { TokenVerwaltung } from '../packages/pricehubble/src/client/tokenVerwaltung.js';
+import { TokenVerwaltung } from '../packages/pricehubble/src/client/token-verwaltung.js';
 import { systemUhr } from '../packages/pricehubble/src/client/uhr.js';
 import { jitterStromAusLaufSeed } from '../packages/pricehubble/src/client/zufall.js';
 import {
@@ -27,7 +27,7 @@ import {
   pruefeUmgebung,
   type ApiKonfiguration,
   type Endpunkte,
-} from '../packages/pricehubble/src/config/apiKonfiguration.js';
+} from '../packages/pricehubble/src/config/api-konfiguration.js';
 import type { EndpunktName } from '../packages/pricehubble/src/client/fehler.js';
 
 // `fileURLToPath` statt `.pathname`: Der Ablageort enthaelt Leerzeichen, die in

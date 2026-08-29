@@ -1,6 +1,6 @@
 import type { WohnungstypId } from '@offert/core';
 import { describe, expect, it } from 'vitest';
-import { adresse, anfrage, baueAdapter } from './adapterHilfen.js';
+import { adresse, anfrage, baueAdapter } from './adapter-hilfen.js';
 
 describe('Normalbetrieb — Szenario 1 auf HTTP-Ebene (Spec 06 §6.1)', () => {
   it('liefert je Wohnungstyp eine Referenzbewertung mit gueltigen Kerntypen', async () => {

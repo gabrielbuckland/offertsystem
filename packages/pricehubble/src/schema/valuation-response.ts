@@ -1,6 +1,6 @@
 /** Keine Formel. Contract-Schema der Bewertungsantwort E4 (Spec 04 §1.5). */
 import { z } from 'zod';
-import { ValuationSaleSchema } from './valuationSale.js';
+import { ValuationSaleSchema } from './valuation-sale.js';
 
 export const ValuationResponseSchema = z.object({
   valuationSale: ValuationSaleSchema,

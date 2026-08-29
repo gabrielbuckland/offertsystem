@@ -1,6 +1,6 @@
 import type { ProviderFehler } from '@offert/core';
 import { describe, expect, it } from 'vitest';
-import { FEHLER_ABBILDUNG, uebersetzeFehler } from '../src/acl/fehlerUebersetzung.js';
+import { FEHLER_ABBILDUNG, uebersetzeFehler } from '../src/acl/fehler-uebersetzung.js';
 import { ADAPTER_FEHLERARTEN, type AdapterFehler } from '../src/client/fehler.js';
 
 function beispiel(teil: Partial<AdapterFehler>): AdapterFehler {

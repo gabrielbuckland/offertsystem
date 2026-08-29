@@ -6,15 +6,15 @@
  * die Hooks der importierten Datei ein zweites Mal registrieren.
  */
 import type { Adresse, BewertungsAnfrage, WohnungstypId } from '@offert/core';
-import { PriceHubbleAdapter } from '../src/provider/priceHubbleAdapter.js';
-import { HttpClient } from '../src/client/httpClient.js';
-import { TokenVerwaltung } from '../src/client/tokenVerwaltung.js';
+import { PriceHubbleAdapter } from '../src/provider/pricehubble-adapter.js';
+import { HttpClient } from '../src/client/http-client.js';
+import { TokenVerwaltung } from '../src/client/token-verwaltung.js';
 import { Warteschlange } from '../src/client/warteschlange.js';
 import { sammelndesProtokoll } from '../src/client/protokoll.js';
 import { systemUhr } from '../src/client/uhr.js';
 import { erzeugeZufallsquelle } from '../src/client/zufall.js';
 import { TEST_DOSSIER_ID } from './fixtures.js';
-import { testKonfiguration } from './testKonfiguration.js';
+import { testKonfiguration } from './test-konfiguration.js';
 
 export function baueAdapter(konfiguration = testKonfiguration()) {
   const protokoll = sammelndesProtokoll();

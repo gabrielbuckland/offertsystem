@@ -1,6 +1,6 @@
 /** Keine Formel. Contract-Schema der Dossier-Antwort (Spec 04 §1.3). */
 import { z } from 'zod';
-import { ValuationSaleSchema } from './valuationSale.js';
+import { ValuationSaleSchema } from './valuation-sale.js';
 
 export const AdresseSchema = z.object({
   street: z.string(),

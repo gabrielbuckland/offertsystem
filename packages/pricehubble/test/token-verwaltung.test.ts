@@ -1,13 +1,13 @@
 import { HttpResponse, http } from 'msw';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { HttpClient } from '../src/client/httpClient.js';
-import { TokenVerwaltung } from '../src/client/tokenVerwaltung.js';
+import { HttpClient } from '../src/client/http-client.js';
+import { TokenVerwaltung } from '../src/client/token-verwaltung.js';
 import { sammelndesProtokoll } from '../src/client/protokoll.js';
 import { systemUhr } from '../src/client/uhr.js';
 import { erzeugeZufallsquelle } from '../src/client/zufall.js';
 import { BASIS } from './msw/handlers.js';
 import { mswServer } from './msw/server.js';
-import { testKonfiguration } from './testKonfiguration.js';
+import { testKonfiguration } from './test-konfiguration.js';
 
 function verwaltungMit(konfiguration = testKonfiguration()) {
   const protokoll = sammelndesProtokoll();
