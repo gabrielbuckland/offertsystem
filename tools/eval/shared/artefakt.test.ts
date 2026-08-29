@@ -4,6 +4,19 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { alsCsv, bildeKopf, leseLatest, schreibeArtefakt } from './artefakt.ts';
 
+describe('bildeKopf', () => {
+  it('fuehrt alle acht Pflichtfelder', () => {
+    const kopf = bildeKopf('oat', 'config/company-defaults.json', 1);
+    for (const feld of [
+      'instrument', 'zeitstempel', 'git_commit', 'git_dirty',
+      'node_version', 'konfig_datei', 'konfig_sha256', 'werkzeug_version',
+    ]) {
+      expect(kopf).toHaveProperty(feld);
+    }
+    expect(kopf.zeitstempel).not.toContain(':');
+  });
+});
+
 describe('schreibeArtefakt', () => {
   it('schreibt Dateien und einen latest-Zeiger', () => {
     const wurzel = mkdtempSync(join(tmpdir(), 'eval-'));

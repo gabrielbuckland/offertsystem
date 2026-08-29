@@ -1,7 +1,7 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import {
-  werteBereichsregelAus, type Bereich,
+  pruefeBereiche, werteBereichsregelAus, type Bereich,
 } from '../../src/modell/bereichsregel.js';
 
 /** Erzeugt nur gueltige Staffeln: streng aufsteigende Schwellen plus Restfall. */
@@ -17,6 +17,12 @@ const staffelArb = fc.tuple(
 });
 
 describe('Bereichsregel — Eigenschaften', () => {
+  it('erzeugt nur gueltige Staffeln (Generator-Selbsttest)', () => {
+    fc.assert(fc.property(staffelArb, (bereiche) => {
+      expect(pruefeBereiche(bereiche)).toEqual([]);
+    }));
+  });
+
   it('ist total: jeder endliche Merkmalswert trifft genau einen Bereich', () => {
     fc.assert(fc.property(staffelArb, fc.integer({ min: -200, max: 200 }), (bereiche, wert) => {
       const treffer = werteBereichsregelAus({ merkmal: 'm', bereiche }, wert);

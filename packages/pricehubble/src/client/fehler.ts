@@ -53,7 +53,3 @@ export interface AdapterFehler {
   /** feinerer Grundcode innerhalb einer Zielvariante, z. B. Schema vs. Stale */
   readonly grundcode?: string | undefined;
 }
-
-export function erzeugeAdapterFehler(fehler: AdapterFehler): AdapterFehler {
-  return fehler;
-}

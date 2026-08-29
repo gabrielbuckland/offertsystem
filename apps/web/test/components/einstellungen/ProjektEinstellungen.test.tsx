@@ -57,4 +57,21 @@ describe('ProjektEinstellungen', () => {
     const html = baueMarkup({ honorar: {} });
     expect(html).not.toContain('projektbezogen');
   });
+
+  it('zeigt die EFFEKTIVE Konfiguration, nicht nur das Delta', () => {
+    // Der tragende Punkt: Auch die nicht uebersteuerten Bereiche stehen im Formular.
+    // Waere das Delta die Anzeigegrundlage, saehe der Vermarkter drei leere Karten und
+    // wuesste nicht, womit gerechnet wird. Das Honorar ist hier NICHT uebersteuert, sein
+    // Firmenwert muss trotzdem im Markup stehen.
+    const honorar = FIRMA['honorar'] as { readonly skalierung: { readonly gMin: number } };
+    const html = baueMarkup({ flaeche: { alpha: 0.6 } });
+    expect(html).toContain(String(honorar.skalierung.gMin));
+  });
+
+  it('zeigt den uebersteuerten Wert statt des Firmenwerts im Feld', () => {
+    const firmenAlpha = (FIRMA['flaeche'] as { readonly alpha: number }).alpha;
+    const html = baueMarkup({ flaeche: { alpha: 0.42 } });
+    expect(html).toContain('value="0.42"');
+    expect(html).not.toContain(`value="${firmenAlpha}"`);
+  });
 });

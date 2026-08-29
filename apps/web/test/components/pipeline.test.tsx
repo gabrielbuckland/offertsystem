@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { validiereKonfiguration } from '@offert/core';
 import { formatiereAggregat, formatiereScore } from '@offert/offer/src/format/de-ch.js';
+import { PipelineAnsicht } from '../../src/components/pipeline/PipelineAnsicht.js';
 import {
   bauePipelineDaten, type PipelineStufe, type PipelineZeile,
 } from '../../src/components/pipeline/pipeline-daten.js';
@@ -96,5 +98,17 @@ describe('bauePipelineDaten', () => {
       .toBe(formatiereScore(abgeleitet));
     expect(zeilen.find((z) => z.beschriftung === 'Aufwandindikator D')?.wert)
       .toBe(formatiereScore(h.aggregates.effortIndicator.value));
+  });
+});
+
+describe('PipelineAnsicht', () => {
+  it('bearbeitet die Konfiguration nicht direkt aus dem Projekt heraus', () => {
+    const html = renderToStaticMarkup(
+      <PipelineAnsicht stufen={bauePipelineDaten(basis())} />);
+    // Die Projektseite fuehrt KEINEN Weg in die Konfiguration ausser dem Verweis — sonst
+    // bearbeitete der Vermarkter aus dem Projekt heraus Werte, die auf alle Projekte
+    // wirken. Die Einstellungen-Uebersicht selbst bettet die Editoren inzwischen direkt
+    // ein (`einstellungen/page.tsx`), statt ueber diese Komponente dorthin zu verlinken.
+    expect(html).not.toContain('Bearbeiten');
   });
 });
