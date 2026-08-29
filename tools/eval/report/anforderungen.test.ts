@@ -2,7 +2,9 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { repoWurzel } from '../shared/artefakt.ts';
-import { faelleAus, pruefeAnforderungsIds, type Testfall } from './vitest-reporter.ts';
+import {
+  faelleAus, pruefeAnforderungsIds, traegtDokumentierteFaelle, type Testfall,
+} from './vitest-reporter.ts';
 
 interface Anforderung { id: string; prioritaet: string; wortlaut: string }
 
@@ -80,5 +82,22 @@ describe('pruefeAnforderungsIds', () => {
   it('meldet unbekannte Anforderungs-IDs', () => {
     expect(pruefeAnforderungsIds([fall('A-99')])).toEqual(['A-99']);
     expect(pruefeAnforderungsIds([fall('A-04')])).toEqual([]);
+  });
+});
+
+describe('traegtDokumentierteFaelle', () => {
+  const fall = (meta: Partial<Testfall>): Testfall => ({
+    datei: 'a', suite: null, name: 'x', zustand: 'pass', dauer_ms: null,
+    vorbedingung: null, schritte: null, erwartung: null, invariante: null,
+    anforderung: null, fehlermeldung: null, ...meta,
+  });
+
+  it('erkennt einen Lauf mit annotierter Kernalgorithmik', () => {
+    expect(traegtDokumentierteFaelle([fall({}), fall({ schritte: 's' })])).toBe(true);
+  });
+
+  it('verneint einen Teil-Lauf ohne dokumentierte Faelle (F-077)', () => {
+    expect(traegtDokumentierteFaelle([fall({}), fall({ invariante: 'I-01' })])).toBe(false);
+    expect(traegtDokumentierteFaelle([])).toBe(false);
   });
 });

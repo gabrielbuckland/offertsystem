@@ -65,6 +65,7 @@ export function schreibeArtefakt(
   wurzel: string,
   kopf: Laufkopf,
   dateien: Readonly<Record<string, string>>,
+  aktualisiereZeiger = true,
 ): string {
   // `tests` liegt NICHT unter eval/ (Spec 06 §8): dort nur Ausgaben der Evaluationswerkzeuge.
   const ablage = kopf.instrument === 'tests'
@@ -79,11 +80,13 @@ export function schreibeArtefakt(
     const kodierung: BufferEncoding = name.endsWith('.pdf') ? 'latin1' : 'utf8';
     writeFileSync(join(verzeichnis, name), dateien[name] ?? '', kodierung);
   }
-  writeFileSync(
-    join(ablage, 'latest.json'),
-    `${JSON.stringify({ verzeichnis, zeitstempel: kopf.zeitstempel }, null, 2)}\n`,
-    'utf8',
-  );
+  if (aktualisiereZeiger) {
+    writeFileSync(
+      join(ablage, 'latest.json'),
+      `${JSON.stringify({ verzeichnis, zeitstempel: kopf.zeitstempel }, null, 2)}\n`,
+      'utf8',
+    );
+  }
   return verzeichnis;
 }
 

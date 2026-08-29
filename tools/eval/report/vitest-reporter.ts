@@ -85,6 +85,19 @@ export function faelleAus(dateien: readonly RohDatei[], wurzel: string): readonl
   return faelle;
 }
 
+/**
+ * Nur ein Lauf mit annotierter Kernalgorithmik darf den latest-Zeiger tragen:
+ * Der Anhanggenerator (a5.ts) baut den Nachweis aus dem letzten vollstaendigen
+ * Lauf; Teil-Laeufe (Contract-only, Einzeldateien) wuerden ihn sonst mit einer
+ * Basis ohne dokumentierte Faelle ueberschreiben und den naechsten
+ * `verify`-Lauf grundlos scheitern lassen (F-077).
+ */
+export function traegtDokumentierteFaelle(faelle: readonly Testfall[]): boolean {
+  return faelle.some(
+    (f) => f.vorbedingung !== null || f.schritte !== null || f.erwartung !== null,
+  );
+}
+
 function leseSeed(wurzel: string): number | null {
   try {
     const pfad = join(leseLatest(wurzel, 'property'), 'properties.json');
@@ -105,7 +118,7 @@ export default class TestartefaktReporter {
       'tests.json': `${JSON.stringify({
         kopf, seed: leseSeed(wurzel), faelle, unbekannte_anforderungs_ids: unbekannt,
       }, null, 2)}\n`,
-    });
+    }, traegtDokumentierteFaelle(faelle));
     if (unbekannt.length > 0) {
       throw new Error(`Unbekannte Anforderungs-IDs in Test-Tags: ${unbekannt.join(', ')}`);
     }

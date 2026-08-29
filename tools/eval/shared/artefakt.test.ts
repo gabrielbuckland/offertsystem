@@ -34,6 +34,20 @@ describe('schreibeArtefakt', () => {
     expect(leseLatest(wurzel, 'eval/oat')).toBe(verzeichnis);
   });
 
+  it('laesst den latest-Zeiger unberuehrt, wenn der Lauf ihn nicht tragen darf (F-077)', () => {
+    const wurzel = mkdtempSync(join(tmpdir(), 'eval-'));
+    const kopf = bildeKopf('oat', 'config/company-defaults.json', 1);
+    const voll = schreibeArtefakt(wurzel, { ...kopf, zeitstempel: '2026-01-01T00-00-00Z' }, {
+      'oat.json': '{}',
+    });
+    const teil = schreibeArtefakt(wurzel, { ...kopf, zeitstempel: '2026-01-01T00-00-01Z' }, {
+      'oat.json': '{}',
+    }, false);
+    expect(teil).not.toBe(voll);
+    expect(existsSync(join(teil, 'oat.json'))).toBe(true);
+    expect(leseLatest(wurzel, 'eval/oat')).toBe(voll);
+  });
+
   it('liest auch Ablagen ausserhalb von eval, die andere Plaene schreiben', () => {
     // Haelt die Abhaengigkeit fest, die PE-18 begruendet: artifacts/contract/ stammt aus
     // P3, nicht aus diesem Plan, wird aber ueber denselben Zeiger gelesen.
