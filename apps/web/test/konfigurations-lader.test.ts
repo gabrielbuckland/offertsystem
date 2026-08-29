@@ -195,4 +195,32 @@ describe('ladeKonfiguration', () => {
     if (ergebnis.ok) return;
     expect(ergebnis.fehler.map((f) => f.code)).toContain('CFG_TIER_DEGRESSION');
   });
+
+  it('weist ein null auf einen ganzen Teilbaum in der Nachvalidierung zurueck (W-7)', () => {
+    // Gegenstueck zum Merge-Test «ersetzt einen Teilbaum durch null»: Der Merge laesst
+    // das durch (Skalare ersetzen den Teilbaum als Ganzes), erst die erneute Pruefung der
+    // ZUSAMMENGEFUEHRTEN Basis faengt es ab. Genau diese Arbeitsteilung traegt seit der
+    // geschrumpften Sperrliste die Invariantengarantie.
+    const ergebnis = ladeKonfiguration({ pfad: STANDARD, ueberschreibungen: { honorar: null } });
+    expect(ergebnis.ok).toBe(false);
+    if (ergebnis.ok) return;
+    expect(ergebnis.fehler.map((f) => f.code)).toContain('CFG_SCHEMA_TYPE');
+    expect(ergebnis.fehler.some((f) => f.pfad === 'honorar')).toBe(true);
+  });
+
+  it('legt projektbezogene Dossier-Voreinstellungen unter die Dossier-Parameter (W-3)', () => {
+    // Die Projektebene setzt `stockwerk`, fuehrt daneben aber eigene `dossierParameter`
+    // fuer einen Wohnungstyp. Vor der Korrektur setzte die Zusammenfuehrung dort auf der
+    // ungemergten Firmenbasis auf und verschluckte die Voreinstellung lautlos.
+    const ergebnis = ladeKonfiguration({
+      pfad: STANDARD,
+      ueberschreibungen: {
+        dossierDefaults: { stockwerk: 7 },
+        dossierParameter: { typ_3_5: { flaecheInnen: 90 } },
+      },
+    });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    expect(ergebnis.konfiguration.dossierParameter['typ_3_5']?.stockwerk).toBe(7);
+  });
 });

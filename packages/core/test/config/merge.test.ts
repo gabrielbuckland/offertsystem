@@ -130,6 +130,46 @@ describe('mergeKonfiguration', () => {
     expect(ergebnis.fehler[0]?.pfad).toBe('dossierParameter.typ_3_5.flaecheInnnen');
   });
 
+  it('setzt Dossier-Parameter auf die ZUSAMMENGEFUEHRTEN Voreinstellungen auf (W-3)', () => {
+    // Solange `dossierDefaults` gesperrt war, war der Unterschied folgenlos. Seit die
+    // Wurzel uebersteuerbar ist, wuerde eine ungemergte Basis die projektbezogene
+    // Voreinstellung genau fuer die Wohnungstypen verschlucken, fuer die das Projekt
+    // zusaetzlich eigene Dossier-Parameter fuehrt — lautlos.
+    const ergebnis = mergeKonfiguration(basis, {
+      dossierDefaults: { stockwerk: 7 },
+      dossierParameter: { typ_3_5: { flaecheInnen: 90 } },
+    });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    expect(ergebnis.wert.dossierParameter['typ_3_5']?.stockwerk).toBe(7);
+    expect(ergebnis.wert.dossierParameter['typ_3_5']?.flaecheInnen).toBe(90);
+  });
+
+  it('weist einen unbekannten Schluessel auch in der TIEFE zurueck (W-7)', () => {
+    // Der zweite Ast der Merge-Zusage: Ein Tippfehler verschwendet die Uebersteuerung
+    // nicht lautlos, sondern faellt mit vollqualifiziertem Pfad auf — auch unterhalb der
+    // Wurzel, wo eine eigene Pruefstelle in `verschmelzeTeilbaum` greift.
+    const ergebnis = mergeKonfiguration(basis, {
+      honorar: { skalierung: { tippfehler: 1 } },
+    });
+    expect(ergebnis.ok).toBe(false);
+    if (ergebnis.ok) return;
+    expect(ergebnis.fehler[0]?.code).toBe('CFG_SCHEMA_UNKNOWN_KEY');
+    expect(ergebnis.fehler[0]?.pfad).toBe('honorar.skalierung.tippfehler');
+  });
+
+  it('ersetzt einen Teilbaum durch null, statt den Schluessel zu uebergehen (W-7)', () => {
+    // `null` auf einen Teilbaum ist kein Objekt und wird deshalb als Ganzes eingesetzt
+    // und protokolliert. Der Merge laesst das durch — zurueckgewiesen wird es erst in der
+    // Nachvalidierung des Ladepfads (`konfigurations-lader.test.ts`), und genau diese
+    // Arbeitsteilung haelt der Test fest.
+    const ergebnis = mergeKonfiguration(basis, { honorar: null });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    expect((ergebnis.wert.basis as unknown as Record<string, unknown>)['honorar']).toBeNull();
+    expect(ergebnis.wert.ueberschreibungen.map((u) => u.pfad)).toEqual(['honorar']);
+  });
+
   it('weist eine strukturell fehlerhafte Preisanpassung zurueck', () => {
     const ergebnis = mergeKonfiguration(basis, {
       preisanpassungen: { '3.1': [{ faktor: 0.1 }] },

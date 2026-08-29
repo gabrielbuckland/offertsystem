@@ -76,8 +76,15 @@ function istObjekt(wert: unknown): wert is Record<string, unknown> {
   return typeof wert === 'object' && wert !== null && !Array.isArray(wert);
 }
 
+/**
+ * `zusammengefuehrteDefaults` ist bewusst die BEREITS ZUSAMMENGEFUEHRTE `dossierDefaults`
+ * und nicht die Firmenbasis: Seit `dossierDefaults` uebersteuerbar ist, wuerde eine
+ * projektbezogene Voreinstellung sonst genau fuer die Wohnungstypen verschluckt, fuer die
+ * das Projekt zusaetzlich eigene `dossierParameter` fuehrt — ohne Meldung. Deshalb laeuft
+ * dieser Aufruf NACH der Basis-Zusammenfuehrung.
+ */
 function verschmelzeDossierParameter(
-  basis: OffertKonfiguration,
+  zusammengefuehrteDefaults: unknown,
   roh: unknown,
   befunde: KonfigurationsFehler[],
   protokoll: UeberschreibungsProtokoll[],
@@ -91,7 +98,11 @@ function verschmelzeDossierParameter(
     return ergebnis;
   }
 
-  const defaults = basis.dossierDefaults as unknown as Record<string, unknown>;
+  // Ein Delta darf `dossierDefaults` durch einen Skalar oder null ersetzen. Hier wird das
+  // nicht eigens gemeldet — die Nachvalidierung im Ladepfad weist es ohnehin zurueck, und
+  // ein zweiter Befund an dieser Stelle waere eine zweite Wahrheit ueber die zulaessige
+  // Form. Als Schluesselmenge bleibt dann die leere.
+  const defaults = istObjekt(zusammengefuehrteDefaults) ? zusammengefuehrteDefaults : {};
 
   for (const [wohnungstyp, rohParameter] of Object.entries(roh)) {
     if (!istObjekt(rohParameter)) {
@@ -176,8 +187,16 @@ function verschmelzePreisanpassungen(
  *
  * Ein unbekannter Schluessel ist ein Fehler, keine Warnung — sonst verschwaende ein
  * Tippfehler die Uebersteuerung lautlos. Geprueft wird gegen die Schluesselmenge der
- * Basis; offene Woerterbuecher (`aufwandfaktoren`, `dossierDefaults.*bewertungen`)
- * duerfen dagegen neue Schluessel tragen und werden ueber `offen` ausgenommen.
+ * Basis.
+ *
+ * `offen` nimmt davon aus, was in `OFFENE_WURZELN` steht — heute genau
+ * `aufwandfaktoren` —, und zwar NUR auf der obersten Ebene: In der Rekursion wird `offen`
+ * immer als `false` weitergereicht, damit ein Tippfehler INNERHALB eines neuen Faktors
+ * weiterhin auffaellt. `dossierDefaults.zustandsbewertungen` und
+ * `dossierDefaults.qualitaetsbewertungen` sind zwar im Schema offene Woerterbuecher, hier
+ * aber NICHT ausgenommen: Ein projektbezogen neu angelegter Bewertungsschluessel wird mit
+ * `CFG_SCHEMA_UNKNOWN_KEY` zurueckgewiesen. Uebersteuern bestehender Schluessel geht.
+ * Das ist eine bewusste Grenze des Delta-Modells und keine Zusicherung des Gegenteils.
  */
 function verschmelzeTeilbaum(
   basiswert: unknown,
@@ -268,8 +287,10 @@ export function mergeKonfiguration(
     );
   }
 
+  // NACH der Schleife: `zusammengefuehrt['dossierDefaults']` traegt jetzt die
+  // projektbezogenen Voreinstellungen, gegen die die Dossier-Parameter aufsetzen (W-3).
   const dossierParameter = verschmelzeDossierParameter(
-    basis, ueberschreibungen['dossierParameter'], befunde, protokoll,
+    zusammengefuehrt['dossierDefaults'], ueberschreibungen['dossierParameter'], befunde, protokoll,
   );
   const preisanpassungen = verschmelzePreisanpassungen(
     ueberschreibungen['preisanpassungen'], befunde, protokoll,
