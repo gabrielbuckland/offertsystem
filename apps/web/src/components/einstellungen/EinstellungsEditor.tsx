@@ -27,9 +27,11 @@
  * das nicht — an der Definition von `HonorarEditor` selbst stuende nirgends, woher
  * `einstellungen` kommt.
  */
+import { useState } from 'react';
 import { Button } from '../ui/button.js';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card.js';
 import { Hinweis } from '../ui/hinweis.js';
+import { JsonReiter } from './JsonReiter.js';
 import { verwendeEinstellungen, type BereichsEditor } from './verwende-einstellungen.js';
 
 export interface EinstellungsEditorProps {
@@ -67,8 +69,27 @@ export function rahmenBefunde<T extends { readonly pfad: string }>(
   return befunde.filter((befund) => befund.pfad === '' || praefixe.includes(befund.pfad));
 }
 
+type Reiter = 'formular' | 'json';
+
+const REITER: ReadonlyArray<{ readonly wert: Reiter; readonly beschriftung: string }> = [
+  { wert: 'formular', beschriftung: 'Formular' },
+  { wert: 'json', beschriftung: 'JSON' },
+];
+
 export function EinstellungsEditor({ titel, zweck, bereichPraefix, anfang, Editor }: EinstellungsEditorProps) {
+  /**
+   * GENAU EIN Aufruf von `verwendeEinstellungen` fuer BEIDE Reiter — der Umschalter
+   * waehlt nur die Darstellung desselben Entwurfsstands. Ein zweiter Hook-Aufruf im
+   * JSON-Zweig haette zwei unabhaengige Entwuerfe zur Folge; der Speichern-Knopf in der
+   * Fussleiste kennte dann die Eingaben des jeweils anderen Reiters nicht, und welcher
+   * der beiden Staende beim Klick gewaenne, haette allein die Aufrufreihenfolge
+   * entschieden. Deshalb steht der Zustand hier, oberhalb der Verzweigung.
+   *
+   * `zustand.aendere` passt namensgleich auf die `aendere`-Prop von `JsonReiter` — die
+   * JSON-Sicht schreibt in denselben Entwurf wie jedes Formularfeld.
+   */
   const zustand = verwendeEinstellungen(anfang);
+  const [reiter, setzeReiter] = useState<Reiter>('formular');
   const praefixe = typeof bereichPraefix === 'string' ? [bereichPraefix] : bereichPraefix;
   const bereichsBefunde = rahmenBefunde(zustand.befunde, praefixe);
 
@@ -77,10 +98,40 @@ export function EinstellungsEditor({ titel, zweck, bereichPraefix, anfang, Edito
       <CardHeader>
         <CardTitle>{titel}</CardTitle>
         <CardDescription>{zweck}</CardDescription>
+        <div role="tablist" aria-label="Darstellung" className="flex gap-1 pt-2">
+          {REITER.map((eintrag) => (
+            <Button
+              key={eintrag.wert}
+              type="button"
+              role="tab"
+              aria-selected={reiter === eintrag.wert}
+              variant={reiter === eintrag.wert ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setzeReiter(eintrag.wert)}
+            >
+              {eintrag.beschriftung}
+            </Button>
+          ))}
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Editor einstellungen={zustand} />
-        {bereichsBefunde.length > 0 && (
+        {reiter === 'formular'
+          ? <Editor einstellungen={zustand} />
+          : (
+            /**
+             * Im JSON-Reiter bekommt `JsonReiter` ALLE Befunde, nicht nur die
+             * rahmenfaehigen: Die zeilenverankerten Meldungen haengen sonst an
+             * Formularzeilen, die hier gar nicht gerendert sind — ein gescheitertes
+             * Speichern bliebe im JSON-Reiter ohne jede Begruendung sichtbar.
+             */
+            <JsonReiter
+              wert={zustand.entwurf}
+              aendere={zustand.aendere}
+              schreibbar
+              befunde={zustand.befunde}
+            />
+          )}
+        {reiter === 'formular' && bereichsBefunde.length > 0 && (
           <div className="space-y-2">
             {bereichsBefunde.map((befund, index) => (
               <Hinweis key={`${befund.pfad}-${index}`} art="fehler">{befund.text}</Hinweis>
