@@ -23,13 +23,14 @@ import { Hinweis } from '../ui/hinweis.js';
 
 export interface JsonReiterProps {
   readonly wert: Readonly<Record<string, unknown>>;
-  /** Wird NUR bei parsierbarem Inhalt aufgerufen — siehe Dateikommentar. */
-  readonly beiAenderung: (wert: Record<string, unknown>) => void;
+  /** Wird NUR bei parsierbarem Inhalt aufgerufen — siehe Dateikommentar. Gleicher Name
+   *  wie in `verwendeEinstellungen`, dessen `aendere` hier direkt durchgereicht wird. */
+  readonly aendere: (naechster: Record<string, unknown>) => void;
   readonly schreibbar: boolean;
   readonly befunde: readonly EinstellungsBefund[];
 }
 
-export function JsonReiter({ wert, beiAenderung, schreibbar, befunde }: JsonReiterProps) {
+export function JsonReiter({ wert, aendere, schreibbar, befunde }: JsonReiterProps) {
   const [rohtext, setRohtext] = useState(() => alsText(wert));
   const [parseFehler, setParseFehler] = useState<string | undefined>(undefined);
 
@@ -38,7 +39,7 @@ export function JsonReiter({ wert, beiAenderung, schreibbar, befunde }: JsonReit
     const ergebnis = ausText(neuerRohtext);
     if (ergebnis.ok) {
       setParseFehler(undefined);
-      beiAenderung(ergebnis.wert);
+      aendere(ergebnis.wert);
     } else {
       setParseFehler(ergebnis.text);
     }
