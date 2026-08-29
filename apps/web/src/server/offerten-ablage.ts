@@ -22,12 +22,19 @@ import { offerSchema, type Offer } from '@offert/offer/src/model/offer.js';
 
 export interface ListenEintrag {
   readonly offertId: string;
+  // Ungesetzt im Fehlerzweig (I-24): Ein unlesbares Artefakt hat keine verlaessliche
+  // Projektkennung — sie stammt aus demselben geparsten `metadata`-Block wie die
+  // uebrigen Felder unten.
+  readonly projektId?: string | undefined;
 
   readonly liegenschaft: string;
   readonly erstelltAm: string;
   readonly verkaufssumme?: number | undefined;
   readonly honorarMin?: number | undefined;
   readonly honorarMax?: number | undefined;
+  // SHA-256 der Konfiguration, aus der die Offerte entstand (metadata.konfigPruefsumme).
+  // Ungesetzt im Fehlerzweig aus demselben Grund wie `projektId`.
+  readonly konfigPruefsumme?: string | undefined;
   readonly fehlerhaft: boolean;
   readonly datei: string;
 }
@@ -107,12 +114,14 @@ export async function listeOfferten(verzeichnis: string): Promise<readonly Liste
     const o = ergebnis.data;
     liste.push({
       offertId: o.metadata.offertId,
+      projektId: o.metadata.projektId,
       liegenschaft: `${o.property.adresse.strasse} ${o.property.adresse.hausnummer}, `
         + `${o.property.adresse.plz} ${o.property.adresse.ort}`,
       erstelltAm: o.metadata.erstelltAm,
       verkaufssumme: o.aggregates.totalSalesValue.value,
       honorarMin: o.aggregates.feeRange.value.min,
       honorarMax: o.aggregates.feeRange.value.max,
+      konfigPruefsumme: o.metadata.konfigPruefsumme,
       fehlerhaft: false,
       datei,
     });
