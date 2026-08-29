@@ -4,14 +4,9 @@
  * Generische Schluessel-Wert-Liste mit Hinzufuegen/Entfernen/Bearbeiten fuer offene
  * Records (Zod `z.record(z.string())`), deren Zeilenzahl nicht feststeht — z. B.
  * `zustandsbewertungen`/`qualitaetsbewertungen` in `Referenzobjekt['parametrisierung']`
- * und in `DossierDefaults`. Bis Task 19 existierte diese Logik zweifach: als
- * `BewertungsTabelle` in `ParametrisierungsDetail.tsx` (Team A) und als `KeyWertListe` in
- * `DossierEditor.tsx` (Team B), unabhaengig voneinander entwickelt. Diese Fassung
- * vereint beide Interaktionsmuster: eine bestehende Zeile bleibt am Schluessel fixiert,
- * ihr Wert laesst sich aber direkt bearbeiten (Team B), waehrend die Neu-Zeile Schluessel
- * UND Wert gemeinsam entgegennimmt (Team A) — kein Feature einer der Vorlagen geht
- * verloren. Die Komponente kennt keine Domaenenbegriffe (kein "Bewertung", kein
- * "Dossier"): sie bleibt generisch ueber den ihr uebergebenen Record, siehe Brief.
+ * und in `DossierDefaults`. Eine bestehende Zeile bleibt am Schluessel fixiert, ihr Wert
+ * laesst sich direkt bearbeiten; die Neu-Zeile nimmt Schluessel UND Wert gemeinsam
+ * entgegen. Kennt keine Domaenenbegriffe, bleibt generisch ueber den uebergebenen Record.
  */
 import { Trash2 } from 'lucide-react';
 import { useState, type ReactElement } from 'react';
@@ -42,8 +37,7 @@ export function SchluesselWertListe(
   const [neuerSchluessel, setzeNeuenSchluessel] = useState('');
   const [neuerWert, setzeNeuenWert] = useState('');
 
-  // Die drei Entscheidungen stehen als reine Funktionen daneben und sind dort direkt
-  // getestet; hier bleibt nur die Verdrahtung ans Ereignis.
+  // Die drei Entscheidungen stehen als reine, getestete Funktionen daneben.
   function aendereWert(schluessel: string, wert: string): void {
     aendere(naechsteEintraegeNachWertaenderung(eintraege, schluessel, wert));
   }

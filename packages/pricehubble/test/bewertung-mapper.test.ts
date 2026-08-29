@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   aufReferenzbewertung,
   dossierBody,
-} from '../src/acl/bewertungMapper.js';
-import { verifiziereGesendetePatchFelder } from '../src/acl/patchVerifikation.js';
-import { ValuationResponseSchema } from '../src/schema/valuationResponse.js';
+} from '../src/acl/bewertung-mapper.js';
+import { verifiziereGesendetePatchFelder } from '../src/acl/patch-verifikation.js';
+import { ValuationResponseSchema } from '../src/schema/valuation-response.js';
 import { ladeFixture } from './fixtures.js';
 
 const parametrisierung: RepraesentativeParametrisierung = {

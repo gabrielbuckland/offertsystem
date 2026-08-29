@@ -2,13 +2,13 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { HttpResponse, http } from 'msw';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { HttpClient } from '../src/client/httpClient.js';
+import { HttpClient } from '../src/client/http-client.js';
 import { erzeugeZufallsquelle } from '../src/client/zufall.js';
 import { systemUhr } from '../src/client/uhr.js';
 import { sammelndesProtokoll } from '../src/client/protokoll.js';
 import { mswServer } from './msw/server.js';
 import { BASIS } from './msw/handlers.js';
-import { testKonfiguration } from './testKonfiguration.js';
+import { testKonfiguration } from './test-konfiguration.js';
 
 function clientMit(konfiguration = testKonfiguration()): HttpClient {
   return new HttpClient({
@@ -159,7 +159,7 @@ describe('HTTP-Client (Spec 04 §6.3, §6.4)', () => {
 
   it('haelt keine Zahlenkonstante fuer Timeout, Backoff oder Versuchszahl (AK-7, G-4)', () => {
     const quelle = readFileSync(
-      fileURLToPath(new URL('../src/client/httpClient.ts', import.meta.url)),
+      fileURLToPath(new URL('../src/client/http-client.ts', import.meta.url)),
       'utf8',
     );
     // Zulaessig sind ausschliesslich HTTP-Statuscodes und Zahlen ohne Zeitbezug.

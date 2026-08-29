@@ -6,11 +6,11 @@
 export const PAKET_NAME = '@offert/pricehubble';
 
 export { createValuationProvider } from './provider/factory.js';
-export { MockValuationProvider } from './provider/mockValuationProvider.js';
-export { PriceHubbleAdapter } from './provider/priceHubbleAdapter.js';
-export { KonfigurationsFehler } from './config/konfigurationsFehler.js';
+export { MockValuationProvider } from './provider/mock-valuation-provider.js';
+export { PriceHubbleAdapter } from './provider/pricehubble-adapter.js';
+export { KonfigurationsFehler } from './config/konfigurations-fehler.js';
 export type {
   ApiKonfiguration,
   AdapterUmgebung,
   ProviderSchalter,
-} from './config/apiKonfiguration.js';
+} from './config/api-konfiguration.js';

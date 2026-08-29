@@ -1,19 +1,14 @@
 /**
  * Keine eigene Formel; Umkehrung von eq:wohnungspreis nach dem Faktor.
  *
- * Spec 03 §1.4 und PE-21: Absolut erfasste Zu-/Abschlaege werden BEI DER ERFASSUNG in
- * Faktoren umgerechnet, nicht im Kern. Der Kern bleibt bei genau einer Darstellungsform
- * (Faktor); `erfassterBetrag` und `erfassungsform` bleiben rein dokumentarisch und gehen
- * in keine Formel ein. Zwei Darstellungsformen im Kern haetten eine zweite Rundungsstelle
- * und eine zweite Grenzpruefung nach sich gezogen (E-09, I-06).
- *
- * Bezugsgroesse ist der UNGERUNDETE Basispreis aus Stufe 2 — nicht der gerundete
- * Wohnungspreis, der die Anpassungen bereits enthaelt.
+ * Spec 03 §1.4, PE-21: Absolut erfasste Zu-/Abschlaege werden bei der Erfassung in
+ * Faktoren umgerechnet, nicht im Kern — der bleibt bei einer Darstellungsform (E-09,
+ * I-06). Bezugsgroesse ist der ungerundete Basispreis aus Stufe 2, nicht der gerundete
+ * Wohnungspreis mit bereits enthaltenen Anpassungen.
  */
 import { bereiteEingabeAuf, berechneVerkaufssumme, type Konfiguration } from '@offert/core';
-// Modulpfad statt Paketindex: Der Index re-exportiert die React-Komponenten (.tsx);
-// Node leistet fuer JSX kein Type-Stripping (PE-09). Serverseitige Module, die unter
-// Node laufen sollen, binden die Formatierer deshalb ueber ihren Modulpfad ein.
+// Modulpfad statt Paketindex: Der Index re-exportiert React-Komponenten (.tsx), fuer
+// die Node kein Type-Stripping leistet (PE-09).
 import { formatiereAggregat } from '@offert/offer/src/format/de-ch.js';
 import { zuEingangsArgumenten, type Beschafft } from './eingang.js';
 import type { Erfassung } from './erfassung-schema.js';
@@ -48,11 +43,9 @@ export type Basispreise =
   | { readonly ok: false; readonly meldung: string };
 
 /**
- * Der Basispreis entsteht in Stufe 2 des Kerns. Die Erfassungsschicht ruft die Stufe
- * einzeln auf (NFA-03: jede Stufe ist einzeln exportiert) — mit LEEREN Anpassungen, weil
- * der Basispreis gerade die Groesse VOR den Anpassungen ist. Eine eigene Multiplikation
- * in apps/web waere eine zweite Fassung von eq:qm_preis und eq:flaeche und damit genau
- * die Doppelfuehrung, die I-23 ausschliesst.
+ * Basispreis entsteht in Stufe 2 des Kerns (NFA-03: jede Stufe einzeln exportiert), hier
+ * mit LEEREN Anpassungen aufgerufen, weil er die Groesse VOR den Anpassungen ist. Eine
+ * eigene Multiplikation waere eine zweite Fassung von eq:qm_preis/eq:flaeche (I-23).
  */
 export function basispreiseFuerErfassung(
   erfassung: Erfassung,

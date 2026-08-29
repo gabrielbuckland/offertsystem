@@ -1,21 +1,9 @@
 'use client';
 
-/**
- * JSON-Sicht auf denselben Entwurfsstand wie das Formular — KEIN zweiter, unabhaengiger
- * Entwurf. Das ist die tragende Regel aus `EinstellungsEditor.tsx`: Der
- * Bearbeitungszustand entsteht genau einmal ueber `verwendeEinstellungen`; zwei
- * Zustaende haetten zur Folge, dass der Speichern-Knopf die Eingaben des anderen
- * Reiters nicht kennt.
- *
- * Der Rohtext bleibt lokal: Waehrend des Tippens ist ein JSON-Dokument regelmaessig
- * unparsierbar («{"a":» ). Nach oben gemeldet wird nur ein geparster Wert; bis dahin
- * steht der Befund am Feld. Ein Zurueckschreiben des serialisierten Werts bei jedem
- * Tastendruck wuerde den Cursor springen lassen.
- *
- * Parse-/Serialisierungslogik liegt bewusst in `json-reiter-logik.ts` (reine
- * Funktionen) — das Repo hat weder `jsdom` noch `@testing-library/react` installiert,
- * Interaktionsverhalten wird deshalb dort direkt getestet, hier nur die Verdrahtung.
- */
+// JSON-Sicht auf denselben Entwurfsstand wie das Formular — kein zweiter, unabhaengiger
+// Entwurf (sonst kennte der Speichern-Knopf die Eingaben des anderen Reiters nicht).
+// Rohtext bleibt lokal: waehrend des Tippens ist das JSON regelmaessig unparsierbar; nach
+// oben gemeldet wird nur ein geparster Wert, bis dahin steht der Befund am Feld.
 import { useState } from 'react';
 import type { EinstellungsBefund } from './verwende-einstellungen.js';
 import { alsText, ausText } from './json-reiter-logik.js';
@@ -23,8 +11,7 @@ import { Hinweis } from '../ui/hinweis.js';
 
 export interface JsonReiterProps {
   readonly wert: Readonly<Record<string, unknown>>;
-  /** Wird NUR bei parsierbarem Inhalt aufgerufen — siehe Dateikommentar. Gleicher Name
-   *  wie in `verwendeEinstellungen`, dessen `aendere` hier direkt durchgereicht wird. */
+  // Wird nur bei parsierbarem Inhalt aufgerufen.
   readonly aendere: (naechster: Record<string, unknown>) => void;
   readonly schreibbar: boolean;
   readonly befunde: readonly EinstellungsBefund[];

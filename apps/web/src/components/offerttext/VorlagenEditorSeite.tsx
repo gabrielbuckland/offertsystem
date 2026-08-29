@@ -2,7 +2,7 @@
 
 /**
  * Pflege der GLOBALEN Offerttext-Vorlage (Spec 2026-08-27 §3). Gespeichert wird
- * explizit, nicht bei jedem Tastendruck: Die Vorlage betrifft alle künftigen Offerten,
+ * explizit, nicht bei jedem Tastendruck: die Vorlage betrifft alle künftigen Offerten,
  * die 422-Befunde der Route gehören deshalb VOR das Sichern, nicht in ein stilles
  * Autosave.
  */
@@ -20,9 +20,8 @@ export function VorlagenEditorSeite() {
   const [status, setzeStatus] = useState<'' | 'gespeichert' | 'fehler'>('');
 
   useEffect(() => {
-    // I-4: `a.ok` geprueft, statt eine 500-Fehlerseite unbemerkt durchfallen zu lassen —
-    // sonst blieb die Seite bei einem defekten Vorlagenartefakt kommentarlos leer, weil
-    // `vorlage.inhalt` `undefined` als `content` an TipTap ging bzw. `a.json()` warf.
+    // I-4: `a.ok` geprueft, sonst blieb die Seite bei einem defekten Vorlagenartefakt
+    // kommentarlos leer.
     void fetch('/api/vorlage')
       .then((a) => {
         if (!a.ok) throw new Error('vorlage-ladefehler');

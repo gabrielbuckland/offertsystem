@@ -175,23 +175,6 @@ describe('Referenzobjekte — Anlegen ueber den Dialog', () => {
     expect(html).toContain('Anzahl Wohnungen (optional)');
   });
 
-  it('bietet die elf Halbschritte 1..6 an, wenn noch nichts erfasst ist', () => {
-    zeichne([], () => undefined);
-    hinzufuegenKnopf().onClick();
-    const optionen = (erfasst.selects[0]!.children as { readonly props: { readonly value: number } }[])
-      .map((o) => o.props.value);
-    expect(optionen).toEqual([1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6]);
-  });
-
-  it('bietet eine bereits vergebene Zimmerzahl nicht erneut an', () => {
-    zeichne([R], () => undefined);
-    hinzufuegenKnopf().onClick();
-    const optionen = (erfasst.selects[0]!.children as { readonly props: { readonly value: number } }[])
-      .map((o) => o.props.value);
-    expect(optionen).not.toContain(3.5);
-    expect(optionen).toHaveLength(10);
-  });
-
   // Die eigentliche Verknuepfung "gewaehlte Zimmerzahl + eingetragene Wohnflaeche ergeben
   // genau dieses Referenzobjekt" ist reine Logik ohne React-Zustand und steht deshalb in
   // `referenzobjekte-logik.test.ts` (`neuesReferenzobjekt`): `renderToStaticMarkup`

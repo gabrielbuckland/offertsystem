@@ -14,35 +14,18 @@ export interface Speicherwarteschlange {
 export interface WarteschlangenBeobachter {
   readonly aufStatusWechsel: (speichernLaeuft: boolean) => void;
   readonly aufFehler: (fehlgeschlagen: boolean) => void;
-  /**
-   * Wird nach einem ERFOLGREICHEN Sendevorgang mit genau dem Stand aufgerufen, der
-   * gesendet wurde. Damit laesst sich Nachgelagertes an das Speichern KETTEN, statt es
-   * parallel dazu zu starten.
-   *
-   * Nur bei Erfolg: Ist das PUT fehlgeschlagen, traegt die Platte den Stand nicht, den
-   * der Bildschirm zeigt. Eine Berechnung darauf ergaebe Zahlen zu einem Stand, den der
-   * Server nie gesehen hat — der Speicherfehler bleibt stehen und ist die richtige
-   * Auskunft.
-   */
+  // Nur bei ERFOLGREICHEM Sendevorgang: Ist das PUT fehlgeschlagen, traegt die Platte nicht
+  // den Stand, den der Bildschirm zeigt — eine Berechnung darauf waere falsch.
   readonly aufErfolg?: (projekt: Projekt) => void;
 }
 
-/**
- * Sorgt dafuer, dass hoechstens ein Speicherversuch gleichzeitig unterwegs ist. Trifft
- * waehrend eines laufenden Versuchs ein neuerer Stand ein, wird nur dieser (der
- * NEUESTE) vorgemerkt und nach Abschluss gesendet — nicht jeder Zwischenstand.
- *
- * Noetig, weil `schreibeAtomar` (projekt-ablage.ts) den zuletzt ANKOMMENDEN Schreib-
- * vorgang gewinnen laesst, nicht den zuletzt GESENDETEN: Ohne diese Sequenzierung kann
- * ein spaeter geaendertes, aber schneller beantwortetes PUT von einem aelteren,
- * langsameren PUT ueberschrieben werden. Ein `AbortController` loest das nicht — er
- * verhindert nur, dass der Client auf die Antwort wartet, nicht dass der Server das
- * bereits empfangene, aeltere PUT trotzdem zu Ende schreibt.
- *
- * Als reine Funktion getrennt vom React-State, weil dieses Repo keine
- * Hook-Testbibliothek (kein jsdom/testing-library, `environment: 'node'` in
- * vitest.workspace.ts) fuehrt und sich die Reihenfolge so ohne DOM direkt testen laesst.
- */
+// Sorgt dafuer, dass hoechstens ein Speicherversuch gleichzeitig unterwegs ist. Trifft
+// waehrend eines laufenden Versuchs ein neuerer Stand ein, wird nur der NEUESTE vorgemerkt
+// und nach Abschluss gesendet. Noetig, weil `schreibeAtomar` (projekt-ablage.ts) den zuletzt
+// ANKOMMENDEN Schreibvorgang gewinnen laesst, nicht den zuletzt GESENDETEN — ohne diese
+// Sequenzierung kann ein spaeter geaendertes, aber schneller beantwortetes PUT von einem
+// aelteren, langsameren PUT ueberschrieben werden (ein `AbortController` loest das nicht,
+// da der Server das bereits empfangene aeltere PUT trotzdem zu Ende schreibt).
 export function baueSpeicherwarteschlange(
   sende: Speicherfunktion,
   beobachter: WarteschlangenBeobachter,
@@ -82,9 +65,8 @@ export function baueSpeicherwarteschlange(
   };
 }
 
-/** Einziger Netzwerkkontakt der Speicherung, ueber `rufeApi` (Spec §3). `ok` bleibt false
- *  bei HTTP-Fehlern UND bei geworfenen Ausnahmen (Netzausfall) — beides ist fuer die
- *  Warteschlange ein Fehlschlag; der Rumpf wird hier nicht gebraucht. */
+// Spec §3. `ok` bleibt false bei HTTP-Fehlern UND bei geworfenen Ausnahmen (Netzausfall) —
+// beides ist fuer die Warteschlange ein Fehlschlag.
 async function schreibeUeberPut(projekt: Projekt): Promise<boolean> {
   const { ok } = await rufeApi<unknown>(`/api/projekt/${projekt.id}`, {
     method: 'PUT',
@@ -94,26 +76,15 @@ async function schreibeUeberPut(projekt: Projekt): Promise<boolean> {
   return ok;
 }
 
-/**
- * Haelt den Projektstand und speichert ihn entprellt.
- *
- * Entprellt, weil jede Zelleingabe einen Tastendruck ausloest; ungebremst entstuende je
- * Zeichen ein Schreibvorgang auf dieselbe Datei. `speichernFehler` macht einen
- * fehlgeschlagenen Speicherversuch sichtbar — ohne diese Rueckmeldung verlöre der
- * Vermarkter Aenderungen, ohne es zu merken, was schlimmer ist als gar kein
- * automatisches Speichern (Design-Spec §2).
- *
- * `aufGespeichert` meldet den geschriebenen Stand. Wer nach dem Speichern etwas tun muss,
- * das den Stand VON DER PLATTE liest, haengt sich hier an, statt einen eigenen Zeitgeber
- * parallel laufen zu lassen.
- */
+// Haelt den Projektstand und speichert ihn entprellt (jede Zelleingabe loest sonst je
+// Zeichen einen Schreibvorgang aus). `speichernFehler` macht einen fehlgeschlagenen
+// Speicherversuch sichtbar — Design-Spec §2.
 export function verwendeProjekt(anfang: Projekt, aufGespeichert?: (projekt: Projekt) => void) {
   const [projekt, setzeProjekt] = useState(anfang);
   const [speichernLaeuft, setzeSpeichern] = useState(false);
   const [speichernFehler, setzeSpeichernFehler] = useState<string | undefined>(undefined);
   const zeitgeber = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  // Die Warteschlange entsteht genau einmal und schliesst damit ueber den Rueckruf des
-  // ERSTEN Rendervorgangs. Der Umweg ueber die Referenz haelt sie am jeweils aktuellen.
+  // Ref-Umweg haelt `aufGespeichert` aktuell, obwohl die Warteschlange nur einmal entsteht.
   const rueckruf = useRef(aufGespeichert);
   rueckruf.current = aufGespeichert;
   const warteschlange = useRef<Speicherwarteschlange | undefined>(undefined);

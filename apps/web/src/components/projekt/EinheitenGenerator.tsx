@@ -2,17 +2,14 @@
 
 /**
  * Erzeugt Einheitenzeilen aus Wuenschen der Form «2 mal 3.5 Zimmer» (Design-Spec §4).
- * Ruft `erzeugeEinheiten` auf und haengt das Ergebnis an die vorhandenen Einheiten an —
- * die Erzeugung selbst ist reine Funktion (Task 10), dieser Block liefert nur die
- * Eingabe der Anzahl je Referenzobjekt.
+ * Ruft die reine Funktion `erzeugeEinheiten` auf und haengt das Ergebnis an die
+ * vorhandenen Einheiten an; dieser Block liefert nur die Eingabe der Anzahl je
+ * Referenzobjekt.
  *
  * Nacherfassen, nicht Ersterfassung: Beim Anlegen eines NEUEN Referenzobjekts fragt
- * dessen Dialog (`Referenzobjekte.tsx`) die Anzahl Wohnungen bereits mit ab und erzeugt
- * sie selbst. Dieser Baustein bleibt fuer den Fall, dass spaeter weitere Wohnungen eines
- * BEREITS bestehenden Typs dazukommen. Er ist kein eigener Block mehr, sondern eine
- * Schaltflaeche mit Dialog direkt unter der Einheitentabelle, deren Bestand er ergaenzt
- * (Rueckmeldung Auftraggeber) — dasselbe `<dialog>`-Muster wie der Anlegen-Dialog in
- * `Referenzobjekte.tsx`.
+ * dessen Dialog (`Referenzobjekte.tsx`) die Anzahl Wohnungen bereits mit ab. Dieser
+ * Baustein deckt nur den Fall, dass spaeter weitere Wohnungen eines BEREITS bestehenden
+ * Typs dazukommen — dasselbe `<dialog>`-Muster wie dort.
  */
 import { useRef, useState } from 'react';
 import { erzeugeEinheiten, type Wunsch } from '../../server/einheiten-generator.js';

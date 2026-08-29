@@ -1,10 +1,5 @@
-/**
- * Reine Serialisierungs-/Parselogik des JSON-Reiters (Task 10), getrennt von
- * `JsonReiter.tsx`, damit sie ohne DOM/React testbar ist (gleiches Muster wie
- * `faktoren-logik.ts`/`zellen-logik.ts`). Das Repo hat weder `jsdom` noch
- * `@testing-library/react` installiert — Interaktionsverhalten (Tippen, Cursor)
- * wird deshalb hier an reinen Funktionen geprueft, nicht per `fireEvent`.
- */
+// Reine Serialisierungs-/Parselogik des JSON-Reiters, getrennt von `JsonReiter.tsx`,
+// damit sie ohne DOM/React testbar ist (gleiches Muster wie `faktoren-logik.ts`/`zellen-logik.ts`).
 
 export type JsonLeseErgebnis =
   | { readonly ok: true; readonly wert: Record<string, unknown> }
@@ -16,10 +11,9 @@ export function alsText(wert: Readonly<Record<string, unknown>>): string {
 }
 
 /**
- * Liest den Rohtext. Waehrend des Tippens ist JSON regelmaessig unparsierbar (z. B.
- * `{"a":`); der Fehlerfall traegt deshalb einen anzeigbaren Satz statt zu werfen. Ein
- * Array oder ein Skalar an der Wurzel ist ebenfalls kein gueltiger Einstellungsbaum —
- * `verwendeEinstellungen` erwartet ein Objekt, kein Array/keinen Skalar.
+ * Waehrend des Tippens ist JSON regelmaessig unparsierbar (z. B. `{"a":`); der
+ * Fehlerfall traegt deshalb einen anzeigbaren Satz statt zu werfen. Array/Skalar an
+ * der Wurzel ist ebenfalls ungueltig, `verwendeEinstellungen` erwartet ein Objekt.
  */
 export function ausText(roh: string): JsonLeseErgebnis {
   let geparst: unknown;

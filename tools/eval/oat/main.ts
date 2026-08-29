@@ -5,14 +5,13 @@
  * welchen Pfad ein Parameter wirkt (subsec:sensitivitaet_design). Das Werkzeug markiert
  * den Pfad und wertet ihn nicht; die Einordnung gehoert in den Fliesstext.
  *
- * Zu D2 ist `auch_ueber_D` der ERWARTETE Befund und kein Verstoss gegen I-28: alpha geht
- * ueber den abgeleiteten Faktor (flaechengewichteter mittlerer Quadratmeterpreis) in D
- * ein. I-28 verbietet, Frankenbetraege mit Scores zu VERRECHNEN; die Normalisierung ist
- * eine einheitentilgende Abbildung, und erst ihr dimensionsloses Ergebnis geht in die
- * gewichtete Summe ein.
+ * D2: `auch_ueber_D` ist der ERWARTETE Befund, kein Verstoss gegen I-28 — alpha geht ueber
+ * den abgeleiteten Faktor (flaechengewichteter mittlerer Quadratmeterpreis) in D ein. I-28
+ * verbietet, Frankenbetraege mit Scores zu VERRECHNEN; die Normalisierung tilgt die
+ * Einheit, und erst ihr dimensionsloses Ergebnis geht in die gewichtete Summe ein.
  *
- * ABWEICHUNG VOM PLAN: `bildeKopf` erhaelt das Instrument `oat`, nicht `eval/oat` — der
- * Artefaktschreiber setzt `artifacts/eval/` bereits selbst davor.
+ * `bildeKopf` erhaelt das Instrument `oat`, nicht `eval/oat` — der Artefaktschreiber
+ * setzt `artifacts/eval/` bereits selbst davor.
  */
 import { alsCsv, bildeKopf, repoWurzel, schreibeArtefakt } from '../shared/artefakt.ts';
 import { BASIS_KONFIG_DATEI, ladeBasis, ladeBasisRoh, validiere } from '../shared/konfig.ts';

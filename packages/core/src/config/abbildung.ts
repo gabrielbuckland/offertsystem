@@ -18,8 +18,8 @@ export interface KonfigurationsAbbildung {
   /** Der Typ, auf dem die fuenf Stufen rechnen. */
   readonly kern: Konfiguration;
   /**
-   * Die geprueften Rohdaten. P1s Lader braucht sie fuer Merge und Pruefsumme; die
-   * Zugriffsschicht entnimmt ihnen den `api`-Block fuer den Adapter (PE-17).
+   * Die geprueften Rohdaten, gebraucht fuer Merge und Pruefsumme; die Zugriffsschicht
+   * entnimmt ihnen den `api`-Block fuer den Adapter (PE-17).
    */
   readonly roh: RohKonfiguration;
 }

@@ -89,13 +89,8 @@ export {
   type Stuetzstelle as KernStuetzstelle,
 } from './config/typen.js';
 
-// --- Berechnungskern (P2), ANGEFUEGT und nicht ersetzt (PE-15) ---
-// Die fuenf Stufen sind einzeln exportiert und einzeln aufrufbar (NFA-03);
-// `berechne` ist nur Verkettung.
-//
-// Die Kerntypen der Konfiguration (`Konfiguration`, `FaktorParameter`, die vier
-// Kern-praefigierten Namen nach PE-27) stehen bereits weiter oben; sie werden hier
-// nicht erneut ausgefuehrt.
+// Berechnungskern, angefuegt und nicht ersetzt (PE-15). Die fuenf Stufen sind einzeln
+// exportiert und einzeln aufrufbar (NFA-03); `berechne` ist nur Verkettung.
 export type { Branded } from './domain/brand.js';
 export * from './domain/ids.js';
 export * from './domain/geld.js';
@@ -124,8 +119,8 @@ export {
   type Bereich, type Bereichsregel, type Bereichstreffer,
 } from './modell/bereichsregel.js';
 export { gewichteteFlaeche } from './modell/flaeche.js';
-export { alleStrategien, loeseStrategieAuf } from './modell/normalisierung.js';
-export type { NormalisierterFaktor, Normalisierungsstrategie } from './modell/normalisierung.js';
+export { alleStrategien, loeseStrategieAuf } from './normalization/registry.js';
+export type { NormalisierterFaktor, Normalisierungsstrategie } from './normalization/strategie.js';
 export { skalierung } from './modell/skalierung.js';
 export { beschafferFuer } from './pipeline/beschaffer.js';
 export type { Beschaffer, BeschaffungsKontext, VermarkterFaktoren } from './pipeline/beschaffer.js';

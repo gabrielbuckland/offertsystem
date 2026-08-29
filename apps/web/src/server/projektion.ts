@@ -66,12 +66,9 @@ export function projiziere(
   const einheiten: Erfassung['einheiten'][number][] = [];
 
   for (const e of projekt.einheiten) {
-    // Der Basislauf (PE-21) braucht die Anpassungen nicht nur nicht — er darf ihre
-    // Umrechnung gar nicht erst versuchen: Ohne Basispreise wuerde jede absolute
-    // Position mit `fehlenderBasispreis` scheitern, bevor der Lauf die Basispreise
-    // ueberhaupt ermitteln konnte. `zuEingangsArgumenten` leert dieselben Anpassungen
-    // ohnehin ein zweites Mal fuer den Kern; sie hier zu berechnen waere also nicht
-    // nur falsch, sondern auch verlorene Arbeit.
+    // Basislauf (PE-21) darf die Anpassungen gar nicht erst umrechnen: ohne Basispreise
+    // wuerde jede absolute Position mit `fehlenderBasispreis` scheitern, bevor der Lauf
+    // die Basispreise ueberhaupt ermitteln konnte.
     if (optionen.ohneAnpassungen === true) {
       einheiten.push({
         wohnungsnummer: e.wohnungsnummer,
@@ -87,11 +84,8 @@ export function projiziere(
 
     for (const spalte of projekt.anpassungsSpalten) {
       const wirksam = ermittleWirksamenWert(spalte, e);
-      // Kein Wert heisst: weder Uebersteuerung noch auswertbare Regel. Und ein wirksamer
-      // Wert von 0 ist kein Zu-/Abschlag — sonst truege die Einheit so viele
-      // Nullpositionen, wie es Spalten gibt (A-13). Die Rangfolge Uebersteuerung vor
-      // Regel steht ausschliesslich in `ermittleWirksamenWert`; hier wird nur noch
-      // entschieden, ob daraus eine Position wird.
+      // Wirksamer Wert 0 ist kein Zu-/Abschlag — sonst truege die Einheit so viele
+      // Nullpositionen wie es Spalten gibt (A-13).
       if (wirksam === undefined || wirksam.wert === 0) continue;
 
       const nachweis = {

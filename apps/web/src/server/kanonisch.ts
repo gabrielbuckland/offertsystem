@@ -1,12 +1,8 @@
 /**
- * Kanonische Serialisierung und SHA-256-Pruefsumme der effektiven Konfiguration
- * (E-26). Zustaendig ist die Zugriffsschicht, nicht der Kern: Der Kern kennt
- * weder Dateisystem noch Pruefsumme.
- *
- * Die Pruefsumme macht rekonstruierbar, welcher Konfigurationsstand ein Ergebnis
- * erzeugt hat (NFA-07, A-13, I-09). Sie ist NICHT die eingebettete
- * Konfigurationskopie; dieser Name (`konfigurationsAbdruck`) ist projektweit fuer
- * die Kopie reserviert (PE-04).
+ * Kanonische Serialisierung und SHA-256-Pruefsumme der effektiven Konfiguration (E-26),
+ * macht rekonstruierbar, welcher Konfigurationsstand ein Ergebnis erzeugt hat (NFA-07,
+ * A-13, I-09). NICHT die eingebettete Konfigurationskopie — der Name
+ * `konfigurationsAbdruck` ist projektweit fuer diese reserviert (PE-04).
  */
 import { createHash } from 'node:crypto';
 

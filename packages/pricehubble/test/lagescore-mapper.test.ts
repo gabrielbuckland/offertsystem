@@ -1,7 +1,7 @@
 import type { LagescoreName } from '@offert/core';
 import { describe, expect, it } from 'vitest';
-import { aufLagescores } from '../src/acl/lagescoreMapper.js';
-import { LocationScoresResponseSchema } from '../src/schema/locationScoresResponse.js';
+import { aufLagescores } from '../src/acl/lagescore-mapper.js';
+import { LocationScoresResponseSchema } from '../src/schema/location-scores-response.js';
 import { ladeFixture } from './fixtures.js';
 
 const antwort = LocationScoresResponseSchema.parse(

@@ -1,13 +1,10 @@
 'use client';
 
-/**
- * Editor fuer den Teilbaum `honorar` (Stuetzstellen der Honorarstaffel + Skalierung
- * g(D)), Task 15. Der Editor kennt nur die FORM des Teilbaums (`HonorarRoh`, lokal und
- * schmal), keine Konfigurationsbezeichner — der Server prueft die eigentliche Wahrheit
- * (Luecklosigkeit, Degression) beim Speichern; ein Verstoss kommt als Befund mit Pfad
- * `honorar.stuetzstellen[i].<feld>` zurueck und wird hier an genau dieser Zeile verankert
- * (`befundeFuerPfad`), statt in einer Sammelliste unterzugehen (Spec §6).
- */
+// Editor fuer den Teilbaum `honorar` (Stuetzstellen der Honorarstaffel + Skalierung g(D)).
+// Kennt nur die Form des Teilbaums, keine Konfigurationsbezeichner — der Server prueft die
+// eigentliche Wahrheit (Luecklosigkeit, Degression) beim Speichern; ein Verstoss kommt als
+// Befund mit Pfad `honorar.stuetzstellen[i].<feld>` zurueck und wird hier an dieser Zeile
+// verankert (`befundeFuerPfad`), Spec §6.
 import { Trash2 } from 'lucide-react';
 import { Fragment, type ReactElement } from 'react';
 import { frankenZuRappen, rappenZuFranken } from '../projekt/zellen-logik.js';

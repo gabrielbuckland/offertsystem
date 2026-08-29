@@ -18,8 +18,7 @@ import { ladeVorlage } from '../../../../../server/vorlagen-ablage.js';
 interface Kontext { readonly params: Promise<{ readonly id: string }> }
 
 export async function POST(_anfrage: Request, kontext: Kontext): Promise<Response> {
-  // Henne-Ei: siehe Berechnungsroute. Zwei Aufrufe, der Datei-Zwischenspeicher des
-  // Laders traegt die Kosten des zweiten (Ruling 2026-08-29).
+  // Henne-Ei: siehe Berechnungsroute.
   const vorlaufzeit = holeLaufzeit();
   if (!vorlaufzeit.ok) {
     return Response.json({ fehler: { text: vorlaufzeit.meldungen.join(' ') } }, { status: 500 });
@@ -60,14 +59,11 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
       // Unveraendert durchgereicht, samt `adressat` und ggf. `feldpfad` (s. Berechnungsroute).
       return Response.json({ fehler: lauf.fehler }, { status: lauf.status });
     case 'offerte': {
-      // Platzhalter-Auflösung beim Finalisieren (Spec 2026-08-27 §2): Das Artefakt
-      // trägt den aufgelösten Text; ein unauflösbarer Platzhalter erzeugt KEIN
-      // Artefakt (I-24), sondern eine benannte Meldung an den Vermarkter.
+      // Platzhalter-Auflösung beim Finalisieren: ein unauflösbarer Platzhalter erzeugt
+      // KEIN Artefakt (I-24), sondern eine benannte Meldung an den Vermarkter.
       //
-      // I-4: `ladeProjekt` (bei einem zwischenzeitlich verschwundenen/defekten
-      // Projektartefakt) und `ladeVorlage` (jetzt ein `Ergebnis`, siehe vorlagen-ablage.ts)
-      // koennen beide fehlschlagen; ohne diesen Fang traege das eine unbehandelte 500,
-      // obwohl die Route fuer jeden anderen Fehlerpfad hier eine benannte Meldung fuehrt.
+      // I-4: `ladeProjekt` und `ladeVorlage` koennen beide fehlschlagen; ohne diesen Fang
+      // traege das eine unbehandelte 500 statt einer benannten Meldung.
       let projekt;
       try {
         projekt = await ladeProjekt(id, laufzeit.wert.projekteVerzeichnis);

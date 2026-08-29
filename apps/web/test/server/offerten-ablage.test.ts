@@ -3,8 +3,8 @@
  * (Muster Immobilien AG, Musterstrasse) statt dem im Plan notierten Beispiel
  * (Meier, Baumgartenweg). Geprueft wird die Bildungsregel, nicht ein Literal.
  */
-import { mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
+import { mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';

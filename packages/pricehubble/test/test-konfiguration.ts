@@ -1,4 +1,4 @@
-import type { ApiKonfiguration } from '../src/config/apiKonfiguration.js';
+import type { ApiKonfiguration } from '../src/config/api-konfiguration.js';
 
 /**
  * Vorgabewerte der Standardkonfiguration (Spec 02 §1.2, Spec 04 §6.2).

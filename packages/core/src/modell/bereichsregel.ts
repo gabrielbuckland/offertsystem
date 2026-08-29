@@ -3,13 +3,10 @@
  *
  * Die Staffel ist eine Liste exklusiver Obergrenzen: der erste Bereich mit
  * `merkmalswert < unter` gewinnt, der Eintrag ohne `unter` ist der Restfall und steht
- * zwingend am Schluss. Diese Schreibweise stammt aus dem Excel des Auftraggebers
- * («unter 1 kein Zuschlag, unter 2 dann 100») und kann per Konstruktion weder eine
- * Luecke noch eine Ueberlappung enthalten — eine ganze Fehlerklasse entfaellt, statt
- * geprueft zu werden.
- *
- * Bewusst KEINE Ausdruckssprache: Eine Tabelle ist konfigurierbar, ein Ausdruck waere
- * Code in der Konfiguration (Kapitel 3, tab:architekturalternativen).
+ * zwingend am Schluss. Diese Schreibweise kann per Konstruktion weder eine Luecke
+ * noch eine Ueberlappung enthalten — eine ganze Fehlerklasse entfaellt, statt geprueft
+ * zu werden. Bewusst keine Ausdruckssprache: eine Tabelle ist konfigurierbar, ein
+ * Ausdruck waere Code in der Konfiguration (Kapitel 3, tab:architekturalternativen).
  */
 
 export interface Bereich {
@@ -31,12 +28,9 @@ export interface Bereichstreffer {
 
 /**
  * Normalisiert Rohbereiche (aus Zod-Schema oder serialisierter Kopie) auf `Bereich`.
- *
  * Ausschliesslich fuer `exactOptionalPropertyTypes` noetig: `z.number().optional()`
- * infert `unter?: number | undefined`, waehrend `Bereich.unter` als blosses `unter?:
- * number` ohne explizites `undefined` im Wertebereich gilt. Einzige Definition dieser
- * Umformung — Aufrufstellen in `config/abbildung.ts`, `config/ebene3.ts` und
- * `pipeline/serialisierung.ts` duplizieren sie nicht mehr, sondern rufen sie auf.
+ * infert `unter?: number | undefined`, waehrend `Bereich.unter` ohne explizites
+ * `undefined` im Wertebereich gilt.
  */
 export function normalisiereBereiche(
   bereiche: readonly { readonly unter?: number | undefined; readonly wert: number }[],
@@ -84,14 +78,9 @@ export function pruefeBereiche(bereiche: readonly Bereich[]): readonly string[] 
 }
 
 /**
- * Total und fehlerfrei ueber jede Staffel, die pruefeBereiche akzeptiert.
- *
- * Fuer jede gueltige Staffel und jeden endlichen Merkmalswert entsteht genau ein
- * Treffer. Der Restfall garantiert das — deshalb ist er Pflicht und kein Komfort.
- *
- * Ausserhalb der durch pruefeBereiche definierten Domäne (z. B. leere Staffel oder
- * fehlender Restfall) ist der Aufruf ein Programmierungsfehler und schlaegt laut fehl,
- * statt einen falschen Wert zu liefern. pruefeBereiche muss vorher aufgerufen werden.
+ * Total und fehlerfrei ueber jede Staffel, die pruefeBereiche akzeptiert. Ausserhalb
+ * dieser Domaene (z. B. leere Staffel oder fehlender Restfall) ist der Aufruf ein
+ * Programmierfehler und schlaegt laut fehl, statt einen falschen Wert zu liefern.
  */
 export function werteBereichsregelAus(
   regel: Bereichsregel,

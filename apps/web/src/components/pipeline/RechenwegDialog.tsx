@@ -1,16 +1,10 @@
 'use client';
 
-/**
- * Seitenfuellender Dialog fuer den Rechenweg (Rueckmeldung Auftraggeber 2026-08-28):
- * Die fuenf Stufen brauchen die volle Hoehe, eingebettet zwischen den Bloecken der
- * Projektseite blieb der Rechenweg zusammengestaucht und ging beim Scrollen unter.
- *
- * Natives `<dialog>` mit `showModal()` wie die uebrigen Dialoge der Anwendung
- * (`Referenzobjekte.tsx`, `NeuesProjekt.tsx`) — Fokusfalle, Esc und Backdrop kommen vom
- * Browser. Der Zustand lebt beim Aufrufer; `onClose` haelt ihn synchron, wenn der Dialog
- * sich selbst schliesst (Esc). Der Inhalt wird nur im offenen Zustand gerendert, damit
- * die Seite nicht bei jedem Projekt-Update auch den ganzen Rechenweg neu aufbaut.
- */
+// Seitenfuellender Dialog fuer den Rechenweg. Natives `<dialog>` mit `showModal()` wie die
+// uebrigen Dialoge der Anwendung — Fokusfalle, Esc und Backdrop kommen vom Browser. Zustand
+// lebt beim Aufrufer; `onClose` haelt ihn synchron, wenn der Dialog sich selbst schliesst
+// (Esc). Inhalt wird nur im offenen Zustand gerendert, damit die Seite nicht bei jedem
+// Projekt-Update auch den ganzen Rechenweg neu aufbaut.
 import { useEffect, useRef } from 'react';
 import { Button } from '../ui/button.js';
 import { PipelineAnsicht } from './PipelineAnsicht.js';

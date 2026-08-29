@@ -1,17 +1,9 @@
 /**
- * Der EINE zweistufige Rechenweg vom Projekt zur Offerte (PE-21): bisher stand er
- * woertlich in zwei Routen. Er baut die Offerte IMMER — persistiert wird sie nur von
- * der Offert-Route. Damit traegt die Berechnungsantwort dieselbe Herleitung wie das
- * Artefakt (`derivation`/`aggregates`), statt eines zweiten, eigens aufbereiteten
- * Datenbilds (Spec §4, Begruendung wie Ergebnisseite §5.4.3 im Bericht).
+ * Der EINE zweistufige Rechenweg vom Projekt zur Offerte (PE-21). Baut die Offerte
+ * IMMER, persistiert wird sie nur von der Offert-Route (Spec §4).
  *
  * Zweistufig, weil in Franken erfasste Zu-/Abschlaege den ungerundeten Basispreis
- * brauchen (PE-21) und dieser erst aus einem Lauf OHNE Anpassungen hervorgeht. Ein
- * einstufiger Weg setzte zwei Darstellungsformen im Kern voraus — das schliesst E-09 aus.
- *
- * `erzeugeLaufmetadaten` laeuft auch fuer reine Berechnungen: Eine ungenutzte
- * Offert-Kennung ist billig; ein zweiter, metadatenloser Bauweg der Offerte waere die
- * teurere Abweichungsquelle.
+ * brauchen (PE-21) und dieser erst aus einem Lauf OHNE Anpassungen hervorgeht (E-09).
  */
 import {
   berechne,
@@ -27,9 +19,8 @@ import {
   type StufenFehler,
   type VerkaufssummeErgebnis,
 } from '@offert/core';
-// Modulpfad statt Paketindex: Der Index re-exportiert auch die React-Komponenten
-// (.tsx). Node leistet fuer JSX kein Type-Stripping (PE-09), und dieser Pfad wird
-// von `tools/beispiel-offerte.ts` unter Node ausgefuehrt. Es bleibt ein Paketimport.
+// Modulpfad statt Paketindex: Der Index re-exportiert auch .tsx-Komponenten, fuer die
+// Node kein Type-Stripping leistet (PE-09); dieser Pfad laeuft aber unter Node.
 import { baueOfferte } from '@offert/offer/src/model/baue-offerte.js';
 import type { Offer } from '@offert/offer/src/model/offer.js';
 import { beschaffe, zuEingangsArgumenten } from './eingang.js';
@@ -40,15 +31,10 @@ import { ladeProjekt } from './projekt-ablage.js';
 import { projiziere } from './projektion.js';
 
 /**
- * Anzeigefertiger Fehler, in genau der Form, in der ihn die Routen schon immer
- * ausgegeben haben. Zwei Auspraegungen, weil es zwei Quellen gibt: Stufenfehler des
- * Kerns kommen aus `uebersetzeStufenFehler` als vollstaendiger `AngezeigterFehler` —
- * `adressat` unterscheidet Vermarkter- von Auftraggeberfehlern (wer den Fehler beheben
- * kann: der Vermarkter in der Erfassung, der Auftraggeber in der Konfiguration) und
- * steuert damit die Wortwahl der Meldung; `feldpfad` verankert die Meldung am Feld.
- * Lade-, Projektions- und Beschaffungsfehler fuehren dagegen seit jeher nur einen Text.
- * Ein erzwungener `adressat` fuer diese haette der Antwort ein Feld hinzugefuegt, das sie
- * nie hatte; die Union gibt beide Formen unveraendert weiter.
+ * Zwei Auspraegungen, weil es zwei Fehlerquellen gibt: Stufenfehler des Kerns kommen aus
+ * `uebersetzeStufenFehler` als vollstaendiger `AngezeigterFehler` — `adressat`
+ * unterscheidet Vermarkter- von Auftraggeberfehlern und steuert die Wortwahl. Lade-,
+ * Projektions- und Beschaffungsfehler fuehren dagegen nur einen Text.
  */
 export type LaufFehler = AngezeigterFehler | { readonly text: string };
 
@@ -64,11 +50,7 @@ export type ProjektLaufErgebnis =
       /** Wohnungsnummer -> Einheitenkennung; das Offert-Schema fuehrt nur die Nummer. */
       readonly einheitenIds: ReadonlyMap<string, string> }
   | { readonly art: 'unvollstaendig' }
-  /**
-   * Eigene Variante statt eines `fehler` mit fertigem Text: Die Folge einer fehlenden
-   * Referenzbewertung ist je Route eine andere («keine Preise» / «keine Offerte»), und
-   * diese Wortwahl gehoert zur Antwort der Route, nicht zum Rechenweg (I-24).
-   */
+  /** Eigene Variante statt fertigem Text: Wortwahl je Route unterschiedlich (I-24). */
   | { readonly art: 'bewertungLuecke' }
   | { readonly art: 'honorarAbbruch';
       readonly teilergebnis: HonorarTeilergebnis;
@@ -77,12 +59,9 @@ export type ProjektLaufErgebnis =
       readonly fehler: LaufFehler };
 
 /**
- * Genau die Konfigurationsluecke aus E-04: Die Verkaufssumme liegt ober- ODER unterhalb
- * der konfigurierten Staffel (der Kern unterscheidet beides ueber `richtung`).
- *
- * Der Code wird mitgeprueft, nicht nur die Stufe: Stufe 5 meldet zusaetzlich
- * `STUFE_ENTARTET` (zwei Stuetzstellen mit gleichem V). Das ist ein Konfigurationsdefekt
- * ohne gueltige Staffel, kein Teilergebnis — er gehoert in den regulaeren 422-Zweig.
+ * Konfigurationsluecke aus E-04: Verkaufssumme liegt ausserhalb der Staffel.
+ * Code wird mitgeprueft, da Stufe 5 auch `STUFE_ENTARTET` meldet (Konfigurationsdefekt,
+ * kein Teilergebnis, gehoert in den regulaeren 422-Zweig).
  */
 function istHonorarLuecke(fehler: StufenFehler): boolean {
   return fehler.stufe === 5 && fehler.code === 'VERKAUFSSUMME_AUSSERHALB';
@@ -99,15 +78,10 @@ type NachfahrErgebnis =
   | { readonly ok: false; readonly stufe: string; readonly fehler: StufenFehler };
 
 /**
- * Faehrt die Stufen 1–4 einzeln nach (NFA-03 exportiert sie genau dafuer), um an die
+ * Faehrt die Stufen 1–4 einzeln nach (NFA-03 exportiert sie dafuer), um an die
  * Zwischenergebnisse eines Laufs zu kommen, den `berechne` erst in Stufe 5 abgebrochen hat.
- *
- * Zur Zulaessigkeit: Aufgerufen wird das NUR nach einem Fehlschlag in Stufe 5. `berechne`
- * bricht bei der ersten fehlgeschlagenen Stufe ab — hat es Stufe 5 erreicht, sind die
- * Stufen 1–4 mit genau diesem Eingang nachweislich schon einmal erfolgreich gelaufen. Ein
- * Fehlschlag hier ist deshalb kein Konfigurations- oder Eingabefehler, sondern ein Defekt
- * (verborgener Zustand im Kern, abweichende Argumente); er wird benannt zurueckgegeben und
- * NICHT stillschweigend in den generischen Fehlerzweig durchgereicht.
+ * Nur nach Fehlschlag in Stufe 5 aufrufen: dann sind 1–4 mit demselben Eingang bereits
+ * erfolgreich gelaufen, ein Fehlschlag hier ist also ein Defekt, kein Eingabefehler.
  */
 function fahreStufen1bis4Nach(eingang: EingangsArgumente): NachfahrErgebnis {
   const s1 = bereiteEingabeAuf(eingang);
@@ -156,10 +130,8 @@ export async function fuehreProjektlauf(
     return { art: 'unvollstaendig' };
   }
 
-  // Erster Lauf ohne Anpassungen: liefert die Basispreise fuer die Umrechnung. Die
-  // Option ist noetig, nicht nur beabsichtigt — ohne sie versuchte `projiziere` schon
-  // hier, in Franken erfasste Positionen ueber die (noch leeren) Basispreise
-  // umzurechnen, und schluege fehl, bevor der Lauf sie ermitteln konnte.
+  // Erster Lauf ohne Anpassungen liefert die Basispreise. Option noetig: sonst versuchte
+  // `projiziere` Franken-Positionen ueber die noch leeren Basispreise umzurechnen.
   const ohne = projiziere(projekt, {}, { ohneAnpassungen: true });
   if (!ohne.ok) return { art: 'fehler', status: 422, fehler: { text: ohne.meldung } };
 
@@ -167,11 +139,9 @@ export async function fuehreProjektlauf(
   if (!beschafft.ok) return { art: 'fehler', status: 502, fehler: { text: beschafft.meldung } };
   if (!beschafft.wert.buendel.vollstaendig) return { art: 'bewertungLuecke' };
 
-  // PE-04, E-29: Zeit entsteht hier. Nebenwirkung, bewusst in Kauf genommen: Auch eine
-  // reine Berechnung verbraucht eine Referenznummer aus der prozessweiten Folge
-  // `A-<Jahr>-<NNN>` (`laufmetadaten.ts`), die Nummern der abgelegten Offerten haben also
-  // Luecken. Heute liest die Nummer niemand; wird sie einmal als lueckenlos erwartet
-  // (OFFEN-05-1 ist beim Auftraggeber offen), muss sie erst beim Ablegen gezogen werden.
+  // PE-04, E-29: Bewusste Nebenwirkung — auch eine reine Berechnung verbraucht eine
+  // Referenznummer aus `A-<Jahr>-<NNN>`, abgelegte Offerten haben also Luecken
+  // (OFFEN-05-1 beim Auftraggeber offen).
   const meta = erzeugeLaufmetadaten(fingerabdruck);
   const basisEingang = zuEingangsArgumenten(
     ohne.wert, beschafft.wert, konfiguration, meta.erstelltAm, { ohneAnpassungen: true });
@@ -179,12 +149,9 @@ export async function fuehreProjektlauf(
     return { art: 'fehler', status: 422, fehler: { text: basisEingang.meldung } };
   }
 
-  // Vom Basislauf wird ausschliesslich `verkaufssumme.positionen[].basispreis` gebraucht;
-  // seine Honorarrange wird nie gelesen. Ein Abbruch in Stufe 5 darf ihn deshalb nicht
-  // scheitern lassen: Genau das brach E-04 (Honorarabbruch). Die Staffelluecke traf schon
-  // hier zu, der Lauf endete mit einem generischen 422 — mit dem RICHTIGEN Meldungstext,
-  // was den Defekt lange als Problem der Erkennung weiter unten erscheinen liess — und die
-  // Teilergebnis-Behandlung beim zweiten Lauf wurde nie erreicht.
+  // Vom Basislauf wird nur `verkaufssumme.positionen[].basispreis` gebraucht, seine
+  // Honorarrange nie gelesen — ein Abbruch in Stufe 5 (E-04) darf ihn deshalb nicht
+  // scheitern lassen.
   const basisLauf = berechne(basisEingang.wert);
   let basisPositionen: readonly EinheitPreisPosition[];
   if (basisLauf.ok) {
@@ -213,13 +180,9 @@ export async function fuehreProjektlauf(
   const ergebnis = berechne(eingang.wert);
   if (!ergebnis.ok) {
     if (istHonorarLuecke(ergebnis.fehler)) {
-      // E-04: Ausserhalb des konfigurierten Staffelbereichs gibt es keine Honorarzahl,
-      // aber ein Teilergebnis. `berechne` bleibt die einzige Kettendefinition; die Stufen
-      // 1–4 werden fuer das Teilergebnis nachgefahren.
-      //
-      // Kein stilles Durchfallen mehr: Scheitert das Nachfahren, ist das ein Defekt
-      // (siehe `fahreStufen1bis4Nach`) und wird als solcher gemeldet — nicht als
-      // Staffelluecke, denn Preise und D koennte man dann gerade NICHT ausweisen.
+      // E-04: keine Honorarzahl ausserhalb der Staffel, aber ein Teilergebnis via
+      // nachgefahrener Stufen 1–4. Scheitert das Nachfahren, ist das ein Defekt
+      // (siehe `fahreStufen1bis4Nach`), nicht die Staffelluecke.
       const nachgefahren = fahreStufen1bis4Nach(eingang.wert);
       if (!nachgefahren.ok) return alsDefekt(nachgefahren);
       const { verkaufssumme, gewichtung } = nachgefahren.wert;

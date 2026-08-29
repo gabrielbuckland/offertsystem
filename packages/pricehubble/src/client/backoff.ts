@@ -3,7 +3,7 @@
  * Saemtliche Parameter stammen aus `config.api.retry.*` — im Code steht keine
  * Zahlenkonstante (E-13, G-4).
  */
-import type { RetryKonfiguration } from '../config/apiKonfiguration.js';
+import type { RetryKonfiguration } from '../config/api-konfiguration.js';
 import type { Zufallsquelle } from './zufall.js';
 
 /** @param versuchNr Nummer des soeben fehlgeschlagenen Versuchs, beginnend bei 1. */

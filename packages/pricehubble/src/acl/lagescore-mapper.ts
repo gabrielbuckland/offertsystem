@@ -19,8 +19,8 @@ import type { Lagescores, LagescoreName, Score } from '@offert/core';
 import {
   LAGESCORE_NAMEN,
   type LocationScoresResponse,
-} from '../schema/locationScoresResponse.js';
-import { ANBIETER } from './bewertungMapper.js';
+} from '../schema/location-scores-response.js';
+import { ANBIETER } from './bewertung-mapper.js';
 
 export function aufLagescores(
   antwort: LocationScoresResponse,

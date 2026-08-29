@@ -1,23 +1,12 @@
-/**
- * Keine Formel. Dateibasierte JSON-Ablage der Offerten (E-14, Brief §5.2).
- *
- * Kein Standardpfad als Literal: Der Ablageort stammt aus der Umgebung und wird ueber
- * `holeLaufzeit()` durchgereicht (PE-24). Ein Vorgabewert hier waere ein zweiter
- * Konfigurationsort und wuerde bei abweichender Umgebung stillschweigend danebenschreiben.
- *
- * Atomar und append-only: Artefakte werden nur angelegt, nie ueberschrieben. Ohne diese
- * Eigenschaft waere die Reproduzierbarkeitsaussage aus US-13 nicht haltbar — ein spaeter
- * ueberschriebenes Artefakt belegte nicht mehr, was zum Zeitpunkt der Offerte galt.
- *
- * Kein DBMS und kein ORM (AK-4.5): Die Ablage hat einen Schreiber, keine Nebenlaeufigkeit
- * und keine Abfragen jenseits «alle auflisten».
- */
+// Dateibasierte JSON-Ablage der Offerten (E-14, Brief §5.2). Ablageort kommt aus der
+// Umgebung via `holeLaufzeit()` (PE-24), kein Vorgabewert hier. Atomar und append-only:
+// Artefakte werden nur angelegt, nie ueberschrieben (Reproduzierbarkeit, US-13). Kein
+// DBMS/ORM (AK-4.5): ein Schreiber, keine Nebenlaeufigkeit, keine Abfragen ausser Auflisten.
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs/promises';
 import { join } from 'node:path';
-// Modulpfad statt Paketindex: Der Index re-exportiert auch die React-Komponenten
-// (.tsx). Node leistet fuer JSX kein Type-Stripping (PE-09), und dieser Pfad wird
-// von `tools/beispiel-offerte.ts` unter Node ausgefuehrt. Es bleibt ein Paketimport.
+// Modulpfad statt Paketindex: Der Index re-exportiert auch React-Komponenten (.tsx), fuer
+// die Node kein Type-Stripping leistet (PE-09); dieser Pfad wird unter Node ausgefuehrt.
 import { offerSchema, type Offer } from '@offert/offer/src/model/offer.js';
 
 export interface ListenEintrag {

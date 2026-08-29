@@ -1,11 +1,7 @@
 /**
- * Rechenweg-Ansicht (US-09/A-10): die fuenf Berechnungsstufen untereinander, in der
- * Reihenfolge der Rechnung. Das Skelett — nummerierte Stufen an einer Leitlinie — ist
- * fix; jeder Inhalt kommt ausschliesslich aus `bauePipelineDaten`, das ueber die
- * Konfiguration bzw. eine Herleitung iteriert. Formelzeilen zeigen den Ausdruck mit den
- * eingesetzten Werten und dem Ergebnis des Kerns; gerechnet wird hier nichts (I-24).
- * Rein darstellend: kein State, kein `'use client'` — eingebettet wird sie vom
- * `RechenwegDialog` der Projektseite.
+ * Rechenweg-Ansicht (US-09/A-10): die fuenf Berechnungsstufen untereinander. Skelett ist
+ * fix, jeder Inhalt kommt aus `bauePipelineDaten`; gerechnet wird hier nichts (I-24).
+ * Rein darstellend: kein State, kein `'use client'`.
  */
 import type { Route } from 'next';
 import Link from 'next/link';

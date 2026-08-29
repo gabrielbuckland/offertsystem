@@ -1,15 +1,9 @@
 /**
  * Einstiegsseite der projektbezogenen Einstellungen (Ebene 2 des Zwei-Ebenen-Modells).
- *
- * Reine Server-Komponente: Sie holt die beiden Ebenen an ihrer jeweiligen Quelle —
- * Ebene 1 aus `holeLaufzeit()` (dieselbe Rohkonfiguration, aus der auch der
- * Konfigurationsabdruck entsteht, PE-04), Ebene 2 aus dem Projektdatensatz
- * (`projekt.einstellungen`) — und reicht beides an die Client-Komponente durch. Die
- * Zusammenfuehrung geschieht bewusst NICHT hier, sondern in `ProjektEinstellungen`:
- * Nur dort, wo auch bearbeitet wird, laesst sich die effektive Konfiguration wieder in
- * ein Delta zurueckrechnen. Wuerde die Seite bereits die zusammengefuehrte Fassung
- * uebergeben, waeren die Firmenwerte als Vergleichsbasis verloren und jedes Speichern
- * schriebe eine Vollkopie.
+ * Reine Server-Komponente: holt Ebene 1 (`holeLaufzeit()`, PE-04) und Ebene 2
+ * (`projekt.einstellungen`) getrennt und reicht beides durch. Zusammenfuehrung
+ * geschieht bewusst NICHT hier, sondern in `ProjektEinstellungen` — nur dort laesst
+ * sich die effektive Konfiguration wieder in ein Delta zurueckrechnen.
  */
 import { notFound } from 'next/navigation';
 import { ProjektEinstellungen } from '../../../../../components/einstellungen/ProjektEinstellungen.js';

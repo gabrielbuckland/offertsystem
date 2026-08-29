@@ -13,14 +13,11 @@
  *   R = phi(V1)/phi(V2)    (haengt allein an den Stuetzstellen)
  *   M = R/L,  erfuellt genau dann, wenn M >= 1
  *
- * In D aendert sich zwischen den beiden Projekten genau EIN Summand: der des
- * Aufwandfaktors mit quelle 'abgeleitet' und quellSchluessel 'einheitenzahl'. Der
- * unguenstigste Fall ist deshalb ohne Suche bestimmbar — g ist monoton steigend (I-15),
- * also ist g(D1) minimal, wenn alle uebrigen Faktoren den Beitrag 0 leisten.
- *
- * Es steht keine Groesse aus einem Pipeline-Durchlauf in den Formeln. Der Rechner fuehrt
- * daher GAR KEINE Konfiguration aus — schon gar keine unzulaessige, deren «Messwert»
- * keiner waere.
+ * In D aendert sich zwischen den beiden Projekten genau EIN Summand (der Aufwandfaktor
+ * mit quellSchluessel 'einheitenzahl'); der unguenstigste Fall ist deshalb ohne Suche
+ * bestimmbar, weil g monoton steigend ist (I-15) und g(D1) minimal wird, wenn alle
+ * uebrigen Faktoren den Beitrag 0 leisten. Keine Groesse stammt aus einem
+ * Pipeline-Durchlauf — der Rechner fuehrt daher keine Konfiguration aus.
  */
 import { findeUmfangfaktor, normiereMitKappung } from '../shared/konfig.ts';
 import {
@@ -119,7 +116,7 @@ export function margeUeberGitter(konfig: Konfiguration): MargenBefund {
   if (umfang === null) {
     throw new Error('Kein Aufwandfaktor mit quellSchluessel einheitenzahl');
   }
-  // Der Kerntyp fuehrt grenzeMin/grenzeMax, die Rohform min/max (PE-01).
+  // Kerntyp: grenzeMin/grenzeMax; Rohform: min/max (PE-01).
   const { gewicht: wU, grenzeMin: minU, grenzeMax: maxU } = umfang.parameter;
 
   const xDach = (m: number): number => normiereMitKappung(m, minU, maxU);

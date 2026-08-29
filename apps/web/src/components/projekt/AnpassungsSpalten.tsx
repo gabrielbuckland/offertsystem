@@ -1,22 +1,14 @@
 'use client';
 
 /**
- * Spaltenkonfiguration der Zu-/Abschlaege (Design-Spec §1). Die Spalten eines Projekts
- * sind aus den firmenweiten Vorlagen VORBELEGT, nicht vorgegeben (US-04 AK 5, E-25):
- * das Excel des Auftraggebers zeigt je Blatt einen anderen Spaltenschnitt, darum lassen
- * sich Spalten hier ergaenzen, umbenennen und entfernen.
+ * Spaltenkonfiguration der Zu-/Abschlaege (US-04 AK 5, E-25): Spalten sind vorbelegt, nicht
+ * vorgegeben, und lassen sich ergaenzen, umbenennen und entfernen.
  *
  * Wird eine Spalte entfernt, muessen die zugehoerigen `spaltenwerte` aus allen Einheiten
- * verschwinden — sonst truege das Artefakt Werte ohne Spalte, die die Projektion
- * stillschweigend ignoriert und die bei Wiederverwendung derselben Spalten-ID
- * unbeabsichtigt wieder auflebten.
- *
- * `entferneSpalte` ist deshalb ein EIGENER Pflicht-Rueckruf, nicht ein optionales
- * zweites Argument von `aendere`: TypeScript ist in der Parameterzahl kontravariant,
- * ein Aufrufer, der `aendere={(neue) => setSpalten(neue)}` schreibt, wuerde ein
- * optionales Argument typkorrekt verschlucken und die Kaskade stillschweigend
- * auslassen. Ein eigener Pflicht-Rueckruf macht das Weglassen an der JSX-Aufrufstelle
- * zu einem Kompilierfehler.
+ * verschwinden — sonst leben sie bei Wiederverwendung derselben Spalten-ID unbeabsichtigt
+ * wieder auf. `entferneSpalte` ist deshalb ein eigener Pflicht-Rueckruf statt eines
+ * optionalen zweiten Arguments von `aendere`: TypeScript ist in der Parameterzahl
+ * kontravariant und wuerde ein fehlendes optionales Argument sonst typkorrekt verschlucken.
  */
 import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { Fragment, useRef, useState } from 'react';
@@ -37,22 +29,21 @@ import {
 
 export interface AnpassungsSpaltenProps {
   readonly spalten: readonly AnpassungsSpalte[];
-  /** Merkmale des Projekts — nur gelesen, um die Staffel einer Regelspalte mit der
-   *  Merkmalsbezeichnung («Stockwerk») statt der rohen Kennung auszuweisen. */
+  /** Nur gelesen, um die Staffel einer Regelspalte mit der Merkmalsbezeichnung statt der
+   *  rohen Kennung auszuweisen. */
   readonly merkmale: readonly Merkmal[];
   readonly aendere: (spalten: readonly AnpassungsSpalte[]) => void;
   readonly entferneSpalte: (id: string) => void;
   /** Uebertraegt den Vorgabewert der Spalte in alle Einheiten ohne eigenen Wert
-   *  (`uebernehmeVorgabewert`, vom Aufrufer verdrahtet — siehe ProjektAnsicht.tsx). */
+   *  (verdrahtet in ProjektAnsicht.tsx). */
   readonly uebernehmeAufEinheiten: (spalteId: string) => void;
 }
 
 /**
- * Reine Zaehlerfabrik: einmal pro Komponenteninstanz erzeugt (siehe `useRef` unten) und
- * danach nur inkrementiert, nie aus der aktuellen Spaltenliste neu abgeleitet. Eine
- * waehrend der Sitzung entfernte Kennung wird dadurch nicht sofort wiederverwendet —
- * sonst erbte eine neue Spalte ueber dieselbe ID unbeabsichtigt die `spaltenwerte`
- * der entfernten (siehe Kommentar oben).
+ * Zaehler wird einmal pro Komponenteninstanz erzeugt und danach nur inkrementiert, nie aus
+ * der aktuellen Spaltenliste neu abgeleitet — sonst wuerde eine waehrend der Sitzung
+ * entfernte ID sofort wiederverwendet und eine neue Spalte erbte die `spaltenwerte` der
+ * entfernten (siehe Kommentar oben).
  */
 export function erzeugeSpaltenIdFolge(vorhandene: readonly AnpassungsSpalte[]): () => string {
   let hoechste = vorhandene.reduce((max, s) => {
@@ -67,12 +58,9 @@ export function erzeugeSpaltenIdFolge(vorhandene: readonly AnpassungsSpalte[]): 
 
 /**
  * Beschreibt die Staffel einer Regelspalte lesbar («Stockwerk: unter 1 CHF 8’600 · sonst
- * CHF 17’200») — der Betrag je Segment war sonst NIRGENDS in der Projektansicht
- * sichtbar, nur der Satz «Wird von der hinterlegten Regel bestimmt» (Rueckmeldung
- * Auftraggeber 2026-08-28). Reine Funktion, damit sie ohne DOM testbar bleibt (Muster
- * `zellen-logik.ts`). Der Wert wird in der Erfassungsform der SPALTE formatiert —
- * dieselbe Skalenkonvention wie in `EinheitenTabelle` (Rappen bei 'absolut', Faktor bei
- * 'relativ').
+ * CHF 17’200»). Reine Funktion, damit sie ohne DOM testbar bleibt (Muster
+ * `zellen-logik.ts`). Formatiert in der Skala der Spalte (Rappen bei 'absolut', Faktor bei
+ * 'relativ'), wie `EinheitenTabelle`.
  */
 export function beschreibeStaffel(
   spalte: AnpassungsSpalte, merkmale: readonly Merkmal[],
@@ -91,15 +79,13 @@ export function beschreibeStaffel(
 
 /**
  * Umbau einer Spalte auf eine Merkmals-Staffel bzw. zurueck auf einen festen Vorgabewert.
- * Reine Funktionen (Muster `zellen-logik.ts`), weil das Schema `regel` und `vorgabewert`
- * gegenseitig ausschliesst (`projekt-schema.ts`, REGEL_UND_VORGABEWERT): Der jeweils
- * andere Schluessel muss beim Umbau ENTFERNT werden, nicht auf `undefined` gesetzt —
- * sonst scheiterte jedes PUT des Projekts.
+ * Das Schema schliesst `regel` und `vorgabewert` gegenseitig aus (REGEL_UND_VORGABEWERT):
+ * der jeweils andere Schluessel muss beim Umbau ENTFERNT werden, nicht auf `undefined`
+ * gesetzt — sonst scheiterte jedes PUT des Projekts.
  */
 export function spalteMitRegel(s: AnpassungsSpalte, merkmalId: string): AnpassungsSpalte {
   const { vorgabewert: _vorgabewert, ...rest } = s;
-  // Ein Startbereich, der nur den Restfall traegt: die Staffel ist damit sofort total
-  // und gueltig (`pruefeBereiche`), die Segmente ergaenzt der Vermarkter im Editor.
+  // Startbereich traegt nur den Restfall: die Staffel ist damit sofort total und gueltig.
   return { ...rest, regel: { merkmal: merkmalId, bereiche: [{ wert: 0 }] } };
 }
 
@@ -108,8 +94,7 @@ export function spalteOhneRegel(s: AnpassungsSpalte): AnpassungsSpalte {
   return { ...rest, vorgabewert: 0 };
 }
 
-/** Bringt die im Editor geaenderte Kern-Regel auf die Schemaform des Projekts
- *  (readonly-Array -> gewoehnliches Array, flache Kopie wie `spalten-vorbelegung.ts`). */
+/** Bringt die im Editor geaenderte Kern-Regel auf die Schemaform des Projekts. */
 export function spalteMitGeaenderterRegel(
   s: AnpassungsSpalte, regel: KernBereichsregel,
 ): AnpassungsSpalte {
@@ -122,9 +107,8 @@ export function spalteMitGeaenderterRegel(
 export function AnpassungsSpalten(
   { spalten, merkmale, aendere, entferneSpalte, uebernehmeAufEinheiten }: AnpassungsSpaltenProps,
 ) {
-  // Aufgeklappte Spalten (Akkordeon): Die Staffel wird in einer Detailzeile UNTER der
-  // Spaltenzeile bearbeitet, nicht in einem eigenen Dialog — sie gehoert sichtbar zur
-  // Spalte (Rueckmeldung Auftraggeber 2026-08-28).
+  // Die Staffel wird in einer Detailzeile unter der Spaltenzeile bearbeitet, nicht in
+  // einem eigenen Dialog — sie gehoert sichtbar zur Spalte.
   const [offene, setzeOffene] = useState<readonly string[]>([]);
   function schalte(id: string): void {
     setzeOffene((o) => (o.includes(id) ? o.filter((x) => x !== id) : [...o, id]));
@@ -142,8 +126,7 @@ export function AnpassungsSpalten(
     aendere([...spalten, {
       id: naechsteId.current!(),
       // Nicht leer: `anpassungsSpalteSchema` verlangt `min(1)`, eine namenlose Spalte
-      // liesse also jedes PUT mit 422 scheitern, bis ein Name getippt ist — sichtbar als
-      // «Änderung konnte nicht gespeichert werden» nach JEDEM «Spalte hinzufügen».
+      // liesse jedes PUT mit 422 scheitern, bis ein Name getippt ist.
       bezeichnung: 'Neue Spalte',
       erfassungsform: 'relativ',
       vorgabewert: 0,
@@ -229,14 +212,9 @@ export function AnpassungsSpalten(
                       </span>
                     </div>
                   ) : (
-                    // Schema (`projekt-schema.ts`) schliesst `regel` und `vorgabewert` an
-                    // derselben Spalte aus — ein Eingabefeld hier haette ein Projekt mit
-                    // Regel unspeicherbar gemacht, sobald jemand hineintippt (die
-                    // firmenweite Vorlage `stockwerklage` traegt eine Regel und bringt
-                    // diesen Fall damit in jedes neue Projekt). Die Staffel selbst wird
-                    // AUSGEWIESEN und in der aufklappbaren Detailzeile bearbeitet
-                    // («Staffel», `BereichsregelEditor`); firmenweit zusaetzlich unter
-                    // Einstellungen → Preisanpassung & Vorlagen.
+                    // Schema schliesst `regel` und `vorgabewert` an derselben Spalte aus —
+                    // ein Eingabefeld hier haette ein Projekt mit Regel unspeicherbar
+                    // gemacht. Die Staffel wird stattdessen in der Detailzeile bearbeitet.
                     <p className="text-sm">{beschreibeStaffel(s, merkmale)}</p>
                   )}
                 </TableCell>
@@ -307,10 +285,8 @@ export function AnpassungsSpalten(
                     ) : (
                       <div className="py-1">
                         <BereichsregelEditor
-                          // `normalisiereBereiche` bringt die Zod-Optionalitaet
-                          // (`unter?: number | undefined`) auf die Kernform
-                          // (`unter?: number`) — dasselbe Muster wie im Schema selbst
-                          // (`projekt-schema.ts`, superRefine).
+                          // `normalisiereBereiche` bringt die Zod-Optionalitaet auf die
+                          // Kernform (dasselbe Muster wie im Schema, superRefine).
                           regel={{
                             merkmal: s.regel.merkmal,
                             bereiche: normalisiereBereiche(s.regel.bereiche),

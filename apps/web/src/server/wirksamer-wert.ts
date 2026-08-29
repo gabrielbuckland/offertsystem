@@ -1,16 +1,12 @@
 /**
- * Keine Formel. Beantwortet eine einzige Frage an genau einer Stelle: Welcher Wert gilt
- * fuer diese Spalte an dieser Einheit?
+ * Beantwortet an genau einer Stelle: Welcher Wert gilt fuer diese Spalte an dieser
+ * Einheit? Rangfolge ist Uebersteuerung vor Regel. Entscheidend ist die ANWESENHEIT des
+ * Spaltenwerts, nicht seine Groesse — sonst waere eine bewusste Uebersteuerung auf 0 nicht
+ * von «nichts erfasst» zu unterscheiden.
  *
- * Die Rangfolge ist Uebersteuerung vor Regel. Entscheidend ist die ANWESENHEIT des
- * Spaltenwerts, nicht seine Groesse — sonst waere eine bewusste Uebersteuerung auf 0
- * nicht von «nichts erfasst» zu unterscheiden. Ob aus dem wirksamen Wert eine Position
- * wird, entscheidet der Aufrufer (`projektion.ts`): Ein wirksamer Wert 0 ist kein
- * Zu-/Abschlag und wird nicht ausgewiesen.
- *
- * Keine server-seitigen Importe: Diese Datei liegt zwar unter `src/server/`, wird aber
- * spaeter auch aus einer Client-Komponente heraus verwendet, damit die Tabelle den
- * hergeleiteten Wert anzeigen kann. Nur `@offert/core` und Typen aus `projekt-schema.ts`.
+ * Keine server-seitigen Importe: Diese Datei wird auch aus einer Client-Komponente heraus
+ * verwendet (Tabelle zeigt den hergeleiteten Wert), nur `@offert/core` und Typen aus
+ * `projekt-schema.ts`.
  */
 import { normalisiereBereiche, werteBereichsregelAus } from '@offert/core';
 import type { AnpassungsSpalte, ProjektEinheit } from './projekt-schema.js';
@@ -41,18 +37,14 @@ export function ermittleWirksamenWert(
   const merkmalswert = einheit.merkmalswerte[spalte.regel.merkmal];
   if (merkmalswert === undefined) {
     // Fehlender Merkmalswert heisst nur: die Regel ist nicht auswertbar — das darf eine
-    // bereits erfasste Uebersteuerung nicht schlucken (I-24, Migrationspfad: bestehende
-    // Spaltenwerte bleiben gueltig, auch wenn der Merkmalswert einer neu verknuepften
-    // Regel noch fehlt). Plain `{ wert }`, ohne `regel`/`uebersteuert`: Es gibt keinen
-    // Regelwert, gegen den uebersteuert werden koennte, also waere das Flag eine
-    // Behauptung ohne Beleg.
+    // bereits erfasste Uebersteuerung nicht schlucken (I-24). Ohne `regel`/`uebersteuert`:
+    // es gibt keinen Regelwert, gegen den uebersteuert werden koennte.
     return uebersteuerung === undefined ? undefined : { wert: uebersteuerung };
   }
 
   // `normalisiereBereiche`, nicht die von Zod inferierte Form direkt: Mit
-  // `exactOptionalPropertyTypes` infert `z.number().optional()` `unter?: number |
-  // undefined`, waehrend `Bereich.unter` im Kern als blosses `unter?: number` gilt.
-  // Einzige Transformstelle bleibt der Kern selbst (siehe `bereichsregel.ts`).
+  // `exactOptionalPropertyTypes` infert Zod `unter?: number | undefined`, der Kern
+  // erwartet `unter?: number` (siehe `bereichsregel.ts`).
   const treffer = werteBereichsregelAus(
     { merkmal: spalte.regel.merkmal, bereiche: normalisiereBereiche(spalte.regel.bereiche) },
     merkmalswert,

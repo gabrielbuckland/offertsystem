@@ -11,9 +11,8 @@ export async function GET(): Promise<Response> {
   if (!laufzeit.ok) {
     return Response.json({ fehler: { text: laufzeit.meldungen.join(' ') } }, { status: 500 });
   }
-  // I-4: `ladeVorlage` wirft nicht mehr (kaputtes JSON/Schemabruch), sondern liefert ein
-  // `Ergebnis` — ein defektes Vorlagenartefakt wird so zu einer benannten 500-Meldung
-  // statt einer unbehandelten Ausnahme.
+  // I-4: `ladeVorlage` liefert ein `Ergebnis` statt zu werfen, defektes Artefakt wird
+  // so zu einer benannten 500-Meldung.
   const vorlage = await ladeVorlage(laufzeit.wert.umgebung.offertVorlagePfad);
   if (!vorlage.ok) {
     return Response.json({ fehler: { text: vorlage.meldung } }, { status: 500 });

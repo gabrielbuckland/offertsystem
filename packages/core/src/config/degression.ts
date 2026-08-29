@@ -16,10 +16,8 @@ const RANDKURVEN: readonly Randkurve[] = ['hMin', 'hMax'];
 /**
  * eq:honorar_mapping — lineare Interpolation der Honorarbasis zwischen zwei
  * Stuetzstellen. Oberhalb der hoechsten Stuetzstelle ist das Modell NICHT
- * definiert; es gibt keine Extrapolation und keine Konstantfortsetzung (E-04).
- *
- * Der Rueckgabewert ist ungerundet. Gerundet wird erst nach der Multiplikation
- * mit g(D) — Rundungsstelle R3 nach E-09.
+ * definiert (keine Extrapolation, E-04). Rueckgabewert ist ungerundet;
+ * gerundet wird erst nach der Multiplikation mit g(D) (Rundungsstelle R3, E-09).
  */
 export function interpoliereHonorarbasis(
   stuetzstellen: readonly RohStuetzstelle[],
@@ -46,7 +44,7 @@ export function interpoliereHonorarbasis(
 
 /**
  * eq:degression_stufe (I-19) — der Grenzsatz darf den Durchschnittssatz nicht
- * erreichen. Geprueft wird in der Produktform s_k * V_k^max < H^(k+1); das
+ * erreichen. Geprueft wird in der Produktform s_k * V_k^max < H^(k+1), das
  * vermeidet die Division und damit den Sonderfall V = 0 in der ersten Stufe.
  * Die Randpruefung genuegt, weil phi auf einer Stufe streng faellt, sobald
  * s_k < phi(V_k^max) gilt.
@@ -95,10 +93,9 @@ export interface NettoDegressionsBefund {
 }
 
 /**
- * Sucht den Faktor, der die Einheitenzahl verarbeitet. Gesucht wird ueber den
- * QUELLSCHLUESSEL `einheitenzahl` (E-05, PE-03) und nicht ueber den
- * Faktorschluessel: Wie der Faktor heisst, ist Sache der Konfiguration; woher er
- * seinen Rohwert bezieht, ist die fachlich tragende Eigenschaft.
+ * Sucht den Faktor, der die Einheitenzahl verarbeitet — ueber den Quellschluessel
+ * `einheitenzahl` (E-05, PE-03), nicht ueber den Faktorschluessel: Wie der Faktor
+ * heisst, ist Konfigurationssache, woher er seinen Rohwert bezieht, ist tragend.
  */
 function findeEinheitenzahlGewicht(konfiguration: RohKonfiguration): {
   readonly gewicht: number;
@@ -119,20 +116,16 @@ function findeEinheitenzahlGewicht(konfiguration: RohKonfiguration): {
 /**
  * eq:netto_degression (I-18) — der relative Honorarsatz darf mit steigender
  * Einheitenzahl nicht steigen. Ausgewertet ohne Projektdaten ueber den
- * unguenstigsten Fall.
- *
- * Das Pruefgitter ist endlich und vollstaendig, weil oberhalb der hoechsten
- * Stuetzstelle kein Projektpaar mehr existiert (E-04): Gepruefte Punkte sind die
- * Stuetzstellen selbst, ihre durch lambda geteilten Urbilder und die
- * Stufenmitten, jeweils beschraenkt auf lambda*V <= V_K.
+ * unguenstigsten Fall. Das Pruefgitter ist endlich und vollstaendig, weil oberhalb
+ * der hoechsten Stuetzstelle kein Projektpaar mehr existiert (E-04): gepruefte
+ * Punkte sind die Stuetzstellen selbst, ihre durch lambda geteilten Urbilder und
+ * die Stufenmitten, jeweils beschraenkt auf lambda*V <= V_K.
  */
 export function berechneNettoDegression(
   konfiguration: RohKonfiguration,
 ): NettoDegressionsBefund | undefined {
-  // Bewusst NICHT `projektumfang` benannt: Der Faktor, der die Einheitenzahl traegt,
-  // heisst in der Standardkonfiguration zufaellig so, koennte aber jeden Bezeichner
-  // fuehren. Gesucht wird ueber den Quellschluessel (E-05, PE-03); ein Variablenname,
-  // der einen Faktorbezeichner nennt, legte eine Privilegierung nahe, die es nicht gibt.
+  // Bewusst nicht `projektumfang` benannt: Der Faktor heisst in der Standardkonfiguration
+  // zufaellig so, koennte aber jeden Bezeichner fuehren (gesucht wird ueber den Quellschluessel).
   const umfangFaktor = findeEinheitenzahlGewicht(konfiguration);
   if (umfangFaktor === undefined) return undefined;
 

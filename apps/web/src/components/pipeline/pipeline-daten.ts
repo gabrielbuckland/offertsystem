@@ -2,13 +2,12 @@
  * Reine Datenaufbereitung fuer die Rechenweg-Ansicht (US-09/A-10): fuenf feste Stufen in
  * Rechenreihenfolge, deren Inhalte ausschliesslich durch Iteration ueber die Konfiguration
  * bzw. eine optionale Herleitung entstehen. Kein Faktor-, Vorlagen- oder
- * Konfigurationsschluessel ist hier woertlich verdrahtet — ein Architekturtest (Task 17)
- * prueft das ueber diesen Ordner. Keine React-/Node-Importe: die Funktion laeuft
- * unveraendert im Browser.
+ * Konfigurationsschluessel ist hier woertlich verdrahtet — ein Architekturtest prueft das
+ * ueber diesen Ordner. Keine React-/Node-Importe: die Funktion laeuft unveraendert im
+ * Browser.
  *
- * Jede Formelzeile zeigt den AUSDRUCK mit den tatsaechlich eingesetzten Werten und als
- * Ergebnis den Wert, den der Kern berechnet hat — hier wird nichts nachgerechnet, nur
- * ausgewiesen (I-24). Die Reihenfolge der Zeilen folgt der Reihenfolge der Rechnung.
+ * Jede Formelzeile zeigt den Ausdruck mit den tatsaechlich eingesetzten Werten und den
+ * vom Kern berechneten Wert — hier wird nichts nachgerechnet, nur ausgewiesen (I-24).
  */
 import type { OffertKonfiguration, UeberschreibungsProtokoll } from '@offert/core';
 import type { AggregateValues, PriceDerivation } from '@offert/offer/src/model/offer.js';

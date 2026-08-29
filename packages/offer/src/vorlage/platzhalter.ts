@@ -1,15 +1,12 @@
 /**
  * Keine Formel. Platzhalterkatalog der Offerttexte (Spec 2026-08-27 §2).
  *
- * Die EINE Stelle, an der Berechnungsergebnis und Vorlagentext zusammenkommen: Jeder
- * Platzhalter ist hier benannt, beschriftet und mit seiner Ableitung aus dem
- * Offert-Objekt hinterlegt. Editor-Einfügemenü (apps/web), Vorlagenvalidierung und
- * Auflösung lesen denselben Katalog — ein Platzhalter, den es nur an einer dieser
- * Stellen gäbe, wäre entweder nicht einfügbar oder nicht auflösbar.
+ * Die EINE Stelle, an der Berechnungsergebnis und Vorlagentext zusammenkommen. Editor-
+ * Einfügemenü (apps/web), Vorlagenvalidierung und Auflösung lesen denselben Katalog.
  *
- * `auftraggeber` stammt bewusst NICHT aus dem Offert-Objekt (das Schema führt keinen
- * Empfänger, siehe model/offer.ts), sondern aus dem Projektfeld; fehlt er, bleibt der
- * Eintrag weg und die Auflösung meldet den Fehler beim Finalisieren (fail fast).
+ * `auftraggeber` stammt bewusst NICHT aus dem Offert-Objekt (kein Empfänger im Schema,
+ * siehe model/offer.ts), sondern aus dem Projektfeld; fehlt er, bleibt der Eintrag weg
+ * und die Auflösung meldet den Fehler beim Finalisieren (fail fast).
  */
 import {
   formatiereAggregat,

@@ -1,24 +1,20 @@
 /**
  * Keine Formel. Zod-Schema der Offerttext-Dokumente (Spec 2026-08-27 §2).
  *
- * Bewusst eine TEILMENGE des ProseMirror-JSON — nicht dessen ganze Ausdrucksmacht:
- * Jeder hier erlaubte Knoten hat genau einen Renderpfad (VermarktungsOfferte) und eine
- * Editor-Entsprechung. Ein durchgereichter unbekannter Knoten wäre Inhalt, den der
- * Renderer stumm verschluckt — deshalb strikt und geschlossen.
+ * Bewusst eine TEILMENGE des ProseMirror-JSON: Jeder erlaubte Knoten hat genau einen
+ * Renderpfad (VermarktungsOfferte) und eine Editor-Entsprechung — ein durchgereichter
+ * unbekannter Knoten wäre Inhalt, den der Renderer stumm verschluckt.
  *
- * TipTap selbst kommt hier NICHT vor: Auflösung und Rendering laufen serverseitig und
- * im Test ohne Editor-Bibliothek; der Editor (apps/web) wird auf dieselbe Teilmenge
- * konfiguriert.
+ * TipTap kommt hier NICHT vor: Auflösung und Rendering laufen serverseitig ohne
+ * Editor-Bibliothek; der Editor (apps/web) wird auf dieselbe Teilmenge konfiguriert.
  */
 import { z } from 'zod';
 
 /**
- * Handgeschriebene Typen für das Dokumentschema. Diese Interfaces ermöglichen
- * präzise Typen statt `any` — die generische `baueBloecke`-Funktion kann
- * TypeScript nicht genug Kontextinformation geben, um Knotenstrukturen zu
- * inferieren (wegen der variablen Inline-/Blockbestandteile). Mit expliziten
- * Interfaces werden die Zod-Schemas so annotiert, dass `z.infer` echte Typen
- * produziert.
+ * Handgeschriebene Typen statt `any`: Die generische `baueBloecke`-Funktion gibt
+ * TypeScript nicht genug Kontext, um Knotenstrukturen zu inferieren (variable
+ * Inline-/Blockbestandteile). Explizite Interfaces annotieren die Zod-Schemas so,
+ * dass `z.infer` echte Typen produziert.
  */
 
 // Inline-Knotentypen (Text-Level)
@@ -164,12 +160,10 @@ export const aufgeloestesDokumentSchema: z.ZodType<AufgeloestesDokument> = baueB
   textSchema, [preistabelleSchema],
 );
 
-/** Ein Platzhalter-Vorkommen im Dokument, mit der Knotenart, in der es steht (M-1):
- *  `platzhalter` (inline, im Fliesstext) oder `platzhalterTabelle` (block, eigener
- *  Absatz). Beide Katalogeinträge können denselben Text `id` tragen (z. B.
- *  `preistabelle`), sind aber NICHT austauschbar — die Auflösung (aufloesung.ts)
- *  kennt `preistabelle` ausschliesslich als Blockknoten. Ohne die Knotenart wäre eine
- *  Prüfung gegen den Katalog blind für diesen Unterschied. */
+/** Platzhalter-Vorkommen mit Knotenart (M-1): `platzhalter` (inline) oder
+ *  `platzhalterTabelle` (block). Beide können dieselbe `id` tragen (z. B.
+ *  `preistabelle`), sind aber NICHT austauschbar — `aufloesung.ts` kennt
+ *  `preistabelle` ausschliesslich als Blockknoten. */
 export interface PlatzhalterVorkommen {
   readonly id: string;
   readonly art: 'inline' | 'block';

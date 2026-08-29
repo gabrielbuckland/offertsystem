@@ -1,19 +1,12 @@
 /**
  * Keine Modellformel. Prueft den Konfigurationsbezug der Beispiel-Offerte (PE-04).
  *
- * ABWEICHUNG VOM PLAN, begruendet: Der Plan vergleicht `metadata.konfigPruefsumme` der
- * Offerte mit `kopf.konfig_sha256` des Laufkopfs. Diese beiden Groessen koennen nicht
- * gleich sein und der Vergleich waere immer rot: `konfig_sha256` ist die SHA-256 ueber
- * den DATEIINHALT von `config/company-defaults.json`, `konfigPruefsumme` dagegen die
- * SHA-256 ueber die KANONISCH SERIALISIERTE EFFEKTIVE Konfiguration einschliesslich der
- * projektbezogenen Ueberschreibungen (E-26, Spec 02 §6). Zwei verschiedene Groessen mit
- * gleichem Zweck, aber verschiedener Bildungsvorschrift.
- *
- * Geprueft wird deshalb die Aussage, um die es geht: Die Beispiel-Offerte gehoert zu
- * demselben Konfigurationsstand wie die Artefakte des Laufs. Belegt wird das ueber die
- * Konfigurationsversion — sie steht in beiden Groessen und ist vergleichbar — und ueber
- * das Vorhandensein der eingebetteten Kopie. Deren Inhalt gehoert in die Offerte, nicht
- * in den Anhanggenerator.
+ * `konfig_sha256` des Laufkopfs (SHA-256 ueber den DATEIINHALT von
+ * company-defaults.json) und `konfigPruefsumme` der Offerte (SHA-256 ueber die
+ * KANONISCH SERIALISIERTE EFFEKTIVE Konfiguration inkl. projektbezogener
+ * Ueberschreibungen, E-26, Spec 02 §6) koennen nie gleich sein — ein direkter Vergleich
+ * waere immer rot. Geprueft wird stattdessen ueber die Konfigurationsversion (in beiden
+ * Groessen vorhanden und vergleichbar) und das Vorhandensein der eingebetteten Kopie.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';

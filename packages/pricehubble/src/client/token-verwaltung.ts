@@ -8,10 +8,10 @@
  * Bruno-Beispielantwort nicht belegt (OFFEN-1). Stattdessen gilt
  * `api.tokenGueltigkeitMin` abzueglich `api.tokenSicherheitsmargeMin`.
  */
-import type { ApiKonfiguration } from '../config/apiKonfiguration.js';
-import { LoginResponseSchema } from '../schema/loginResponse.js';
+import type { ApiKonfiguration } from '../config/api-konfiguration.js';
+import { LoginResponseSchema } from '../schema/login-response.js';
 import type { AdapterFehler } from './fehler.js';
-import type { AnfrageBeschreibung, HttpClient, HttpErgebnis } from './httpClient.js';
+import type { AnfrageBeschreibung, HttpClient, HttpErgebnis } from './http-client.js';
 import type { Uhr } from './uhr.js';
 
 /** Einheitenumrechnung Minuten -> Millisekunden; kein Verhaltensparameter (G-4). */

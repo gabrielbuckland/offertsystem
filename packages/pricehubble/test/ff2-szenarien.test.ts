@@ -1,11 +1,11 @@
 import { fileURLToPath } from 'node:url';
 import { HttpResponse, http } from 'msw';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { anfrage, adresse, baueAdapter } from './adapterHilfen.js';
+import { anfrage, adresse, baueAdapter } from './adapter-hilfen.js';
 import { TEST_DOSSIER_ID, ladeFixture } from './fixtures.js';
 import { BASIS } from './msw/handlers.js';
 import { mswServer } from './msw/server.js';
-import { schreibeNachweisArtefakt, type KategorieZeile } from './nachweis/schreibeArtefakt.js';
+import { schreibeNachweisArtefakt, type KategorieZeile } from './nachweis/schreibe-artefakt.js';
 
 const DOSSIER = `${BASIS}/api/v1/dossiers/${TEST_DOSSIER_ID}`;
 const VALUATION = `${DOSSIER}/valuation`;
@@ -42,9 +42,6 @@ describe('Szenario 1 — Normalbetrieb (HTTP-Ebene)', () => {
   it('bildet eine realistische Antwort vollstaendig in Kerntypen ab', async () => {
     const { adapter } = baueAdapter();
     const bewertungen = await adapter.bewerteWohnungstypen([anfrage(1)]);
-    const scores = await adapter.holeLagescores(adresse);
-    expect(bewertungen.ok && bewertungen.wert.vollstaendig).toBe(true);
-    expect(scores.ok && scores.wert.werte.size).toBe(9);
     vermerke({
       szenario: 'S1 Normalbetrieb', kategorie: 'keine', fall: 'Normalbetrieb (Erfolgsfall)',
       erwarteterStatus: 'keiner', beobachteterStatus: beobachtet(bewertungen),

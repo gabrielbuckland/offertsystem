@@ -2,12 +2,11 @@
  * Keine Modellformel. Laufkopf, Artefaktschreiber und Zeiger der Evaluationswerkzeuge.
  *
  * Jedes Artefakt traegt einen Laufkopf mit acht Pflichtfeldern; ohne ihn bricht der
- * Anhanggenerator ab. Der Kopf ist der Grund, warum eine Zahl im Bericht auf einen
- * konkreten Commit, eine konkrete Konfigurationsdatei und deren Pruefsumme zurueckfuehrbar
- * bleibt — ohne ihn waere ein Artefakt nur eine Behauptung.
+ * Anhanggenerator ab. Der Kopf macht jede Zahl im Bericht auf Commit, Konfigurationsdatei
+ * und Pruefsumme zurueckfuehrbar — sonst waere ein Artefakt nur eine Behauptung.
  *
- * Der Zeiger `latest.json` ist bewusst eine Datei und kein Symlink: Der Anhanggenerator
- * liest ausschliesslich ueber ihn, damit die Auswahl des Laufs nicht implizit ueber eine
+ * `latest.json` ist bewusst eine Datei und kein Symlink: Der Anhanggenerator liest
+ * ausschliesslich ueber ihn, damit die Laufauswahl nicht implizit ueber
  * Verzeichnissortierung geschieht.
  */
 import { execFileSync } from 'node:child_process';
@@ -67,19 +66,16 @@ export function schreibeArtefakt(
   kopf: Laufkopf,
   dateien: Readonly<Record<string, string>>,
 ): string {
-  // `tests` liegt nach der Abgrenzung in Spec 06 §8 NICHT unter eval/: Dort stehen
-  // ausschliesslich die Ausgaben der Evaluationswerkzeuge, nicht die der Testlaeufe.
+  // `tests` liegt NICHT unter eval/ (Spec 06 §8): dort nur Ausgaben der Evaluationswerkzeuge.
   const ablage = kopf.instrument === 'tests'
     ? join(wurzel, 'artifacts', 'tests')
     : join(wurzel, 'artifacts', 'eval', kopf.instrument);
   const verzeichnis = join(ablage, kopf.zeitstempel);
   mkdirSync(verzeichnis, { recursive: true });
-  // Sortierte Reihenfolge: Zwei Laeufe mit gleichem Inhalt erzeugen dieselbe Abfolge
-  // von Schreibvorgaengen (I-14).
+  // Sortierte Reihenfolge: gleicher Inhalt erzeugt dieselbe Abfolge von Schreibvorgaengen (I-14).
   for (const name of Object.keys(dateien).sort()) {
-    // PDF in latin1: Der PDF-Schreiber berechnet die Byteversaetze der
-    // Kreuzreferenztabelle in latin1; unter utf8 belegten Umlaute zwei Bytes und die
-    // Versaetze zeigten ins Leere.
+    // PDF in latin1: Der PDF-Schreiber berechnet Byteversaetze der Kreuzreferenztabelle
+    // in latin1; unter utf8 belegen Umlaute zwei Bytes und die Versaetze zeigen ins Leere.
     const kodierung: BufferEncoding = name.endsWith('.pdf') ? 'latin1' : 'utf8';
     writeFileSync(join(verzeichnis, name), dateien[name] ?? '', kodierung);
   }
@@ -101,10 +97,9 @@ export function leseLatest(wurzel: string, ablage: string): string {
   const zeiger = JSON.parse(readFileSync(pfad, 'utf8')) as {
     verzeichnis?: string; pfad?: string;
   };
-  // Die Zeiger der Plaene sind nicht formgleich: P2 schreibt `verzeichnis` teils
-  // repositoriumsrelativ, teils nur den Zeitstempel; P3 schreibt `pfad` auf die Datei.
-  // Statt drei Erzeuger nachtraeglich zu vereinheitlichen — was ihre Tests braeche —
-  // loest der Leser alle drei Formen auf. Er ist die einzige Stelle, die den Zeiger liest.
+  // Zeigerformen sind nicht einheitlich: `verzeichnis` teils repositoriumsrelativ, teils
+  // nur der Zeitstempel; teils `pfad` auf die Datei. Statt die Erzeuger zu vereinheitlichen,
+  // loest der Leser alle drei Formen auf (einzige Stelle, die den Zeiger liest).
   const roh = zeiger.verzeichnis ?? (zeiger.pfad === undefined ? undefined : dirname(zeiger.pfad));
   if (roh === undefined) {
     throw new Error(`Zeiger ${pfad} nennt weder 'verzeichnis' noch 'pfad'.`);

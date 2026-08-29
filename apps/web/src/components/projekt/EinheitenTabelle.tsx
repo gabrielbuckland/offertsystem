@@ -1,11 +1,7 @@
 'use client';
 
-/**
- * Zentraler Block der Detailseite (Design-Spec §1, §4): eine Zeile je Einheit, editierbar
- * an Ort und Stelle, mit dem berechneten Preis sichtbar neben den Eingaben. Genau das war
- * im siebenschrittigen Assistenten nicht moeglich — dort lag zwischen Eingabe und Ergebnis
- * immer ein Schrittwechsel.
- */
+// Zentraler Block der Detailseite (Design-Spec §1, §4): eine Zeile je Einheit, editierbar
+// an Ort und Stelle, mit dem berechneten Preis sichtbar neben den Eingaben.
 import {
   createColumnHelper, flexRender, getCoreRowModel, useReactTable,
 } from '@tanstack/react-table';
@@ -24,9 +20,8 @@ import type {
   AnpassungsSpalte, Merkmal, ProjektEinheit, Referenzobjekt,
 } from '../../server/projekt-schema.js';
 
-/** `basispreis` ist optional, weil das E-04-Teilergebnis (`honorarAbbruch.positionen`)
- *  nur den angepassten Preis je Wohnungsnummer fuehrt. Ein erfundener Basispreis waere
- *  eine Zahl ohne Rechenweg; fehlt er, bleibt allein diese Spalte auf «—» (I-24). */
+// E-04, I-24: `basispreis` ist optional, weil das Teilergebnis nur den angepassten Preis
+// je Wohnungsnummer fuehrt; fehlt er, bleibt allein diese Spalte auf «—».
 export interface Preis { readonly basispreis?: number; readonly preis: number }
 
 export interface EinheitenTabelleProps {
@@ -40,19 +35,10 @@ export interface EinheitenTabelleProps {
 
 const spalte = createColumnHelper<ProjektEinheit>();
 
-/**
- * Schreibt einen erfassten Zellwert als Uebersteuerung in `spaltenwerte` — aber nur, wenn
- * er vom aktuell wirksamen Wert abweicht.
- *
- * `ZellenEingabe` meldet beim Verlassen des Feldes unbedingt, auch wenn sich der Entwurf
- * gegenueber dem Anzeigewert nicht veraendert hat — reines Durchtabben genuegt (siehe
- * dortiger Kommentar). Fuer eine regelgetriebene Spalte wuerde das den abgeleiteten
- * Regelwert unveraendert als Uebersteuerung festschreiben: `ermittleWirksamenWert` wiese
- * `uebersteuert: true` aus, obwohl der Vermarkter nichts entschieden hat, und die Zelle
- * folgte einer spaeteren Aenderung der firmenweiten Staffel nicht mehr (Review-Finding 1).
- * Deshalb schreibt diese Funktion nur, wenn der abgelegte Wert vom uebergebenen wirksamen
- * Wert abweicht.
- */
+// Schreibt nur, wenn der Wert vom wirksamen Wert abweicht: `ZellenEingabe` meldet auch bei
+// reinem Durchtabben ohne Aenderung, und ein Regelwert unveraendert als Uebersteuerung
+// festzuschreiben wuerde die Zelle von spaeteren Aenderungen der firmenweiten Staffel
+// abkoppeln.
 function schreibeUebersteuerung(
   spalte: AnpassungsSpalte,
   einheit: ProjektEinheit,
@@ -66,7 +52,6 @@ function schreibeUebersteuerung(
   setze({ ...einheit, spaltenwerte: { ...einheit.spaltenwerte, [spalte.id]: abgelegt } });
 }
 
-/** Entfernt eine Uebersteuerung wieder aus `spaltenwerte` — danach gilt der Regelwert. */
 function setzeUebersteuerungZurueck(
   spalte: AnpassungsSpalte,
   einheit: ProjektEinheit,
@@ -82,7 +67,6 @@ export function EinheitenTabelle(
     einheiten, spalten, merkmale, referenzobjekte, preise, aendere,
   }: EinheitenTabelleProps,
 ) {
-  /** Ersetzt genau eine Einheit; die uebrigen bleiben referenzgleich. */
   function setze(index: number, naechste: ProjektEinheit): void {
     aendere(einheiten.map((e, i) => (i === index ? naechste : e)));
   }
@@ -108,12 +92,9 @@ export function EinheitenTabelle(
         return treffer === undefined ? '—' : `${treffer.zimmerzahl} Zimmer`;
       },
     }),
-    // Je konfiguriertem Merkmal (Projekt.merkmale) eine Zahlenspalte — analog zu
-    // `zahlenspalte` unten, aber ueber `merkmalswerte` statt ueber ein festes Feld der
-    // Einheit. Das Merkmal selbst ist reine Eingabe; ob es irgendwo eine Regel speist,
-    // entscheidet sich erst an der Zu-/Abschlagsspalte weiter unten. Position direkt
-    // nach «Typ», vor den Flaechen (Rueckmeldung Auftraggeber 2026-08-28): das Merkmal
-    // (z. B. Stockwerk) beschreibt wie der Typ die Wohnung selbst, nicht ihre Masse.
+    // Je konfiguriertem Merkmal eine Zahlenspalte, ueber `merkmalswerte` statt ueber ein
+    // festes Feld der Einheit. Position vor den Flaechen: das Merkmal (z. B. Stockwerk)
+    // beschreibt wie der Typ die Wohnung selbst, nicht ihre Masse.
     ...merkmale.map((m) => spalte.display({
       id: `merkmal-${m.id}`,
       header: m.bezeichnung,
@@ -129,32 +110,16 @@ export function EinheitenTabelle(
     })),
     zahlenspalte('flaecheInnen', 'Fläche (m²)'),
     zahlenspalte('flaecheAussen', 'Aussenfläche (m²)'),
-    // Datengetrieben: je konfigurierter Spalte genau eine Tabellenspalte. Eine feste
-    // Aufzaehlung machte jede neue Kategorie zu einer Codeaenderung. Ein Einzelfall ohne
-    // eigene wiederverwendbare Kategorie bekommt keine eigene Zelle — er ist einfach eine
-    // weitere Spalte, deren Wert bei allen anderen Einheiten auf 0 bleibt.
-    //
-    // Hier endete frueher die feste Aufzaehlung mit einer Spalte «Stockwerk». Sie war das
-    // Gegenbeispiel zur eigenen Regel: ein hart verdrahtetes Merkmal, das in keine Formel
-    // einging und nur Ablesegrundlage fuer die Wahl eines Zu-/Abschlags war. Das Stockwerk
-    // ist jetzt eine Merkmalsspalte (oben, ueber `merkmale`/`merkmalswerte`) und speist von
-    // dort aus die Bereichsregel der Anpassungsspalte `stockwerklage`: eine Staffel statt
-    // eines festen Faktors, mit Regelspur und Uebersteuerung wie unten dargestellt. Die
-    // Vorlagen `erdgeschoss_gartensitzplatz` und `erdgeschoss_einsehbar` bleiben als
-    // gewoehnliche, regellose Anpassungsspalten bestehen — sie beschreiben Eigenschaften der
-    // Erdgeschosslage, die die Stockwerkstaffel nicht abbildet.
+    // Datengetrieben: je konfigurierter Spalte genau eine Tabellenspalte, keine feste
+    // Aufzaehlung.
     ...spalten.map((s) => spalte.display({
       id: s.id,
       header: s.erfassungsform === 'absolut' ? `${s.bezeichnung} (CHF)` : `${s.bezeichnung} (%)`,
       cell: (info) => {
         const einheit = info.row.original;
-        // Die Kolonnenkopf-Einheit muss stimmen, denn `spaltenwerte` fuehrt die Rohgroesse
-        // des Kerns unveraendert weiter: "(%)" -> `projektion.ts` nimmt den Wert direkt als
-        // Faktor (gespeichert bleibt 0.05, angezeigt/erfasst wird 5); "(CHF)" -> der Wert
-        // ist Rappen wie `erfassterBetrag` (`erfassung-schema.ts`), angezeigt/erfasst wird
-        // also Franken. Beide Kolonnentypen hatten denselben Fehler — nur bei den
-        // Franken-Spalten stand er faelschlich als Absicht im Kommentar (Task-11-Review,
-        // Finding 2 vs. Fix Round 2).
+        // `spaltenwerte` fuehrt die Rohgroesse des Kerns unveraendert weiter: "(%)" -> Wert
+        // gespeichert als Faktor (0.05), angezeigt als 5; "(CHF)" -> Wert gespeichert in
+        // Rappen, angezeigt in Franken.
         const anzeige = (w: number) => (s.erfassungsform === 'relativ'
           ? faktorZuProzent(w) : rappenZuFranken(w));
         const ablage = (w: number) => (s.erfassungsform === 'relativ'
@@ -172,13 +137,11 @@ export function EinheitenTabelle(
           );
         }
 
-        // Die Rangfolge (Uebersteuerung vor Regel, keine Behauptung ohne Beleg bei
-        // fehlendem Merkmalswert) steht an genau einer Stelle (`ermittleWirksamenWert`) —
-        // hier wird nur noch das Ergebnis dargestellt, nicht neu entschieden (I-24).
+        // I-24: Rangfolge (Uebersteuerung vor Regel) steht allein in `ermittleWirksamenWert`,
+        // hier wird nur dargestellt.
         const wirksam = ermittleWirksamenWert(s, einheit);
         if (wirksam === undefined) {
-          // Kein Merkmalswert: Die Regel kann nichts sagen, und eine 0 waere eine
-          // Behauptung. Das Feld bleibt leer und die Zelle weist den Grund aus (I-24).
+          // Kein Merkmalswert: eine 0 waere eine Behauptung ohne Beleg (I-24).
           return <span className="text-sm text-muted-foreground">Merkmal fehlt</span>;
         }
 
@@ -203,9 +166,8 @@ export function EinheitenTabelle(
                 </Button>
               </div>
             ) : (
-              // `wirksam.regel` ist hier nur gesetzt, wenn die Regel tatsaechlich
-              // ausgewertet wurde (siehe `ermittleWirksamenWert`); ohne Regel im Ergebnis
-              // waere dieser Zweig eine Behauptung ohne Beleg — daher die Bedingung.
+              // `wirksam.regel` ist nur gesetzt, wenn die Regel tatsaechlich ausgewertet
+              // wurde.
               wirksam.regel !== undefined && (
                 <span className="mt-1 block text-xs text-muted-foreground">aus Regel</span>
               )

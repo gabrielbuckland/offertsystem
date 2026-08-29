@@ -1,16 +1,14 @@
 /**
  * Keine Modellformel; eine Operation des WERKZEUGS, nicht der Pipeline.
  *
- * Die Grenzen zMin/zMax wirken nach Spec 03 nicht kappend, sondern zurueckweisend (I-07):
- * Eine Einheit mit z_j ausserhalb der Grenzen laesst Stufe 1 fehlschlagen. Eine blosse
- * Verengung des Korridors erzeugte deshalb beim tragenden Szenario fuer D3 keinen
- * Messwert, sondern einen Eingabefehler — die Dimension waere unmessbar.
+ * zMin/zMax wirken nach Spec 03 nicht kappend, sondern zurueckweisend (I-07): eine
+ * Einheit mit z_j ausserhalb der Grenzen laesst Stufe 1 fehlschlagen. Eine blosse
+ * Verengung des Korridors erzeugte beim tragenden Szenario fuer D3 deshalb keinen
+ * Messwert, sondern einen Eingabefehler.
  *
- * Das Werkzeug projiziert deshalb: z_j' = min(zMax, max(zMin, z_j)), umgesetzt als
- * PROPORTIONALE Skalierung der Einzelanpassungen, damit die Einzelausweisung mit
- * Begruendung (I-09) erhalten bleibt. Im Artefakt wird die Projektion samt Anzahl
- * betroffener Positionen ausgewiesen, damit die Messung nicht als Pipeline-Eigenschaft
- * missverstanden wird.
+ * Das Werkzeug projiziert deshalb: z_j' = min(zMax, max(zMin, z_j)), als PROPORTIONALE
+ * Skalierung der Einzelanpassungen, damit die Einzelausweisung mit Begruendung (I-09)
+ * erhalten bleibt. Anzahl betroffener Positionen wird im Artefakt ausgewiesen.
  *
  * I-06 ist per Konstruktion gewahrt: Die Projektion bildet stets auf [zMin, zMax] ab, und
  * zMin > -1 erzwingt bereits die Konfigurationsvalidierung (CFG_ADJUSTMENT_BOUNDS).

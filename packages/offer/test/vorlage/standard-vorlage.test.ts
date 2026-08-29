@@ -3,7 +3,7 @@ import {
   offertDokumentSchema, sammlePlatzhalterIds,
 } from '../../src/vorlage/dokument-schema.js';
 import { PLATZHALTER_KATALOG } from '../../src/vorlage/platzhalter.js';
-import { VORLAGE_VERSION, standardVorlage } from '../../src/vorlage/standard-vorlage.js';
+import { standardVorlage } from '../../src/vorlage/standard-vorlage.js';
 
 describe('standardVorlage', () => {
   it('ist schemakonform', () => {
@@ -32,9 +32,5 @@ describe('standardVorlage', () => {
     // Kein Mieter-/Umnutzungsrest aus dem Beispiel.
     expect(text).not.toContain('Mieter');
     expect(text).not.toContain('Umnutzung');
-  });
-
-  it('führt eine Version', () => {
-    expect(VORLAGE_VERSION).toBe('1');
   });
 });

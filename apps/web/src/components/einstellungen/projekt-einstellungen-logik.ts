@@ -1,21 +1,8 @@
-/**
- * Reine Logik der Projekteinstellungen (Ebene 2 des Zwei-Ebenen-Modells): die beiden
- * Richtungen zwischen Firmenwerten, Delta und dem, was im Formular steht.
- *
- * ANZEIGERICHTUNG (`effektiveKonfiguration`): Firmenwerte mit eingelegtem Delta. Das ist
- * die Grundlage der Darstellung — der Vermarkter soll sehen, WOMIT gerechnet wird, nicht
- * ein leeres Formular mit den drei Feldern, die zufaellig schon einmal uebersteuert
- * wurden.
- *
- * SPEICHERRICHTUNG (`bildeDelta`): der Entwurf zurueck gegen die Firmenwerte gerechnet,
- * sodass nur die Abweichungen abgelegt werden. Beide Richtungen sind zueinander invers
- * (`bildeDelta(effektiveKonfiguration(f, d), f) === d`), und genau das haelt der Test
- * als Rundlauf fest.
- *
- * Ohne React und ohne DOM, damit die tragende Aussage «gespeichert wird nur die
- * Abweichung» ohne gerenderte Oberflaeche pruefbar bleibt — dasselbe Muster wie
- * `herkunft.ts` und `json-reiter-logik.ts`.
- */
+// Ebene 2 des Zwei-Ebenen-Modells: die beiden Richtungen zwischen Firmenwerten, Delta und
+// Formular. `effektiveKonfiguration` (Anzeige) legt das Delta in die Firmenwerte ein;
+// `bildeDelta` (Speichern) rechnet umgekehrt nur die Abweichung heraus. Beide sind
+// zueinander invers (`bildeDelta(effektiveKonfiguration(f, d), f) === d`) — das haelt der
+// Test als Rundlauf fest.
 import { GESPERRTE_PFADE } from '@offert/core';
 
 type Baum = Readonly<Record<string, unknown>>;
@@ -24,16 +11,10 @@ function istObjekt(wert: unknown): wert is Record<string, unknown> {
   return typeof wert === 'object' && wert !== null && !Array.isArray(wert);
 }
 
-/**
- * Strukturvergleich ueber die JSON-Form. Zulaessig, weil beide Seiten aus geparstem
- * JSON stammen (Konfigurationsdatei bzw. Projektdatensatz) — dieselbe Begruendung wie
- * bei `entwurfGeaendert` in `verwende-einstellungen.ts`.
- */
 function gleich(a: unknown, b: unknown): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-/** Effektive Konfiguration = Firmenwerte mit eingelegtem Delta (Anzeigegrundlage). */
 export function effektiveKonfiguration(
   firmenwerte: Baum,
   delta: Baum | undefined,
@@ -43,8 +24,7 @@ export function effektiveKonfiguration(
   const ergebnis: Record<string, unknown> = { ...firmenwerte };
   for (const [schluessel, wert] of Object.entries(delta)) {
     const basis = firmenwerte[schluessel];
-    // Arrays und Skalare als Ganzes, nur Objekte rekursiv — dieselbe Regel wie
-    // `verschmelzeTeilbaum` im Kern-Merge (`packages/core/src/config/merge.ts`).
+    // Arrays und Skalare als Ganzes, nur Objekte rekursiv — wie im Kern-Merge.
     ergebnis[schluessel] = istObjekt(basis) && istObjekt(wert)
       ? effektiveKonfiguration(basis, wert)
       : wert;
@@ -52,34 +32,21 @@ export function effektiveKonfiguration(
   return ergebnis;
 }
 
-/**
- * Bildet aus einem bearbeiteten Entwurf das Delta gegen die Firmenwerte: nur Pfade,
- * die tatsaechlich abweichen. Arrays werden als Ganzes verglichen und als Ganzes
- * uebernommen (dieselbe Regel wie im Kern-Merge — elementweises Verschmelzen koennte
- * einen geloeschten Eintrag wieder einfuehren). `meta` und `api` gehoeren nie ins
- * Delta: Sie sind projektbezogen gesperrt.
- *
- * Die gesperrten Wurzeln stehen NICHT als Literale hier, sondern kommen aus
- * `GESPERRTE_PFADE` (`@offert/core`). Das ist zum einen die einzige Wahrheit darueber,
- * was `mergeKonfiguration` ohnehin zurueckweisen wuerde — ein zweiter Literalsatz liefe
- * bei jeder Aenderung aus dem Tritt. Zum anderen scannt der Architekturtest (Task 17)
- * genau diesen Ordner auf fest verdrahtete Konfigurationsbezeichner.
- *
- * NICHT ausdrueckbar ist das ENTFERNEN eines Firmenschluessels: Ein Merge, der Werte nur
- * ueberlagert, hat keine Form fuer «dieser Schluessel soll hier fehlen». Ein im Entwurf
- * fehlender Schluessel gilt deshalb als unveraendert, nicht als geloescht — dieselbe
- * Grenze wie im Kern-Merge, und die ehrlichere Auslegung: Ein per JSON-Reiter
- * versehentlich weggeloeschter Block soll nicht stillschweigend die Berechnungsbasis
- * beschneiden.
- */
+// Bildet aus einem bearbeiteten Entwurf das Delta gegen die Firmenwerte: nur Pfade, die
+// tatsaechlich abweichen. `meta`/`api` gehoeren nie ins Delta (projektbezogen gesperrt);
+// die gesperrten Wurzeln kommen aus `GESPERRTE_PFADE` (`@offert/core`), nicht als eigene
+// Literale, damit es nur eine Wahrheit dazu gibt.
+//
+// Ein im Entwurf fehlender Schluessel gilt als UNVERAENDERT, nicht als geloescht — ein
+// Merge, der nur ueberlagert, kann "soll hier fehlen" nicht ausdruecken, und ein versehentlich
+// weggeloeschter Block im JSON-Reiter soll nicht stillschweigend die Berechnungsbasis
+// beschneiden.
 export function bildeDelta(
   entwurf: Baum,
   firmenwerte: Baum,
 ): Record<string, unknown> {
-  // Die Sperre greift NUR auf der Wurzel — wie im Kern-Merge, der `GESPERRTE_PFADE`
-  // ebenfalls nur gegen die obersten Schluessel prueft. Ein tiefer liegendes Feld, das
-  // zufaellig `meta` heisst (etwa in einer Faktor-Herkunftsangabe), ist ein gewoehnlicher
-  // Konfigurationswert und bleibt uebersteuerbar.
+  // Die Sperre greift nur auf der Wurzel; ein tiefer liegendes Feld, das zufaellig `meta`
+  // heisst, bleibt uebersteuerbar.
   return baueDelta(entwurf, firmenwerte, true);
 }
 
@@ -117,8 +84,8 @@ function baueDelta(entwurf: Baum, firmenwerte: Baum, wurzel: boolean): Record<st
 
     if (istObjekt(basis) && istObjekt(wert)) {
       const teilDelta = baueDelta(wert, basis, false);
-      // Ein leerer Teilbaum kommt NICHT ins Delta: Er traege eine Wurzel ohne Wirkung,
-      // und die Herkunftsanzeige (`istUebersteuert`) meldete faelschlich «uebersteuert».
+      // Leerer Teilbaum kommt nicht ins Delta, sonst meldete die Herkunftsanzeige
+      // faelschlich «uebersteuert».
       if (Object.keys(teilDelta).length > 0) delta[schluessel] = teilDelta;
       continue;
     }

@@ -2,12 +2,8 @@
  * Duenner Adapter: Laufzeit holen, `fuehreProjektlauf` fragen, das Ergebnis in eine
  * Antwort uebersetzen. Er rechnet nicht und formatiert nicht.
  *
- * Der zweistufige Rechenweg selbst steht in `server/projekt-lauf.ts` (PE-21) — er ist
- * mit der Offert-Route geteilt. Diese Route unterscheidet sich von jener nur noch darin,
- * was sie mit dem Ergebnis tut: Es entsteht KEIN Artefakt. Sie antwortet nur.
- *
- * Die Antwort reicht die Herleitung des Offert-Schemas durch (`derivation`/`aggregates`),
- * statt ein zweites Datenbild derselben Zahlen aufzubauen.
+ * Der zweistufige Rechenweg (PE-21) steht in `server/projekt-lauf.ts` und ist mit der
+ * Offert-Route geteilt; diese Route erzeugt nur kein Artefakt, sondern antwortet.
  */
 import { uebersetzeStufenFehler } from '../../../../../server/fehlertexte.js';
 import { holeLaufzeit, holeProjektLaufzeit } from '../../../../../server/laufzeit.js';
@@ -18,9 +14,8 @@ interface Kontext { readonly params: Promise<{ readonly id: string }> }
 
 export async function POST(_anfrage: Request, kontext: Kontext): Promise<Response> {
   // Henne-Ei: Das Projektverzeichnis kommt erst aus der firmenweiten Laufzeit, das
-  // Projekt-Delta fuer die Berechnung erst aus dem geladenen Projekt. Zwei Aufrufe von
-  // `holeLaufzeit`/`holeProjektLaufzeit` statt einem — der Datei-Zwischenspeicher des
-  // Laders traegt die Kosten des zweiten Aufrufs (Ruling 2026-08-29).
+  // Projekt-Delta fuer die Berechnung erst aus dem geladenen Projekt — daher zwei
+  // Aufrufe (`holeLaufzeit`/`holeProjektLaufzeit`) statt einem.
   const vorlaufzeit = holeLaufzeit();
   if (!vorlaufzeit.ok) {
     return Response.json({ fehler: { text: vorlaufzeit.meldungen.join(' ') } }, { status: 500 });

@@ -1,19 +1,11 @@
 'use client';
 
-/**
- * Projektspezifischer Offerttext (Spec 2026-08-27 §3): Die Kopie der globalen Vorlage
- * entsteht beim ERSTEN ÖFFNEN dieses Editors im Projekt (Spec §1, wörtlich) — sobald
- * die Vorlage geladen ist, wird sie sofort in den Projektstand geschrieben
- * (`aendere`), nicht erst beim ersten Tastendruck.
- *
- * I-2: Vorher stand die Materialisierung im ersten `beiAenderung`-Aufruf, und der
- * Editor-`key` folgte `projekt.offertText === undefined`. Das erste Zeichen setzte
- * `offertText`, der Key wechselte 'vorlage' -> 'projekt', React demontierte den Editor
- * MITTEN in der Eingabe — Fokus und Cursor waren weg. Der `key` bleibt jetzt fuer den
- * Normalfall stabil; nur der explizite «Zurücksetzen»-Klick erhöht `zuruecksetzenZaehler`
- * und erzwingt DAMIT gezielt einen Remount (TipTaps `useEditor` uebernimmt eine
- * geänderte `inhalt`-Prop sonst nicht automatisch in den Editorzustand).
- */
+// Projektspezifischer Offerttext (Spec 2026-08-27 §3): Kopie der globalen Vorlage entsteht
+// beim ersten Oeffnen (Spec §1) und wird sofort in den Projektstand geschrieben, nicht erst
+// beim ersten Tastendruck. Editor-`key` bleibt im Normalfall stabil; nur der explizite
+// «Zuruecksetzen»-Klick erhoeht `zuruecksetzenZaehler` und erzwingt damit gezielt einen
+// Remount (TipTaps `useEditor` uebernimmt eine geaenderte `inhalt`-Prop sonst nicht
+// automatisch).
 import { useEffect, useState } from 'react';
 import type { OffertDokument } from '@offert/offer/src/vorlage/dokument-schema.js';
 import type { Projekt } from '../../server/projekt-schema.js';
@@ -35,22 +27,17 @@ export function OffertTextSchritt({ projekt, aendere }: OffertTextSchrittProps) 
     setzeLadeFehler(false);
     void fetch('/api/vorlage')
       .then((a) => {
-        // I-4: `a.ok` ungeprueft liesse eine 500-Fehlerseite unbemerkt durchfallen
-        // (`a.json()` wirft dann, oder — bei einer JSON-Fehlerantwort — `vorlage.inhalt`
-        // waere `undefined` und ginge unbemerkt als `content` an TipTap).
+        // I-4: `a.ok` ungeprueft liesse eine 500-Fehlerseite unbemerkt durchfallen.
         if (!a.ok) throw new Error('vorlage-ladefehler');
         return a.json() as Promise<{ readonly inhalt: OffertDokument }>;
       })
       .then((v) => {
         setzeVorlage(v.inhalt);
-        // Kopie sofort materialisieren (Spec §1: „beim ersten Öffnen“), nicht erst beim
-        // ersten Tastendruck — behebt I-2 an der Wurzel.
         aendere({ ...projekt, offertText: v.inhalt });
       })
       .catch(() => setzeLadeFehler(true));
-    // `projekt`/`aendere` bewusst nicht in den Abhaengigkeiten: Der Effekt soll genau
-    // EINMAL laufen, wenn `offertText` auf `undefined` wechselt (erstes Öffnen oder
-    // Zurücksetzen) — nicht bei jeder Änderung an einem anderen Projektfeld erneut.
+    // `projekt`/`aendere` bewusst nicht in den Abhaengigkeiten: soll nur laufen, wenn
+    // `offertText` auf `undefined` wechselt, nicht bei jeder Aenderung an einem anderen Feld.
   }, [projekt.offertText]);
 
   const inhalt = projekt.offertText ?? vorlage;

@@ -42,9 +42,7 @@ function baueTypAbleitungen(e: OfferteEingang): unknown[] {
     const bewertung = e.ergebnis.bewertungen.get(t.wohnungstypId);
     const typ = e.liegenschaft.wohnungstypen.find((w) => w.id === t.wohnungstypId);
     if (bewertung === undefined || typ === undefined) {
-      // Defekt, kein Fachfehler: Stufe 1 hat die Vollstaendigkeit bereits geprueft
-      // (S-03). Ein Fehlen hier hiesse, dass Ergebnis und Liegenschaft nicht
-      // zusammengehoeren — daran ist nichts zu retten.
+      // Defekt, kein Fachfehler: Stufe 1 hat die Vollstaendigkeit bereits geprueft (S-03).
       throw new Error(`Referenzbewertung oder Wohnungstyp fehlt fuer ${t.wohnungstypId}`);
     }
     const anzeige = bewertung.anzeige;
@@ -92,9 +90,8 @@ function baueEinheiten(e: OfferteEingang): unknown[] {
         // traegt die Kennung; daran haengt die Unterscheidung «aus Vorlage / veraendert
         // / frei erfasst» (PE-07, A-13).
         ...(a.vorlageId === undefined ? {} : { vorlageId: a.vorlageId }),
-        // Regel und Uebersteuerung: dokumentarisch, weglassen statt erfinden, wie
-        // vorlageId. Die Offerte fuehrt sie fuer die Nachvollziehbarkeit (A-13); das
-        // gerenderte Dokument nennt sie bewusst nicht (siehe adjustmentSchema).
+        // Regel/Uebersteuerung dokumentarisch (A-13); gerenderte Dokument nennt sie
+        // bewusst nicht (siehe adjustmentSchema).
         ...(a.regel === undefined ? {} : { regel: a.regel }),
         ...(a.uebersteuert === undefined ? {} : { uebersteuert: a.uebersteuert }),
       }, 'marketer-adjustment')),

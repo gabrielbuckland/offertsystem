@@ -15,7 +15,7 @@ interface Kontext { readonly params: Promise<{ readonly id: string }> }
 
 export async function POST(_anfrage: Request, kontext: Kontext): Promise<Response> {
   // Henne-Ei: siehe Berechnungsroute. Zwei Aufrufe, der Datei-Zwischenspeicher des
-  // Laders traegt die Kosten des zweiten (Ruling 2026-08-29).
+  // Laders traegt die Kosten des zweiten.
   const vorlaufzeit = holeLaufzeit();
   if (!vorlaufzeit.ok) {
     return Response.json({ fehler: { text: vorlaufzeit.meldungen.join(' ') } }, { status: 500 });

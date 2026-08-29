@@ -4,7 +4,7 @@
  * steht bewusst nicht in dieser Aufzaehlung (§6.5.3, E-02).
  *
  * Die Reihenfolge ist verbindlich: Sie ist zugleich die Zeilenfolge der
- * Abbildungstabelle in `acl/fehlerUebersetzung.ts`.
+ * Abbildungstabelle in `acl/fehler-uebersetzung.ts`.
  */
 export const ADAPTER_FEHLERARTEN = [
   'AuthError',
@@ -52,8 +52,4 @@ export interface AdapterFehler {
   readonly wiederholbarNachSek?: number | undefined;
   /** feinerer Grundcode innerhalb einer Zielvariante, z. B. Schema vs. Stale */
   readonly grundcode?: string | undefined;
-}
-
-export function erzeugeAdapterFehler(fehler: AdapterFehler): AdapterFehler {
-  return fehler;
 }

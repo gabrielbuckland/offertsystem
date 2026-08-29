@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { alleStrategien, loeseStrategieAuf } from '../../src/modell/normalisierung.js';
+import { alleStrategien, loeseStrategieAuf } from '../../src/normalization/registry.js';
 import { gewicht } from '../../src/domain/geld.js';
 import { faktorId } from '../../src/domain/ids.js';
 import type { FaktorParameter } from '../../src/config/typen.js';

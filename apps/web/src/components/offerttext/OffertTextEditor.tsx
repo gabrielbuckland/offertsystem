@@ -1,32 +1,18 @@
 'use client';
 
-/**
- * WYSIWYG-Editor des Offerttexts (Spec 2026-08-27 §3). StarterKit ist auf die
- * Teilmenge des Dokumentschemas eingeschränkt — was der Editor erzeugen kann, kann
- * das Schema tragen und der Renderer darstellen; alles andere ist abgeschaltet.
- *
- * C-1: Zwei strukturelle Sperren plus eine Schema-Absicherung als drittes Netz.
- * `ListItem` wird enger eingesetzt (`content: 'paragraph'` statt des StarterKit-
- * Standards `'paragraph block*'`), damit `Tab`/`sinkListItem` konstruktiv keine
- * verschachtelte Liste mehr erzeugen kann — die Verschachtelung scheitert an der
- * ProseMirror-Schemaprüfung, bevor sie entsteht. Das Einfügen der Preistabelle ist
- * gesperrt, solange der Cursor in einem Listenpunkt steht (dort wäre der Blockknoten
- * ebenfalls schemawidrig). Zusätzlich prüft `istGueltigesOffertDokument` jede Änderung
- * gegen dieselbe Zod-Teilmenge, BEVOR sie an `beiAenderung` (und damit an Autosave/
- * PUT) weitergereicht wird — eine Zurückweisung propagiert nichts und zeigt einen
- * Hinweis, statt einen Dokumentstand zu vererben, an dem jedes weitere Speichern des
- * Projekts scheiterte (siehe Review, Ort: apps/web/src/app/api/projekt/[id]/route.ts).
- */
+// WYSIWYG-Editor des Offerttexts (Spec 2026-08-27 §3). StarterKit ist auf die Teilmenge des
+// Dokumentschemas eingeschraenkt.
+// C-1: Drei Netze gegen schemawidrigen Inhalt — `ListItem.content: 'paragraph'` (verhindert
+// verschachtelte Listen via Tab strukturell), die Preistabelle-Sperre in einem Listenpunkt,
+// und `istGueltigesOffertDokument`, das jede Aenderung vor `beiAenderung` (Autosave/PUT)
+// gegen dieselbe Zod-Teilmenge prueft — eine Zurueckweisung propagiert nichts.
 import { useEffect, useState } from 'react';
 import { Bold, Heading1, Heading2, Italic, List } from 'lucide-react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-// Kein neuer npm-Eintrag: `@tiptap/extension-list-item` ist bereits über
-// `@tiptap/starter-kit` (Version 2.27.2, siehe apps/web/package.json) transitiv
-// installiert — derselbe Node-Modul-Baum, dieselbe gepinnte Version. Direkt
-// importiert wird sie hier, weil `StarterKit.configure({ listItem: {...} })` nur die
-// `ListItemOptions` (HTMLAttributes, Listennamen) durchreicht, nicht aber `content` —
-// die Content-Regel lässt sich ausschliesslich über `ListItem.extend(...)` setzen.
+// Direkter Import noetig, weil `StarterKit.configure({ listItem: {...} })` nur
+// `ListItemOptions` durchreicht, nicht `content` — das laesst sich nur ueber
+// `ListItem.extend(...)` setzen.
 import { ListItem } from '@tiptap/extension-list-item';
 import type { OffertDokument } from '@offert/offer/src/vorlage/dokument-schema.js';
 import { PLATZHALTER_KATALOG } from '@offert/offer/src/vorlage/platzhalter.js';
@@ -34,10 +20,8 @@ import { istGueltigesOffertDokument } from './dokument-pruefung.js';
 import { PlatzhalterKnoten, PlatzhalterTabelleKnoten } from './platzhalter-erweiterung.js';
 import { Hinweis } from '../ui/hinweis.js';
 
-// Enger als der StarterKit-Standard (`'paragraph block*'`): Ein Listenpunkt trägt hier
-// ausschliesslich Absätze — genau das, was `dokument-schema.ts` (`listItem.content:
-// z.array(paragraph).min(1)`) verlangt. `sinkListItem` (Tab) und das Einfügen eines
-// Blockknotens IN einen Listenpunkt scheitern damit an der ProseMirror-Schemaprüfung.
+// Enger als StarterKit-Standard (`'paragraph block*'`), passend zu `dokument-schema.ts`
+// (`listItem.content: z.array(paragraph).min(1)`) — siehe C-1 oben.
 const EingeschraenkterListenPunkt = ListItem.extend({ content: 'paragraph' });
 
 export interface OffertTextEditorProps {
@@ -59,11 +43,8 @@ export function OffertTextEditor({ inhalt, beiAenderung }: OffertTextEditorProps
       EingeschraenkterListenPunkt,
       PlatzhalterKnoten, PlatzhalterTabelleKnoten,
     ],
-    // `getJSON()` liefert loses ProseMirror-JSON; das Dokumentschema (dokument-schema.ts)
-    // ist eine geschlossene Teilmenge davon. Der Server validiert per Zod ohnehin — der
-    // Cast hier ist die Editor-seitige Annahme, dass StarterKit/PlatzhalterKnoten nur
-    // Knoten erzeugen, die diese Teilmenge auch traegt; `istGueltigesOffertDokument`
-    // (C-1) prüft diese Annahme bei jeder Änderung tatsächlich nach.
+    // Cast ist die Annahme, dass StarterKit/PlatzhalterKnoten nur Knoten im Dokumentschema
+    // erzeugen; `istGueltigesOffertDokument` (C-1) prueft das bei jeder Aenderung nach.
     content: inhalt as unknown as Record<string, unknown>,
     immediatelyRender: false,
     onUpdate: ({ editor: e }) => {
@@ -77,12 +58,9 @@ export function OffertTextEditor({ inhalt, beiAenderung }: OffertTextEditorProps
     },
   });
 
-  // Haelt `inListenPunkt` als React-Zustand nach, damit das Einfügemenü die
-  // Preistabelle-Option sperren kann, solange der Cursor in einem Listenpunkt steht
-  // (C-1) — TipTap loest bei Selektions-/Inhaltswechseln keinen React-Rerender aus,
-  // deshalb die eigene Abonnierung statt eines direkten `editor.isActive`-Aufrufs im
-  // Render. `setzeAuswahlstand` erzwingt denselben Rerender fuer die Aktiv-Zustaende
-  // der Werkzeugleiste (gedrueckter Knopf, solange der Cursor z. B. in Fett steht).
+  // TipTap loest bei Selektions-/Inhaltswechseln keinen React-Rerender aus, deshalb die
+  // eigene Abonnierung. `setzeAuswahlstand` erzwingt den Rerender fuer die Aktiv-Zustaende
+  // der Werkzeugleiste; `inListenPunkt` sperrt die Preistabelle-Option (C-1).
   const [, setzeAuswahlstand] = useState(0);
   useEffect(() => {
     if (editor === null) return;
@@ -101,8 +79,6 @@ export function OffertTextEditor({ inhalt, beiAenderung }: OffertTextEditorProps
 
   if (editor === null) return null;
 
-  // Werkzeugleisten-Knopf mit Aktiv-Zustand: Der gedrueckte Zustand folgt
-  // `editor.isActive(...)` und wird zusaetzlich als `aria-pressed` ausgewiesen.
   function WerkzeugKnopf(
     { beschriftung, aktiv, beiKlick, Icon }: {
       readonly beschriftung: string;
@@ -117,10 +93,7 @@ export function OffertTextEditor({ inhalt, beiAenderung }: OffertTextEditorProps
         title={beschriftung}
         aria-label={beschriftung}
         aria-pressed={aktiv}
-        // Der Klick darf dem Editor den Fokus nicht wegnehmen: `mousedown` auf dem
-        // Knopf wuerde die Textauswahl aufheben, BEVOR der Befehl laeuft — Fett auf
-        // eine Auswahl griffe dann ins Leere. `preventDefault` unterbindet den
-        // Fokuswechsel; `chain().focus()` bleibt fuer Tastaturbedienung bestehen.
+        // preventDefault verhindert, dass mousedown die Textauswahl vor dem Befehl aufhebt.
         onMouseDown={(e) => e.preventDefault()}
         className={`inline-flex size-8 items-center justify-center rounded-md transition-colors ${
           aktiv
@@ -172,10 +145,8 @@ export function OffertTextEditor({ inhalt, beiAenderung }: OffertTextEditorProps
             const id = e.target.value;
             if (id === '') return;
             if (id === 'preistabelle') {
-              // C-1: In einem Listenpunkt wäre der Blockknoten schemawidrig (die
-              // Zod-Teilmenge lässt in `listItem.content` nur Absätze zu) — die Option
-              // ist deshalb bereits über `disabled` gesperrt; dieser Schutz greift
-              // zusätzlich, falls sie dennoch programmatisch ausgewählt würde.
+              // Doppelte Absicherung zur `disabled`-Option (C-1), falls dennoch
+              // programmatisch ausgewaehlt.
               if (inListenPunkt) return;
               editor.chain().focus().insertContent({ type: 'platzhalterTabelle' }).run();
             } else {

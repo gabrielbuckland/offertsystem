@@ -1,18 +1,8 @@
-/**
- * Reine Entscheidungslogik von `schluessel-wert-liste.tsx`, getrennt von der Komponente,
- * damit die Leerschluessel-Sperre ohne DOM-Ereignisse testbar ist (Muster `zellen-logik.ts`
- * neben `ZellenEingabe.tsx`): `renderToStaticMarkup` haengt keine Handler an — ein reiner
- * Rendering-Test koennte also nie zeigen, dass ein leerer (bzw. nur aus Leerzeichen
- * bestehender) Schluessel beim Hinzufuegen abgewiesen wird.
- */
+// Reine Entscheidungslogik von `schluessel-wert-liste.tsx`, getrennt von der Komponente,
+// damit die Leerschluessel-Sperre ohne DOM-Ereignisse testbar ist (Muster `zellen-logik.ts`).
 
-/**
- * Berechnet den naechsten Eintraege-Stand nach «Eintrag hinzufügen», oder `undefined`,
- * wenn der (getrimmte) Schluessel leer ist — dann bleibt der bisherige Stand unveraendert,
- * der Aufrufer ruft `aendere` in diesem Fall nicht auf. Ein bereits vorhandener Schluessel
- * wird ueberschrieben (Upsert), nicht abgewiesen — derselbe Schluessel im Formular meint
- * denselben Eintrag.
- */
+// Liefert `undefined`, wenn der (getrimmte) Schluessel leer ist — der Aufrufer ruft `aendere`
+// dann nicht auf. Ein bereits vorhandener Schluessel wird ueberschrieben (Upsert).
 export function naechsteEintraegeNachHinzufuegen(
   eintraege: Readonly<Record<string, string>>,
   neuerSchluessel: string,
@@ -23,16 +13,9 @@ export function naechsteEintraegeNachHinzufuegen(
   return { ...eintraege, [schluessel]: neuerWert };
 }
 
-/**
- * Berechnet den naechsten Eintraege-Stand nach «entfernen». Der Schluessel wird NICHT
- * getrimmt — anders als beim Hinzufuegen stammt er hier aus dem Bestand selbst, nicht aus
- * einer Eingabe; ein Trimmen koennte einen real vorhandenen Schluessel verfehlen und die
- * Zeile unloeschbar machen.
- *
- * Ein unbekannter Schluessel liefert eine unveraenderte Kopie statt eines Fehlers: Die
- * Schaltflaeche entsteht je Bestandszeile, ein Fehlgriff ist also kein Bedienfehler,
- * sondern hoechstens ein veralteter Stand — und dessen richtige Antwort ist «nichts zu tun».
- */
+// Schluessel wird NICHT getrimmt — er stammt aus dem Bestand selbst, ein Trimmen koennte
+// einen real vorhandenen Schluessel verfehlen und die Zeile unloeschbar machen. Ein
+// unbekannter Schluessel liefert eine unveraenderte Kopie statt eines Fehlers.
 export function naechsteEintraegeNachEntfernen(
   eintraege: Readonly<Record<string, string>>,
   schluessel: string,
@@ -41,18 +24,9 @@ export function naechsteEintraegeNachEntfernen(
   return rest;
 }
 
-/**
- * Berechnet den naechsten Eintraege-Stand nach dem Bearbeiten eines bestehenden Werts.
- *
- * Der Schluessel bleibt fixiert (das Schluesselfeld ist `readOnly`), der Wert wird
- * unveraendert uebernommen — insbesondere NICHT getrimmt und nicht auf Leere geprueft:
- * Ein leerer Wert ist ein zulaessiger Zwischenstand beim Tippen, und ein Trimmen
- * verhinderte das Eintippen eines Leerzeichens innerhalb des Werts.
- *
- * Ein unbekannter Schluessel legt den Eintrag an. Das ist gewollt und dieselbe
- * Upsert-Semantik wie beim Hinzufuegen — der Record ist offen, und zwei verschiedene
- * Regeln fuer dieselbe Zuweisung waeren die teurere Abweichungsquelle.
- */
+// Wert wird NICHT getrimmt: ein leerer Wert ist ein zulaessiger Zwischenstand beim Tippen.
+// Ein unbekannter Schluessel legt den Eintrag an (dieselbe Upsert-Semantik wie beim
+// Hinzufuegen).
 export function naechsteEintraegeNachWertaenderung(
   eintraege: Readonly<Record<string, string>>,
   schluessel: string,

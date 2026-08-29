@@ -1,12 +1,6 @@
-/**
- * Keine Formel. Namensbildung der PDF-Auslieferung.
- *
- * ABWEICHUNG VOM PLAN, erzwungen: Der Plan exportiert `dateiname` aus dem Route Handler.
- * Next.js laesst in einer `route.ts` ausschliesslich die Handler-Exporte und einige
- * benannte Konfigurationswerte zu und bricht den Build bei jedem weiteren Export ab. Die
- * Funktion steht deshalb hier — die Absicht des Plans bleibt gewahrt: Sie ist ohne
- * laufenden Server pruefbar, und der Handler bleibt der duenne Adapter (Brief §5.1).
- */
+// Namensbildung der PDF-Auslieferung, ausgelagert aus dem Route Handler: Next.js laesst in
+// einer `route.ts` nur Handler-Exporte und einige benannte Konfigurationswerte zu und bricht
+// den Build bei jedem weiteren Export ab.
 export function dateiname(
   metadaten: { readonly offertId: string; readonly erstelltAm: string },
 ): string {

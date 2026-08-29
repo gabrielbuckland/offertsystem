@@ -20,7 +20,7 @@ import {
   type Referenzbewertung,
   type WohnungstypId,
 } from '@offert/core';
-import type { ValuationResponse } from '../schema/valuationResponse.js';
+import type { ValuationResponse } from '../schema/valuation-response.js';
 
 export const ANBIETER = 'pricehubble';
 
