@@ -122,13 +122,77 @@ describe('ladeKonfiguration', () => {
     expect(wieder.fingerabdruck.konfigPruefsumme).toBe(vorher.fingerabdruck.konfigPruefsumme);
   });
 
-  it('weist gesperrte Ueberschreibungspfade zurueck', () => {
+  it('laesst eine invariantentreue Uebersteuerung wirksam werden', () => {
     const ergebnis = ladeKonfiguration({
       pfad: STANDARD,
-      ueberschreibungen: { honorar: { skalierung: { gMax: 2 } } },
+      ueberschreibungen: { honorar: { skalierung: { gMax: 1.2 } } },
+    });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    // Der Kerntyp stammt aus der ZUSAMMENGEFUEHRTEN Basis, nicht aus der Datei.
+    expect(ergebnis.kern.honorar.skalierung.gMax).toBe(1.2);
+    expect(ergebnis.fingerabdruck.ueberschreibungen).toEqual([
+      { pfad: 'honorar.skalierung.gMax', defaultwert: 1.15, projektwert: 1.2 },
+    ]);
+  });
+
+  it('haelt meta und api weiterhin gesperrt', () => {
+    const ergebnis = ladeKonfiguration({
+      pfad: STANDARD,
+      ueberschreibungen: { api: { timeoutMs: 1 } },
     });
     expect(ergebnis.ok).toBe(false);
     if (ergebnis.ok) return;
     expect(ergebnis.fehler[0]?.code).toBe('CFG_MERGE_LOCKED_PATH');
+  });
+
+  /**
+   * NEGATIVNACHWEIS — traegt die Zusage des Berichts (§ 6.6, A3 US-08). Seit die
+   * Sperrliste auf meta/api geschrumpft ist, KANN eine projektbezogene Anpassung eine
+   * Invariante verletzen. Dass sie dann zurueckgewiesen und nicht gerechnet wird, ist
+   * genau hier belegt.
+   */
+  it('weist eine invariantenverletzende Uebersteuerung zurueck statt zu rechnen', () => {
+    const ergebnis = ladeKonfiguration({
+      pfad: STANDARD,
+      // Gewichtssumme kippt von 1.00 auf 1.15.
+      ueberschreibungen: { aufwandfaktoren: { lage_gesamt: { gewicht: 0.7 } } },
+    });
+    expect(ergebnis.ok).toBe(false);
+    if (ergebnis.ok) return;
+    expect(ergebnis.fehler.map((f) => f.code)).toContain('CFG_WEIGHTS_SUM');
+    expect(Object.hasOwn(ergebnis, 'konfiguration')).toBe(false);
+  });
+
+  // HINWEIS (Korrektur zum Brief, siehe Bericht): Ueberschreibungen ersetzen Arrays
+  // VOLLSTAENDIG (merge.ts, Kommentar bei `verschmelzeTeilbaum`) statt sie elementweise
+  // zusammenzufuehren. Eine auf zwei Punkte verkuerzte Stuetzstellenreihe verletzt die
+  // Stufendegression (eq:degression_stufe) rechnerisch NICHT, weil die Pruefung an der
+  // ersten Stuetzstelle (v=0) beginnt und dort der Sonderfall greift. Der Nachweis
+  // braucht daher die volle Reihe der Standardkonfiguration mit einer einzelnen
+  // gekippten Randkurve — analog zur Fixture
+  // `packages/core/test/fixtures/config-invalid/degression-stufe-verletzt.json`.
+  it('weist eine degressionsverletzende Stuetzstellenreihe zurueck', () => {
+    const ergebnis = ladeKonfiguration({
+      pfad: STANDARD,
+      ueberschreibungen: {
+        honorar: {
+          stuetzstellen: [
+            { v: 0, hMin: 3000000, hMax: 4000000 },
+            // hMax faellt hier auf 5000000 statt zu steigen: Der Grenzsatz der
+            // naechsten Stufe unterschreitet den eigenen Durchschnittssatz nicht mehr.
+            { v: 500000000, hMin: 11250000, hMax: 5000000 },
+            { v: 1000000000, hMin: 19500000, hMax: 26000000 },
+            { v: 2500000000, hMin: 37500000, hMax: 50000000 },
+            { v: 5000000000, hMin: 60000000, hMax: 80000000 },
+            { v: 10000000000, hMin: 93750000, hMax: 125000000 },
+            { v: 20000000000, hMin: 150000000, hMax: 200000000 },
+          ],
+        },
+      },
+    });
+    expect(ergebnis.ok).toBe(false);
+    if (ergebnis.ok) return;
+    expect(ergebnis.fehler.map((f) => f.code)).toContain('CFG_TIER_DEGRESSION');
   });
 });

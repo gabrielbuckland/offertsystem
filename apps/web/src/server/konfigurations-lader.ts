@@ -18,7 +18,6 @@ import {
   fehler,
   mergeKonfiguration,
   parseKonfiguration,
-  validiereKonfiguration,
   type EffektiveKonfiguration,
   type Konfiguration,
   type KonfigurationsFehler,
@@ -136,12 +135,18 @@ export function ladeKonfiguration(optionen: LadeOptionen): LadeErgebnis {
   const zusammengefuehrt = mergeKonfiguration(basis, optionen.ueberschreibungen ?? {});
   if (!zusammengefuehrt.ok) return { ok: false, fehler: zusammengefuehrt.fehler };
 
-  // Regel 5 aus Spec 02 §2.3: Nach dem Merge gilt erneut die volle Validierung.
-  // Der Merge kann Ebene 3 nicht verletzen, weil keine invariantenrelevante
-  // Groesse ueberschreibbar ist; die erneute Pruefung ist dennoch vorgesehen,
-  // damit die Aussage nicht von der Vollstaendigkeit der Sperrliste abhaengt.
-  const nachpruefung = validiereKonfiguration(zusammengefuehrt.wert.basis);
-  if (!nachpruefung.ok) return { ok: false, fehler: nachpruefung.fehler };
+  // Regel 5 aus Spec 02 §2.3: Nach dem Merge gilt erneut die volle Pruefung — und seit
+  // die Sperrliste nur noch meta/api umfasst, ist sie TRAGEND statt zieren: Eine
+  // projektbezogene Uebersteuerung kann eine Invariante verletzen, und genau hier wird
+  // sie zurueckgewiesen, bevor gerechnet wird (I-21).
+  //
+  // `parseKonfiguration` statt `validiereKonfiguration`: Es prueft dieselben drei Ebenen
+  // UND liefert den Kerntyp der zusammengefuehrten Basis. Zwei getrennte Aufrufe haetten
+  // zwei Wahrheiten darueber ergeben, was der Kern aus der effektiven Konfiguration
+  // liest (PE-01). Bewusst UNBEDINGT und nicht nur bei nichtleerem Protokoll: Ein
+  // bedingtes Ueberspringen waere genau der stille Pfad, den I-21 ausschliesst.
+  const nachgeparst = parseKonfiguration(zusammengefuehrt.wert.basis);
+  if (!nachgeparst.ok) return { ok: false, fehler: nachgeparst.fehler };
 
   const effektiv = zusammengefuehrt.wert;
   const fingerabdruck: KonfigurationsFingerabdruck = {
@@ -158,7 +163,7 @@ export function ladeKonfiguration(optionen: LadeOptionen): LadeErgebnis {
   return {
     ok: true,
     konfiguration: effektiv,
-    kern,
+    kern: nachgeparst.wert.kern,
     // PE-17: Der Rohblock geht unveraendert an die Zugriffsschicht weiter, die
     // ihn beim Erzeugen des Adapters uebergibt. Der Kern kennt ihn nicht.
     api: effektiv.basis.api,
