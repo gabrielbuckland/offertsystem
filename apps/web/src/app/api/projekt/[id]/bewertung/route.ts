@@ -7,24 +7,33 @@
  */
 import type { WohnungstypId } from '@offert/core';
 import { beschaffe } from '../../../../../server/eingang.js';
-import { holeLaufzeit } from '../../../../../server/laufzeit.js';
+import { holeLaufzeit, holeProjektLaufzeit } from '../../../../../server/laufzeit.js';
 import { ladeProjekt, speichereProjekt } from '../../../../../server/projekt-ablage.js';
 import { projiziere } from '../../../../../server/projektion.js';
 
 interface Kontext { readonly params: Promise<{ readonly id: string }> }
 
 export async function POST(_anfrage: Request, kontext: Kontext): Promise<Response> {
-  const laufzeit = holeLaufzeit();
+  // Henne-Ei: siehe Berechnungsroute. Zwei Aufrufe, der Datei-Zwischenspeicher des
+  // Laders traegt die Kosten des zweiten (Ruling 2026-08-29).
+  const vorlaufzeit = holeLaufzeit();
+  if (!vorlaufzeit.ok) {
+    return Response.json({ fehler: { text: vorlaufzeit.meldungen.join(' ') } }, { status: 500 });
+  }
+  const { id } = await kontext.params;
+
+  const projekt = await ladeProjekt(id, vorlaufzeit.wert.projekteVerzeichnis).catch(() => null);
+  if (projekt === null) {
+    return Response.json({ fehler: { text: `Projekt ${id} nicht gefunden.` } }, { status: 404 });
+  }
+  // Laufzeit erst NACH dem Projekt: Die effektive Konfiguration haengt am Delta des
+  // Projekts (Ebene 2). Ein invariantenverletzendes Delta faellt hier als 500 mit
+  // Codeliste auf, bevor gerechnet wird (I-21).
+  const laufzeit = holeProjektLaufzeit(projekt);
   if (!laufzeit.ok) {
     return Response.json({ fehler: { text: laufzeit.meldungen.join(' ') } }, { status: 500 });
   }
   const { provider, projekteVerzeichnis } = laufzeit.wert;
-  const { id } = await kontext.params;
-
-  const projekt = await ladeProjekt(id, projekteVerzeichnis).catch(() => null);
-  if (projekt === null) {
-    return Response.json({ fehler: { text: `Projekt ${id} nicht gefunden.` } }, { status: 404 });
-  }
   if (projekt.referenzobjekte.length === 0) {
     return Response.json(
       { fehler: { text: 'Es ist kein Referenzobjekt hinterlegt.' } }, { status: 422 });

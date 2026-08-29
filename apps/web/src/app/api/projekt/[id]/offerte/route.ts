@@ -9,7 +9,7 @@
 import { PlatzhalterFehler, loeseDokumentAuf } from '@offert/offer/src/vorlage/aufloesung.js';
 import { platzhalterWerte } from '@offert/offer/src/vorlage/platzhalter.js';
 import { uebersetzeStufenFehler } from '../../../../../server/fehlertexte.js';
-import { holeLaufzeit } from '../../../../../server/laufzeit.js';
+import { holeLaufzeit, holeProjektLaufzeit } from '../../../../../server/laufzeit.js';
 import { legeOfferteAb } from '../../../../../server/offerten-ablage.js';
 import { ladeProjekt } from '../../../../../server/projekt-ablage.js';
 import { fuehreProjektlauf } from '../../../../../server/projekt-lauf.js';
@@ -18,12 +18,27 @@ import { ladeVorlage } from '../../../../../server/vorlagen-ablage.js';
 interface Kontext { readonly params: Promise<{ readonly id: string }> }
 
 export async function POST(_anfrage: Request, kontext: Kontext): Promise<Response> {
-  const laufzeit = holeLaufzeit(); // PE-24: eine Verdrahtung
+  // Henne-Ei: siehe Berechnungsroute. Zwei Aufrufe, der Datei-Zwischenspeicher des
+  // Laders traegt die Kosten des zweiten (Ruling 2026-08-29).
+  const vorlaufzeit = holeLaufzeit();
+  if (!vorlaufzeit.ok) {
+    return Response.json({ fehler: { text: vorlaufzeit.meldungen.join(' ') } }, { status: 500 });
+  }
+  const { id } = await kontext.params;
+
+  const vorabProjekt = await ladeProjekt(id, vorlaufzeit.wert.projekteVerzeichnis)
+    .catch(() => null);
+  if (vorabProjekt === null) {
+    return Response.json({ fehler: { text: `Projekt ${id} nicht gefunden.` } }, { status: 404 });
+  }
+  // Laufzeit erst NACH dem Projekt: Die effektive Konfiguration haengt am Delta des
+  // Projekts (Ebene 2). Ein invariantenverletzendes Delta faellt hier als 500 mit
+  // Codeliste auf, bevor gerechnet wird (I-21).
+  const laufzeit = holeProjektLaufzeit(vorabProjekt);
   if (!laufzeit.ok) {
     return Response.json({ fehler: { text: laufzeit.meldungen.join(' ') } }, { status: 500 });
   }
   const { offertenVerzeichnis } = laufzeit.wert;
-  const { id } = await kontext.params;
 
   const lauf = await fuehreProjektlauf(id, laufzeit.wert);
   switch (lauf.art) {

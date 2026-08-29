@@ -145,4 +145,52 @@ describe('POST /api/projekt/[id]/berechnung', () => {
     expect(herleitung.units[0]!.unitPrice.value).toBe(rumpf.einheiten[0]!.preis);
     expect(herleitung.units[0]!.basePrice.value).toBe(rumpf.einheiten[0]!.basispreis);
   });
+
+  it('rechnet mit dem Einstellungs-Delta des Projekts', async () => {
+    // Beide Projekte im selben Verzeichnis, damit dieselbe Umgebung fuer beide
+    // Anfragen gilt; eines der beiden erhaelt eine abweichende Skalierungsobergrenze.
+    const v = await mkdtemp(join(tmpdir(), 'projekte-'));
+    process.env['PROJEKTE_VERZEICHNIS'] = v;
+    const ohne = await legeProjektAn(ADRESSE, v, standardKonfiguration());
+    const mitRoh = await legeProjektAn(ADRESSE, v, standardKonfiguration());
+    const mit = await speichereProjekt(
+      { ...mitRoh, einstellungen: { honorar: { skalierung: { gMax: 1.2 } } } }, v);
+
+    for (const projekt of [ohne, mit]) {
+      await speichereProjekt({
+        ...projekt,
+        referenzobjekte: [{
+          id: 'R-1', zimmerzahl: 3.5,
+          parametrisierung: {
+            flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'B',
+            zustandsbewertungen: {}, qualitaetsbewertungen: {},
+            anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
+          },
+        }],
+        anpassungsSpalten: [],
+        einheiten: [{
+          id: 'E-1', wohnungsnummer: 'A-01', referenzobjektId: 'R-1',
+          flaecheInnen: 86, flaecheAussen: 19,
+          spaltenwerte: {}, merkmalswerte: {},
+        }],
+        aufwandfaktoren: { innenausbau_qualitaet: 3 },
+      }, v);
+    }
+
+    const a = await POST(
+      new Request('http://test', { method: 'POST' }),
+      { params: Promise.resolve({ id: ohne.id }) },
+    );
+    const b = await POST(
+      new Request('http://test', { method: 'POST' }),
+      { params: Promise.resolve({ id: mit.id }) },
+    );
+    expect(a.status).toBe(200);
+    expect(b.status).toBe(200);
+
+    const rumpfA = await a.json() as { metadaten: { konfigPruefsumme: string } };
+    const rumpfB = await b.json() as { metadaten: { konfigPruefsumme: string } };
+    // Die Pruefsumme weist den PROJEKTBEZOGENEN Stand aus, nicht den Firmenstand.
+    expect(rumpfB.metadaten.konfigPruefsumme).not.toBe(rumpfA.metadaten.konfigPruefsumme);
+  });
 });
