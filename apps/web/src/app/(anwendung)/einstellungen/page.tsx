@@ -26,7 +26,7 @@ const PIPELINE_REIHENFOLGE: ReadonlyArray<{ readonly stufenLabel: string; readon
 export default async function EinstellungenSeite() {
   const laufzeit = holeLaufzeit();
   if (!laufzeit.ok) {
-    return <main><h1>Einstellungen</h1><p>{laufzeit.meldungen.join(' ')}</p></main>;
+    return <main><h1>Firmeneinstellungen</h1><p>{laufzeit.meldungen.join(' ')}</p></main>;
   }
   const rohKonfiguration = laufzeit.wert.rohKonfiguration;
   // Typerhalten dieselbe `OffertKonfiguration`, die der Lader validiert hat
@@ -36,9 +36,13 @@ export default async function EinstellungenSeite() {
 
   return (
     <main>
-      <Brotkrume stufen={[{ beschriftung: 'Einstellungen' }]} />
-      <div className="mb-6 flex items-baseline justify-between">
-        <h1 className="text-2xl font-semibold">Einstellungen</h1>
+      <Brotkrume stufen={[
+        { beschriftung: 'Projekte', href: '/projekte' },
+        { beschriftung: 'Firmeneinstellungen' },
+      ]}
+      />
+      <div className="mb-2 flex items-baseline justify-between">
+        <h1 className="text-2xl font-semibold">Firmeneinstellungen</h1>
         {/* Offerttext-Vorlage (Spec 2026-08-27 §3) ist kein Pipeline-Bereich wie die
             vier Karten unten (kein Zahlenwert, sondern Fliesstext mit Platzhaltern) —
             deshalb eigene Seite statt eines fuenften inline eingebetteten Editors. */}
@@ -46,6 +50,10 @@ export default async function EinstellungenSeite() {
           Offertvorlage bearbeiten
         </a>
       </div>
+      <p className="mb-6 text-sm text-muted-foreground">
+        Diese Werte gelten für alle neuen und laufenden Projekte, sofern ein Projekt
+        sie nicht für sich übersteuert.
+      </p>
 
       {/* Untereinander statt nebeneinander (Rueckmeldung Auftraggeber): Jede Stufe der
           Berechnungs-Pipeline ist hier direkt inline editierbar — kein Umweg mehr ueber

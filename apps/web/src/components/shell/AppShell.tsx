@@ -9,9 +9,11 @@ export function AppShell({ children }: { readonly children: React.ReactNode }) {
       <header className="sticky top-0 z-20 border-b border-border bg-background">
         <div className="mx-auto flex h-12 w-full max-w-6xl items-center gap-6 px-8">
           <Link href={'/projekte' as Route} className="font-semibold">Offertsystem</Link>
+          {/* Nur noch «Projekte»: Einstellungen gelten je Ebene — firmenweit in der
+              Projektuebersicht, projektbezogen im Projekt — und sind dort erreichbar,
+              wo sie wirken. Ein zentraler Punkt liesse offen, welche Ebene er meint. */}
           <nav className="flex items-center gap-4" aria-label="Hauptnavigation">
             <NavPunkt href="/projekte">Projekte</NavPunkt>
-            <NavPunkt href="/einstellungen">Einstellungen</NavPunkt>
           </nav>
         </div>
       </header>
