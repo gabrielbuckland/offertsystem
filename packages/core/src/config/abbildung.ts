@@ -3,6 +3,7 @@
 // Die Funktion ist total: Sie wirft nie, sondern liefert entweder die Abbildung oder die
 // Fehlerliste der drei Pruefebenen.
 import { fehler, type KonfigurationsFehler } from './fehlercodes.js';
+import { ROH_SCHREIBWEISE, STRATEGIE_BEZEICHNER } from '../normalization/bezeichner.js';
 import type { RohFaktor, RohKonfiguration, StrategieBezeichner as RohStrategie } from './schema.js';
 import { validiereKonfiguration } from './validieren.js';
 import { fehlschlag, ok, type Result } from '../domain/result.js';
@@ -24,14 +25,14 @@ export interface KonfigurationsAbbildung {
 }
 
 /**
- * Vollstaendige Abbildung der beiden Schreibweisen. Als Record geschrieben, nicht als
- * switch mit default: Kommt eine Strategie hinzu, bricht die Uebersetzung zur
- * Uebersetzungszeit, nicht zur Laufzeit (Totalitaet, PE-01).
+ * Vollstaendige Abbildung der beiden Schreibweisen, ABGELEITET aus der Bezeichner-Liste
+ * in `normalization/bezeichner.ts` statt hier dupliziert: Kommt eine Strategie hinzu,
+ * traegt allein die Liste die neue Kante — `satisfies` dort erzwingt die JSON-Schreibweise
+ * zur Uebersetzungszeit, nicht zur Laufzeit (Totalitaet, PE-01; E-15).
  */
-const STRATEGIE: Readonly<Record<RohStrategie, StrategieBezeichner>> = {
-  minmax: 'min-max',
-  zscore: 'z-score',
-};
+const STRATEGIE: Readonly<Record<RohStrategie, StrategieBezeichner>> = Object.fromEntries(
+  STRATEGIE_BEZEICHNER.map((kern) => [ROH_SCHREIBWEISE[kern], kern]),
+) as Record<RohStrategie, StrategieBezeichner>;
 
 function bildeFaktorAb(
   bezeichner: string,

@@ -7,6 +7,11 @@
  * jede Verletzung einen fachlich sprechenden CFG_*-Code traegt.
  */
 import { z } from 'zod';
+import {
+  ROH_SCHREIBWEISE,
+  STRATEGIE_BEZEICHNER,
+  type RohStrategieBezeichner,
+} from '../normalization/bezeichner.js';
 
 /** Die neun von PriceHubble dokumentierten Lagescores (I-26: keine Verdichtung). */
 export const LAGESCORE_NAMEN = [
@@ -26,10 +31,16 @@ export const BEZEICHNER_MUSTER = /^[a-z][a-zA-Z0-9_]*$/;
 
 export type FaktorQuelle = 'lagescore' | 'manuell' | 'abgeleitet';
 /**
- * Schreibweise des JSON-Schemas. Der Kern fuehrt die Union 'min-max' | 'z-score';
- * uebersetzt wird genau einmal, in parseKonfiguration (PE-02, PE-01).
+ * Schreibweise des JSON-Schemas. Der Kern fuehrt die Bezeichner aus
+ * `normalization/bezeichner.ts`; uebersetzt wird genau einmal, in parseKonfiguration
+ * (PE-02, PE-01). Die zulaessigen Werte sind aus derselben Liste ABGELEITET, nicht
+ * dupliziert — eine neue Strategie braucht keine Schemaaenderung (E-15).
  */
-export type StrategieBezeichner = 'minmax' | 'zscore';
+export type StrategieBezeichner = RohStrategieBezeichner;
+
+/** Nicht leer, weil die Bezeichner-Liste per Konstruktion mindestens min-max fuehrt. */
+const ROH_STRATEGIEN = STRATEGIE_BEZEICHNER.map((b) => ROH_SCHREIBWEISE[b]) as
+  [RohStrategieBezeichner, ...RohStrategieBezeichner[]];
 
 const MetaSchema = z.object({
   schemaVersion: z.literal(1),
@@ -101,7 +112,7 @@ const FaktorSchema = z.object({
   bezeichnung: z.string().min(1),
   quelle: z.enum(['lagescore', 'manuell', 'abgeleitet']),
   quellSchluessel: z.string().min(1),
-  strategie: z.enum(['minmax', 'zscore']),
+  strategie: z.enum(ROH_STRATEGIEN),
   min: z.number(),
   max: z.number(),
   gewicht: z.number(),

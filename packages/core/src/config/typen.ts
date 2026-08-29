@@ -4,11 +4,16 @@
 import type { Gewicht, Rappen } from '../domain/geld.js';
 import type { FaktorId } from '../domain/ids.js';
 import type { Bereichsregel } from '../modell/bereichsregel.js';
+import type { StrategieBezeichner } from '../normalization/bezeichner.js';
 
 export type FaktorQuelle = 'lagescore' | 'manuell' | 'abgeleitet';
 
-/** Geschlossene Literal-Union ueber die implementierten Strategien (Spec 03 §7.5, S-07). */
-export type StrategieBezeichner = 'min-max' | 'z-score';
+/**
+ * Geschlossene Literal-Union ueber die implementierten Strategien (Spec 03 §7.5, S-07).
+ * Quelle ist die Bezeichner-Liste in `normalization/bezeichner.ts`; der Re-Export haelt
+ * die bestehenden Importpfade stabil.
+ */
+export type { StrategieBezeichner };
 
 /** Im Kern vorhandene Kennzahlen fuer die Quelle `abgeleitet` (E-05, E-06). */
 export type AbleitungsName = 'einheitenzahl' | 'mittlererQuadratmeterpreis';

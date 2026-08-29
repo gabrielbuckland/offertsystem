@@ -7,7 +7,7 @@ import { kurz, lies, ohneKommentare, quelldateien } from './quelltext.js';
  *
  * I-13 verlangt, dass die BERECHNUNG keinen Faktor privilegiert: keine
  * faktorspezifische Fallunterscheidung, kein Bezeichner als Literal. Geprueft wird
- * deshalb `src/pipeline/**` und `src/modell/**`. Zusaetzlich werden die
+ * deshalb `src/pipeline/**`, `src/modell/**` und `src/normalization/**`. Zusaetzlich werden die
  * UI-Komponenten in `apps/web/src/components/einstellungen/**` und
  * `apps/web/src/components/pipeline/**` geprueft: Diese muessen ebenfalls alle
  * Faktoren iterativ aus der Konfiguration beziehen, nicht fest verdrahten.
@@ -23,6 +23,7 @@ import { kurz, lies, ohneKommentare, quelldateien } from './quelltext.js';
 const RECHENPFADE = [
   'pipeline',
   'modell',
+  'normalization',
   '../../../apps/web/src/components/einstellungen',
   '../../../apps/web/src/components/pipeline',
 ];
