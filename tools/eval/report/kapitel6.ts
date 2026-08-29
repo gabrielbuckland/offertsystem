@@ -128,24 +128,51 @@ export interface KategorieZahlen {
   readonly dateiliste: readonly string[];
 }
 
-export interface ExtensionArtefakt {
-  readonly regelfall: {
-    readonly messung_verweigert: boolean;
-    readonly zuschnitt?: {
-      readonly stoerende: readonly {
-        readonly hash: string; readonly betreff: string;
-        readonly dateien_ausserhalb: readonly string[];
-      }[];
-    };
-    readonly grund?: string;
-    readonly metrik_1_und_2?: KategorieZahlen;
-    readonly konfiguration?: KategorieZahlen;
-    readonly test?: KategorieZahlen;
-    readonly kern_unversehrt?: boolean;
-    readonly kernstufen_pipeline_unveraendert?: boolean;
-    readonly faktormenge_datengetrieben?: boolean;
-    readonly zeitaufwand_min?: number | null;
+export interface Messfall {
+  readonly messung_verweigert: boolean;
+  readonly nicht_durchgefuehrt?: boolean;
+  readonly zuschnitt?: {
+    readonly stoerende: readonly {
+      readonly hash: string; readonly betreff: string;
+      readonly dateien_ausserhalb: readonly string[];
+    }[];
   };
+  readonly grund?: string;
+  readonly metrik_1_und_2?: KategorieZahlen;
+  readonly konfiguration?: KategorieZahlen;
+  readonly test?: KategorieZahlen;
+  readonly kern_unversehrt?: boolean;
+  readonly kernstufen_pipeline_unveraendert?: boolean;
+  readonly faktormenge_datengetrieben?: boolean;
+  readonly zeitaufwand_min?: number | null;
+}
+
+export interface ExtensionArtefakt {
+  readonly regelfall: Messfall;
+  readonly sonderfall?: Messfall;
+}
+
+/** Metrikzeilen eines Messfalls (Regel- wie Sonderfall teilen die Struktur). */
+function p4Zeilen(r: ExtensionArtefakt['regelfall']): string[][] {
+  const code = r.metrik_1_und_2;
+  return [
+    ['Codedateien geändert', `${code?.dateien_geaendert ?? '--'}`, 'Metrik 1'],
+    ['Codedateien neu', `${code?.dateien_neu ?? '--'}`, 'Metrik 1'],
+    ['Codezeilen hinzugefügt', `${code?.zeilen_hinzugefuegt ?? '--'}`, 'Metrik 2'],
+    ['Codezeilen entfernt', `${code?.zeilen_entfernt ?? '--'}`, 'Metrik 2'],
+    ['Konfigurationsdateien geändert', `${r.konfiguration?.dateien_geaendert ?? '--'}`,
+     'separat ausgewiesen'],
+    ['Testdateien geändert', `${r.test?.dateien_geaendert ?? '--'}`, 'separat ausgewiesen'],
+    ['Pipeline-Kern unversehrt', jaNein(r.kern_unversehrt), 'Metrik 3, binär'],
+    ['Kernstufen der Pipeline unverändert', jaNein(r.kernstufen_pipeline_unveraendert),
+     'Metrik 3'],
+    ['Faktormenge datengetrieben', jaNein(r.faktormenge_datengetrieben),
+     'Voraussetzung der Aussagekraft'],
+    ['Zeitaufwand [min]',
+     r.zeitaufwand_min === null || r.zeitaufwand_min === undefined
+       ? 'nicht erfasst' : `${r.zeitaufwand_min}`,
+     'manuell nachgetragen (O-04)'],
+  ];
 }
 
 export function p4Erweiterung(extension: ExtensionArtefakt): string {
@@ -164,35 +191,38 @@ export function p4Erweiterung(extension: ExtensionArtefakt): string {
         label: 'tab:p4_erweiterung_verweigert',
       })}`;
   }
-  const code = r.metrik_1_und_2;
-  const zeilen = [
-    ['Codedateien geändert', `${code?.dateien_geaendert ?? '--'}`, 'Metrik 1'],
-    ['Codedateien neu', `${code?.dateien_neu ?? '--'}`, 'Metrik 1'],
-    ['Codezeilen hinzugefügt', `${code?.zeilen_hinzugefuegt ?? '--'}`, 'Metrik 2'],
-    ['Codezeilen entfernt', `${code?.zeilen_entfernt ?? '--'}`, 'Metrik 2'],
-    ['Konfigurationsdateien geändert', `${r.konfiguration?.dateien_geaendert ?? '--'}`,
-     'separat ausgewiesen'],
-    ['Testdateien geändert', `${r.test?.dateien_geaendert ?? '--'}`, 'separat ausgewiesen'],
-    ['Pipeline-Kern unversehrt', jaNein(r.kern_unversehrt), 'Metrik 3, binär'],
-    ['Kernstufen der Pipeline unverändert', jaNein(r.kernstufen_pipeline_unveraendert),
-     'Metrik 3'],
-    ['Faktormenge datengetrieben', jaNein(r.faktormenge_datengetrieben),
-     'Voraussetzung der Aussagekraft'],
-    ['Zeitaufwand [min]',
-     r.zeitaufwand_min === null || r.zeitaufwand_min === undefined
-       ? 'nicht erfasst' : `${r.zeitaufwand_min}`,
-     'manuell nachgetragen (O-04)'],
-  ];
-  return hinweiskopf('artifacts/eval/extension/<zeitstempel>/extension.json') + longtable({
+  const regelfallTabelle = longtable({
     spalten: ['p{0.42\\textwidth}', 'r', 'p{0.34\\textwidth}'],
     kopf: ['Messgrösse', 'Wert', 'Bemerkung'],
-    zeilen,
-    beschriftung: 'Erweiterungsaufwand, aus der Versionsgeschichte zwischen den Tags '
-      + '\\texttt{eval/ff1b-vorher} und \\texttt{eval/ff1b-nachher} erhoben. Code, '
-      + 'Konfiguration und Testdateien werden getrennt ausgewiesen, weil die '
-      + 'Null-Dateien-Messlatte sich allein auf Codedateien bezieht.',
+    zeilen: p4Zeilen(r),
+    beschriftung: 'Erweiterungsaufwand im Regelfall (neuer Aufwandfaktor), aus der '
+      + 'Versionsgeschichte zwischen den Tags \\texttt{eval/ff1b-vorher} und '
+      + '\\texttt{eval/ff1b-nachher} erhoben. Code, Konfiguration und Testdateien '
+      + 'werden getrennt ausgewiesen, weil die Null-Dateien-Messlatte sich allein '
+      + 'auf Codedateien bezieht.',
     label: 'tab:p4_erweiterung',
   });
+
+  const s = extension.sonderfall;
+  let sonderfallTabelle = '';
+  if (s !== undefined && s.nicht_durchgefuehrt !== true
+      && s.messung_verweigert !== true) {
+    sonderfallTabelle = longtable({
+      spalten: ['p{0.42\\textwidth}', 'r', 'p{0.34\\textwidth}'],
+      kopf: ['Messgrösse', 'Wert', 'Bemerkung'],
+      zeilen: p4Zeilen(s),
+      beschriftung: 'Erweiterungsaufwand im Sonderfall (neue '
+        + 'Normalisierungsstrategie), erhoben zwischen den Tags '
+        + '\\texttt{eval/ff1b-strategie-vorher} und '
+        + '\\texttt{eval/ff1b-strategie-nachher}. Hier ist eine lokalisierte '
+        + 'Codeänderung erwartet; die Messlatte ist, dass sämtliche geänderten '
+        + 'und neuen Codedateien im Strategieverzeichnis liegen und die '
+        + 'Kernstufen der Pipeline unverändert bleiben.',
+      label: 'tab:p4_sonderfall',
+    });
+  }
+  return hinweiskopf('artifacts/eval/extension/<zeitstempel>/extension.json')
+    + regelfallTabelle + sonderfallTabelle;
 }
 
 // --- P1: Szenarien ------------------------------------------------------------------
