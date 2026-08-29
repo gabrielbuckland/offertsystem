@@ -75,6 +75,11 @@
       "blatt": "S5-erwartung",
       "csv": "S5-erwartung.csv",
       "sha256": "13fd21a94ef45ac935578589e035d608567bdc08d30eabb277211e9e60d0464f"
+    },
+    {
+      "blatt": "S6-erwartung",
+      "csv": "S6-erwartung.csv",
+      "sha256": "541ec8f4e78d9661fac8e91dafd02507a8ef3fbfa9c79b53e817b414e671b112"
     }
   ]
 }

@@ -4,13 +4,13 @@ import { dokumentiere } from '../helper/dokumentiere.js';
 
 const SCHWELLE = 0.05;
 
-describe('T2 — die fünf Testszenarien gegen die Referenzberechnung', () => {
-  const ergebnisse = ['S1', 'S2', 'S3', 'S4a', 'S4b'].map((id) => fuehreSzenarioAus(id));
+describe('T2 — die sechs Testszenarien gegen die Referenzberechnung', () => {
+  const ergebnisse = ['S1', 'S2', 'S3', 'S4a', 'S4b', 'S6'].map((id) => fuehreSzenarioAus(id));
 
   // In Vitest 2 reicht `it.each` den Testkontext (und damit `task.meta`) nicht
   // an die Testfunktion weiter; die Falltabelle laeuft deshalb als Schleife
   // ueber normale `it`-Aufrufe — die Testnamen bleiben identisch.
-  for (const id of ['S1', 'S2', 'S3', 'S4a', 'S4b']) {
+  for (const id of ['S1', 'S2', 'S3', 'S4a', 'S4b', 'S6']) {
     it(`${id} hält die Abweichungsschwelle von 5 Prozent in V, H_min und H_max ein`, ({ task }) => {
       dokumentiere(task, {
         vorbedingung: `Szenario ${id} mit unabhängiger Referenzberechnung`,
@@ -83,6 +83,26 @@ describe('T2 — die fünf Testszenarien gegen die Referenzberechnung', () => {
     expect(b.honorar.honorarMax * v1).toBeLessThanOrEqual(a.honorar.honorarMax * v2);
   });
 
+  it('S6: alpha wirkt auf Einheiten mit abweichender Geometrie, Referenzgeometrie bleibt referenztreu', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Szenario S6 mit heterogenen Aussenflächen: Erdgeschoss ohne Balkon, Attika mit grosser Terrasse',
+      schritte: 'Das Szenario rechnen und die Positionspreise nach Geometrie der Einheiten vergleichen',
+      erwartung: 'Einheiten mit Referenzgeometrie kosten exakt P_ref; abweichende Einheiten weichen nach unten bzw. oben ab; V trifft die unabhängige Referenz exakt',
+      invariante: 'I-05',
+    });
+    const e = fuehreSzenarioAus('S6');
+    const preis = (nr: string): number =>
+      e.ergebnis!.verkaufssumme.positionen.find((p) => p.wohnungsnummer === nr)!.preis;
+    // Referenzgeometrie: alpha kuerzt sich aus eq:wohnungspreis, p_j = P_ref (I-05).
+    expect(preis('A-02')).toBe(92_000_000);
+    expect(preis('B-01')).toBe(132_000_000);
+    // Abweichende Geometrie: alpha kuerzt sich nicht mehr — genau der Hebel,
+    // ueber den die OAT-Dimension D2 in diesem Szenario messbar wird (F-061).
+    expect(preis('A-01')).toBeLessThan(92_000_000);
+    expect(preis('B-02')).toBeGreaterThan(132_000_000);
+    expect(e.abweichung.verkaufssumme).toBe(0);
+  });
+
   it('S5: ohne Referenzbewertung entsteht kein Ergebnis (I-24, 6.4 (c))', ({ task }) => {
     dokumentiere(task, {
       vorbedingung: 'Szenario S5 ohne Referenzbewertung',
@@ -98,18 +118,18 @@ describe('T2 — die fünf Testszenarien gegen die Referenzberechnung', () => {
 
   it('jedes Szenario weist die Herkunft der Lagedaten aus (R-01)', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Alle sechs Szenariodefinitionen S1 bis S5',
+      vorbedingung: 'Alle sieben Szenariodefinitionen S1 bis S6',
       schritte: 'Jedes Szenario laden und das Feld lagedaten_herkunft prüfen',
       erwartung: 'Die Herkunft ist jeweils "synthetisch" oder "aufgezeichnet"',
     });
-    for (const id of ['S1', 'S2', 'S3', 'S4a', 'S4b', 'S5']) {
+    for (const id of ['S1', 'S2', 'S3', 'S4a', 'S4b', 'S5', 'S6']) {
       expect(['synthetisch', 'aufgezeichnet']).toContain(ladeSzenario(id).lagedaten_herkunft);
     }
   });
 
   it('erzeugt das Artefakt für Kapitel 6 (P1) mit Abweichung und Pass/Fail', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Ergebnisse der fünf gerechneten Szenarien',
+      vorbedingung: 'Ergebnisse der sechs gerechneten Szenarien',
       schritte: 'schreibeSzenarienArtefakt mit den Ergebnissen aufrufen',
       erwartung: 'Das Artefakt liegt unter artifacts/scenarios/',
     });

@@ -324,7 +324,8 @@ def schreibe_manifest(eintraege: list[dict[str, str]]) -> None:
 # Szenarien (T2) — Fixtures und unabhaengig gerechnete Erwartungswerte
 # =============================================================================
 # Aufbau je Szenario: Wohnungstypen (Referenzflaechen und Referenzwert), Einheiten
-# (die die Referenzflaechen tragen, damit I-05 unmittelbar beobachtbar bleibt),
+# (die als 3-Tupel die Referenzflaechen tragen, damit I-05 unmittelbar beobachtbar
+# bleibt, oder als 5-Tupel eine explizit abweichende Geometrie fuehren — S6, F-061),
 # Lagescores und manuell erfasste Aufwandfaktoren.
 #
 # Die Erwartungswerte entstehen hier auf demselben getrennten Rechenweg wie die
@@ -407,7 +408,42 @@ SZENARIEN = {
         # `innenausbau_qualitaet` fehlt; zusaetzlich ein Rohwert weit oberhalb der Grenze.
         "aufwandfaktoren": {"f_x": 99},
     },
+    "S6": {
+        # In S1-S4b tragen alle Einheiten exakt die Referenzgeometrie ihres Typs;
+        # dort kuerzt sich alpha aus eq:wohnungspreis (p_j = P_ref) und die
+        # OAT-Dimension D2 zeigt ueberall 0 (F-061). S6 laesst die Geometrie
+        # bewusst abweichen: Erdgeschoss ohne Balkon (A_aussen = 0), Regelgeschosse
+        # auf der Referenz, Attika mit grosser Terrasse deutlich darueber. Erst so
+        # wird die alpha-Wirkung in der Sensitivitaetsanalyse messbar.
+        "bezeichnung": "MFH mit heterogenen Aussenflaechen, Einheitengeometrie "
+                       "weicht vom Referenzobjekt ab",
+        "lage": {"adresse": "Gartenstrasse 7", "plz": "6048", "ort": "Horw"},
+        "typen": [("T1", 3.5, 92.5, 12.0, 92_000_000), ("T2", 4.5, 118.0, 20.0, 132_000_000)],
+        # 5-Tupel (unit_id, typ_id, anpassungen, A_innen, A_aussen).
+        "einheiten": [
+            ("A-01", "T1", [], 92.5, 0.0),
+            ("A-02", "T1", [], 92.5, 12.0),
+            ("A-03", "T1", [], 92.5, 12.0),
+            ("B-01", "T2", [], 118.0, 20.0),
+            ("B-02", "T2", [], 118.0, 64.0),
+        ],
+        "lagescores": {"location": 0.68},
+        "aufwandfaktoren": {"innenausbau_qualitaet": 4},
+    },
 }
+
+
+def einheit_mit_flaechen(typen: dict, eintrag: tuple) -> tuple:
+    """Normalisiert einen Einheiten-Eintrag auf (unit, typ, anpassungen, innen, aussen).
+
+    3-Tupel erben die Referenzflaechen ihres Typs (I-05 direkt beobachtbar);
+    5-Tupel fuehren die Geometrie explizit (S6, F-061).
+    """
+    if len(eintrag) == 5:
+        return eintrag
+    unit, typ_id, anpassungen = eintrag
+    typ = typen[typ_id]
+    return unit, typ_id, anpassungen, typ[2], typ[3]
 
 
 def szenario_kennzahlen(name: str):
@@ -416,13 +452,16 @@ def szenario_kennzahlen(name: str):
     typen = {t[0]: t for t in s["typen"]}
 
     positionen = []
-    for unit, typ_id, anpassungen in s["einheiten"]:
-        _, _, innen, aussen, p_ref = typen[typ_id]
+    for eintrag in s["einheiten"]:
+        _unit, typ_id, anpassungen, innen_j, aussen_j = einheit_mit_flaechen(typen, eintrag)
+        _, _, innen_ref, aussen_ref, p_ref = typen[typ_id]
         if p_ref is None:
             return None  # ohne Referenzbewertung entsteht kein Ergebnis (I-24)
-        a_ref = flaeche(innen, aussen, ALPHA)
+        a_ref = flaeche(innen_ref, aussen_ref, ALPHA)
         q_t = p_ref / a_ref
-        a_j = flaeche(innen, aussen, ALPHA)
+        # eq:flaeche der EINHEIT: erst wenn die Geometrie vom Referenzobjekt abweicht
+        # (S6), unterscheidet sich a_j von a_ref und alpha kuerzt sich nicht mehr aus.
+        a_j = flaeche(innen_j, aussen_j, ALPHA)
         basispreis = q_t * a_j
         z = sum(f for f, _ in anpassungen)
         positionen.append((basispreis, a_j, runde_auf_rappen(basispreis * (1 + z))))
@@ -476,11 +515,11 @@ def schreibe_szenarien() -> list[dict[str, str]]:
                 for t, z, i, a, p in s["typen"]
             ],
             "einheiten": [
-                {"unit_id": u, "typ_id": t,
-                 "A_innen": next(x[2] for x in s["typen"] if x[0] == t),
-                 "A_aussen": next(x[3] for x in s["typen"] if x[0] == t),
+                {"unit_id": u, "typ_id": t, "A_innen": innen, "A_aussen": aussen,
                  "anpassungen": [{"a_i": f, "begruendung": b} for f, b in ang]}
-                for u, t, ang in s["einheiten"]
+                for u, t, ang, innen, aussen in (
+                    einheit_mit_flaechen({x[0]: x for x in s["typen"]}, e)
+                    for e in s["einheiten"])
             ],
             "lagescores": s["lagescores"],
             "aufwandfaktoren": s["aufwandfaktoren"],
