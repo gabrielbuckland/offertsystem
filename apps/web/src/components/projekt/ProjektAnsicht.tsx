@@ -26,7 +26,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
-import type { OffertKonfiguration } from '@offert/core';
+import type { OffertKonfiguration, UeberschreibungsProtokoll } from '@offert/core';
 import type { AggregateValues, PriceDerivation } from '@offert/offer/src/model/offer.js';
 import type { Projekt } from '../../server/projekt-schema.js';
 import type { Faktorformular } from '../../server/faktorformular.js';
@@ -55,6 +55,14 @@ export interface ProjektAnsichtProps {
   /** Basis der Pipeline-Stufen im Rechenweg-Dialog (Task 7) — dieselbe Konfiguration,
    *  gegen die auch die Berechnung serverseitig laeuft. */
   readonly konfigurationBasis: OffertKonfiguration;
+  /**
+   * Das Ueberschreibungsprotokoll der EFFEKTIVEN Konfiguration. Der Rechenweg weist
+   * daraus je Zeile aus, ob der Wert firmenweit gilt oder projektbezogen uebersteuert
+   * ist — der Beleg fuer die Nachvollziehbarkeitsforderung A-13. Fehlt die Liste, meldet
+   * der Dialog jede uebersteuerte Groesse als «firmenweit» und sagt bei aktivem Delta
+   * systematisch die Unwahrheit; optional bleibt sie nur fuer den Fall ohne Delta.
+   */
+  readonly ueberschreibungen?: readonly UeberschreibungsProtokoll[] | undefined;
 }
 
 interface BewertungsAntwort {
@@ -77,7 +85,7 @@ interface AbrufMeldung {
 }
 
 export function ProjektAnsicht(
-  { projekt: anfang, faktorformular, konfigurationBasis }: ProjektAnsichtProps,
+  { projekt: anfang, faktorformular, konfigurationBasis, ueberschreibungen }: ProjektAnsichtProps,
 ) {
   const router = useRouter();
   const [abrufMeldung, setAbrufMeldung] = useState<AbrufMeldung | undefined>(undefined);
@@ -319,6 +327,9 @@ export function ProjektAnsicht(
         schliesse={() => setRechenwegOffen(false)}
         stufen={bauePipelineDaten(konfigurationBasis, {
           ...(herleitung === undefined ? {} : { herleitung }),
+          // Ohne diese Liste faerbt `bauePipelineDaten` jede Zeile «firmenweit» ein
+          // (pipeline-daten.ts, `istProjektbezogen`) — auch die uebersteuerten.
+          ...(ueberschreibungen === undefined ? {} : { ueberschreibungen }),
           aufwandindikatorUebersteuert: projekt.aufwandindikatorUebersteuerung !== undefined,
         })}
       />

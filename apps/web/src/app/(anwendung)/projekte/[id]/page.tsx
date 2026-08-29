@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import type { OffertKonfiguration } from '@offert/core';
 import { baueFaktorformular } from '../../../../server/faktorformular.js';
-import { holeLaufzeit } from '../../../../server/laufzeit.js';
+import { holeLaufzeit, holeProjektLaufzeit } from '../../../../server/laufzeit.js';
 import { ladeProjekt } from '../../../../server/projekt-ablage.js';
 import { listeOfferten } from '../../../../server/offerten-ablage.js';
 import { ProjektAnsicht } from '../../../../components/projekt/ProjektAnsicht.js';
@@ -22,7 +22,23 @@ export default async function ProjektSeite({ params }: Props) {
   }
   const projekt = await ladeProjekt(id, laufzeit.wert.projekteVerzeichnis).catch(() => null);
   if (projekt === null) notFound();
-  const { konfiguration, rohKonfiguration } = laufzeit.wert;
+
+  /**
+   * Henne-Ei-Muster wie in den drei rechnenden Routen: Die Firmenlaufzeit liefert nur
+   * den Ablageort, aus dem das Projekt geladen wird; ANGEZEIGT und GERECHNET wird
+   * danach auf der projektbezogenen Laufzeit. Ohne diesen zweiten Schritt baute die
+   * Seite Faktorformular, Dossier-Vorbelegung und Rechenweg aus den Firmenwerten,
+   * waehrend `POST /berechnung` mit dem Delta rechnete — Anzeige und Rechnung liefen
+   * auseinander (K-2).
+   */
+  const projektLaufzeit = holeProjektLaufzeit(projekt);
+  if (!projektLaufzeit.ok) {
+    // Zurueckweisen statt melden (I-21) gilt auch fuer die Anzeige: Ein Projekt mit
+    // invariantenverletzendem Delta bekommt kein Formular, das so tut, als liesse sich
+    // damit rechnen.
+    return <main><h1>Projekt</h1><p>{projektLaufzeit.meldungen.join(' ')}</p></main>;
+  }
+  const { konfiguration, rohKonfiguration, fingerabdruck } = projektLaufzeit.wert;
   // Filterung auf dieses Projekt liegt beim Aufrufer (Task 11, Schnittstellenvorgabe) —
   // `listeOfferten` liefert ungefiltert alle Projekte.
   const alleOfferten = await listeOfferten(laufzeit.wert.offertenVerzeichnis);
@@ -31,7 +47,7 @@ export default async function ProjektSeite({ params }: Props) {
     <>
       {/* Ausserhalb des <main> von `ProjektAnsicht`: Die Brotkrume traegt den Rueckweg
           auf Projektebene, der Link daneben fuehrt zur projektbezogenen Einstellungsebene
-          (Ebene 2) — Ziel-Seite entsteht in einer parallelen Aufgabe (Task 9). */}
+          (Ebene 2, `projekte/[id]/einstellungen/page.tsx`). */}
       <div className="mb-2 flex items-center justify-between">
         <Brotkrume stufen={[
           { beschriftung: 'Projekte', href: '/projekte' },
@@ -53,6 +69,9 @@ export default async function ProjektSeite({ params }: Props) {
         // aus der `rohKonfiguration` in laufzeit.ts bereits fuer den Konfigurationsabdruck
         // (PE-04) durch `unknown` geschleust wird — hier symmetrisch zurueckgeschaerft.
         konfigurationBasis={rohKonfiguration as unknown as OffertKonfiguration}
+        // Das Ueberschreibungsprotokoll aus derselben Laufzeit: Es entscheidet im
+        // Rechenweg je Zeile ueber «firmenweit» oder «projektbezogen» (A-13).
+        ueberschreibungen={fingerabdruck.ueberschreibungen}
       />
       <section className="mt-6">
         <h2 className="mb-3 text-lg font-semibold">Offerten</h2>
