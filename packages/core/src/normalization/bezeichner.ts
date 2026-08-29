@@ -9,7 +9,7 @@
 // Codeaenderung ausserhalb von normalization/ ist nicht noetig (E-15, Messlatte 6.3).
 
 /** Kern-Schreibweise der implementierten Strategien (Spec 03 §7.5). */
-export const STRATEGIE_BEZEICHNER = ['min-max', 'z-score'] as const;
+export const STRATEGIE_BEZEICHNER = ['min-max', 'wurzel-min-max', 'z-score'] as const;
 
 export type StrategieBezeichner = (typeof STRATEGIE_BEZEICHNER)[number];
 
@@ -20,6 +20,7 @@ export type StrategieBezeichner = (typeof STRATEGIE_BEZEICHNER)[number];
  */
 export const ROH_SCHREIBWEISE = {
   'min-max': 'minmax',
+  'wurzel-min-max': 'wurzelminmax',
   'z-score': 'zscore',
 } as const satisfies Record<StrategieBezeichner, string>;
 
