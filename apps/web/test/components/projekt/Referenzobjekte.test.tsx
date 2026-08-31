@@ -94,7 +94,7 @@ function zeichne(
       baujahr={baujahr}
       aendere={aendere}
       rufeAb={() => undefined}
-      abrufLaeuft={false}
+      abrufLaufend={undefined}
     />);
 }
 

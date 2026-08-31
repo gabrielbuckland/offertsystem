@@ -15,6 +15,7 @@
 import { useEffect, useState } from 'react';
 import { formatiereScore } from '@offert/offer';
 import { entscheideZellenwert } from './zellen-logik.js';
+import { AufwandindikatorSkala } from './AufwandindikatorSkala.js';
 import { Hinweis } from '../ui/hinweis.js';
 import { Input } from '../ui/input.js';
 import { Label } from '../ui/label.js';
@@ -70,6 +71,9 @@ export function ProjektBasisinformationen(
     setzeDEntwurf(aufwandindikator === undefined ? '' : String(aufwandindikator));
   }, [aufwandindikator]);
   const [dVerworfen, setzeDVerworfen] = useState(false);
+  // Skala zeigt den WIRKSAMEN Wert (Uebersteuerung, sonst Ableitung) — derselbe
+  // Vorrang wie in `wirksamer-wert.ts` bzw. der Aggregatleiste.
+  const effektiverAufwandindikator = aufwandindikator ?? aufwandindikatorVorschlag;
 
   return (
     <section>
@@ -141,14 +145,22 @@ export function ProjektBasisinformationen(
               aendereAufwandindikator(entscheid.art === 'loeschen' ? undefined : entscheid.wert);
             }}
           />
-          <p className="text-xs text-muted-foreground">
-            {aufwandindikator === undefined
-              ? '0 steht für geringen, 1 für hohen Vermarktungsaufwand; der Wert skaliert '
-                + 'die Honorarrange. Abgeleitet aus PriceHubble-Lagescore und Projektdaten, '
-                + 'zum Übersteuern Wert eintragen.'
-              : `Übersteuert. Ableitung: ${aufwandindikatorVorschlag === undefined
-                ? '—' : formatiereScore(aufwandindikatorVorschlag)}`}
-          </p>
+          {effektiverAufwandindikator === undefined ? (
+            <p className="text-xs text-muted-foreground">
+              Abgeleitet aus PriceHubble-Lagescore und Projektdaten, zum Übersteuern
+              Wert eintragen.
+            </p>
+          ) : (
+            <>
+              <AufwandindikatorSkala wert={effektiverAufwandindikator} />
+              {aufwandindikator !== undefined && (
+                <p className="text-xs text-muted-foreground">
+                  Übersteuert. Ableitung: {aufwandindikatorVorschlag === undefined
+                    ? '—' : formatiereScore(aufwandindikatorVorschlag)}
+                </p>
+              )}
+            </>
+          )}
           {dVerworfen && (
             <Hinweis art="fehler" className="max-w-56">
               Wert muss zwischen 0 und 1 liegen.

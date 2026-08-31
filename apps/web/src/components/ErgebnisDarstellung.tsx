@@ -5,14 +5,30 @@
  */
 import type { Offer } from '@offert/offer';
 import { OfferteDokument, VermarktungsOfferte } from '@offert/offer/template';
+import { buttonVariants } from './ui/button.js';
+import { cn } from '../lib/utils.js';
 
 export function ErgebnisDarstellung({ offerte }: { offerte: Offer }) {
   return (
     <div className="ergebnis">
       <nav className="bedienelement">
-        <a href={`/api/offerte/${offerte.metadata.offertId}/pdf`}>Als PDF exportieren</a>
-        <a href={`/projekte/${offerte.project.projektId}`}>Zurück zum Projekt</a>
-        <a href="/projekte">Übersicht</a>
+        <div className="flex items-center gap-3 p-4">
+          <a
+            href={`/api/offerte/${offerte.metadata.offertId}/pdf`}
+            className={cn(buttonVariants({ size: 'sm' }))}
+          >
+            Als PDF exportieren
+          </a>
+          <a
+            href={`/projekte/${offerte.project.projektId}`}
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+          >
+            Zurück zum Projekt
+          </a>
+          <a href="/projekte" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}>
+            Übersicht
+          </a>
+        </div>
       </nav>
       {offerte.dokument === undefined ? (
         // Alt-Artefakt aus der Zeit vor dem Dokumentblock: unverändert darstellen (I-24).

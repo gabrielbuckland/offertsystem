@@ -42,4 +42,66 @@ describe('POST /api/projekt/[id]/bewertung', () => {
     expect(danach.referenzobjekte[0]!.bewertung).toBeDefined();
     expect(danach.referenzobjekte[0]!.bewertung!.wert).toBeGreaterThan(0);
   });
+
+  it('mit referenzobjektId im Koerper bezieht nur dieses eine, die uebrigen bleiben unveraendert', async () => {
+    const v = await mkdtemp(join(tmpdir(), 'projekte-'));
+    process.env['PROJEKTE_VERZEICHNIS'] = v;
+    const p = await legeProjektAn(ADRESSE, v, standardKonfiguration());
+    const parametrisierung = {
+      flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'B',
+      zustandsbewertungen: {}, qualitaetsbewertungen: {},
+      anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
+    };
+    await speichereProjekt({
+      ...p,
+      referenzobjekte: [
+        { id: 'R-1', zimmerzahl: 3.5, parametrisierung },
+        { id: 'R-2', zimmerzahl: 4.5, parametrisierung },
+      ],
+      einheiten: [],
+    }, v);
+
+    const antwort = await POST(
+      new Request('http://test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referenzobjektId: 'R-2' }),
+      }),
+      { params: Promise.resolve({ id: p.id }) },
+    );
+    expect(antwort.status).toBe(200);
+
+    const danach = await ladeProjekt(p.id, v);
+    expect(danach.referenzobjekte[0]!.bewertung).toBeUndefined();
+    expect(danach.referenzobjekte[1]!.bewertung).toBeDefined();
+    expect(danach.referenzobjekte[1]!.bewertung!.wert).toBeGreaterThan(0);
+  });
+
+  it('mit unbekannter referenzobjektId meldet 404', async () => {
+    const v = await mkdtemp(join(tmpdir(), 'projekte-'));
+    process.env['PROJEKTE_VERZEICHNIS'] = v;
+    const p = await legeProjektAn(ADRESSE, v, standardKonfiguration());
+    await speichereProjekt({
+      ...p,
+      referenzobjekte: [{
+        id: 'R-1', zimmerzahl: 3.5,
+        parametrisierung: {
+          flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'B',
+          zustandsbewertungen: {}, qualitaetsbewertungen: {},
+          anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
+        },
+      }],
+      einheiten: [],
+    }, v);
+
+    const antwort = await POST(
+      new Request('http://test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referenzobjektId: 'R-nicht-vorhanden' }),
+      }),
+      { params: Promise.resolve({ id: p.id }) },
+    );
+    expect(antwort.status).toBe(404);
+  });
 });

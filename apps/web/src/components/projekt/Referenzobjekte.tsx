@@ -2,7 +2,7 @@
 
 /**
  * Referenzobjekte je Wohnungstyp mit ihren bezogenen Bewertungen. Der Abruf ist ein
- * eigener Klick (`rufeAb`), keine Nebenwirkung des Renderns — er verbraucht
+ * eigener Klick (`rufeAb`) je Zeile, keine Nebenwirkung des Renderns — er verbraucht
  * Anbieter-Guthaben (NFA-12, I-27).
  *
  * `aendere` traegt Referenzobjekte UND Einheiten in einem Aufruf: zwei unabhaengige
@@ -13,7 +13,7 @@
  * firmenweit als feststehend (`dossierDefaults`); Energielabel, Badezimmer, Lift und
  * Heizungsart sind keine PriceHubble-Pflichtfelder und bleiben Platzhalter.
  */
-import { Trash2 } from 'lucide-react';
+import { RefreshCw, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { formatiereAggregat } from '@offert/offer';
 import type { DossierDefaults } from '@offert/core';
@@ -23,7 +23,6 @@ import { Button } from '../ui/button.js';
 import { Input } from '../ui/input.js';
 import { Label } from '../ui/label.js';
 import { Select } from '../ui/select.js';
-import { StatusZeile } from '../ui/status-zeile.js';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../ui/table.js';
@@ -46,8 +45,9 @@ export interface ReferenzobjekteProps {
   readonly aendere: (
     referenzobjekte: readonly Referenzobjekt[], einheiten: readonly ProjektEinheit[],
   ) => void;
-  readonly rufeAb: () => void;
-  readonly abrufLaeuft: boolean;
+  readonly rufeAb: (referenzobjektId: string) => void;
+  // Id der Zeile, deren Einzelabruf gerade laeuft; `undefined` = kein Abruf aktiv.
+  readonly abrufLaufend: string | undefined;
 }
 
 /** Ersetzt genau ein Referenzobjekt; die uebrigen bleiben referenzgleich. */
@@ -65,7 +65,7 @@ function ersetze(
  * bei der Zimmerzahl waere die erfundene 0 zudem schemawidrig (`min(1)`).
  */
 export function Referenzobjekte({
-  referenzobjekte, einheiten, spalten, dossierDefaults, baujahr, aendere, rufeAb, abrufLaeuft,
+  referenzobjekte, einheiten, spalten, dossierDefaults, baujahr, aendere, rufeAb, abrufLaufend,
 }: ReferenzobjekteProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [entwurfZimmerzahl, setzeEntwurfZimmerzahl] = useState<number | undefined>(undefined);
@@ -118,34 +118,11 @@ export function Referenzobjekte({
 
   return (
     <section>
-      <div className="mb-3 flex items-center justify-between">
-        <div>
-          <h2 className="text-base font-semibold">Referenzobjekte</h2>
-          <p className="text-sm text-muted-foreground">
-            Je Wohnungstyp eine Referenzbewertung als Ausgangswert der Preisableitung.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {abrufLaeuft ? (
-            <StatusZeile text="Bewertungen werden bezogen…" />
-          ) : (
-            <>
-              <span className="text-xs text-muted-foreground">verbraucht API-Guthaben</span>
-              <Button type="button" variant="outline" onClick={rufeAb}>
-                Bewertungen beziehen
-              </Button>
-            </>
-          )}
-          <Button
-            type="button"
-            disabled={optionen.length === 0}
-            title={optionen.length === 0
-              ? 'Alle unterscheidbaren Zimmerzahlen sind vergeben.' : undefined}
-            onClick={oeffneDialog}
-          >
-            Referenzobjekt hinzufügen
-          </Button>
-        </div>
+      <div className="mb-3">
+        <h2 className="text-base font-semibold">Referenzobjekte</h2>
+        <p className="text-sm text-muted-foreground">
+          Je Wohnungstyp eine Referenzbewertung als Ausgangswert der Preisableitung.
+        </p>
       </div>
       <dialog
         ref={dialogRef}
@@ -238,6 +215,20 @@ export function Referenzobjekte({
                       variant="ghost"
                       size="icon"
                       className="size-8"
+                      disabled={abrufLaufend !== undefined}
+                      title="Bewertung für dieses Referenzobjekt beziehen (verbraucht API-Guthaben)."
+                      aria-label="Bewertung beziehen"
+                      onClick={() => rufeAb(r.id)}
+                    >
+                      <RefreshCw
+                        className={`size-4 ${abrufLaufend === r.id ? 'animate-spin' : ''}`}
+                      />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
                       disabled={verwendungen > 0}
                       title={verwendungen > 0
                         ? `Wird von ${verwendungen} Einheit${verwendungen === 1 ? '' : 'en'} verwendet.`
@@ -255,6 +246,18 @@ export function Referenzobjekte({
         </Table>
         </div>
       )}
+      <div className="mt-3">
+        <Button
+          type="button"
+          variant="outline"
+          disabled={optionen.length === 0}
+          title={optionen.length === 0
+            ? 'Alle unterscheidbaren Zimmerzahlen sind vergeben.' : undefined}
+          onClick={oeffneDialog}
+        >
+          Referenzobjekt hinzufügen
+        </Button>
+      </div>
     </section>
   );
 }

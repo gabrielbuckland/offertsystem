@@ -72,7 +72,9 @@ export function ProjektAnsicht(
 ) {
   const router = useRouter();
   const [abrufMeldung, setAbrufMeldung] = useState<AbrufMeldung | undefined>(undefined);
-  const [abrufLaeuft, setAbrufLaeuft] = useState(false);
+  // Id des Referenzobjekts, dessen Einzelabruf laeuft (Zeilen-Aktion in
+  // `Referenzobjekte.tsx`); `undefined` = kein Abruf aktiv.
+  const [abrufLaufend, setAbrufLaufend] = useState<string | undefined>(undefined);
   const [offerteLaeuft, setOfferteLaeuft] = useState(false);
   const [offerteFehler, setOfferteFehler] = useState<string | undefined>(undefined);
   const [rechenwegOffen, setRechenwegOffen] = useState(false);
@@ -81,13 +83,19 @@ export function ProjektAnsicht(
   // deshalb erst dieses Modal, statt sofort zu erzeugen.
   const [honorarModalOffen, setHonorarModalOffen] = useState(false);
 
-  async function rufeAb() {
+  async function rufeAb(referenzobjektId: string) {
     setAbrufMeldung(undefined);
-    setAbrufLaeuft(true);
+    setAbrufLaufend(referenzobjektId);
     // Fehlerbehandlung fuer Netz-/Antwortfehler liegt in `rufeApi`.
     const { ok, rumpf } = await rufeApi<BewertungsAntwort>(
-      `/api/projekt/${projekt.id}/bewertung`, { method: 'POST' });
-    setAbrufLaeuft(false);
+      `/api/projekt/${projekt.id}/bewertung`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referenzobjektId }),
+      },
+    );
+    setAbrufLaufend(undefined);
     if (!ok || rumpf.projekt === undefined) {
       setAbrufMeldung({
         text: rumpf.fehler?.text ?? 'Die Bewertungen konnten nicht bezogen werden.',
@@ -224,8 +232,10 @@ export function ProjektAnsicht(
           aendere={(referenzobjekte, einheiten) => aendere({
             ...projekt, referenzobjekte: [...referenzobjekte], einheiten: [...einheiten],
           })}
-          rufeAb={() => { if (!abrufLaeuft) void rufeAb(); }}
-          abrufLaeuft={abrufLaeuft}
+          rufeAb={(referenzobjektId) => {
+            if (abrufLaufend === undefined) void rufeAb(referenzobjektId);
+          }}
+          abrufLaufend={abrufLaufend}
         />
       </section>
       <section className="mb-6 rounded-lg border border-border bg-card p-6">

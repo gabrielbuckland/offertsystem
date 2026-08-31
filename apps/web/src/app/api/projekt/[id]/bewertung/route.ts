@@ -4,6 +4,11 @@
  * Der Abruf ist eine eigene, ausdrueckliche Handlung und kein Nebeneffekt des
  * Offerterzeugens: Die Abrufzahl ist kontingentiert (NFA-12, I-27), und der Vermarkter
  * muss sehen, wann Credits verbraucht werden.
+ *
+ * Ohne Koerper (oder ohne `referenzobjektId` darin) laeuft der Abruf ueber alle
+ * Referenzobjekte; mit `referenzobjektId` nur ueber das eine (Einzelabruf je Zeile,
+ * `Referenzobjekte.tsx`). Die uebrigen Referenzobjekte bleiben in der Antwort
+ * unveraendert, da `buendel.bewertungen` dann nur den einen Eintrag enthaelt.
  */
 import type { WohnungstypId } from '@offert/core';
 import { beschaffe } from '../../../../../server/eingang.js';
@@ -13,7 +18,17 @@ import { projiziere } from '../../../../../server/projektion.js';
 
 interface Kontext { readonly params: Promise<{ readonly id: string }> }
 
-export async function POST(_anfrage: Request, kontext: Kontext): Promise<Response> {
+async function leseReferenzobjektId(anfrage: Request): Promise<string | undefined> {
+  try {
+    const rumpf = await anfrage.json() as { readonly referenzobjektId?: unknown };
+    return typeof rumpf.referenzobjektId === 'string' ? rumpf.referenzobjektId : undefined;
+  } catch {
+    return undefined; // Kein/kein gueltiger Koerper: voller Abruf ueber alle Typen.
+  }
+}
+
+export async function POST(anfrage: Request, kontext: Kontext): Promise<Response> {
+  const referenzobjektId = await leseReferenzobjektId(anfrage);
   // Henne-Ei: siehe Berechnungsroute. Zwei Aufrufe, der Datei-Zwischenspeicher des
   // Laders traegt die Kosten des zweiten.
   const vorlaufzeit = holeLaufzeit();
@@ -39,10 +54,21 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
       { fehler: { text: 'Es ist kein Referenzobjekt hinterlegt.' } }, { status: 422 });
   }
 
+  let zuBeschaffen = projekt.referenzobjekte;
+  if (referenzobjektId !== undefined) {
+    const gefunden = projekt.referenzobjekte.find((r) => r.id === referenzobjektId);
+    if (gefunden === undefined) {
+      return Response.json(
+        { fehler: { text: `Referenzobjekt ${referenzobjektId} nicht gefunden.` } }, { status: 404 });
+    }
+    zuBeschaffen = [gefunden];
+  }
+
   // Reiner Bewertungsabruf braucht keine Anpassungen; ohne die Option versuchte
   // `projiziere` unnoetig, in Franken erfasste Positionen ueber leere Basispreise
   // umzurechnen und schluege dabei fehl (siehe Berechnungsroute).
-  const projiziert = projiziere(projekt, {}, { ohneAnpassungen: true });
+  const projiziert = projiziere(
+    { ...projekt, referenzobjekte: zuBeschaffen }, {}, { ohneAnpassungen: true });
   if (!projiziert.ok) {
     return Response.json({ fehler: { text: projiziert.meldung } }, { status: 422 });
   }

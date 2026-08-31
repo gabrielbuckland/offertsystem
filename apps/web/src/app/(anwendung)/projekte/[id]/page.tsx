@@ -7,8 +7,10 @@ import { holeLaufzeit, holeProjektLaufzeit } from '../../../../server/laufzeit.j
 import { ladeProjekt } from '../../../../server/projekt-ablage.js';
 import { listeOfferten } from '../../../../server/offerten-ablage.js';
 import { ProjektAnsicht } from '../../../../components/projekt/ProjektAnsicht.js';
-import { ProjektOfferten } from '../../../../components/projekt/ProjektOfferten.js';
+import { OffertenSchaltflaeche } from '../../../../components/projekt/OffertenSchaltflaeche.js';
 import { Brotkrume } from '../../../../components/shell/Brotkrume.js';
+import { buttonVariants } from '../../../../components/ui/button.js';
+import { cn } from '../../../../lib/utils.js';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,12 +57,15 @@ export default async function ProjektSeite({ params }: Props) {
             + `${projekt.adresse.plz} ${projekt.adresse.ort}` },
         ]}
         />
-        <Link
-          href={`/projekte/${projekt.id}/einstellungen` as Route}
-          className="text-sm text-primary underline"
-        >
-          Projekteinstellungen
-        </Link>
+        <div className="flex items-center gap-2">
+          <OffertenSchaltflaeche eintraege={offerten} />
+          <Link
+            href={`/projekte/${projekt.id}/einstellungen` as Route}
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+          >
+            Projekteinstellungen
+          </Link>
+        </div>
       </div>
       <ProjektAnsicht
         projekt={projekt}
@@ -73,10 +78,6 @@ export default async function ProjektSeite({ params }: Props) {
         // Rechenweg je Zeile ueber «firmenweit» oder «projektbezogen» (A-13).
         ueberschreibungen={fingerabdruck.ueberschreibungen}
       />
-      <section className="mt-6">
-        <h2 className="mb-3 text-lg font-semibold">Offerten</h2>
-        <ProjektOfferten eintraege={offerten} />
-      </section>
     </>
   );
 }

@@ -4,9 +4,10 @@ import { AppShell } from '../../src/components/shell/AppShell.js';
 import { Brotkrume } from '../../src/components/shell/Brotkrume.js';
 
 describe('AppShell', () => {
-  it('fuehrt keinen zentralen Einstellungspunkt mehr in der Kopfleiste', () => {
+  it('fuehrt keine eigene Navigation mehr — Logo-Link und Brotkrume decken den Rueckweg ab', () => {
     const markup = renderToStaticMarkup(<AppShell><p>Inhalt</p></AppShell>);
-    expect(markup).toContain('Projekte');
+    expect(markup).toContain('href="/projekte"');
+    expect(markup).not.toContain('<nav');
     // Einstellungen gelten je Ebene und sind dort erreichbar, wo sie wirken.
     expect(markup).not.toContain('>Einstellungen<');
   });
