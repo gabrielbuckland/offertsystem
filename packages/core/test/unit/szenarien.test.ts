@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { fuehreSzenarioAus, ladeSzenario, schreibeSzenarienArtefakt } from '../helper/szenario.js';
 import { dokumentiere } from '../helper/dokumentiere.js';
 
-const SCHWELLE = 0.05;
+const SCHWELLE = 0.001;
 
 describe('T2 — die sechs Testszenarien gegen die Referenzberechnung', () => {
   const ergebnisse = ['S1', 'S2', 'S3', 'S4a', 'S4b', 'S6'].map((id) => fuehreSzenarioAus(id));
@@ -11,11 +11,11 @@ describe('T2 — die sechs Testszenarien gegen die Referenzberechnung', () => {
   // an die Testfunktion weiter; die Falltabelle laeuft deshalb als Schleife
   // ueber normale `it`-Aufrufe — die Testnamen bleiben identisch.
   for (const id of ['S1', 'S2', 'S3', 'S4a', 'S4b', 'S6']) {
-    it(`${id} hält die Abweichungsschwelle von 5 Prozent in V, H_min und H_max ein`, ({ task }) => {
+    it(`${id} hält die Abweichungsschwelle von 0,1 Prozent in V, H_min und H_max ein`, ({ task }) => {
       dokumentiere(task, {
         vorbedingung: `Szenario ${id} mit unabhängiger Referenzberechnung`,
         schritte: 'Das Szenario durch die Pipeline rechnen und mit der Referenz vergleichen',
-        erwartung: 'Die relative Abweichung in V, H_min und H_max beträgt je höchstens 5 Prozent',
+        erwartung: 'Die relative Abweichung in V, H_min und H_max beträgt je höchstens 0,1 Prozent',
         anforderung: 'A-06',
       });
       const e = fuehreSzenarioAus(id);

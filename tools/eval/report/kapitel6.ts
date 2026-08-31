@@ -265,7 +265,7 @@ export function p1Szenarien(
            'Lagedaten'],
     zeilen,
     beschriftung: `Szenarienlauf gegen die unabhängige Referenzrechnung; bestanden gilt `
-      + `bei einer Abweichung bis ${zahlDeCh(szenarien.schwelle * 100, 0)} Prozent. `
+      + `bei einer Abweichung bis ${zahlDeCh(szenarien.schwelle * 100, 1)} Prozent. `
       + 'Die Spalte Lagedaten weist die Herkunft der Lagescores aus (R-01).',
     label: 'tab:p1_szenarien',
   });

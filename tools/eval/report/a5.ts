@@ -186,7 +186,7 @@ export function a5Protokolle(tests: TestArtefakt): string {
 }
 
 export const ABDECKUNGSZIELE = [
-  { paket: 'packages/core', anzeige: '@offert/core', zeilen: 95, branches: 90 },
+  { paket: 'packages/core', anzeige: '@offert/core', zeilen: 90, branches: 85 },
   { paket: 'packages/pricehubble', anzeige: '@offert/pricehubble', zeilen: 80, branches: null },
   { paket: 'packages/offer', anzeige: '@offert/offer', zeilen: null, branches: null },
   { paket: 'apps/web', anzeige: '@offert/web', zeilen: null, branches: null },

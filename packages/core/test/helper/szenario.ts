@@ -65,7 +65,7 @@ export function fuehreSzenarioAus(
     honorarMin: relativ(ist.honorarMin, referenz.honorarMin),
     honorarMax: relativ(ist.honorarMax, referenz.honorarMax),
   };
-  const bestanden = Object.values(abweichung).every((a) => Math.abs(a) <= 0.05);
+  const bestanden = Object.values(abweichung).every((a) => Math.abs(a) <= 0.001);
 
   return {
     id, ergebnis: lauf.wert, ergebnisAusgegeben: true, referenz, ist, abweichung, bestanden,
@@ -96,7 +96,7 @@ export function schreibeSzenarienArtefakt(ergebnisse: readonly SzenarioErgebnis[
   const verzeichnis = `artifacts/scenarios/${zeitstempel}`;
   mkdirSync(verzeichnis, { recursive: true });
   writeFileSync(`${verzeichnis}/szenarien.json`, `${JSON.stringify({
-    schwelle: 0.05,
+    schwelle: 0.001,
     gesamt: ergebnisse.every((e) => e.bestanden) ? 'bestanden' : 'nicht bestanden',
     szenarien: ergebnisse,
   }, null, 2)}\n`);
