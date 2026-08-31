@@ -9,19 +9,24 @@
  * wieder auf. `entferneSpalte` ist deshalb ein eigener Pflicht-Rueckruf statt eines
  * optionalen zweiten Arguments von `aendere`: TypeScript ist in der Parameterzahl
  * kontravariant und wuerde ein fehlendes optionales Argument sonst typkorrekt verschlucken.
+ *
+ * Die Detailzeile bleibt IMMER gemountet und wird nur per CSS (`hidden`) ausgeblendet,
+ * nicht per bedingtem Rendering (`isOffen && …`): Die Testsuite faengt Handler ab, die
+ * waehrend eines einzigen `renderToStaticMarkup`-Durchlaufs entstehen (kein DOM, keine
+ * simulierten Klicks, siehe `AnpassungsSpalten.test.tsx`); ein bedingt weggelassener
+ * Teilbaum waere fuer sie unerreichbar. Sichtbar/unsichtbar ist fuer den Vermarkter
+ * dasselbe Ergebnis wie gemountet/nicht gemountet.
  */
 import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
-import { Fragment, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { formatiereAggregat } from '@offert/offer';
 import { normalisiereBereiche, type Bereichsregel as KernBereichsregel } from '@offert/core';
 import type { AnpassungsSpalte, Merkmal } from '../../server/projekt-schema.js';
 import { BereichsregelEditor } from '../einstellungen/BereichsregelEditor.js';
 import { Button } from '../ui/button.js';
 import { Input } from '../ui/input.js';
+import { Label } from '../ui/label.js';
 import { Select } from '../ui/select.js';
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '../ui/table.js';
 import { ZellenEingabe } from './ZellenEingabe.js';
 import {
   faktorZuProzent, frankenZuRappen, prozentZuFaktor, rappenZuFranken,
@@ -107,12 +112,11 @@ export function spalteMitGeaenderterRegel(
 export function AnpassungsSpalten(
   { spalten, merkmale, aendere, entferneSpalte, uebernehmeAufEinheiten }: AnpassungsSpaltenProps,
 ) {
-  // Die Staffel wird in einer Detailzeile unter der Spaltenzeile bearbeitet, nicht in
-  // einem eigenen Dialog — sie gehoert sichtbar zur Spalte.
   const [offene, setzeOffene] = useState<readonly string[]>([]);
   function schalte(id: string): void {
     setzeOffene((o) => (o.includes(id) ? o.filter((x) => x !== id) : [...o, id]));
   }
+
   const naechsteId = useRef<(() => string) | undefined>(undefined);
   if (naechsteId.current === undefined) {
     naechsteId.current = erzeugeSpaltenIdFolge(spalten);
@@ -150,106 +154,119 @@ export function AnpassungsSpalten(
       {spalten.length === 0 ? (
         <p className="text-muted-foreground">Noch keine Spalte erfasst.</p>
       ) : (
-        <div className="overflow-hidden rounded-md border border-border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-2/5">Bezeichnung</TableHead>
-              <TableHead>Erfassungsform</TableHead>
-              <TableHead>Vorgabe</TableHead>
-              <TableHead className="w-px" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {spalten.map((s) => (
-              <Fragment key={s.id}>
-              <TableRow>
-                <TableCell>
-                  <Input
-                    className="h-8"
-                    aria-label="Bezeichnung"
-                    value={s.bezeichnung}
-                    onChange={(e) => aktualisiere(s.id, { bezeichnung: e.target.value })}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Select
-                    className="h-8"
-                    aria-label="Erfassungsform"
-                    value={s.erfassungsform}
-                    onChange={(e) => aktualisiere(s.id, {
-                      erfassungsform: e.target.value as AnpassungsSpalte['erfassungsform'],
-                    })}
-                  >
-                    <option value="relativ">Prozent</option>
-                    <option value="absolut">Franken</option>
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  {s.regel === undefined ? (
-                    <div className="flex items-center gap-1.5">
-                      {/*
-                        Angezeigt und erfasst wird die Einheit, in der ein Mensch denkt —
-                        Prozent bei 'relativ', Franken bei 'absolut' —, gespeichert die des
-                        Kerns (Faktor bzw. Rappen). GENAU wie in `EinheitenTabelle`: Der
-                        Vorgabewert wird von dort in dieselbe Groesse uebernommen
-                        (einheiten-generator.ts), zwei verschiedene Skalen fuer dieselbe
-                        Groesse waeren der Fehler, der schon einmal den Faktor 100
-                        verursacht hat.
-                      */}
-                      <ZellenEingabe
-                        wert={s.erfassungsform === 'relativ'
-                          ? faktorZuProzent(s.vorgabewert ?? 0)
-                          : rappenZuFranken(s.vorgabewert ?? 0)}
-                        aendere={(eingabe) => aktualisiere(s.id, {
-                          vorgabewert: s.erfassungsform === 'relativ'
-                            ? prozentZuFaktor(eingabe)
-                            : frankenZuRappen(eingabe),
-                        })}
-                      />
-                      <span className="text-xs text-muted-foreground">
-                        {s.erfassungsform === 'relativ' ? '%' : 'CHF'}
-                      </span>
-                    </div>
-                  ) : (
-                    // Schema schliesst `regel` und `vorgabewert` an derselben Spalte aus —
-                    // ein Eingabefeld hier haette ein Projekt mit Regel unspeicherbar
-                    // gemacht. Die Staffel wird stattdessen in der Detailzeile bearbeitet.
-                    <p className="text-sm">{beschreibeStaffel(s, merkmale)}</p>
-                  )}
-                </TableCell>
-                <TableCell className="whitespace-nowrap text-right">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    aria-expanded={offene.includes(s.id)}
-                    onClick={() => schalte(s.id)}
-                  >
-                    {s.regel === undefined ? 'Details' : 'Staffel'}
-                    {offene.includes(s.id)
-                      ? <ChevronDown className="size-4" />
-                      : <ChevronRight className="size-4" />}
-                  </Button>
+        <div className="overflow-hidden rounded-md border border-border divide-y divide-border">
+          {spalten.map((s) => {
+            const isOffen = offene.includes(s.id);
+            return (
+            <div key={s.id} className="bg-card">
+              <div
+                className="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-muted/30"
+                onClick={() => schalte(s.id)}
+              >
+                <div className="flex flex-1 items-center gap-3" onClick={(e) => e.stopPropagation()}>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="size-8"
-                    title="Entfernt die Spalte und ihre Werte aus allen Einheiten."
-                    aria-label="entfernen"
-                    onClick={() => entferneSpalte(s.id)}
+                    className="size-8 shrink-0"
+                    aria-expanded={isOffen}
+                    aria-label={isOffen ? 'Details einklappen' : 'Details ausklappen'}
+                    onClick={() => schalte(s.id)}
                   >
-                    <Trash2 className="size-4" />
+                    {isOffen ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
                   </Button>
-                </TableCell>
-              </TableRow>
-              {offene.includes(s.id) && (
-                <TableRow>
-                  <TableCell colSpan={4} className="bg-muted/30">
+                  <span className="text-sm font-medium">{s.bezeichnung || 'Neue Spalte'}</span>
+                  {!isOffen && (
+                    <span className="text-sm text-muted-foreground truncate">
+                      {s.regel === undefined
+                        ? `${s.erfassungsform === 'relativ' ? faktorZuProzent(s.vorgabewert ?? 0) : formatiereAggregat(rappenZuFranken(s.vorgabewert ?? 0))} ${s.erfassungsform === 'relativ' ? '%' : ''}`
+                        : beschreibeStaffel(s, merkmale)}
+                    </span>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
+                  title="Entfernt die Spalte und ihre Werte aus allen Einheiten."
+                  aria-label="entfernen"
+                  onClick={(e) => { e?.stopPropagation(); entferneSpalte(s.id); }}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+              {/* Bezeichnung/Erfassungsform/Vorgabewert bleiben IMMER gemountet (siehe
+                  Kopfkommentar) — nur `hidden` blendet sie aus. Die Regel-Konfiguration
+                  eine Ebene tiefer bleibt dagegen echt bedingt gemountet: sie zieht mit
+                  `BereichsregelEditor` ihre eigenen `ZellenEingabe`-Instanzen nach, die
+                  sonst faelschlich als (nicht vorhandenes) Vorgabewert-Feld durchgingen. */}
+              <div className={`border-t border-border/50 p-6 pt-2 ${isOffen ? '' : 'hidden'}`}>
+                <div className="flex flex-col gap-6">
+                  {/* Stage 1: Basic Config */}
+                  <div className="flex flex-wrap items-end gap-6">
+                    <div className="min-w-[200px] flex-1 space-y-2">
+                      <Label htmlFor={`spalte-${s.id}-bezeichnung`}>Bezeichnung</Label>
+                      <Input
+                        id={`spalte-${s.id}-bezeichnung`}
+                        className="h-9 w-full bg-background"
+                        aria-label="Bezeichnung"
+                        value={s.bezeichnung}
+                        onChange={(e) => aktualisiere(s.id, { bezeichnung: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`spalte-${s.id}-erfassungsform`}>Erfassungsform</Label>
+                      <Select
+                        id={`spalte-${s.id}-erfassungsform`}
+                        className="h-9 w-40"
+                        aria-label="Erfassungsform"
+                        value={s.erfassungsform}
+                        onChange={(e) => aktualisiere(s.id, {
+                          erfassungsform: e.target.value as AnpassungsSpalte['erfassungsform'],
+                        })}
+                      >
+                        <option value="relativ">Prozent</option>
+                        <option value="absolut">Franken</option>
+                      </Select>
+                    </div>
+
+                    {s.regel === undefined && (
+                      <div className="space-y-2">
+                        <Label>Vorgabewert</Label>
+                        <div className="flex items-center gap-2">
+                          <div className="w-32">
+                            <ZellenEingabe
+                              wert={s.erfassungsform === 'relativ'
+                                ? faktorZuProzent(s.vorgabewert ?? 0)
+                                : rappenZuFranken(s.vorgabewert ?? 0)}
+                              aendere={(eingabe) => aktualisiere(s.id, {
+                                vorgabewert: s.erfassungsform === 'relativ'
+                                  ? prozentZuFaktor(eingabe)
+                                  : frankenZuRappen(eingabe),
+                              })}
+                            />
+                          </div>
+                          <span className="text-sm font-medium text-muted-foreground">
+                            {s.erfassungsform === 'relativ' ? '%' : 'CHF'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Stage 2: Rules / Actions — echt bedingt gemountet, siehe Kommentar oben. */}
+                  {isOffen && (
+                  <div className="rounded-md border border-border/50 bg-muted/10 p-4">
                     {s.regel === undefined ? (
-                      <div className="flex flex-wrap items-start gap-x-10 gap-y-3 py-1">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div>
+                          <h4 className="text-sm font-medium">Fester Vorgabewert</h4>
+                          <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                            Der Zuschlag ist aktuell für alle Einheiten gleich. Sie können den Wert auf bestehende, leere Einheiten anwenden oder stattdessen eine Staffel nach Merkmal (z. B. Stockwerk) einführen.
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 flex-col gap-2">
                           <Button
                             type="button"
                             variant="outline"
@@ -258,12 +275,6 @@ export function AnpassungsSpalten(
                           >
                             Auf leere Zellen übernehmen
                           </Button>
-                          <p className="mt-1 max-w-72 text-xs text-muted-foreground">
-                            Schreibt den Vorgabewert in alle Einheiten, die in dieser
-                            Spalte noch keinen eigenen Wert tragen.
-                          </p>
-                        </div>
-                        <div>
                           <Button
                             type="button"
                             variant="outline"
@@ -276,48 +287,47 @@ export function AnpassungsSpalten(
                           >
                             Staffel nach Merkmal einführen
                           </Button>
-                          <p className="mt-1 max-w-72 text-xs text-muted-foreground">
-                            Der Wert folgt dann je Einheit einem Merkmal, zum Beispiel dem
-                            Stockwerk, statt eines festen Vorgabewerts.
-                          </p>
                         </div>
                       </div>
                     ) : (
-                      <div className="py-1">
-                        <BereichsregelEditor
-                          // `normalisiereBereiche` bringt die Zod-Optionalitaet auf die
-                          // Kernform (dasselbe Muster wie im Schema, superRefine).
-                          regel={{
-                            merkmal: s.regel.merkmal,
-                            bereiche: normalisiereBereiche(s.regel.bereiche),
-                          }}
-                          merkmale={merkmale}
-                          erfassungsform={s.erfassungsform}
-                          aendere={(regel) => aendere(spalten.map((x) => (
-                            x.id === s.id ? spalteMitGeaenderterRegel(x, regel) : x)))}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="mt-2"
-                          onClick={() => aendere(spalten.map((x) => (
-                            x.id === s.id ? spalteOhneRegel(x) : x)))}
-                        >
-                          Staffel entfernen
-                        </Button>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          Die Spalte trägt danach wieder einen festen Vorgabewert.
-                        </p>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-sm font-medium">Staffel nach Merkmal</h4>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              Der Wert variiert je Einheit anhand eines Merkmals.
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => aendere(spalten.map((x) => (
+                              x.id === s.id ? spalteOhneRegel(x) : x)))}
+                          >
+                            Staffel entfernen
+                          </Button>
+                        </div>
+                        <div className="pt-2">
+                          <BereichsregelEditor
+                            regel={{
+                              merkmal: s.regel.merkmal,
+                              bereiche: normalisiereBereiche(s.regel.bereiche),
+                            }}
+                            merkmale={merkmale}
+                            erfassungsform={s.erfassungsform}
+                            aendere={(regel) => aendere(spalten.map((x) => (
+                              x.id === s.id ? spalteMitGeaenderterRegel(x, regel) : x)))}
+                          />
+                        </div>
                       </div>
                     )}
-                  </TableCell>
-                </TableRow>
-              )}
-              </Fragment>
-            ))}
-          </TableBody>
-        </Table>
+                  </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )})}
         </div>
       )}
     </section>
