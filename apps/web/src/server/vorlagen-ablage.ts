@@ -8,11 +8,8 @@
 import * as fs from 'node:fs/promises';
 import {
   offertDokumentSchema, sammlePlatzhalterIds, type OffertDokument,
-} from '@offert/offer/src/vorlage/dokument-schema.js';
-import { TEXT_PLATZHALTER } from '@offert/offer/src/vorlage/platzhalter.js';
-import {
-  VORLAGE_VERSION, standardVorlage,
-} from '@offert/offer/src/vorlage/standard-vorlage.js';
+  TEXT_PLATZHALTER, VORLAGE_VERSION, standardVorlage,
+} from '@offert/offer';
 import { z } from 'zod';
 import { schreibeAtomar } from './ablage-helfer.js';
 import { bildePruefsumme } from './kanonisch.js';

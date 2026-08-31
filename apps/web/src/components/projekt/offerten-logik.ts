@@ -1,7 +1,6 @@
 // Reine Logik von `ProjektOfferten.tsx`, getrennt von der Darstellung, damit sie ohne
 // Rendering testbar ist.
-import { formatiereHonorarProzent } from '@offert/offer/src/format/de-ch.js';
-import { berechneHonorarProzent } from '@offert/offer/src/model/honorar-eingabe.js';
+import { formatiereHonorarProzent, berechneHonorarProzent } from '@offert/offer';
 import type { ListenEintrag } from '../../server/offerten-ablage.js';
 
 // Dieselbe Kuerzung wie im Dateinamen (`dateinameFuer` in `offerten-ablage.ts`, Spec 05

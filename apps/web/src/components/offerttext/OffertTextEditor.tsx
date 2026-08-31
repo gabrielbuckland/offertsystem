@@ -14,8 +14,7 @@ import StarterKit from '@tiptap/starter-kit';
 // `ListItemOptions` durchreicht, nicht `content` — das laesst sich nur ueber
 // `ListItem.extend(...)` setzen.
 import { ListItem } from '@tiptap/extension-list-item';
-import type { OffertDokument } from '@offert/offer/src/vorlage/dokument-schema.js';
-import { PLATZHALTER_KATALOG } from '@offert/offer/src/vorlage/platzhalter.js';
+import { type OffertDokument, PLATZHALTER_KATALOG } from '@offert/offer';
 import { istGueltigesOffertDokument } from './dokument-pruefung.js';
 import { PlatzhalterKnoten, PlatzhalterTabelleKnoten } from './platzhalter-erweiterung.js';
 import { Hinweis } from '../ui/hinweis.js';

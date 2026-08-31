@@ -1,6 +1,11 @@
 /**
  * Oeffentlicher Einstiegspunkt des Offert-Pakets (I-25).
  * Additiv gefuehrt: Bestehende Exporte werden nicht umbenannt oder entfernt (PE-15).
+ *
+ * Bewusst OHNE `.tsx`/React: Dieser Index wird auch aus reinen Server-/Logikdateien
+ * importiert, die ueber tools/-Werkzeuge im jsx-freien Nachweislauf
+ * (`tsc -p tools/tsconfig.json`, PE-20) landen. Die HTML-Vorlagenkomponenten stehen
+ * deshalb im eigenen Einstiegspunkt `@offert/offer/template` (Paketgrenzen-Bereinigung).
  */
 export const PAKET_NAME = '@offert/offer';
 
@@ -55,14 +60,32 @@ export {
   formatiereZimmerzahl,
 } from './format/de-ch.js';
 
-export { HerkunftsBlock, HerkunftsWert } from './template/HerkunftsWert.js';
-export { OfferteDokument } from './template/OfferteDokument.js';
-export { VermarktungsOfferte } from './template/VermarktungsOfferte.js';
+// M-10 galt nur, solange kein Aufrufer ueber den Index importierte (Global Constraint);
+// apps/web importiert diese Symbole inzwischen ausschliesslich ueber den Paketindex statt
+// ueber Modulpfade (Paketgrenzen-Bereinigung), daher jetzt regulaer re-exportiert.
+export {
+  offertDokumentSchema,
+  sammlePlatzhalterIds,
+  type OffertDokument,
+} from './vorlage/dokument-schema.js';
 
-// M-10: Kein weiterer Re-Export aus `vorlage/*` hier — zieht React/`.tsx` in den
-// Graphen und darf aus Node-Kontexten deshalb nicht importiert werden (PE-09).
+export {
+  standardVorlage,
+  VORLAGE_VERSION,
+} from './vorlage/standard-vorlage.js';
+
+export {
+  TEXT_PLATZHALTER,
+  PLATZHALTER_KATALOG,
+  platzhalterWerte,
+} from './vorlage/platzhalter.js';
+
+export {
+  loeseDokumentAuf,
+  PlatzhalterFehler,
+} from './vorlage/aufloesung.js';
 
 // `druckeOfferte` steht BEWUSST NICHT hier: Es zieht `playwright` in den
 // Abhaengigkeitsgraphen; ueber den Paketindex landete es im Browser-Bundle der
 // Erfassungsmaske und der Next-Build scheiterte. Import ausschliesslich ueber den
-// Modulpfad: `import { druckeOfferte } from '@offert/offer/src/pdf/drucke-offerte.js';`
+// eigenen Einstiegspunkt: `import { druckeOfferte } from '@offert/offer/druck';`

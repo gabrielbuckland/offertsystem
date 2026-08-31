@@ -11,7 +11,7 @@ import type {
 } from '@offert/core';
 // Modulpfad statt Paketindex: Der Index re-exportiert React-Komponenten (.tsx), fuer die
 // Node kein Type-Stripping leistet (PE-09).
-import { formatiereAggregat, formatiereProzent, formatiereScore } from '@offert/offer/src/format/de-ch.js';
+import { formatiereAggregat, formatiereProzent, formatiereScore } from '@offert/offer';
 
 export interface AngezeigterFehler {
   readonly text: string;

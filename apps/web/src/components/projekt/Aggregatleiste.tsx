@@ -1,5 +1,5 @@
 'use client';
-import { formatiereAggregat, formatiereScore } from '@offert/offer/src/format/de-ch.js';
+import { formatiereAggregat, formatiereScore } from '@offert/offer';
 import { Button } from '../ui/button.js';
 import { Hinweis } from '../ui/hinweis.js';
 

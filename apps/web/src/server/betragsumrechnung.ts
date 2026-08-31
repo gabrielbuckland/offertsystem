@@ -9,7 +9,7 @@
 import { bereiteEingabeAuf, berechneVerkaufssumme, type Konfiguration } from '@offert/core';
 // Modulpfad statt Paketindex: Der Index re-exportiert React-Komponenten (.tsx), fuer
 // die Node kein Type-Stripping leistet (PE-09).
-import { formatiereAggregat } from '@offert/offer/src/format/de-ch.js';
+import { formatiereAggregat } from '@offert/offer';
 import { zuEingangsArgumenten, type Beschafft } from './eingang.js';
 import type { Erfassung } from './erfassung-schema.js';
 import { uebersetzeStufenFehler } from './fehlertexte.js';

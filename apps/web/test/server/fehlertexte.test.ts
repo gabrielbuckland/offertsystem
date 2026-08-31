@@ -19,7 +19,7 @@ import {
 // React-Komponenten nach, fuer die Node kein Type-Stripping leistet.
 import {
   formatiereAggregat, formatiereProzent, formatiereScore,
-} from '@offert/offer/src/format/de-ch.js';
+} from '@offert/offer';
 import {
   AGGREGAT_VORLAGEN,
   KERN_VORLAGEN,

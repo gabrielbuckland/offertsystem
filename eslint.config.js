@@ -11,6 +11,15 @@ const KEINE_RELATIVEN_PAKETPFADE = {
   message: 'Pakete werden ausschliesslich ueber @offert/* importiert.',
 };
 
+// R4: Paketgrenzen — keine Deep Imports, Verkehr nur ueber Einstiegspunkte. Wiederholt
+// in jedem Block aus demselben Grund wie KEINE_RELATIVEN_PAKETPFADE (Zeile 7-8); der
+// Basis-Block unten deckt tools/, das von keiner spezifischeren Regel erfasst wird.
+const KEIN_DEEP_IMPORT = {
+  group: ['@offert/*/src/**'],
+  message: 'R4: Paketgrenzen — keine Deep Imports, Verkehr nur ueber Einstiegspunkte '
+         + '(z. B. @offert/offer, @offert/offer/druck).',
+};
+
 // Verbietet src/ -> test/ Importe. Dateibezogen (Endungsmuster statt Verzeichnismuster)
 // formuliert, weil `no-restricted-imports` `group` mit gitignore-Semantik auswertet: ein
 // Verzeichnismuster wie `../*` erfasst den ganzen Paketinhalt und traefe damit auch den
@@ -66,6 +75,17 @@ export default tseslint.config(
     },
   },
 
+  // R4 (Basis) — gilt fuer die ganze Quellenmenge, insbesondere tools/, das keine der
+  // spezifischeren R1-R3-Bloecke unten erfasst. Fuer packages/** und apps/** wird
+  // KEIN_DEEP_IMPORT zusaetzlich in die jeweils zutreffenden Bloecke aufgenommen, weil
+  // `no-restricted-imports` je Datei nur den zuletzt zutreffenden Block anwendet.
+  {
+    files: QUELLEN,
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [KEIN_DEEP_IMPORT] }],
+    },
+  },
+
   // R1a — Der Berechnungskern ist nach aussen abhaengigkeitsfrei (NFA-02, I-03, I-23).
   // Gilt fuer das GANZE Paket inkl. Tests, sonst waere die Abhaengigkeitsfreiheit
   // nur eine Absichtserklaerung.
@@ -90,6 +110,7 @@ export default tseslint.config(
             message: 'Der Kern kennt keinen HTTP-Client und keinen Browser (Spec 01 §3.2).',
           },
           KEINE_RELATIVEN_PAKETPFADE,
+          KEIN_DEEP_IMPORT,
         ],
       }],
     },
@@ -129,6 +150,7 @@ export default tseslint.config(
             message: 'Produktivcode des Kerns importiert nicht aus test/.',
           },
           KEINE_RELATIVEN_PAKETPFADE,
+          KEIN_DEEP_IMPORT,
         ],
       }],
     },
@@ -145,6 +167,7 @@ export default tseslint.config(
           { group: ['@offert/offer', '@offert/offer/*'],
             message: 'Nicht-Kante pricehubble -> offer (Spec 01 §2.2).' },
           KEINE_RELATIVEN_PAKETPFADE,
+          KEIN_DEEP_IMPORT,
         ],
       }],
     },
@@ -160,6 +183,7 @@ export default tseslint.config(
             message: 'Nicht-Kante offer -> pricehubble: die Vorlage haengt sonst am '
                    + 'Antwortformat des Anbieters (Spec 01 §2.2, A-13).' },
           KEINE_RELATIVEN_PAKETPFADE,
+          KEIN_DEEP_IMPORT,
         ],
       }],
     },
@@ -173,6 +197,7 @@ export default tseslint.config(
         patterns: [
           { group: ['**/../../packages/*', '**/../../../packages/*'],
             message: 'Pakete werden ausschliesslich ueber @offert/* importiert.' },
+          KEIN_DEEP_IMPORT,
         ],
       }],
     },
@@ -228,6 +253,7 @@ export default tseslint.config(
                    + 'die Invariantendefinitionen unter test/property/ (E-17, PE-10).',
           },
           KEINE_RELATIVEN_PAKETPFADE,
+          KEIN_DEEP_IMPORT,
         ],
       }],
     },

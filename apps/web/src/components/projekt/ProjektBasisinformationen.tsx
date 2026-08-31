@@ -13,7 +13,7 @@
  * Ableitung zurueck statt eine Zahl zu erfinden.
  */
 import { useEffect, useState } from 'react';
-import { formatiereScore } from '@offert/offer/src/format/de-ch.js';
+import { formatiereScore } from '@offert/offer';
 import { entscheideZellenwert } from './zellen-logik.js';
 import { Hinweis } from '../ui/hinweis.js';
 import { Input } from '../ui/input.js';

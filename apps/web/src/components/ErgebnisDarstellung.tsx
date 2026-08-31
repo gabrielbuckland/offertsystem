@@ -3,7 +3,8 @@
  * erweitert. Es gibt keine separate «Detailansicht» mit eigener Datenzusammenstellung —
  * zwei Aufbereitungen koennten auseinanderlaufen, ohne dass ein Test es saehe.
  */
-import { OfferteDokument, VermarktungsOfferte, type Offer } from '@offert/offer';
+import type { Offer } from '@offert/offer';
+import { OfferteDokument, VermarktungsOfferte } from '@offert/offer/template';
 
 export function ErgebnisDarstellung({ offerte }: { offerte: Offer }) {
   return (

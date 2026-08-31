@@ -6,7 +6,7 @@ import { mkdtemp, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { aggregateValuesSchema, priceDerivationSchema } from '@offert/offer/src/model/offer.js';
+import { aggregateValuesSchema, priceDerivationSchema } from '@offert/offer';
 import { holeLaufzeit } from '../../src/server/laufzeit.js';
 import { fuehreProjektlauf } from '../../src/server/projekt-lauf.js';
 import { legeProjektAn, speichereProjekt } from '../../src/server/projekt-ablage.js';
