@@ -8,7 +8,7 @@
 import type { Konfiguration } from '@offert/core';
 // Modulpfad statt Paketindex: Der Index re-exportiert React-Komponenten (.tsx), fuer
 // die Node kein Type-Stripping leistet (PE-09).
-import { formatiereProzent, formatiereZimmerzahl } from '@offert/offer/src/format/de-ch.js';
+import { formatiereProzent, formatiereZimmerzahl } from '@offert/offer';
 import type { z } from 'zod';
 import { erfassungsSchema } from './erfassung-schema.js';
 

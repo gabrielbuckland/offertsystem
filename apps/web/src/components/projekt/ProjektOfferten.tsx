@@ -5,7 +5,7 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 // Modulpfad statt Paketindex: Der Index re-exportiert auch die React-Komponenten (.tsx).
-import { formatiereDatum } from '@offert/offer/src/format/de-ch.js';
+import { formatiereDatum } from '@offert/offer';
 import type { ListenEintrag } from '../../server/offerten-ablage.js';
 import { LeererZustand } from '../ui/leerer-zustand.js';
 import {

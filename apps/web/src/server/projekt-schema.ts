@@ -10,7 +10,7 @@
  */
 import { z } from 'zod';
 import { normalisiereBereiche, pruefeBereiche } from '@offert/core';
-import { offertDokumentSchema } from '@offert/offer/src/vorlage/dokument-schema.js';
+import { offertDokumentSchema } from '@offert/offer';
 
 export const SCHEMA_VERSION = 1;
 

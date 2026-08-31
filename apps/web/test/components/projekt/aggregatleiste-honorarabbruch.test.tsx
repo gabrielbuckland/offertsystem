@@ -15,7 +15,7 @@
  */
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { formatiereAggregat, formatiereScore } from '@offert/offer/src/format/de-ch.js';
+import { formatiereAggregat, formatiereScore } from '@offert/offer';
 import {
   verarbeiteBerechnungsAntwort, type BerechnungsAntwort,
 } from '../../../src/components/projekt/verwende-berechnung.js';

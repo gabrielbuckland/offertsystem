@@ -1,9 +1,8 @@
 // Reine Logik des Honorar-Eingabemodals (honorar-eingabe-dialog.tsx), getrennt von der
 // Darstellung fuer DOM-freie Tests (Muster schluessel-wert-logik.ts).
-import { berechneHonorarProzent } from '@offert/offer/src/model/honorar-eingabe.js';
-import { formatiereHonorarProzent } from '@offert/offer/src/format/de-ch.js';
+import { berechneHonorarProzent, formatiereHonorarProzent } from '@offert/offer';
 
-export { honorarAbweichung, type HonorarAbweichung } from '@offert/offer/src/model/honorar-eingabe.js';
+export { honorarAbweichung, type HonorarAbweichung } from '@offert/offer';
 
 /**
  * Formatierte Prozentanzeige eines Frankenbetrags (Empfehlungsrange oder Eingabe) an der

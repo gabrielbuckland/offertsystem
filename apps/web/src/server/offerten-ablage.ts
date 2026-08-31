@@ -7,7 +7,7 @@ import * as fs from 'node:fs/promises';
 import { join } from 'node:path';
 // Modulpfad statt Paketindex: Der Index re-exportiert auch React-Komponenten (.tsx), fuer
 // die Node kein Type-Stripping leistet (PE-09); dieser Pfad wird unter Node ausgefuehrt.
-import { offerSchema, type Offer } from '@offert/offer/src/model/offer.js';
+import { offerSchema, type Offer } from '@offert/offer';
 
 export interface ListenEintrag {
   readonly offertId: string;

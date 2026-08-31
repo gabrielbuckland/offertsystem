@@ -2,7 +2,7 @@ import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { aggregateValuesSchema, priceDerivationSchema } from '@offert/offer/src/model/offer.js';
+import { aggregateValuesSchema, priceDerivationSchema } from '@offert/offer';
 import { POST } from '../../src/app/api/projekt/[id]/berechnung/route.js';
 import { legeProjektAn, speichereProjekt } from '../../src/server/projekt-ablage.js';
 import { standardKonfiguration } from '../bau/offerte-bauer.js';

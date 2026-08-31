@@ -18,15 +18,16 @@
  */
 import { GESPERRTE_PFADE } from '@offert/core';
 import type { OffertKonfiguration, UeberschreibungsProtokoll } from '@offert/core';
-import type { AggregateValues, PriceDerivation } from '@offert/offer/src/model/offer.js';
 import {
+  type AggregateValues,
+  type PriceDerivation,
   formatiereAggregat,
   formatiereBetrag,
   formatiereFlaeche,
   formatiereProzent,
   formatiereScore,
   formatiereZimmerzahl,
-} from '@offert/offer/src/format/de-ch.js';
+} from '@offert/offer';
 
 export interface PipelineZeile {
   readonly beschriftung: string;

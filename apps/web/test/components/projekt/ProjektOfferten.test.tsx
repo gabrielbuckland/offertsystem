@@ -7,8 +7,7 @@
  */
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { formatiereHonorarProzent } from '@offert/offer/src/format/de-ch.js';
-import { berechneHonorarProzent } from '@offert/offer/src/model/honorar-eingabe.js';
+import { formatiereHonorarProzent, berechneHonorarProzent } from '@offert/offer';
 import { ProjektOfferten } from '../../../src/components/projekt/ProjektOfferten.js';
 
 function prozentText(betragRappen: number, verkaufssummeRappen: number): string {

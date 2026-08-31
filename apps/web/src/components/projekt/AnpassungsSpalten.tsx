@@ -12,7 +12,7 @@
  */
 import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { Fragment, useRef, useState } from 'react';
-import { formatiereAggregat } from '@offert/offer/src/format/de-ch.js';
+import { formatiereAggregat } from '@offert/offer';
 import { normalisiereBereiche, type Bereichsregel as KernBereichsregel } from '@offert/core';
 import type { AnpassungsSpalte, Merkmal } from '../../server/projekt-schema.js';
 import { BereichsregelEditor } from '../einstellungen/BereichsregelEditor.js';

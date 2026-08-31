@@ -6,10 +6,9 @@
  * sie die fertige Offerte zusaetzlich ABLEGT. Die Ablage geschieht nur im Erfolgsfall:
  * Weder eine Bewertungsluecke noch ein abgebrochenes Honorar erzeugt ein Artefakt (I-24).
  */
-import { validiereGewaehltesHonorar } from '@offert/offer/src/model/honorar-eingabe.js';
-import { herkunft } from '@offert/offer/src/model/provenance.js';
-import { PlatzhalterFehler, loeseDokumentAuf } from '@offert/offer/src/vorlage/aufloesung.js';
-import { platzhalterWerte } from '@offert/offer/src/vorlage/platzhalter.js';
+import {
+  validiereGewaehltesHonorar, herkunft, PlatzhalterFehler, loeseDokumentAuf, platzhalterWerte,
+} from '@offert/offer';
 import { uebersetzeStufenFehler } from '../../../../../server/fehlertexte.js';
 import { holeLaufzeit, holeProjektLaufzeit } from '../../../../../server/laufzeit.js';
 import { legeOfferteAb } from '../../../../../server/offerten-ablage.js';

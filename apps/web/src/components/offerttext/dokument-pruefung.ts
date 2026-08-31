@@ -7,7 +7,7 @@
  * zweite Absicherung, kein Ersatz dafür — sie fängt jeden Zustand ab, den die
  * Editor-Konfiguration wider Erwarten doch zulässt (I-21).
  */
-import { offertDokumentSchema, type OffertDokument } from '@offert/offer/src/vorlage/dokument-schema.js';
+import { offertDokumentSchema, type OffertDokument } from '@offert/offer';
 
 export function istGueltigesOffertDokument(dokument: unknown): dokument is OffertDokument {
   return offertDokumentSchema.safeParse(dokument).success;

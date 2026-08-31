@@ -22,7 +22,7 @@ import {
   serialisiereEingang,
   type BerechnungsErgebnis,
 } from '@offert/core';
-import { druckeOfferte } from '@offert/offer/src/pdf/drucke-offerte.js';
+import { druckeOfferte } from '@offert/offer/druck';
 import { vi } from 'vitest';
 import type { Offer } from '@offert/offer';
 import { ladeOfferte, legeOfferteAb } from '../../src/server/offerten-ablage.js';

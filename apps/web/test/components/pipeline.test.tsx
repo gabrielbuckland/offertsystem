@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { mergeKonfiguration, validiereKonfiguration } from '@offert/core';
-import { formatiereAggregat, formatiereScore } from '@offert/offer/src/format/de-ch.js';
+import { formatiereAggregat, formatiereScore } from '@offert/offer';
 import { PipelineAnsicht } from '../../src/components/pipeline/PipelineAnsicht.js';
 import {
   bauePipelineDaten, istProjektbezogen, type PipelineStufe, type PipelineZeile,

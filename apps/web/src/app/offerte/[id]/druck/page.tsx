@@ -3,7 +3,7 @@
  * (AK-2.1). Das Bereitschaftssignal `data-druck-bereit="true"` steht bereits im
  * serverseitig erzeugten Markup und ist deshalb ohne Zeitlimit pruefbar.
  */
-import { OfferteDokument, VermarktungsOfferte } from '@offert/offer';
+import { OfferteDokument, VermarktungsOfferte } from '@offert/offer/template';
 import { verzeichnisAusLaufzeit } from '../../../../server/laufzeit.js';
 import { ladeOfferte } from '../../../../server/offerten-ablage.js';
 

@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import type { OffertKonfiguration, UeberschreibungsProtokoll } from '@offert/core';
-import type { AggregateValues, PriceDerivation } from '@offert/offer/src/model/offer.js';
+import type { AggregateValues, PriceDerivation } from '@offert/offer';
 import type { Projekt } from '../../server/projekt-schema.js';
 import type { Faktorformular } from '../../server/faktorformular.js';
 import { verwendeProjekt } from './verwende-projekt.js';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatiereHonorarProzent } from '@offert/offer/src/format/de-ch.js';
+import { formatiereHonorarProzent } from '@offert/offer';
 import {
   formatiereHonorarAlsProzent, frankenEingabeZuRappen, honorarSperrgrund,
 } from '../../../src/components/ui/honorar-eingabe-logik.js';

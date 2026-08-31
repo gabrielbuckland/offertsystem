@@ -7,7 +7,7 @@
  * Autosave.
  */
 import { useEffect, useState } from 'react';
-import type { OffertDokument } from '@offert/offer/src/vorlage/dokument-schema.js';
+import type { OffertDokument } from '@offert/offer';
 import { OffertTextEditor } from './OffertTextEditor.js';
 import { Hinweis } from '../ui/hinweis.js';
 

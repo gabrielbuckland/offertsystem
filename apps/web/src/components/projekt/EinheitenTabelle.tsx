@@ -6,7 +6,7 @@ import {
   createColumnHelper, flexRender, getCoreRowModel, useReactTable,
 } from '@tanstack/react-table';
 import { Trash2 } from 'lucide-react';
-import { formatiereAggregat } from '@offert/offer/src/format/de-ch.js';
+import { formatiereAggregat } from '@offert/offer';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../ui/table.js';

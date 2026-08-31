@@ -2,7 +2,7 @@ import { mkdtemp, readdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { standardVorlage } from '@offert/offer/src/vorlage/standard-vorlage.js';
+import { standardVorlage } from '@offert/offer';
 import { bildePruefsumme } from '../../src/server/kanonisch.js';
 import { ladeVorlage, schreibeVorlage } from '../../src/server/vorlagen-ablage.js';
 

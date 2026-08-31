@@ -9,7 +9,7 @@
 import { berechne, serialisiereEingang } from '@offert/core';
 // Modulpfad statt Paketindex: Der Index re-exportiert auch React-Komponenten (.tsx), fuer
 // die Node kein Type-Stripping leistet (PE-09).
-import { baueOfferte } from '@offert/offer/src/model/baue-offerte.js';
+import { baueOfferte } from '@offert/offer';
 import { beschaffe, zuEingangsArgumenten } from '../../../server/eingang.js';
 import { erfassungsSchema } from '../../../server/erfassung-schema.js';
 import { zuFeldmeldungen } from '../../../server/feldmeldungen.js';

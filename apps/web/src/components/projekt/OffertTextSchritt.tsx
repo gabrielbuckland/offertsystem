@@ -7,7 +7,7 @@
 // Remount (TipTaps `useEditor` uebernimmt eine geaenderte `inhalt`-Prop sonst nicht
 // automatisch).
 import { useEffect, useState } from 'react';
-import type { OffertDokument } from '@offert/offer/src/vorlage/dokument-schema.js';
+import type { OffertDokument } from '@offert/offer';
 import type { Projekt } from '../../server/projekt-schema.js';
 import { OffertTextEditor } from '../offerttext/OffertTextEditor.js';
 import { Hinweis } from '../ui/hinweis.js';

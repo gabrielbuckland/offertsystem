@@ -1,6 +1,6 @@
 import { Geist } from 'next/font/google';
-import '@offert/offer/src/template/offerte.css';
-import '@offert/offer/src/template/vermarktungsofferte.css';
+import '@offert/offer/template/offerte.css';
+import '@offert/offer/template/vermarktungsofferte.css';
 
 export const metadata = { title: 'Offertsystem' };
 

@@ -6,12 +6,18 @@ const wurzel = fileURLToPath(new URL('.', import.meta.url));
 /**
  * Reihenfolge zaehlt: Die Unterpfad-Regeln stehen VOR den Paketnamen, sonst griffe die
  * exakte Namensregel zuerst und ein Import wie `@offert/offer/src/pdf/drucke-offerte.js`
- * bliebe unaufgeloest. Unterpfade werden gebraucht, weil `druckeOfferte` bewusst nicht
- * im Paketindex steht (er zoege `playwright` in das Browser-Bundle der Erfassung).
+ * bliebe unaufgeloest. Die generische `src/*`-Regel bleibt fuer Modulpfad-Importe stehen,
+ * greift aber im Regelfall nicht mehr: apps/web importiert seit der Paketgrenzen-
+ * Bereinigung ueber die Einstiegspunkte `@offert/offer`, `@offert/offer/druck` und
+ * `@offert/offer/template` (eigens aliasiert, weil `druckeOfferte` bzw. die
+ * Vorlagenkomponenten bewusst nicht im Paketindex stehen — Playwright im Browser-Bundle
+ * bzw. React/JSX im jsx-freien Nachweislauf, siehe packages/offer/src/index.ts).
  */
 const alias = [
   { find: /^@offert\/core\/(.*)\.js$/, replacement: `${wurzel}packages/core/$1.ts` },
   { find: /^@offert\/pricehubble\/(.*)\.js$/, replacement: `${wurzel}packages/pricehubble/$1.ts` },
+  { find: '@offert/offer/druck', replacement: `${wurzel}packages/offer/src/druck.ts` },
+  { find: '@offert/offer/template', replacement: `${wurzel}packages/offer/src/template/index.ts` },
   { find: /^@offert\/offer\/(.*)\.js$/, replacement: `${wurzel}packages/offer/$1.ts` },
   { find: '@offert/core', replacement: `${wurzel}packages/core/src/index.ts` },
   { find: '@offert/pricehubble', replacement: `${wurzel}packages/pricehubble/src/index.ts` },

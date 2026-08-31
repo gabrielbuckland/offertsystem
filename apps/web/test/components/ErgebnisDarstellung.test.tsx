@@ -1,11 +1,11 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
-  OfferteDokument,
   formatiereAggregat,
   formatiereBetrag,
   formatiereFlaeche,
 } from '@offert/offer';
+import { OfferteDokument } from '@offert/offer/template';
 import { ErgebnisDarstellung } from '../../src/components/ErgebnisDarstellung.js';
 import { baueBeispielOfferte } from '../bau/offerte-bauer.js';
 

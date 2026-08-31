@@ -19,10 +19,7 @@ import {
   type StufenFehler,
   type VerkaufssummeErgebnis,
 } from '@offert/core';
-// Modulpfad statt Paketindex: Der Index re-exportiert auch .tsx-Komponenten, fuer die
-// Node kein Type-Stripping leistet (PE-09); dieser Pfad laeuft aber unter Node.
-import { baueOfferte } from '@offert/offer/src/model/baue-offerte.js';
-import type { Offer } from '@offert/offer/src/model/offer.js';
+import { baueOfferte, type Offer } from '@offert/offer';
 import { beschaffe, zuEingangsArgumenten } from './eingang.js';
 import { uebersetzeStufenFehler, type AngezeigterFehler } from './fehlertexte.js';
 import { erzeugeLaufmetadaten } from './laufmetadaten.js';
