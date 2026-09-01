@@ -59,8 +59,13 @@ export function anfrage(nummer: number): BewertungsAnfrage {
       flaecheAussen: 10 as BewertungsAnfrage['parametrisierung']['flaecheAussen'],
       stockwerk: nummer,
       energielabel: 'minergie',
-      zustandsbewertungen: { bathrooms: 'new_or_recently_renovated' },
-      qualitaetsbewertungen: { bathrooms: 'high_quality' },
+      zustandsbewertungen: {
+        bathrooms: 'well_maintained', kitchen: 'well_maintained',
+        flooring: 'well_maintained', windows: 'well_maintained',
+      },
+      qualitaetsbewertungen: {
+        bathrooms: 'normal', kitchen: 'normal', flooring: 'normal', windows: 'normal',
+      },
       anzahlBadezimmer: 1,
       lift: true,
       baujahr: 2026,
