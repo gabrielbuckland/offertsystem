@@ -10,6 +10,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { leereZwischenspeicher } from '../../src/server/konfigurations-lader.js';
+import { BEWERTUNGEN_STANDARD } from '../bau/bewertungen.js';
 import { POST } from '../../src/app/api/offerte/route.js';
 
 const WURZEL = resolve(import.meta.dirname, '../../../..');
@@ -39,7 +40,7 @@ function beispielErfassung(): Record<string, unknown> {
       id: 'T-3.5', zimmerzahl: 3.5,
       parametrisierung: {
         flaecheInnen: 82, flaecheAussen: 12, stockwerk: 2, energielabel: 'A',
-        zustandsbewertungen: {}, qualitaetsbewertungen: {},
+        ...BEWERTUNGEN_STANDARD,
         anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'Waermepumpe',
       },
     }],

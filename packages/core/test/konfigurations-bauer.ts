@@ -84,12 +84,18 @@ export const BASIS_KONFIGURATION: RohKonfiguration = {
     skalierung: { form: 'linear', gMin: 0.85, gMax: 1.15 },
   },
   dossierDefaults: {
-    flaecheInnen: null,
-    flaecheAussen: null,
-    stockwerk: null,
-    energielabel: null,
-    zustandsbewertungen: {},
-    qualitaetsbewertungen: {},
+    zustandsbewertungen: {
+      bathrooms: 'new_or_recently_renovated',
+      kitchen: 'new_or_recently_renovated',
+      flooring: 'new_or_recently_renovated',
+      windows: 'new_or_recently_renovated',
+    },
+    qualitaetsbewertungen: {
+      bathrooms: 'high_quality',
+      kitchen: 'high_quality',
+      flooring: 'high_quality',
+      windows: 'high_quality',
+    },
   },
   api: {
     baseUrl: 'https://api.pricehubble.com',

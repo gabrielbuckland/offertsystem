@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { projiziere } from '../../src/server/projektion.js';
 import type { Projekt } from '../../src/server/projekt-schema.js';
+import { BEWERTUNGEN_STANDARD } from '../bau/bewertungen.js';
 
 function projekt(): Projekt {
   return {
@@ -11,7 +12,7 @@ function projekt(): Projekt {
       id: 'R-1', zimmerzahl: 3.5,
       parametrisierung: {
         flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'B',
-        zustandsbewertungen: {}, qualitaetsbewertungen: {},
+        ...BEWERTUNGEN_STANDARD,
         anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
       },
     }],

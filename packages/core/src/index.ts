@@ -36,6 +36,19 @@ export {
   type StrategieBezeichner,
 } from './config/schema.js';
 
+export {
+  BEWERTUNGSFELDER,
+  QUALITAETSWERTE,
+  QualitaetsbewertungenSchema,
+  ZUSTANDSWERTE,
+  ZustandsbewertungenSchema,
+  type Bewertungsfeld,
+  type Qualitaetsbewertungen,
+  type Qualitaetswert,
+  type Zustandsbewertungen,
+  type Zustandswert,
+} from './config/bewertungen.js';
+
 export { pruefeEbene2 } from './config/ebene2.js';
 export { GEWICHTSSUMME_TOLERANZ, pruefeEbene3 } from './config/ebene3.js';
 

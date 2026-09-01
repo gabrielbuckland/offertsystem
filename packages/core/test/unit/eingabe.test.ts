@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { validiereLiegenschaftEingabe } from '../../src/eingabe/validiere.js';
+import { BEWERTUNGEN_STANDARD } from '../helper/projekt.js';
 
 const grenzen = { zMin: -0.25, zMax: 0.25, begruendungMinLaenge: 10 };
 
 const parametrisierung = {
   flaecheInnen: 92.5, flaecheAussen: 0, stockwerk: 1, energielabel: 'B',
-  zustandsbewertungen: {}, qualitaetsbewertungen: {}, anzahlBadezimmer: 1,
+  ...BEWERTUNGEN_STANDARD, anzahlBadezimmer: 1,
   lift: true, baujahr: 2025, heizungsart: 'heat_pump',
 };
 
@@ -110,5 +111,15 @@ describe('Eingabevalidierung — einzige Stelle mit Plausibilitaetsgrenzen (I-02
         flaecheInnen: 0, flaecheAussen: 0, anpassungen: [] }] },
       grenzen);
     expect(r.ok).toBe(false);
+  });
+
+  it('weist eine Parametrisierung mit anbieterfremdem Bewertungsschluessel zurueck', () => {
+    const eingabe = roh() as Record<string, unknown>;
+    const wohnungstypen = eingabe['wohnungstypen'] as Array<{ parametrisierung: Record<string, unknown> }>;
+    wohnungstypen[0]!.parametrisierung = {
+      ...parametrisierung,
+      zustandsbewertungen: { Gesamteindruck: 'gehoben' },
+    };
+    expect(validiereLiegenschaftEingabe(eingabe, grenzen).ok).toBe(false);
   });
 });

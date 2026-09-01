@@ -5,6 +5,7 @@ import type { Konfiguration, KernAnpassungsVorlage } from '@offert/core';
 import { leseVorlagen, uebernehmeVorlage } from '../../src/server/anpassungsvorlagen.js';
 import { pruefeErfassung } from '../../src/server/feldmeldungen.js';
 import { standardKonfiguration } from '../bau/offerte-bauer.js';
+import { BEWERTUNGEN_STANDARD } from '../bau/bewertungen.js';
 
 const WURZEL = resolve(import.meta.dirname, '../../../..');
 
@@ -35,7 +36,7 @@ function beispielErfassung() {
       id: 'T-3.5', zimmerzahl: 3.5,
       parametrisierung: {
         flaecheInnen: 82, flaecheAussen: 12, stockwerk: 2, energielabel: 'A',
-        zustandsbewertungen: {}, qualitaetsbewertungen: {},
+        ...BEWERTUNGEN_STANDARD,
         anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'Waermepumpe',
       },
     }],

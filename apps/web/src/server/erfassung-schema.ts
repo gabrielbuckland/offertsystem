@@ -5,6 +5,7 @@
  * Typ je Zimmerzahl) stehen in `superRefine` auf Aggregatebene, nicht je Feld.
  */
 import type { Konfiguration } from '@offert/core';
+import { QualitaetsbewertungenSchema, ZustandsbewertungenSchema } from '@offert/core';
 import { z } from 'zod';
 
 /** Verbindliche Feldliste der Dossier-Parametrisierung (E-28); zehn Felder, nicht mehr. */
@@ -13,8 +14,8 @@ const dossierParameterSchema = z.object({
   flaecheAussen: z.number().nonnegative(),
   stockwerk: z.number().int(),
   energielabel: z.string(),
-  zustandsbewertungen: z.record(z.string()),
-  qualitaetsbewertungen: z.record(z.string()),
+  zustandsbewertungen: ZustandsbewertungenSchema,
+  qualitaetsbewertungen: QualitaetsbewertungenSchema,
   anzahlBadezimmer: z.number().int().nonnegative(),
   lift: z.boolean(),
   baujahr: z.number().int(),

@@ -32,6 +32,7 @@
     "eval:tornado": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/tornado/main.ts",
     "eval:report": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/report/main.ts",
     "beispiel:offerte": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/beispiel-offerte.ts",
+    "migriere:bewertungen": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/migriere-bewertungen.ts",
     "eval:all": "npm run eval:oat && npm run eval:degression-margin && npm run eval:tornado && npm run eval:report"
   },
   "devDependencies": {

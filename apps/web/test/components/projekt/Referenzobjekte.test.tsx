@@ -12,6 +12,7 @@ import type { DossierDefaults } from '@offert/core';
 import type {
   AnpassungsSpalte, ProjektEinheit, Referenzobjekt,
 } from '../../../src/server/projekt-schema.js';
+import { BEWERTUNGEN_STANDARD } from '../../bau/bewertungen.js';
 
 interface ErfassteZelle {
   readonly wert: number;
@@ -61,19 +62,17 @@ const R: Referenzobjekt = {
   id: 'R1', zimmerzahl: 3.5,
   parametrisierung: {
     flaecheInnen: 86, flaecheAussen: 19, stockwerk: 0, energielabel: 'B',
-    zustandsbewertungen: {}, qualitaetsbewertungen: {},
+    ...BEWERTUNGEN_STANDARD,
     anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
   },
 };
 
-// Leer statt gefuellt: Tests, denen die konkreten Zustands-/Qualitaetswerte egal sind,
-// bekommen mit dieser Fixture ein neutrales `{}` — wo es darauf ankommt (Anlegen-Dialog
-// uebernimmt Zustand/Qualitaet aus `dossierDefaults`), setzt der jeweilige Test seine
-// eigene, gefuellte Fixture (siehe `referenzobjekte-logik.test.ts` fuer die reine Logik).
-const dossierDefaultsLeer: DossierDefaults = {
-  flaecheInnen: null, flaecheAussen: null, stockwerk: null, energielabel: null,
-  zustandsbewertungen: {}, qualitaetsbewertungen: {},
-};
+// Standardwerte statt individuell befuellter Werte: Tests, denen die konkreten
+// Zustands-/Qualitaetswerte egal sind, bekommen mit dieser Fixture den Standard — wo es
+// darauf ankommt (Anlegen-Dialog uebernimmt Zustand/Qualitaet aus `dossierDefaults`),
+// setzt der jeweilige Test seine eigene Fixture (siehe `referenzobjekte-logik.test.ts`
+// fuer die reine Logik).
+const dossierDefaultsStandard: DossierDefaults = { ...BEWERTUNGEN_STANDARD };
 
 function zeichne(
   referenzobjekte: readonly Referenzobjekt[],
@@ -90,7 +89,7 @@ function zeichne(
       referenzobjekte={referenzobjekte}
       einheiten={einheiten}
       spalten={spalten}
-      dossierDefaults={dossierDefaultsLeer}
+      dossierDefaults={dossierDefaultsStandard}
       baujahr={baujahr}
       aendere={aendere}
       rufeAb={() => undefined}

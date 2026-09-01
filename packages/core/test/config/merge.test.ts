@@ -17,29 +17,47 @@ describe('mergeKonfiguration', () => {
   });
 
   it('ersetzt Dossier-Parameter blattweise und behaelt nicht genannte Schluessel', () => {
+    const abweichendeZustandsbewertungen = {
+      bathrooms: 'renovation_needed', kitchen: 'well_maintained',
+      flooring: 'well_maintained', windows: 'well_maintained',
+    };
     const ergebnis = mergeKonfiguration(basis, {
-      dossierParameter: { typ_3_5: { flaecheInnen: 92, stockwerk: 2 } },
+      dossierParameter: { typ_3_5: { zustandsbewertungen: abweichendeZustandsbewertungen } },
     });
     expect(ergebnis.ok).toBe(true);
     if (!ergebnis.ok) return;
     const parameter = ergebnis.wert.dossierParameter['typ_3_5'];
-    expect(parameter?.flaecheInnen).toBe(92);
-    expect(parameter?.stockwerk).toBe(2);
-    expect(parameter?.flaecheAussen).toBeNull();
+    expect(parameter?.zustandsbewertungen).toEqual(abweichendeZustandsbewertungen);
+    expect(parameter?.qualitaetsbewertungen).toEqual(basis.dossierDefaults.qualitaetsbewertungen);
     expect(ergebnis.wert.ueberschreibungen).toEqual([
-      { pfad: 'dossierParameter.typ_3_5.flaecheInnen', defaultwert: null, projektwert: 92 },
-      { pfad: 'dossierParameter.typ_3_5.stockwerk', defaultwert: null, projektwert: 2 },
+      {
+        pfad: 'dossierParameter.typ_3_5.zustandsbewertungen',
+        defaultwert: basis.dossierDefaults.zustandsbewertungen,
+        projektwert: abweichendeZustandsbewertungen,
+      },
     ]);
   });
 
-  it('unterscheidet ein ausdrueckliches null von einem fehlenden Schluessel', () => {
+  it('protokolliert eine woertliche Wiederholung des Firmenstandards nicht als Ueberschreibung', () => {
     const ergebnis = mergeKonfiguration(basis, {
-      dossierParameter: { typ_3_5: { energielabel: null } },
+      dossierParameter: {
+        typ_3_5: { zustandsbewertungen: { ...basis.dossierDefaults.zustandsbewertungen } },
+      },
     });
     expect(ergebnis.ok).toBe(true);
     if (!ergebnis.ok) return;
-    expect(ergebnis.wert.ueberschreibungen).toHaveLength(0);
-    expect(ergebnis.wert.dossierParameter['typ_3_5']?.energielabel).toBeNull();
+    expect(ergebnis.wert.ueberschreibungen).toEqual([]);
+    expect(ergebnis.wert.dossierParameter['typ_3_5']?.zustandsbewertungen)
+      .toEqual(basis.dossierDefaults.zustandsbewertungen);
+  });
+
+  it('weist ein unvollstaendiges Dossier-Parameter-Blatt zurueck, statt es als vollstaendig zu typisieren', () => {
+    const ergebnis = mergeKonfiguration(basis, {
+      dossierParameter: { typ_3_5: { zustandsbewertungen: { kitchen: 'kaputt' } } },
+    });
+    expect(ergebnis.ok).toBe(false);
+    if (ergebnis.ok) return;
+    expect(ergebnis.fehler.map((f) => f.code)).toContain('CFG_SCHEMA_TYPE');
   });
 
   it('ersetzt Preisanpassungen vollstaendig und protokolliert sie', () => {
@@ -121,13 +139,16 @@ describe('mergeKonfiguration', () => {
   });
 
   it('weist einen unbekannten Blattschluessel der Dossier-Parameter zurueck', () => {
+    // Verschriebener Name eines EXISTIERENDEN Schluessels: Genau so entsteht der Fehler
+    // im Betrieb, und nur so belegt der Test, dass die Schluesselmenge geprueft wird und
+    // nicht bloss ein laengst entfallenes Feld nicht mehr vorkommt.
     const ergebnis = mergeKonfiguration(basis, {
-      dossierParameter: { typ_3_5: { flaecheInnnen: 92 } },
+      dossierParameter: { typ_3_5: { zustandsbewertunge: basis.dossierDefaults.zustandsbewertungen } },
     });
     expect(ergebnis.ok).toBe(false);
     if (ergebnis.ok) return;
     expect(ergebnis.fehler[0]?.code).toBe('CFG_SCHEMA_UNKNOWN_KEY');
-    expect(ergebnis.fehler[0]?.pfad).toBe('dossierParameter.typ_3_5.flaecheInnnen');
+    expect(ergebnis.fehler[0]?.pfad).toBe('dossierParameter.typ_3_5.zustandsbewertunge');
   });
 
   it('setzt Dossier-Parameter auf die ZUSAMMENGEFUEHRTEN Voreinstellungen auf (W-3)', () => {
@@ -135,14 +156,21 @@ describe('mergeKonfiguration', () => {
     // Wurzel uebersteuerbar ist, wuerde eine ungemergte Basis die projektbezogene
     // Voreinstellung genau fuer die Wohnungstypen verschlucken, fuer die das Projekt
     // zusaetzlich eigene Dossier-Parameter fuehrt — lautlos.
+    const projektweiteQualitaet = {
+      bathrooms: 'luxury', kitchen: 'luxury', flooring: 'luxury', windows: 'luxury',
+    };
+    const abweichendeZustandsbewertungen = {
+      bathrooms: 'renovation_needed', kitchen: 'renovation_needed',
+      flooring: 'renovation_needed', windows: 'renovation_needed',
+    };
     const ergebnis = mergeKonfiguration(basis, {
-      dossierDefaults: { stockwerk: 7 },
-      dossierParameter: { typ_3_5: { flaecheInnen: 90 } },
+      dossierDefaults: { qualitaetsbewertungen: projektweiteQualitaet },
+      dossierParameter: { typ_3_5: { zustandsbewertungen: abweichendeZustandsbewertungen } },
     });
     expect(ergebnis.ok).toBe(true);
     if (!ergebnis.ok) return;
-    expect(ergebnis.wert.dossierParameter['typ_3_5']?.stockwerk).toBe(7);
-    expect(ergebnis.wert.dossierParameter['typ_3_5']?.flaecheInnen).toBe(90);
+    expect(ergebnis.wert.dossierParameter['typ_3_5']?.qualitaetsbewertungen).toEqual(projektweiteQualitaet);
+    expect(ergebnis.wert.dossierParameter['typ_3_5']?.zustandsbewertungen).toEqual(abweichendeZustandsbewertungen);
   });
 
   it('weist einen unbekannten Schluessel auch in der TIEFE zurueck (W-7)', () => {

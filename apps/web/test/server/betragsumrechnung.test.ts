@@ -9,6 +9,7 @@ import { basispreiseFuerErfassung, rechneBetragInFaktor } from '../../src/server
 import type { Beschafft } from '../../src/server/eingang.js';
 import type { Erfassung } from '../../src/server/erfassung-schema.js';
 import { standardKonfiguration, ZEITSTEMPEL } from '../bau/offerte-bauer.js';
+import { BEWERTUNGEN_STANDARD } from '../bau/bewertungen.js';
 
 const WURZEL = resolve(import.meta.dirname, '../../../..');
 
@@ -28,7 +29,7 @@ function erfassung(wohnungstypId: string): Erfassung {
       zimmerzahl: 3.5,
       parametrisierung: {
         flaecheInnen: 82, flaecheAussen: 12, stockwerk: 2, energielabel: 'A',
-        zustandsbewertungen: {}, qualitaetsbewertungen: {},
+        ...BEWERTUNGEN_STANDARD,
         anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'Waermepumpe',
       },
     }],

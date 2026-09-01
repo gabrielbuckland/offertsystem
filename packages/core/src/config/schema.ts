@@ -7,6 +7,7 @@
  * jede Verletzung einen fachlich sprechenden CFG_*-Code traegt.
  */
 import { z } from 'zod';
+import { QualitaetsbewertungenSchema, ZustandsbewertungenSchema } from './bewertungen.js';
 import {
   ROH_SCHREIBWEISE,
   STRATEGIE_BEZEICHNER,
@@ -132,13 +133,9 @@ const HonorarSchema = z.object({
   skalierung: SkalierungSchema,
 }).strict();
 
-const DossierDefaultsSchema = z.object({
-  flaecheInnen: z.number().nullable(),
-  flaecheAussen: z.number().nullable(),
-  stockwerk: z.number().nullable(),
-  energielabel: z.string().nullable(),
-  zustandsbewertungen: z.record(z.string()),
-  qualitaetsbewertungen: z.record(z.string()),
+export const DossierDefaultsSchema = z.object({
+  zustandsbewertungen: ZustandsbewertungenSchema,
+  qualitaetsbewertungen: QualitaetsbewertungenSchema,
 }).strict();
 
 const ApiSchema = z.object({

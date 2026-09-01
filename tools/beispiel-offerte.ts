@@ -21,9 +21,21 @@ process.env['VALUATION_PROVIDER'] ??= 'mock';
 process.env['COMPANY_DEFAULTS_PATH'] ??= join(WURZEL, 'config', 'company-defaults.json');
 process.env['OFFERTEN_VERZEICHNIS'] ??= ABLAGE;
 
+// Lokal statt aus apps/web/test importiert: tools/ steht ausserhalb der Abhaengigkeitsmatrix,
+// soll aber nicht in den Testbaum einer App greifen.
+const BEWERTUNGEN_STANDARD = {
+  zustandsbewertungen: {
+    bathrooms: 'well_maintained', kitchen: 'well_maintained',
+    flooring: 'well_maintained', windows: 'well_maintained',
+  },
+  qualitaetsbewertungen: {
+    bathrooms: 'normal', kitchen: 'normal', flooring: 'normal', windows: 'normal',
+  },
+} as const;
+
 const parametrisierung = {
   flaecheInnen: 92.5, flaecheAussen: 0, stockwerk: 2, energielabel: 'C',
-  zustandsbewertungen: {}, qualitaetsbewertungen: {},
+  ...BEWERTUNGEN_STANDARD,
   anzahlBadezimmer: 1, lift: false, baujahr: 2025, heizungsart: 'Waermepumpe',
 };
 

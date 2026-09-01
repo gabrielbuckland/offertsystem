@@ -34,7 +34,7 @@ import {
 } from './verwende-einstellungen.js';
 // Bewusst aus `app/(anwendung)/einstellungen/`: `components/einstellungen/` wird vom
 // Architekturtest auf fest verdrahtete Konfigurationsbezeichner gescannt.
-import { BEREICHE } from '../../app/(anwendung)/einstellungen/bereiche.js';
+import { BEREICHE, wurzeln } from '../../app/(anwendung)/einstellungen/bereiche.js';
 
 export interface ProjektEinstellungenProps {
   readonly projektId: string;
@@ -71,11 +71,6 @@ async function schreibeProjektEinstellungen(
     ok: false,
     befunde: [{ pfad: '', text: 'Die Projekteinstellungen konnten nicht gespeichert werden.' }],
   };
-}
-
-/** Wurzelpfade eines Bereichs — ein Bereich kann mehrere umfassen (`bereiche.ts`). */
-function wurzeln(praefix: string | readonly string[]): readonly string[] {
-  return typeof praefix === 'string' ? [praefix] : praefix;
 }
 
 type Reiter = 'formular' | 'json';
@@ -337,9 +332,10 @@ export function ProjektEinstellungen({ projektId, firmenwerte, delta }: ProjektE
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* `ebene="projekt"` sperrt genau die Aktionen, die das Delta-Modell nicht
-                  ausdruecken kann (Entfernen eines Firmenschluessels) — siehe
-                  `Bearbeitungsebene` in `verwende-einstellungen.ts`. */}
+              {/* `ebene="projekt"` sperrt die einzige Aktion, die das Delta-Modell nicht
+                  ausdruecken kann: das Entfernen eines Aufwandfaktors. Nur
+                  `FaktorenEditor` liest die Prop, die uebrigen Editoren ignorieren sie —
+                  siehe `Bearbeitungsebene` in `verwende-einstellungen.ts`. */}
               <Editor einstellungen={zustand} ebene="projekt" />
               {bereichsBefunde.length > 0 && (
                 <div className="space-y-2">

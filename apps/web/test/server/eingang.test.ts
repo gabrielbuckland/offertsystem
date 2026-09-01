@@ -10,6 +10,7 @@ import type {
 import { beschaffe, zuEingangsArgumenten } from '../../src/server/eingang.js';
 import type { Erfassung } from '../../src/server/erfassung-schema.js';
 import { standardKonfiguration } from '../bau/offerte-bauer.js';
+import { BEWERTUNGEN_STANDARD } from '../bau/bewertungen.js';
 
 const PROVIDER_FEHLER: ProviderFehler = {
   art: 'nicht_erreichbar',
@@ -27,7 +28,7 @@ const BEISPIEL_ERFASSUNG = {
     zimmerzahl: 3.5,
     parametrisierung: {
       flaecheInnen: 82, flaecheAussen: 12, stockwerk: 2, energielabel: 'A',
-      zustandsbewertungen: {}, qualitaetsbewertungen: {},
+      ...BEWERTUNGEN_STANDARD,
       anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'Waermepumpe',
     },
   }],

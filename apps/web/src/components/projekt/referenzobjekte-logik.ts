@@ -1,6 +1,7 @@
 // Reine Entscheidungslogik des Anlegen-Dialogs (`Referenzobjekte.tsx`), getrennt von der
 // Komponente, damit sie ohne DOM/React testbar ist (gleiches Muster wie `zellen-logik.ts`
 // und `faktoren-logik.ts`).
+import type { Qualitaetsbewertungen, Zustandsbewertungen } from '@offert/core';
 import type { Referenzobjekt } from '../../server/projekt-schema.js';
 
 // Zimmerzahlen in Halbschritten 1..6 (uebliche Schweizer Wohnungstypologie): eine feste,
@@ -37,8 +38,8 @@ export function neuesReferenzobjekt(
   wohnflaeche: number,
   id: string,
   baujahr: number,
-  zustandsbewertungen: Readonly<Record<string, string>>,
-  qualitaetsbewertungen: Readonly<Record<string, string>>,
+  zustandsbewertungen: Zustandsbewertungen,
+  qualitaetsbewertungen: Qualitaetsbewertungen,
 ): Referenzobjekt {
   return {
     id,

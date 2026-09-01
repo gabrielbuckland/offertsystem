@@ -13,8 +13,14 @@ const parametrisierung: RepraesentativeParametrisierung = {
   flaecheAussen: 12 as RepraesentativeParametrisierung['flaecheAussen'],
   stockwerk: 2,
   energielabel: 'minergie',
-  zustandsbewertungen: { bathrooms: 'new_or_recently_renovated' },
-  qualitaetsbewertungen: { bathrooms: 'high_quality' },
+  zustandsbewertungen: {
+    bathrooms: 'new_or_recently_renovated', kitchen: 'new_or_recently_renovated',
+    flooring: 'new_or_recently_renovated', windows: 'new_or_recently_renovated',
+  },
+  qualitaetsbewertungen: {
+    bathrooms: 'high_quality', kitchen: 'high_quality',
+    flooring: 'high_quality', windows: 'high_quality',
+  },
   anzahlBadezimmer: 1,
   lift: true,
   baujahr: 2026,
@@ -95,8 +101,14 @@ describe('E3-Body und PATCH-Verifikation (Spec 04 §1.4, §5.4)', () => {
         balconyArea: 12,
         floorNumber: 2,
         energyLabel: 'minergie',
-        condition: { bathrooms: 'new_or_recently_renovated' },
-        quality: { bathrooms: 'high_quality' },
+        condition: {
+          bathrooms: 'new_or_recently_renovated', kitchen: 'new_or_recently_renovated',
+          flooring: 'new_or_recently_renovated', windows: 'new_or_recently_renovated',
+        },
+        quality: {
+          bathrooms: 'high_quality', kitchen: 'high_quality',
+          flooring: 'high_quality', windows: 'high_quality',
+        },
         numberOfBathrooms: 1,
         hasLift: true,
         buildingYear: 2026,
@@ -135,5 +147,15 @@ describe('E3-Body und PATCH-Verifikation (Spec 04 §1.4, §5.4)', () => {
     expect(verifiziereGesendetePatchFelder(gesendet, { property: rest })).toEqual([
       'property.hasLift',
     ]);
+  });
+
+  it('sendet condition und quality mit genau den vier PriceHubble-Feldern', () => {
+    const body = dossierBody(parametrisierung);
+    // `DossierBody['property']` ist ein loses `Readonly<Record<string, unknown>>`; die
+    // Feldnamen sind dort nicht typisiert, `Object.keys` braucht darum den Cast.
+    expect(Object.keys(body.property['condition'] as object).sort())
+      .toEqual(['bathrooms', 'flooring', 'kitchen', 'windows']);
+    expect(Object.keys(body.property['quality'] as object).sort())
+      .toEqual(['bathrooms', 'flooring', 'kitchen', 'windows']);
   });
 });

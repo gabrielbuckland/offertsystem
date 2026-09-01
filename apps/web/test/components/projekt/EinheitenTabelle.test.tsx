@@ -39,6 +39,7 @@ vi.mock('../../../src/components/projekt/ZellenEingabe.js', async (importOrigina
 });
 
 import { EinheitenTabelle } from '../../../src/components/projekt/EinheitenTabelle.js';
+import { BEWERTUNGEN_STANDARD } from '../../bau/bewertungen.js';
 
 const SPALTEN = [
   { id: 'S-1', bezeichnung: 'Zuschlag Etage', erfassungsform: 'relativ' as const, vorgabewert: 0 },
@@ -48,7 +49,7 @@ const REFS = [{
   id: 'R-1', zimmerzahl: 3.5,
   parametrisierung: {
     flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'B',
-    zustandsbewertungen: {}, qualitaetsbewertungen: {},
+    ...BEWERTUNGEN_STANDARD,
     anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
   },
 }];

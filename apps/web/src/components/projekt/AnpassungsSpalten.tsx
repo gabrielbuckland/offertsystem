@@ -22,6 +22,8 @@ import { useRef, useState } from 'react';
 import { formatiereAggregat } from '@offert/offer';
 import { normalisiereBereiche, type Bereichsregel as KernBereichsregel } from '@offert/core';
 import type { AnpassungsSpalte, Merkmal } from '../../server/projekt-schema.js';
+import type { Anpassungsvorlage } from '../../server/anpassungsvorlagen.js';
+import { spalteAusVorlage } from '../../server/spalten-vorbelegung.js';
 import { BereichsregelEditor } from '../einstellungen/BereichsregelEditor.js';
 import { Button } from '../ui/button.js';
 import { Input } from '../ui/input.js';
@@ -42,6 +44,8 @@ export interface AnpassungsSpaltenProps {
   /** Uebertraegt den Vorgabewert der Spalte in alle Einheiten ohne eigenen Wert
    *  (verdrahtet in ProjektAnsicht.tsx). */
   readonly uebernehmeAufEinheiten: (spalteId: string) => void;
+  /** Firmenweite Vorlagen, aus denen sich eine Spalte uebernehmen laesst. */
+  readonly vorlagen: readonly Anpassungsvorlage[];
 }
 
 /**
@@ -110,7 +114,9 @@ export function spalteMitGeaenderterRegel(
 }
 
 export function AnpassungsSpalten(
-  { spalten, merkmale, aendere, entferneSpalte, uebernehmeAufEinheiten }: AnpassungsSpaltenProps,
+  {
+    spalten, merkmale, aendere, entferneSpalte, uebernehmeAufEinheiten, vorlagen,
+  }: AnpassungsSpaltenProps,
 ) {
   const [offene, setzeOffene] = useState<readonly string[]>([]);
   function schalte(id: string): void {
@@ -137,6 +143,28 @@ export function AnpassungsSpalten(
     }]);
   }
 
+  const [gewaehlteVorlage, setzeGewaehlteVorlage] = useState('');
+  // Spiegelt den State (einziger Schreiber: `waehleVorlage`); im Browser sind beide
+  // immer gleich, und `uebernimmAusVorlage` koennte dort direkt `gewaehlteVorlage`
+  // lesen. Gebraucht wird der Ref allein von der Testumgebung: Sie treibt die Handler
+  // EINES `renderToStaticMarkup`-Durchlaufs (kein DOM, siehe Dateikommentar), ein
+  // State-Setter ist dort nach dem Rendern wirkungslos, ein zweites Rendern findet nicht
+  // statt — die abgefangene Klick-Closure saehe sonst immer die leere Auswahl.
+  const gewaehlteVorlageRef = useRef('');
+
+  function waehleVorlage(id: string) {
+    gewaehlteVorlageRef.current = id;
+    setzeGewaehlteVorlage(id);
+  }
+
+  function uebernimmAusVorlage() {
+    const vorlage = vorlagen.find((v) => v.id === gewaehlteVorlageRef.current);
+    if (vorlage === undefined) return;
+    // ID aus dem laufenden Zaehler: aus dem Index gebildet erbte eine neue Spalte die
+    // `spaltenwerte` einer waehrend der Sitzung entfernten Spalte gleicher ID.
+    aendere([...spalten, spalteAusVorlage(vorlage, naechsteId.current!())]);
+  }
+
   return (
     <section>
       <div className="mb-3 flex items-start justify-between gap-4">
@@ -147,9 +175,30 @@ export function AnpassungsSpalten(
             Einheiten, erfasst wird je Einheit in der Einheitentabelle.
           </p>
         </div>
-        <Button type="button" onClick={fuegeHinzu}>
-          Spalte hinzufügen
-        </Button>
+        <div className="flex items-center gap-2">
+          <Select
+            className="h-9 w-56"
+            aria-label="Vorlage"
+            value={gewaehlteVorlage}
+            onChange={(e) => waehleVorlage(e.target.value)}
+          >
+            <option value="">Vorlage wählen …</option>
+            {vorlagen.map((v) => (
+              <option key={v.id} value={v.id}>{v.bezeichnung}</option>
+            ))}
+          </Select>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={uebernimmAusVorlage}
+            disabled={gewaehlteVorlage === ''}
+          >
+            Aus Vorlage
+          </Button>
+          <Button type="button" onClick={fuegeHinzu}>
+            Spalte hinzufügen
+          </Button>
+        </div>
       </div>
       {spalten.length === 0 ? (
         <p className="text-muted-foreground">Noch keine Spalte erfasst.</p>

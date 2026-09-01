@@ -23,6 +23,19 @@ export type VeraenderbareOfferte = Veraenderbar<Offer>;
 
 const PRUEFSUMME = 'a'.repeat(64);
 
+// Lokal statt aus einem fremden Testbaum importiert (weder apps/web/test noch
+// packages/core/test): Testhelfer bleiben je Paket eigenstaendig, ein Import in den
+// Testbaum eines anderen Pakets koppelte die Suiten aneinander.
+const BEWERTUNGEN_STANDARD = {
+  zustandsbewertungen: {
+    bathrooms: 'well_maintained', kitchen: 'well_maintained',
+    flooring: 'well_maintained', windows: 'well_maintained',
+  },
+  qualitaetsbewertungen: {
+    bathrooms: 'normal', kitchen: 'normal', flooring: 'normal', windows: 'normal',
+  },
+} as const;
+
 const VORLAGE: VeraenderbareOfferte = {
   project: {
     projektId: '11111111-1111-4111-8111-111111111111',
@@ -45,8 +58,7 @@ const VORLAGE: VeraenderbareOfferte = {
           flaecheAussen: 12,
           stockwerk: 2,
           energielabel: 'A',
-          zustandsbewertungen: { bathrooms: 'new', kitchen: 'new' },
-          qualitaetsbewertungen: { bathrooms: 'normal', kitchen: 'normal' },
+          ...BEWERTUNGEN_STANDARD,
           anzahlBadezimmer: 1,
           lift: true,
           baujahr: 2027,
@@ -74,8 +86,7 @@ const VORLAGE: VeraenderbareOfferte = {
           flaecheAussen: 18,
           stockwerk: 3,
           energielabel: 'A',
-          zustandsbewertungen: { bathrooms: 'new', kitchen: 'new' },
-          qualitaetsbewertungen: { bathrooms: 'high', kitchen: 'high' },
+          ...BEWERTUNGEN_STANDARD,
           anzahlBadezimmer: 2,
           lift: true,
           baujahr: 2027,

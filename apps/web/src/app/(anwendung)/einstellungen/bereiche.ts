@@ -19,7 +19,8 @@ import type { BereichsEditor } from '../../../components/einstellungen/verwende-
 export const BEREICHE = {
   dossier: {
     titel: 'Dossier-Voreinstellungen',
-    zweck: 'Voreinstellungen fuer neue Projekte; leer lassen heisst keine Vorgabe.',
+    zweck: 'Firmenweite Zustands- und Qualitaetsvorgabe fuer die PriceHubble-Anfrage; '
+      + 'alle Felder sind Pflicht.',
     praefix: 'dossierDefaults',
     Editor: DossierEditor,
   },
@@ -48,6 +49,11 @@ export const BEREICHE = {
 }>;
 
 export type Bereich = keyof typeof BEREICHE;
+
+/** Wurzelpfade eines Bereichs — ein Bereich kann mehrere umfassen (`praefix` oben). */
+export function wurzeln(praefix: string | readonly string[]): readonly string[] {
+  return typeof praefix === 'string' ? [praefix] : praefix;
+}
 
 export function istGueltigerBereich(wert: string): wert is Bereich {
   return Object.hasOwn(BEREICHE, wert);

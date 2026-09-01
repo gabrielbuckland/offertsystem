@@ -37,6 +37,19 @@ import {
   type ZuAbschlag,
 } from '@offert/core';
 
+// Lokal statt aus einem fremden Testbaum importiert (weder apps/web/test noch
+// packages/core/test): Testhelfer bleiben je Paket eigenstaendig, ein Import in den
+// Testbaum eines anderen Pakets koppelte die Suiten aneinander.
+const BEWERTUNGEN_STANDARD = {
+  zustandsbewertungen: {
+    bathrooms: 'well_maintained', kitchen: 'well_maintained',
+    flooring: 'well_maintained', windows: 'well_maintained',
+  },
+  qualitaetsbewertungen: {
+    bathrooms: 'normal', kitchen: 'normal', flooring: 'normal', windows: 'normal',
+  },
+} as const;
+
 export const ZEITSTEMPEL = '2026-08-16T14:32:00.000Z';
 
 const KONFIGURATIONSPFAD = new URL('../../../../config/company-defaults.json', import.meta.url);
@@ -60,8 +73,7 @@ function parametrisierung(
     flaecheAussen: flaecheAussen as Quadratmeter,
     stockwerk,
     energielabel: 'A',
-    zustandsbewertungen: { bathrooms: 'new', kitchen: 'new' },
-    qualitaetsbewertungen: { bathrooms: 'normal', kitchen: 'normal' },
+    ...BEWERTUNGEN_STANDARD,
     anzahlBadezimmer: 1,
     lift: true,
     baujahr: 2027,
