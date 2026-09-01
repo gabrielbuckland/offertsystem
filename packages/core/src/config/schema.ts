@@ -133,7 +133,7 @@ const HonorarSchema = z.object({
   skalierung: SkalierungSchema,
 }).strict();
 
-const DossierDefaultsSchema = z.object({
+export const DossierDefaultsSchema = z.object({
   zustandsbewertungen: ZustandsbewertungenSchema,
   qualitaetsbewertungen: QualitaetsbewertungenSchema,
 }).strict();

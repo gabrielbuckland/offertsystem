@@ -12,6 +12,7 @@
  */
 import { z } from 'zod';
 import { fehler, type KonfigurationsFehler } from './fehlercodes.js';
+import { DossierDefaultsSchema } from './schema.js';
 import type { OffertKonfiguration } from './validieren.js';
 
 export interface Preisanpassung {
@@ -121,9 +122,12 @@ function verschmelzeDossierParameter(
       }
       const defaultwert = defaults[schluessel];
       zusammengesetzt[schluessel] = projektwert;
-      // Nur wirksame Ueberschreibungen werden protokolliert; ein ausdrueckliches
-      // null auf einen bereits nicht gesetzten Wert veraendert nichts.
-      if (projektwert !== defaultwert) {
+      // Nur wirksame Ueberschreibungen werden protokolliert. Vergleich per Wert, nicht per
+      // Referenz: `zustandsbewertungen`/`qualitaetsbewertungen` sind Objekte, `projektwert`
+      // ist immer ein frisch geparstes Objekt und waere per `!==` nie gleich `defaultwert`
+      // — jede woertliche Wiederholung des Firmenstandards wuerde sonst faelschlich als
+      // Ueberschreibung protokolliert.
+      if (JSON.stringify(projektwert) !== JSON.stringify(defaultwert)) {
         protokoll.push({
           pfad: `dossierParameter.${wohnungstyp}.${schluessel}`,
           defaultwert,
@@ -131,7 +135,26 @@ function verschmelzeDossierParameter(
         });
       }
     }
-    ergebnis[wohnungstyp] = zusammengesetzt as unknown as DossierParameter;
+    // Die Blattpruefung oben kennt nur die Schluesselmenge, nicht die Form der Werte:
+    // `rohParameter` kann `zustandsbewertungen`/`qualitaetsbewertungen` durch ein
+    // unvollstaendiges oder fremdwertiges Objekt ersetzen (DossierParameter ist als die
+    // vollstaendige, strikte Form typisiert — das muss hier durchgesetzt werden, nicht nur
+    // versprochen sein).
+    const geprueft = DossierDefaultsSchema.safeParse(zusammengesetzt);
+    if (!geprueft.success) {
+      for (const issue of geprueft.error.issues) {
+        const pfad = `dossierParameter.${wohnungstyp}${issue.path.map((t) =>
+          typeof t === 'number' ? `[${t}]` : `.${t}`).join('')}`;
+        const code = issue.code === z.ZodIssueCode.unrecognized_keys
+          ? 'CFG_SCHEMA_UNKNOWN_KEY'
+          : issue.code === z.ZodIssueCode.invalid_type && issue.received === 'undefined'
+            ? 'CFG_SCHEMA_MISSING'
+            : 'CFG_SCHEMA_TYPE';
+        befunde.push(fehler(code, pfad, { hinweis: issue.message }));
+      }
+      continue;
+    }
+    ergebnis[wohnungstyp] = geprueft.data;
   }
   return ergebnis;
 }
@@ -193,10 +216,10 @@ function verschmelzePreisanpassungen(
  * `aufwandfaktoren` —, und zwar NUR auf der obersten Ebene: In der Rekursion wird `offen`
  * immer als `false` weitergereicht, damit ein Tippfehler INNERHALB eines neuen Faktors
  * weiterhin auffaellt. `dossierDefaults.zustandsbewertungen` und
- * `dossierDefaults.qualitaetsbewertungen` sind zwar im Schema offene Woerterbuecher, hier
- * aber NICHT ausgenommen: Ein projektbezogen neu angelegter Bewertungsschluessel wird mit
- * `CFG_SCHEMA_UNKNOWN_KEY` zurueckgewiesen. Uebersteuern bestehender Schluessel geht.
- * Das ist eine bewusste Grenze des Delta-Modells und keine Zusicherung des Gegenteils.
+ * `dossierDefaults.qualitaetsbewertungen` sind hier NICHT ausgenommen: Ein projektbezogen
+ * neu angelegter Bewertungsschluessel wird mit `CFG_SCHEMA_UNKNOWN_KEY` zurueckgewiesen.
+ * Uebersteuern bestehender Schluessel geht. Das ist eine bewusste Grenze des Delta-Modells
+ * und keine Zusicherung des Gegenteils.
  */
 function verschmelzeTeilbaum(
   basiswert: unknown,

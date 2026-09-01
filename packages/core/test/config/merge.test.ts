@@ -38,6 +38,28 @@ describe('mergeKonfiguration', () => {
     ]);
   });
 
+  it('protokolliert eine woertliche Wiederholung des Firmenstandards nicht als Ueberschreibung', () => {
+    const ergebnis = mergeKonfiguration(basis, {
+      dossierParameter: {
+        typ_3_5: { zustandsbewertungen: { ...basis.dossierDefaults.zustandsbewertungen } },
+      },
+    });
+    expect(ergebnis.ok).toBe(true);
+    if (!ergebnis.ok) return;
+    expect(ergebnis.wert.ueberschreibungen).toEqual([]);
+    expect(ergebnis.wert.dossierParameter['typ_3_5']?.zustandsbewertungen)
+      .toEqual(basis.dossierDefaults.zustandsbewertungen);
+  });
+
+  it('weist ein unvollstaendiges Dossier-Parameter-Blatt zurueck, statt es als vollstaendig zu typisieren', () => {
+    const ergebnis = mergeKonfiguration(basis, {
+      dossierParameter: { typ_3_5: { zustandsbewertungen: { kitchen: 'kaputt' } } },
+    });
+    expect(ergebnis.ok).toBe(false);
+    if (ergebnis.ok) return;
+    expect(ergebnis.fehler.map((f) => f.code)).toContain('CFG_SCHEMA_TYPE');
+  });
+
   it('ersetzt Preisanpassungen vollstaendig und protokolliert sie', () => {
     const ergebnis = mergeKonfiguration(basis, {
       preisanpassungen: {
