@@ -115,7 +115,7 @@ describe('Eingabevalidierung — einzige Stelle mit Plausibilitaetsgrenzen (I-02
 
   it('weist eine Parametrisierung mit anbieterfremdem Bewertungsschluessel zurueck', () => {
     const eingabe = roh() as Record<string, unknown>;
-    const wohnungstypen = eingabe.wohnungstypen as Array<{ parametrisierung: Record<string, unknown> }>;
+    const wohnungstypen = eingabe['wohnungstypen'] as Array<{ parametrisierung: Record<string, unknown> }>;
     wohnungstypen[0]!.parametrisierung = {
       ...parametrisierung,
       zustandsbewertungen: { Gesamteindruck: 'gehoben' },
