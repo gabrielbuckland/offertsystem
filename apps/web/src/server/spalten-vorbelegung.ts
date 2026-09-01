@@ -12,12 +12,13 @@
 // regelbehaftete Spalte Erfassungsform und Regel, aber keinen `vorgabewert` (Schema
 // schliesst beide gegenseitig aus).
 import type { Konfiguration } from '@offert/core';
+import type { Anpassungsvorlage } from './anpassungsvorlagen.js';
 import { leseVorlagen } from './anpassungsvorlagen.js';
 import type { AnpassungsSpalte } from './projekt-schema.js';
 
-export function vorbelegteSpalten(k: Konfiguration): readonly AnpassungsSpalte[] {
-  return leseVorlagen(k).map((v, i) => ({
-    id: `S-${i + 1}`,
+export function spalteAusVorlage(v: Anpassungsvorlage, id: string): AnpassungsSpalte {
+  return {
+    id,
     bezeichnung: v.bezeichnung,
     erfassungsform: v.erfassungsform,
     // Bereiche flach kopiert, nicht durchgereicht: Kern fuehrt sie als `readonly Bereich[]`,
@@ -25,5 +26,9 @@ export function vorbelegteSpalten(k: Konfiguration): readonly AnpassungsSpalte[]
     ...(v.regel === undefined
       ? { vorgabewert: 0 }
       : { regel: { merkmal: v.regel.merkmal, bereiche: v.regel.bereiche.map((b) => ({ ...b })) } }),
-  }));
+  };
+}
+
+export function vorbelegteSpalten(k: Konfiguration): readonly AnpassungsSpalte[] {
+  return leseVorlagen(k).map((v, i) => spalteAusVorlage(v, `S-${i + 1}`));
 }

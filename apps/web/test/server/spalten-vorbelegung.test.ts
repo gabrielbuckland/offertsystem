@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Konfiguration, KernAnpassungsVorlage } from '@offert/core';
 import { standardKonfiguration } from '../bau/offerte-bauer.js';
-import { vorbelegteSpalten } from '../../src/server/spalten-vorbelegung.js';
+import { spalteAusVorlage, vorbelegteSpalten } from '../../src/server/spalten-vorbelegung.js';
 
 function konfigurationMitVorlage(v: KernAnpassungsVorlage): Konfiguration {
   return { ...standardKonfiguration(), anpassungsVorlagen: [v] };
@@ -63,5 +63,41 @@ describe('vorbelegteSpalten', () => {
     const spalten = vorbelegteSpalten(k);
     expect(spalten[0]!.regel).toBeUndefined();
     expect(spalten[0]!.vorgabewert).toBe(0);
+  });
+});
+
+describe('spalteAusVorlage', () => {
+  it('setzt bei einer Vorlage OHNE Regel den neutralen Vorgabewert 0, nie den Vorgabefaktor', () => {
+    const v = { id: 'seesicht', bezeichnung: 'Seesicht', vorgabefaktor: 0.08,
+      erfassungsform: 'relativ' as const, begruendungVorschlag: 'Seesicht.' };
+    const s = spalteAusVorlage(v, 'S-7');
+    expect(s).toEqual({
+      id: 'S-7', bezeichnung: 'Seesicht', erfassungsform: 'relativ', vorgabewert: 0,
+    });
+  });
+
+  it('uebernimmt bei einer Vorlage MIT Regel die Regel und KEINEN Vorgabewert', () => {
+    const v = { id: 'stockwerklage', bezeichnung: 'Zuschlag Stockwerklage',
+      vorgabefaktor: 0, erfassungsform: 'absolut' as const,
+      begruendungVorschlag: 'Staffel.',
+      regel: { merkmal: 'stockwerk', bereiche: [{ unter: 1, wert: 860000 }, { wert: 0 }] } };
+    const s = spalteAusVorlage(v, 'S-2');
+    expect(s.regel).toEqual(v.regel);
+    expect(s).not.toHaveProperty('vorgabewert');
+  });
+
+  it('kopiert die Bereiche flach statt sie durchzureichen', () => {
+    const bereiche = [{ wert: 0 }];
+    const v = { id: 'x', bezeichnung: 'X', vorgabefaktor: 0,
+      erfassungsform: 'absolut' as const, begruendungVorschlag: '',
+      regel: { merkmal: 'stockwerk', bereiche } };
+    const s = spalteAusVorlage(v, 'S-1');
+    expect(s.regel!.bereiche[0]).not.toBe(bereiche[0]);
+  });
+
+  it('vorbelegteSpalten bleibt die Abbildung ueber alle Vorlagen', () => {
+    const k = standardKonfiguration();
+    expect(vorbelegteSpalten(k))
+      .toEqual(k.anpassungsVorlagen.map((v, i) => spalteAusVorlage(v, `S-${i + 1}`)));
   });
 });
