@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { Konfiguration } from '@offert/core';
 import { pruefeErfassung } from '../../src/server/feldmeldungen.js';
 import { standardKonfiguration } from '../bau/offerte-bauer.js';
+import { BEWERTUNGEN_STANDARD } from '../bau/bewertungen.js';
 
 const WURZEL = resolve(import.meta.dirname, '../../../..');
 const KONFIG: Konfiguration = standardKonfiguration();
@@ -19,13 +20,7 @@ function beispielErfassung() {
       zimmerzahl: 3.5,
       parametrisierung: {
         flaecheInnen: 82, flaecheAussen: 12, stockwerk: 2, energielabel: 'A',
-        zustandsbewertungen: {
-          bathrooms: 'well_maintained', kitchen: 'well_maintained',
-          flooring: 'well_maintained', windows: 'well_maintained',
-        },
-        qualitaetsbewertungen: {
-          bathrooms: 'normal', kitchen: 'normal', flooring: 'normal', windows: 'normal',
-        },
+        ...BEWERTUNGEN_STANDARD,
         anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'Waermepumpe',
       },
     }],

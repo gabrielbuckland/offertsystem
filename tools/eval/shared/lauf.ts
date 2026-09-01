@@ -34,6 +34,18 @@ import type { Szenario, SzenarioTyp } from './szenario.ts';
  */
 export const EVAL_ZEITSTEMPEL = '2026-01-01T00:00:00.000Z';
 
+// Lokal statt aus apps/web/test importiert: tools/ steht ausserhalb der Abhaengigkeitsmatrix,
+// soll aber nicht in den Testbaum einer App greifen.
+const BEWERTUNGEN_STANDARD = {
+  zustandsbewertungen: {
+    bathrooms: 'well_maintained', kitchen: 'well_maintained',
+    flooring: 'well_maintained', windows: 'well_maintained',
+  },
+  qualitaetsbewertungen: {
+    bathrooms: 'normal', kitchen: 'normal', flooring: 'normal', windows: 'normal',
+  },
+} as const;
+
 export interface LaufErgebnis {
   readonly szenario_id: string;
   readonly ok: boolean;
@@ -54,8 +66,7 @@ function parametrisierung(typ: SzenarioTyp): RepraesentativeParametrisierung {
     flaecheAussen: typ.A_ref_aussen as RepraesentativeParametrisierung['flaecheAussen'],
     stockwerk: 1,
     energielabel: 'C',
-    zustandsbewertungen: {},
-    qualitaetsbewertungen: {},
+    ...BEWERTUNGEN_STANDARD,
     anzahlBadezimmer: 1,
     lift: false,
     baujahr: 2025,

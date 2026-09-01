@@ -37,6 +37,18 @@ import {
   type ZuAbschlag,
 } from '@offert/core';
 
+// Lokal statt aus apps/web/test importiert: check-deps.ts verbietet @offert/offer ->
+// @offert/web, und ein Import ueber die Paketgrenze waere genau das.
+const BEWERTUNGEN_STANDARD = {
+  zustandsbewertungen: {
+    bathrooms: 'well_maintained', kitchen: 'well_maintained',
+    flooring: 'well_maintained', windows: 'well_maintained',
+  },
+  qualitaetsbewertungen: {
+    bathrooms: 'normal', kitchen: 'normal', flooring: 'normal', windows: 'normal',
+  },
+} as const;
+
 export const ZEITSTEMPEL = '2026-08-16T14:32:00.000Z';
 
 const KONFIGURATIONSPFAD = new URL('../../../../config/company-defaults.json', import.meta.url);
@@ -60,8 +72,7 @@ function parametrisierung(
     flaecheAussen: flaecheAussen as Quadratmeter,
     stockwerk,
     energielabel: 'A',
-    zustandsbewertungen: { bathrooms: 'new', kitchen: 'new' },
-    qualitaetsbewertungen: { bathrooms: 'normal', kitchen: 'normal' },
+    ...BEWERTUNGEN_STANDARD,
     anzahlBadezimmer: 1,
     lift: true,
     baujahr: 2027,

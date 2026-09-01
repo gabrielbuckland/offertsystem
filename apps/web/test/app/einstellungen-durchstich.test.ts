@@ -17,6 +17,7 @@ import { POST as POST_EINSTELLUNGEN } from '../../src/app/api/projekt/[id]/einst
 import { POST as POST_BERECHNUNG } from '../../src/app/api/projekt/[id]/berechnung/route.js';
 import { ladeProjekt, legeProjektAn, speichereProjekt } from '../../src/server/projekt-ablage.js';
 import { standardKonfiguration } from '../bau/offerte-bauer.js';
+import { BEWERTUNGEN_STANDARD } from '../bau/bewertungen.js';
 
 const ADRESSE = { strasse: 'Seestrasse', hausnummer: '1', plz: '8001', ort: 'Zürich' };
 
@@ -39,7 +40,7 @@ async function rechenbaresProjektAnlegen(verzeichnis: string) {
       id: 'R-1', zimmerzahl: 3.5,
       parametrisierung: {
         flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'B',
-        zustandsbewertungen: {}, qualitaetsbewertungen: {},
+        ...BEWERTUNGEN_STANDARD,
         anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
       },
     }],

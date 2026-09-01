@@ -4,6 +4,7 @@ import type { Referenzobjekt } from '../../../src/server/projekt-schema.js';
 import {
   anzahlWohnungenAusEntwurf, naechsteId, neuesReferenzobjekt, verfuegbareZimmerzahlen,
 } from '../../../src/components/projekt/referenzobjekte-logik.js';
+import { BEWERTUNGEN_STANDARD } from '../../bau/bewertungen.js';
 
 function referenzobjekt(id: string, zimmerzahl: number): Referenzobjekt {
   return {
@@ -11,7 +12,7 @@ function referenzobjekt(id: string, zimmerzahl: number): Referenzobjekt {
     zimmerzahl,
     parametrisierung: {
       flaecheInnen: 60, flaecheAussen: 0, stockwerk: 0, energielabel: '',
-      zustandsbewertungen: {}, qualitaetsbewertungen: {},
+      ...BEWERTUNGEN_STANDARD,
       anzahlBadezimmer: 0, lift: false, baujahr: 0, heizungsart: '',
     },
   };
@@ -66,11 +67,11 @@ describe('neuesReferenzobjekt', () => {
   it('uebernimmt Zustand und Qualitaet aus den firmenweiten Dossier-Voreinstellungen', () => {
     const neues = neuesReferenzobjekt(
       3, 65, 'R1', 2027,
-      { 'Neu / kürzlich modernisiert': '3' },
-      { Gesamteindruck: 'gehoben' },
+      { bathrooms: 'new_or_recently_renovated' },
+      { bathrooms: 'luxury' },
     );
-    expect(neues.parametrisierung.zustandsbewertungen).toEqual({ 'Neu / kürzlich modernisiert': '3' });
-    expect(neues.parametrisierung.qualitaetsbewertungen).toEqual({ Gesamteindruck: 'gehoben' });
+    expect(neues.parametrisierung.zustandsbewertungen).toEqual({ bathrooms: 'new_or_recently_renovated' });
+    expect(neues.parametrisierung.qualitaetsbewertungen).toEqual({ bathrooms: 'luxury' });
   });
 });
 

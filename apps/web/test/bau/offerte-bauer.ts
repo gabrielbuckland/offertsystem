@@ -36,6 +36,7 @@ import {
   type ZuAbschlag,
 } from '@offert/core';
 import { baueOfferte, type Offer } from '@offert/offer';
+import { BEWERTUNGEN_STANDARD } from './bewertungen.js';
 
 export const ZEITSTEMPEL = '2026-08-16T14:32:00.000Z';
 
@@ -60,8 +61,7 @@ function parametrisierung(
     flaecheAussen: flaecheAussen as Quadratmeter,
     stockwerk,
     energielabel: 'A',
-    zustandsbewertungen: { bathrooms: 'new', kitchen: 'new' },
-    qualitaetsbewertungen: { bathrooms: 'normal', kitchen: 'normal' },
+    ...BEWERTUNGEN_STANDARD,
     anzahlBadezimmer: 1,
     lift: true,
     baujahr: 2027,
