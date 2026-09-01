@@ -1,27 +1,10 @@
 import type { OffertKonfiguration } from '@offert/core';
-import { Fragment } from 'react';
-import { EinstellungsEditor } from '../../../components/einstellungen/EinstellungsEditor.js';
+import { FirmenEinstellungen } from '../../../components/einstellungen/FirmenEinstellungen.js';
 import { Brotkrume } from '../../../components/shell/Brotkrume.js';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card.js';
 import { holeLaufzeit } from '../../../server/laufzeit.js';
-import { BEREICHE, type Bereich } from './bereiche.js';
 
 export const dynamic = 'force-dynamic';
-
-/**
- * Reihenfolge der Pipeline-Stufen (US-09/A-10) fuer die Uebersicht: Stufe 3
- * (Normalisierung) und Stufe 4 (Gewichtung) teilen sich einen Bereich (`faktoren`) — ein
- * Faktor traegt Min/Max UND Gewicht in einem Editor, siehe `FaktorenEditor`. Zwei
- * eingebettete Editoren fuer denselben Bereich haetten zwei unabhaengige Entwuerfe zur
- * Folge (`EinstellungsEditor`-Dateikommentar); deshalb genau EIN Editor pro Bereich,
- * mit dem Stufenlabel, das er inhaltlich abdeckt.
- */
-const PIPELINE_REIHENFOLGE: ReadonlyArray<{ readonly stufenLabel: string; readonly bereich: Bereich }> = [
-  { stufenLabel: 'Stufe 1 · Eingabe', bereich: 'dossier' },
-  { stufenLabel: 'Stufe 2 · Verkaufssumme', bereich: 'preisanpassung' },
-  { stufenLabel: 'Stufe 3–4 · Normalisierung & Gewichtung', bereich: 'faktoren' },
-  { stufenLabel: 'Stufe 5 · Honorar', bereich: 'honorar' },
-];
 
 export default async function EinstellungenSeite() {
   const laufzeit = holeLaufzeit();
@@ -58,42 +41,10 @@ export default async function EinstellungenSeite() {
       {/* Untereinander statt nebeneinander (Rueckmeldung Auftraggeber): Jede Stufe der
           Berechnungs-Pipeline ist hier direkt inline editierbar — kein Umweg mehr ueber
           eine separate Editor-Seite. Die Reihenfolge folgt der Pipeline, ein Pfeil nach
-          unten haelt den Fluss sichtbar.
-
-          BEKANNTE GRENZE (offener Punkt, Gesamtreview 2026-08-29, Befund W-6): Jede der
-          vier Karten baut ueber `EinstellungsEditor` ihren EIGENEN Entwurf aus demselben
-          `anfang` und POSTet beim Speichern die GESAMTE Konfiguration daraus. Nach dem
-          Speichern gibt es kein `router.refresh()`, die anderen drei Karten behalten also
-          ihren urspruenglichen `anfang`. Wer nacheinander zwei Karten speichert,
-          ueberschreibt damit die zuerst gespeicherte Aenderung still. Der Defekt liegt vor
-          dem Zwei-Ebenen-Umbau; seine Behebung heisst, den Entwurf ueber alle vier Karten
-          hinweg an EINER Stelle zu fuehren (oder je Karte nur ihren Teilbaum zu senden)
-          und ist eine Umstrukturierung des Editor-Rahmens — bewusst nicht Teil dieser
-          Fix-Runde. Bis dahin gilt: eine Karte aendern, speichern, Seite neu laden. */}
-      <div className="flex flex-col gap-4">
-        {PIPELINE_REIHENFOLGE.map((eintrag, index) => {
-          const bereich = BEREICHE[eintrag.bereich];
-          return (
-            <Fragment key={eintrag.bereich}>
-              {index > 0 && (
-                <span aria-hidden="true" className="text-center text-muted-foreground">
-                  ↓
-                </span>
-              )}
-              <div>
-                <p className="mb-2 text-sm font-medium text-muted-foreground">{eintrag.stufenLabel}</p>
-                <EinstellungsEditor
-                  titel={bereich.titel}
-                  zweck={bereich.zweck}
-                  bereichPraefix={bereich.praefix}
-                  anfang={rohKonfiguration}
-                  Editor={bereich.Editor}
-                />
-              </div>
-            </Fragment>
-          );
-        })}
-      </div>
+          unten haelt den Fluss sichtbar (Umsetzung samt Pipeline-Reihenfolge und
+          Speicherzustand jetzt in `FirmenEinstellungen`, das den Defekt aus W-6
+          behebt). */}
+      <FirmenEinstellungen anfang={rohKonfiguration} />
 
       {/* Rollentrennung (US-08, Spec §6): Die API-Anbindung ist Betriebsparameter, kein
           Einstellungswert des Auftraggebers. Lesend statt editierbar, weil eine falsch
