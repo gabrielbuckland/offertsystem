@@ -78,6 +78,9 @@ export function holeLaufzeit(
       ...(umgebung.wert.phBaseUrl === undefined ? {} : { PH_BASE_URL: umgebung.wert.phBaseUrl }),
       ...(umgebung.wert.phUsername === undefined ? {} : { PH_USERNAME: umgebung.wert.phUsername }),
       ...(umgebung.wert.phPassword === undefined ? {} : { PH_PASSWORD: umgebung.wert.phPassword }),
+      ...(umgebung.wert.phAccessToken === undefined
+        ? {}
+        : { PH_ACCESS_TOKEN: umgebung.wert.phAccessToken }),
       ...(umgebung.wert.phDossierId === undefined ? {} : { PH_DOSSIER_ID: umgebung.wert.phDossierId }),
     },
     // PE-17: Strukturgleichheit mit `ApiKonfiguration` prueft `pruefeApiKonfiguration`

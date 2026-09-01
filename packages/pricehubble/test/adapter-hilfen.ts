@@ -33,7 +33,7 @@ export function baueAdapter(konfiguration = testKonfiguration()) {
       client,
       konfiguration,
       uhr: systemUhr,
-      zugangsdaten: { benutzername: 'u', passwort: 'p' },
+      zugang: { art: 'zugangsdaten', benutzername: 'u', passwort: 'p' },
     }),
     uhr: systemUhr,
     protokoll,

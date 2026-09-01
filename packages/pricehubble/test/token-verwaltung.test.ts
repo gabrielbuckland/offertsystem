@@ -1,7 +1,7 @@
 import { HttpResponse, http } from 'msw';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpClient } from '../src/client/http-client.js';
-import { TokenVerwaltung } from '../src/client/token-verwaltung.js';
+import { TokenVerwaltung, type Zugang } from '../src/client/token-verwaltung.js';
 import { sammelndesProtokoll } from '../src/client/protokoll.js';
 import { systemUhr } from '../src/client/uhr.js';
 import { erzeugeZufallsquelle } from '../src/client/zufall.js';
@@ -9,7 +9,9 @@ import { BASIS } from './msw/handlers.js';
 import { mswServer } from './msw/server.js';
 import { testKonfiguration } from './test-konfiguration.js';
 
-function verwaltungMit(konfiguration = testKonfiguration()) {
+const ZUGANGSDATEN: Zugang = { art: 'zugangsdaten', benutzername: 'u', passwort: 'geheim' };
+
+function verwaltungMit(konfiguration = testKonfiguration(), zugang: Zugang = ZUGANGSDATEN) {
   const protokoll = sammelndesProtokoll();
   const client = new HttpClient({
     konfiguration,
@@ -24,7 +26,7 @@ function verwaltungMit(konfiguration = testKonfiguration()) {
       client,
       konfiguration,
       uhr: systemUhr,
-      zugangsdaten: { benutzername: 'u', passwort: 'geheim' },
+      zugang,
     }),
   };
 }
@@ -145,6 +147,65 @@ describe('Token-Haltung (Spec 04 §2)', () => {
       token,
     }));
     expect(ergebnis).toMatchObject({ ok: false, fehler: { art: 'AuthError' } });
+  });
+
+  it('nutzt einen manuell gesetzten Token ohne eigenen Login (E-31)', async () => {
+    let logins = 0;
+    mswServer.use(
+      http.post(`${BASIS}/auth/login/credentials`, () => {
+        logins += 1;
+        return HttpResponse.json({ access_token: 't-login' });
+      }),
+      http.get(`${BASIS}/probe`, ({ request }) =>
+        request.headers.get('Authorization') === 'Bearer t-manuell'
+          ? HttpResponse.json({ a: 1 })
+          : new HttpResponse(null, { status: 401 })),
+    );
+    const { verwaltung } = verwaltungMit(testKonfiguration(), {
+      art: 'token',
+      token: 't-manuell',
+    });
+    const ergebnis = await verwaltung.mitToken((token) => ({
+      endpunkt: 'dossierGet' as const,
+      methode: 'GET' as const,
+      url: `${BASIS}/probe`,
+      timeoutMs: testKonfiguration().timeoutMs,
+      token,
+    }));
+    expect(ergebnis).toMatchObject({ ok: true });
+    expect(logins).toBe(0);
+  });
+
+  it('erneuert einen manuell gesetzten Token bei 401 nicht (E-31)', async () => {
+    let logins = 0;
+    let abrufe = 0;
+    mswServer.use(
+      http.post(`${BASIS}/auth/login/credentials`, () => {
+        logins += 1;
+        return HttpResponse.json({ access_token: 't-login' });
+      }),
+      http.get(`${BASIS}/probe`, () => {
+        abrufe += 1;
+        return new HttpResponse(null, { status: 401 });
+      }),
+    );
+    const { verwaltung } = verwaltungMit(testKonfiguration(), {
+      art: 'token',
+      token: 't-manuell',
+    });
+    const ergebnis = await verwaltung.mitToken((token) => ({
+      endpunkt: 'dossierGet' as const,
+      methode: 'GET' as const,
+      url: `${BASIS}/probe`,
+      timeoutMs: testKonfiguration().timeoutMs,
+      token,
+    }));
+    expect(ergebnis).toMatchObject({
+      ok: false,
+      fehler: { art: 'AuthError', detail: 'PH_ACCESS_TOKEN wurde abgelehnt oder ist abgelaufen' },
+    });
+    expect(abrufe).toBe(1);
+    expect(logins).toBe(0);
   });
 
   it('protokolliert niemals Passwort oder Token (AK-18)', async () => {

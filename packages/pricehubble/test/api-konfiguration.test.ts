@@ -70,6 +70,19 @@ describe('Initialisierungspruefung (Spec 04 §2 Regel 2, §6.2)', () => {
     ).toThrow(/PH_DOSSIER_ID/);
   });
 
+  it('laesst mit PH_ACCESS_TOKEN die Zugangsdaten entfallen, nicht aber das Dossier (E-31)', () => {
+    expect(() =>
+      pruefeUmgebung({
+        VALUATION_PROVIDER: 'pricehubble',
+        PH_ACCESS_TOKEN: 't-manuell',
+        PH_DOSSIER_ID: '4711',
+      }),
+    ).not.toThrow();
+    expect(() =>
+      pruefeUmgebung({ VALUATION_PROVIDER: 'pricehubble', PH_ACCESS_TOKEN: 't-manuell' }),
+    ).toThrow(/PH_DOSSIER_ID/);
+  });
+
   it('verlangt bei VALUATION_PROVIDER=mock keine Zugangsvariablen', () => {
     expect(() => pruefeUmgebung({ VALUATION_PROVIDER: 'mock' })).not.toThrow();
   });

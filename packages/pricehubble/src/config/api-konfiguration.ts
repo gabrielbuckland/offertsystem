@@ -48,6 +48,8 @@ export interface AdapterUmgebung {
   readonly PH_BASE_URL?: string;
   readonly PH_USERNAME?: string;
   readonly PH_PASSWORD?: string;
+  /** Manuell besorgter Token; ersetzt PH_USERNAME/PH_PASSWORD (E-31, Spec 04 §8.3). */
+  readonly PH_ACCESS_TOKEN?: string;
   readonly PH_DOSSIER_ID?: string;
 }
 
@@ -105,10 +107,24 @@ export function pruefeUmgebung(env: AdapterUmgebung): ProviderSchalter {
     );
   }
   if (schalter === 'pricehubble') {
-    for (const name of ['PH_USERNAME', 'PH_PASSWORD', 'PH_DOSSIER_ID'] as const) {
-      if ((env[name] ?? '').trim() === '') {
-        throw new KonfigurationsFehler(name, 'ist bei VALUATION_PROVIDER=pricehubble Pflicht');
+    // Reihenfolge bewusst: Zugangsdaten vor Dossier, damit die Meldung den zuerst
+    // fehlenden Zugangsweg nennt. PH_ACCESS_TOKEN hebt nur die Zugangsdaten auf,
+    // nie die Dossier-Pflicht.
+    if ((env.PH_ACCESS_TOKEN ?? '').trim() === '') {
+      for (const name of ['PH_USERNAME', 'PH_PASSWORD'] as const) {
+        if ((env[name] ?? '').trim() === '') {
+          throw new KonfigurationsFehler(
+            name,
+            'ist bei VALUATION_PROVIDER=pricehubble Pflicht, solange kein PH_ACCESS_TOKEN gesetzt ist',
+          );
+        }
       }
+    }
+    if ((env.PH_DOSSIER_ID ?? '').trim() === '') {
+      throw new KonfigurationsFehler(
+        'PH_DOSSIER_ID',
+        'ist bei VALUATION_PROVIDER=pricehubble Pflicht',
+      );
     }
   }
   return schalter;

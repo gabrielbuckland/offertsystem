@@ -22,11 +22,21 @@ export interface Zugangsdaten {
   readonly passwort: string;
 }
 
+/**
+ * Zweiter Zugangsweg: ein von Hand besorgter Token (E-31, Spec 04 §8.3). Er erlaubt
+ * einen Lauf gegen die echte API, ohne dass Zugangsdaten in den Prozess gelangen.
+ * Seine Restlaufzeit ist unbekannt, deshalb gelten fuer ihn weder
+ * `api.tokenGueltigkeitMin` noch die reaktive Erneuerung bei 401.
+ */
+export type Zugang =
+  | ({ readonly art: 'zugangsdaten' } & Zugangsdaten)
+  | { readonly art: 'token'; readonly token: string };
+
 export interface TokenVerwaltungAbhaengigkeiten {
   readonly client: HttpClient;
   readonly konfiguration: ApiKonfiguration;
   readonly uhr: Uhr;
-  readonly zugangsdaten: Zugangsdaten;
+  readonly zugang: Zugang;
 }
 
 export type TokenErgebnis =
@@ -52,7 +62,10 @@ export class TokenVerwaltung {
   }
 
   public async holeToken(): Promise<TokenErgebnis> {
-    const { uhr } = this.abh;
+    const { uhr, zugang } = this.abh;
+    if (zugang.art === 'token') {
+      return { ok: true, wert: zugang.token };
+    }
     if (this.token !== undefined && uhr.jetztMs() < this.gueltigBisMs) {
       return { ok: true, wert: this.token };
     }
@@ -83,6 +96,17 @@ export class TokenVerwaltung {
     if (ergebnis.ok || ergebnis.fehler.art !== 'AuthError') {
       return ergebnis;
     }
+    // Ein fest gesetzter Token laesst sich nicht erneuern; ein zweiter Versuch waere
+    // ein Replay desselben abgelehnten Tokens.
+    if (this.abh.zugang.art === 'token') {
+      return {
+        ok: false,
+        fehler: {
+          ...ergebnis.fehler,
+          detail: 'PH_ACCESS_TOKEN wurde abgelehnt oder ist abgelaufen',
+        },
+      };
+    }
     this.token = undefined;
     const zweit = await this.erzwingeErneuerung();
     if (!zweit.ok) {
@@ -92,12 +116,15 @@ export class TokenVerwaltung {
   }
 
   private async login(): Promise<TokenErgebnis> {
-    const { client, konfiguration, uhr, zugangsdaten } = this.abh;
+    const { client, konfiguration, uhr, zugang } = this.abh;
+    if (zugang.art === 'token') {
+      return { ok: true, wert: zugang.token };
+    }
     const antwort = await client.fuehreAus({
       endpunkt: 'login',
       methode: 'POST',
       url: `${konfiguration.baseUrl}${konfiguration.endpunkte.login}`,
-      body: { username: zugangsdaten.benutzername, password: zugangsdaten.passwort },
+      body: { username: zugang.benutzername, password: zugang.passwort },
       timeoutMs: konfiguration.timeoutMs,
     });
     if (!antwort.ok) {

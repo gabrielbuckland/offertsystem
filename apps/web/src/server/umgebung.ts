@@ -65,6 +65,8 @@ export interface Umgebung {
   readonly phBaseUrl: string | undefined;
   readonly phUsername: string | undefined;
   readonly phPassword: string | undefined;
+  /** Manuell besorgter Token; ersetzt phUsername/phPassword (E-31, Spec 04 §8.3). */
+  readonly phAccessToken: string | undefined;
   readonly phDossierId: string | undefined;
 }
 
@@ -108,16 +110,25 @@ export function leseUmgebung(
     phBaseUrl: nichtLeer(quelle['PH_BASE_URL']),
     phUsername: nichtLeer(quelle['PH_USERNAME']),
     phPassword: nichtLeer(quelle['PH_PASSWORD']),
+    phAccessToken: nichtLeer(quelle['PH_ACCESS_TOKEN']),
     phDossierId: nichtLeer(quelle['PH_DOSSIER_ID']),
   };
 
   if (umgebung.valuationProvider === 'pricehubble') {
-    const pflicht: ReadonlyArray<readonly [string, string | undefined]> = [
-      ['PH_BASE_URL', umgebung.phBaseUrl],
-      ['PH_USERNAME', umgebung.phUsername],
-      ['PH_PASSWORD', umgebung.phPassword],
-      ['PH_DOSSIER_ID', umgebung.phDossierId],
-    ];
+    // Ein gesetzter PH_ACCESS_TOKEN ersetzt den Login und damit die Zugangsdaten,
+    // nicht aber Basis-URL und Dossier.
+    const pflicht: ReadonlyArray<readonly [string, string | undefined]> =
+      umgebung.phAccessToken === undefined
+        ? [
+            ['PH_BASE_URL', umgebung.phBaseUrl],
+            ['PH_USERNAME', umgebung.phUsername],
+            ['PH_PASSWORD', umgebung.phPassword],
+            ['PH_DOSSIER_ID', umgebung.phDossierId],
+          ]
+        : [
+            ['PH_BASE_URL', umgebung.phBaseUrl],
+            ['PH_DOSSIER_ID', umgebung.phDossierId],
+          ];
     for (const [name, wert] of pflicht) {
       if (wert === undefined) {
         meldungen.push(
