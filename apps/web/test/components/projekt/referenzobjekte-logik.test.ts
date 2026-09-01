@@ -53,25 +53,31 @@ describe('naechsteId', () => {
 
 describe('neuesReferenzobjekt', () => {
   it('setzt Zimmerzahl, Wohnflaeche, ID und Baujahr wie uebergeben, Stockwerk fest auf 0', () => {
-    expect(neuesReferenzobjekt(4.5, 72, 'R2', 2027, {}, {})).toEqual({
+    expect(neuesReferenzobjekt(
+      4.5, 72, 'R2', 2027,
+      BEWERTUNGEN_STANDARD.zustandsbewertungen, BEWERTUNGEN_STANDARD.qualitaetsbewertungen,
+    )).toEqual({
       id: 'R2',
       zimmerzahl: 4.5,
       parametrisierung: {
         flaecheInnen: 72, flaecheAussen: 0, stockwerk: 0, energielabel: '',
-        zustandsbewertungen: {}, qualitaetsbewertungen: {},
+        ...BEWERTUNGEN_STANDARD,
         anzahlBadezimmer: 0, lift: false, baujahr: 2027, heizungsart: '',
       },
     });
   });
 
   it('uebernimmt Zustand und Qualitaet aus den firmenweiten Dossier-Voreinstellungen', () => {
-    const neues = neuesReferenzobjekt(
-      3, 65, 'R1', 2027,
-      { bathrooms: 'new_or_recently_renovated' },
-      { bathrooms: 'luxury' },
-    );
-    expect(neues.parametrisierung.zustandsbewertungen).toEqual({ bathrooms: 'new_or_recently_renovated' });
-    expect(neues.parametrisierung.qualitaetsbewertungen).toEqual({ bathrooms: 'luxury' });
+    const zustandsbewertungen = {
+      bathrooms: 'new_or_recently_renovated', kitchen: 'new_or_recently_renovated',
+      flooring: 'new_or_recently_renovated', windows: 'new_or_recently_renovated',
+    } as const;
+    const qualitaetsbewertungen = {
+      bathrooms: 'luxury', kitchen: 'luxury', flooring: 'luxury', windows: 'luxury',
+    } as const;
+    const neues = neuesReferenzobjekt(3, 65, 'R1', 2027, zustandsbewertungen, qualitaetsbewertungen);
+    expect(neues.parametrisierung.zustandsbewertungen).toEqual(zustandsbewertungen);
+    expect(neues.parametrisierung.qualitaetsbewertungen).toEqual(qualitaetsbewertungen);
   });
 });
 
@@ -103,7 +109,10 @@ describe('anzahlWohnungenAusEntwurf', () => {
  */
 describe('neuesReferenzobjekt + erzeugeEinheiten (Anlegen-Dialog mit Anzahl)', () => {
   it('erzeugt genau so viele Einheiten des neuen Typs wie im Dialog angegeben', () => {
-    const neues = neuesReferenzobjekt(4.5, 72, 'R2', 2027, {}, {});
+    const neues = neuesReferenzobjekt(
+      4.5, 72, 'R2', 2027,
+      BEWERTUNGEN_STANDARD.zustandsbewertungen, BEWERTUNGEN_STANDARD.qualitaetsbewertungen,
+    );
     const alleReferenzobjekte = [referenzobjekt('R1', 3.5), neues];
     const neueEinheiten = erzeugeEinheiten(
       [{ referenzobjektId: neues.id, anzahl: 3 }], alleReferenzobjekte, [], []);
