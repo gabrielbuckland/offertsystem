@@ -22,6 +22,12 @@ interface ErfassterInput {
   readonly value: unknown;
   readonly onChange: (e: { target: { value: string } }) => void;
 }
+interface ErfassterSelect {
+  readonly children: unknown;
+  readonly value: unknown;
+  readonly onChange: (e: { target: { value: string } }) => void;
+  readonly 'aria-label'?: string;
+}
 interface ErfassteZelle {
   readonly wert: number;
   readonly aendere: (wert: number) => void;
@@ -30,6 +36,7 @@ interface ErfassteZelle {
 const erfasst = vi.hoisted(() => ({
   buttons: [] as ErfassterButton[],
   inputs: [] as ErfassterInput[],
+  selects: [] as ErfassterSelect[],
   zellen: [] as ErfassteZelle[],
 }));
 
@@ -46,7 +53,10 @@ vi.mock('../../../src/components/ui/input.js', () => ({
   },
 }));
 vi.mock('../../../src/components/ui/select.js', () => ({
-  Select: () => null,
+  Select: (props: ErfassterSelect) => {
+    erfasst.selects.push(props);
+    return null;
+  },
 }));
 vi.mock('../../../src/components/projekt/ZellenEingabe.js', () => ({
   ZellenEingabe: (props: ErfassteZelle) => {
@@ -78,6 +88,7 @@ describe('AnpassungsSpalten — Entfernen ist ein eigener Rueckruf', () => {
         aendere={aendere}
         entferneSpalte={entferneSpalte}
         uebernehmeAufEinheiten={vi.fn()}
+        vorlagen={[]}
       />,
     );
 
@@ -102,6 +113,7 @@ describe('AnpassungsSpalten — Entfernen ist ein eigener Rueckruf', () => {
         aendere={aendere}
         entferneSpalte={entferneSpalte}
         uebernehmeAufEinheiten={vi.fn()}
+        vorlagen={[]}
       />,
     );
 
@@ -125,6 +137,7 @@ describe('AnpassungsSpalten — freigewordene Kennungen werden nicht wiederverwe
         aendere={aendere}
         entferneSpalte={vi.fn()}
         uebernehmeAufEinheiten={vi.fn()}
+        vorlagen={[]}
       />,
     );
 
@@ -179,6 +192,7 @@ describe('AnpassungsSpalten — Vorgabewert in der Einheit des Menschen', () => 
         aendere={aendere}
         entferneSpalte={vi.fn()}
         uebernehmeAufEinheiten={vi.fn()}
+        vorlagen={[]}
       />,
     );
     return { aendere, zelle: erfasst.zellen[0]! };
@@ -229,6 +243,7 @@ describe('AnpassungsSpalten — Vorgabewert entfaellt bei einer Spalte mit Regel
         aendere={vi.fn()}
         entferneSpalte={vi.fn()}
         uebernehmeAufEinheiten={vi.fn()}
+        vorlagen={[]}
       />,
     );
 
@@ -244,6 +259,7 @@ describe('AnpassungsSpalten — Vorgabewert entfaellt bei einer Spalte mit Regel
         aendere={vi.fn()}
         entferneSpalte={vi.fn()}
         uebernehmeAufEinheiten={vi.fn()}
+        vorlagen={[]}
       />,
     );
 
@@ -262,6 +278,7 @@ describe('AnpassungsSpalten — eine neue Spalte ist sofort speicherbar', () => 
         aendere={aendere}
         entferneSpalte={vi.fn()}
         uebernehmeAufEinheiten={vi.fn()}
+        vorlagen={[]}
       />,
     );
 
@@ -317,6 +334,37 @@ describe('beschreibeStaffel — weist Segmente und Betraege lesbar aus', () => {
  * das Schema schliesst `regel` und `vorgabewert` gegenseitig aus (REGEL_UND_VORGABEWERT),
  * ein zurueckbleibender Schluessel machte jedes PUT des Projekts unspeicherbar.
  */
+describe('AnpassungsSpalten — Uebernahme einer firmenweiten Vorlage', () => {
+  it('bietet die firmenweiten Vorlagen zur Uebernahme an', () => {
+    erfasst.buttons.length = 0;
+    erfasst.selects.length = 0;
+    renderToStaticMarkup(
+      <AnpassungsSpalten
+        spalten={[]}
+        merkmale={[]}
+        vorlagen={[{
+          id: 'seesicht',
+          bezeichnung: 'Seesicht',
+          vorgabefaktor: 0.08,
+          erfassungsform: 'relativ',
+          begruendungVorschlag: 'Seesicht.',
+        }]}
+        aendere={() => undefined}
+        entferneSpalte={() => undefined}
+        uebernehmeAufEinheiten={() => undefined}
+      />,
+    );
+
+    expect(erfasst.buttons.some((b) => b.children === 'Aus Vorlage')).toBe(true);
+    const vorlagenSelect = erfasst.selects.find((s) => s['aria-label'] === 'Vorlage');
+    expect(vorlagenSelect).toBeDefined();
+    // Button/Select rendern `null` (siehe Mocks oben) — die Optionen selbst sind ungemockt
+    // und lassen sich darum separat rendern, um ihren Text zu pruefen.
+    const optionenMarkup = renderToStaticMarkup(<>{vorlagenSelect!.children}</>);
+    expect(optionenMarkup).toContain('Seesicht');
+  });
+});
+
 describe('Spalten-Umbau Vorgabewert <-> Staffel haelt den Schema-Ausschluss ein', () => {
   it('spalteMitRegel entfernt den Vorgabewert und startet mit totalem Restfall', () => {
     const neu = spalteMitRegel(spalte('S-1', 'Erste'), 'stockwerk');

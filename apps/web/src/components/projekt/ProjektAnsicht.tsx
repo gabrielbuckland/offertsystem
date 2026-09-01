@@ -13,6 +13,7 @@ import type { OffertKonfiguration, UeberschreibungsProtokoll } from '@offert/cor
 import type { AggregateValues, PriceDerivation } from '@offert/offer';
 import type { Projekt } from '../../server/projekt-schema.js';
 import type { Faktorformular } from '../../server/faktorformular.js';
+import type { Anpassungsvorlage } from '../../server/anpassungsvorlagen.js';
 import { verwendeProjekt } from './verwende-projekt.js';
 import { verwendeBerechnung } from './verwende-berechnung.js';
 import { nurRechenirrelevanteFelderGeaendert } from './projekt-rechenrelevanz.js';
@@ -65,6 +66,32 @@ interface OfferteAntwort {
 interface AbrufMeldung {
   readonly text: string;
   readonly art: HinweisArt;
+}
+
+/**
+ * `OffertKonfiguration['anpassungsVorlagen']` (Zod-Inferenz, `regel?: Bereichsregel |
+ * undefined`) und `Anpassungsvorlage` (Kern-Domaentyp, `regel?: Bereichsregel`) sind
+ * strukturell gleich, aber unter `exactOptionalPropertyTypes` nicht zuweisungskompatibel.
+ * Wie in `spalteAusVorlage`: das Feld fehlt statt auf `undefined` gesetzt zu werden.
+ */
+function zuAnpassungsvorlagen(
+  vorlagen: OffertKonfiguration['anpassungsVorlagen'],
+): readonly Anpassungsvorlage[] {
+  return vorlagen.map((v) => ({
+    id: v.id,
+    bezeichnung: v.bezeichnung,
+    vorgabefaktor: v.vorgabefaktor,
+    erfassungsform: v.erfassungsform,
+    begruendungVorschlag: v.begruendungVorschlag,
+    ...(v.regel === undefined ? {} : {
+      regel: {
+        merkmal: v.regel.merkmal,
+        bereiche: v.regel.bereiche.map((b) => (
+          b.unter === undefined ? { wert: b.wert } : { wert: b.wert, unter: b.unter }
+        )),
+      },
+    }),
+  }));
 }
 
 export function ProjektAnsicht(
@@ -258,6 +285,7 @@ export function ProjektAnsicht(
               einheiten: [...uebernehmeVorgabewert(projekt.einheiten, spalte)],
             });
           }}
+          vorlagen={zuAnpassungsvorlagen(konfigurationBasis.anpassungsVorlagen)}
         />
       </section>
       <section className="mb-6 rounded-lg border border-border bg-card p-6">
