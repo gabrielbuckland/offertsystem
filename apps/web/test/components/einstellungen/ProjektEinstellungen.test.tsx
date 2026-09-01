@@ -2,12 +2,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { DossierEditor } from '../../../src/components/einstellungen/DossierEditor.js';
 import { EinstellungsEditor } from '../../../src/components/einstellungen/EinstellungsEditor.js';
 import { FaktorenEditor } from '../../../src/components/einstellungen/FaktorenEditor.js';
-import type {
-  VerwendeEinstellungenErgebnis,
-} from '../../../src/components/einstellungen/verwende-einstellungen.js';
 import {
   BefundAuffang, ProjektEinstellungen,
 } from '../../../src/components/einstellungen/ProjektEinstellungen.js';
@@ -40,20 +36,6 @@ const ZURUECKSETZEN = 'Auf Firmenwert zurücksetzen';
  * dort ist Entfernen korrekt, weil Arrays im Merge vollstaendig ersetzt werden.
  */
 const FAKTOR_ENTFERNEN_TITEL = 'Projekte, die diesen Faktor erfasst haben';
-
-/** Ruhender Editor-Zustand ohne Hooks — genug, um einen Bereichs-Editor zu rendern. */
-function zustandFuer(entwurf: Readonly<Record<string, unknown>>): VerwendeEinstellungenErgebnis {
-  return {
-    entwurf,
-    geaendert: false,
-    speichert: false,
-    pruefsumme: undefined,
-    befunde: [],
-    aendere: () => undefined,
-    speichere: () => undefined,
-    verwerfe: () => undefined,
-  };
-}
 
 function baueMarkup(delta: Readonly<Record<string, unknown>>): string {
   return renderToStaticMarkup(
@@ -154,21 +136,6 @@ describe('Entfernen auf Projektebene (K-3)', () => {
     expect(html).not.toContain(FAKTOR_ENTFERNEN_TITEL);
     // Stattdessen die Begruendung, damit die fehlende Aktion nicht wie ein Mangel wirkt.
     expect(html).toContain('nur firmenweit');
-  });
-
-  it('bietet auf Projektebene kein Entfernen einer Bewertungszeile an', () => {
-    // Dieselbe Modellgrenze fuer die offenen Woerterbuecher unter `dossierDefaults`.
-    // Direkt am Bereichs-Editor geprueft: Im Markup der ganzen Seite steht
-    // `aria-label="entfernen"` auch an Stuetzstellen, Vorlagen und Merkmalen — das sind
-    // ARRAYS, die der Merge vollstaendig ersetzt, dort ist Entfernen korrekt.
-    const projekt = renderToStaticMarkup(
-      <DossierEditor einstellungen={zustandFuer(FIRMA)} ebene="projekt" />,
-    );
-    expect(projekt).not.toContain('aria-label="entfernen"');
-    const firma = renderToStaticMarkup(
-      <DossierEditor einstellungen={zustandFuer(FIRMA)} ebene="firma" />,
-    );
-    expect(firma).toContain('aria-label="entfernen"');
   });
 
   it('behaelt das Entfernen auf der Firmenebene', () => {

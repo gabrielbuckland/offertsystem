@@ -1,121 +1,100 @@
 'use client';
 
-// Editor fuer den Teilbaum `dossierDefaults` — firmenweite Voreinstellungen fuer neue
-// Projekte. Die Zahlen-/Textfelder legen bei leerem Feld `null` ab: «leer lassen = keine
-// Voreinstellung» (Spec §6), kein erfundener Nullwert.
-import { useEffect, useState, type ReactElement } from 'react';
+// Editor fuer `dossierDefaults` — firmenweite Voreinstellung der beiden
+// PriceHubble-Objekte `condition` und `quality`. Feldmenge und Werte sind vom Anbieter
+// vorgegeben und kommen aus dem Kern; hier liegen nur die deutschen Beschriftungen.
+import type { ReactElement } from 'react';
+import {
+  BEWERTUNGSFELDER, QUALITAETSWERTE, ZUSTANDSWERTE,
+  type Bewertungsfeld,
+} from '@offert/core';
 import { Hinweis } from '../ui/hinweis.js';
-import { Input } from '../ui/input.js';
 import { Label } from '../ui/label.js';
-import { SchluesselWertListe } from '../ui/schluessel-wert-liste.js';
+import { Select } from '../ui/select.js';
 import { befundeFuerPfad, type BereichsEditorProps } from './verwende-einstellungen.js';
 
-// Meldet erst beim Verlassen des Felds (Muster `ZellenEingabe.tsx`). Anders als
-// `entscheideZellenwert` verwirft ein leeres Feld hier NICHT — leer ist das gueltige
-// Zielergebnis "keine Voreinstellung" (`null`).
-function NullbaresFeld({ wert, aendere, typ = 'text' }: {
-  readonly wert: string;
-  readonly aendere: (text: string) => void;
-  readonly typ?: 'text' | 'number';
-}): ReactElement {
-  const [entwurf, setzeEntwurf] = useState(wert);
-  useEffect(() => { setzeEntwurf(wert); }, [wert]);
+const FELD_BESCHRIFTUNG: Readonly<Record<Bewertungsfeld, string>> = {
+  bathrooms: 'Badezimmer',
+  kitchen: 'Küche',
+  flooring: 'Böden',
+  windows: 'Fenster',
+};
 
-  return (
-    <Input
-      type={typ}
-      className="h-8 w-full"
-      value={entwurf}
-      onChange={(e) => setzeEntwurf(e.target.value)}
-      onBlur={() => aendere(entwurf)}
-      placeholder="keine Voreinstellung"
-    />
-  );
-}
+const ZUSTAND_BESCHRIFTUNG: Readonly<Record<string, string>> = {
+  renovation_needed: 'Renovationsbedarf',
+  well_maintained: 'Gepflegt',
+  new_or_recently_renovated: 'Neu oder kürzlich renoviert',
+};
+
+const QUALITAET_BESCHRIFTUNG: Readonly<Record<string, string>> = {
+  simple: 'Einfach',
+  normal: 'Normal',
+  high_quality: 'Gehoben',
+  luxury: 'Luxus',
+};
 
 interface DossierDefaultsRoh {
-  readonly flaecheInnen: number | null;
-  readonly flaecheAussen: number | null;
-  readonly stockwerk: number | null;
-  readonly energielabel: string | null;
   readonly zustandsbewertungen: Readonly<Record<string, string>>;
   readonly qualitaetsbewertungen: Readonly<Record<string, string>>;
 }
 
-type ZahlenFeld = 'flaecheInnen' | 'flaecheAussen' | 'stockwerk';
 type ListenFeld = 'zustandsbewertungen' | 'qualitaetsbewertungen';
 
-const ZAHLEN_FELDER: ReadonlyArray<{ readonly feld: ZahlenFeld; readonly beschriftung: string }> = [
-  { feld: 'flaecheInnen', beschriftung: 'Fläche innen (m²)' },
-  { feld: 'flaecheAussen', beschriftung: 'Fläche aussen (m²)' },
-  { feld: 'stockwerk', beschriftung: 'Stockwerk' },
+const OBJEKTE: ReadonlyArray<{
+  readonly feld: ListenFeld;
+  readonly beschriftung: string;
+  readonly werte: readonly string[];
+  readonly wertBeschriftung: Readonly<Record<string, string>>;
+}> = [
+  {
+    feld: 'zustandsbewertungen', beschriftung: 'Zustandsbewertungen',
+    werte: ZUSTANDSWERTE, wertBeschriftung: ZUSTAND_BESCHRIFTUNG,
+  },
+  {
+    feld: 'qualitaetsbewertungen', beschriftung: 'Qualitätsbewertungen',
+    werte: QUALITAETSWERTE, wertBeschriftung: QUALITAET_BESCHRIFTUNG,
+  },
 ];
 
-const LISTEN_FELDER: ReadonlyArray<{ readonly feld: ListenFeld; readonly beschriftung: string }> = [
-  { feld: 'zustandsbewertungen', beschriftung: 'Zustandsbewertungen' },
-  { feld: 'qualitaetsbewertungen', beschriftung: 'Qualitätsbewertungen' },
-];
-
-export function DossierEditor({ einstellungen, ebene = 'firma' }: BereichsEditorProps): ReactElement {
+export function DossierEditor({ einstellungen }: BereichsEditorProps): ReactElement {
   const dossier = einstellungen.entwurf['dossierDefaults'] as DossierDefaultsRoh;
-  // Wie beim FaktorenEditor: Das Entfernen eines Firmenschluessels aus einem offenen
-  // Woerterbuch ist im projektbezogenen Delta nicht ausdrueckbar (`Bearbeitungsebene`).
-  const entfernenGesperrt = ebene === 'projekt';
 
-  function schreibeDossier(naechster: Partial<DossierDefaultsRoh>): void {
+  function schreibe(feld: ListenFeld, schluessel: string, wert: string): void {
     einstellungen.aendere({
       ...einstellungen.entwurf,
-      dossierDefaults: { ...dossier, ...naechster },
+      dossierDefaults: {
+        ...dossier,
+        [feld]: { ...dossier[feld], [schluessel]: wert },
+      },
     });
-  }
-
-  function aendereZahlenfeld(feld: ZahlenFeld, text: string): void {
-    const getrimmt = text.trim();
-    if (getrimmt.length === 0) { schreibeDossier({ [feld]: null }); return; }
-    const zahl = Number(getrimmt);
-    if (!Number.isFinite(zahl)) return;
-    schreibeDossier({ [feld]: zahl });
-  }
-
-  function aendereEnergielabel(text: string): void {
-    const getrimmt = text.trim();
-    schreibeDossier({ energielabel: getrimmt.length === 0 ? null : getrimmt });
   }
 
   const dossierBefunde = befundeFuerPfad(einstellungen.befunde, 'dossierDefaults');
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-        {ZAHLEN_FELDER.map(({ feld, beschriftung }) => (
-          <div key={feld} className="space-y-1">
-            <Label>{beschriftung}</Label>
-            <NullbaresFeld
-              typ="number"
-              wert={dossier[feld] === null ? '' : String(dossier[feld])}
-              aendere={(text) => aendereZahlenfeld(feld, text)}
-            />
-          </div>
-        ))}
-        <div className="space-y-1">
-          <Label>Energielabel</Label>
-          <NullbaresFeld
-            wert={dossier.energielabel ?? ''}
-            aendere={aendereEnergielabel}
-          />
-        </div>
-      </div>
-
-      {LISTEN_FELDER.map(({ feld, beschriftung }) => (
-        <div key={feld} className="space-y-2 rounded-md border border-border p-4">
+      {OBJEKTE.map(({ feld, beschriftung, werte, wertBeschriftung }) => (
+        <div key={feld} className="space-y-3 rounded-md border border-border p-4">
           <h3 className="text-sm font-semibold">{beschriftung}</h3>
-          <SchluesselWertListe
-            eintraege={dossier[feld]}
-            aendere={(naechste) => schreibeDossier({ [feld]: naechste })}
-            entfernenGesperrt={entfernenGesperrt}
-            sperrgrund={'Entfernen ist nur firmenweit möglich: Ein Projekt speichert '
-              + 'seine Abweichungen und kann einen Firmenwert übersteuern, nicht streichen.'}
-          />
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {BEWERTUNGSFELDER.map((schluessel) => (
+              <div key={schluessel} className="space-y-1">
+                <Label htmlFor={`${feld}-${schluessel}`}>
+                  {FELD_BESCHRIFTUNG[schluessel]}
+                </Label>
+                <Select
+                  id={`${feld}-${schluessel}`}
+                  className="h-8"
+                  value={dossier[feld][schluessel] ?? werte[0]}
+                  onChange={(e) => schreibe(feld, schluessel, e.target.value)}
+                >
+                  {werte.map((wert) => (
+                    <option key={wert} value={wert}>{wertBeschriftung[wert]}</option>
+                  ))}
+                </Select>
+              </div>
+            ))}
+          </div>
         </div>
       ))}
 
