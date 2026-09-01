@@ -19,7 +19,7 @@ describe('FirmenEinstellungen', () => {
    * Entwurf gibt — mit `renderToStaticMarkup` ist das Speicherverhalten selbst nicht
    * ausloesbar (kein jsdom im Repo).
    */
-  it('fuehrt genau eine Fussleiste fuer die ganze Ebene', () => {
+  it('fuehrt genau eine Fussleiste fuer die ganze Ebene (W-6)', () => {
     expect(markup.split('Speichern').length - 1).toBe(1);
     expect(markup.split('Verwerfen').length - 1).toBe(1);
   });

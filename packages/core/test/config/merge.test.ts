@@ -139,13 +139,16 @@ describe('mergeKonfiguration', () => {
   });
 
   it('weist einen unbekannten Blattschluessel der Dossier-Parameter zurueck', () => {
+    // Verschriebener Name eines EXISTIERENDEN Schluessels: Genau so entsteht der Fehler
+    // im Betrieb, und nur so belegt der Test, dass die Schluesselmenge geprueft wird und
+    // nicht bloss ein laengst entfallenes Feld nicht mehr vorkommt.
     const ergebnis = mergeKonfiguration(basis, {
-      dossierParameter: { typ_3_5: { flaecheInnnen: 92 } },
+      dossierParameter: { typ_3_5: { zustandsbewertunge: basis.dossierDefaults.zustandsbewertungen } },
     });
     expect(ergebnis.ok).toBe(false);
     if (ergebnis.ok) return;
     expect(ergebnis.fehler[0]?.code).toBe('CFG_SCHEMA_UNKNOWN_KEY');
-    expect(ergebnis.fehler[0]?.pfad).toBe('dossierParameter.typ_3_5.flaecheInnnen');
+    expect(ergebnis.fehler[0]?.pfad).toBe('dossierParameter.typ_3_5.zustandsbewertunge');
   });
 
   it('setzt Dossier-Parameter auf die ZUSAMMENGEFUEHRTEN Voreinstellungen auf (W-3)', () => {

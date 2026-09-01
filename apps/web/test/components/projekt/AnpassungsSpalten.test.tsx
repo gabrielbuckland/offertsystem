@@ -392,6 +392,8 @@ describe('AnpassungsSpalten — Uebernahme einer firmenweiten Vorlage', () => {
     uebernehmenButton.onClick();
     expect(aendere).not.toHaveBeenCalled();
 
+    // Wirkt in diesem Harness nur, weil die Komponente die Auswahl zusaetzlich in einem
+    // Ref fuehrt (Begruendung dort): Ein State-Setter braeuchte ein zweites Rendern.
     vorlagenSelect.onChange({ target: { value: 'seesicht' } });
     uebernehmenButton.onClick();
 

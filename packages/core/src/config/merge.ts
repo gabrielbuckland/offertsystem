@@ -99,10 +99,11 @@ function verschmelzeDossierParameter(
     return ergebnis;
   }
 
-  // Ein Delta darf `dossierDefaults` durch einen Skalar oder null ersetzen. Hier wird das
-  // nicht eigens gemeldet — die Nachvalidierung im Ladepfad weist es ohnehin zurueck, und
-  // ein zweiter Befund an dieser Stelle waere eine zweite Wahrheit ueber die zulaessige
-  // Form. Als Schluesselmenge bleibt dann die leere.
+  // Ein Delta darf `dossierDefaults` durch einen Skalar oder null ersetzen. Als
+  // Schluesselmenge bleibt dann die leere: Jeder Projektschluessel faellt als unbekannt
+  // auf, und die Formpruefung unten meldet zusaetzlich die beiden fehlenden
+  // Bewertungsobjekte. Diese Befunde bleiben bewusst stehen — sie benennen dieselbe
+  // untaugliche Form, die auch die Nachvalidierung im Ladepfad zurueckweist.
   const defaults = istObjekt(zusammengefuehrteDefaults) ? zusammengefuehrteDefaults : {};
 
   for (const [wohnungstyp, rohParameter] of Object.entries(roh)) {

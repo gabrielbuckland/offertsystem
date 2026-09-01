@@ -144,9 +144,12 @@ export function AnpassungsSpalten(
   }
 
   const [gewaehlteVorlage, setzeGewaehlteVorlage] = useState('');
-  // Zusaetzlich zum State auch als Ref gefuehrt: `uebernimmAusVorlage` braucht den
-  // aktuellen Auswahlwert synchron im Klick-Handler, nicht erst nach dem naechsten
-  // Re-Render (das der State-Setter allein nicht garantiert auslesbar macht).
+  // Spiegelt den State (einziger Schreiber: `waehleVorlage`); im Browser sind beide
+  // immer gleich, und `uebernimmAusVorlage` koennte dort direkt `gewaehlteVorlage`
+  // lesen. Gebraucht wird der Ref allein von der Testumgebung: Sie treibt die Handler
+  // EINES `renderToStaticMarkup`-Durchlaufs (kein DOM, siehe Dateikommentar), ein
+  // State-Setter ist dort nach dem Rendern wirkungslos, ein zweites Rendern findet nicht
+  // statt — die abgefangene Klick-Closure saehe sonst immer die leere Auswahl.
   const gewaehlteVorlageRef = useRef('');
 
   function waehleVorlage(id: string) {

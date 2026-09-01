@@ -23,7 +23,7 @@ import { JsonReiter } from './JsonReiter.js';
 import { BefundAuffang } from './ProjektEinstellungen.js';
 import { mitWurzeln, ohneWurzeln } from './json-reiter-logik.js';
 import { verwendeEinstellungen } from './verwende-einstellungen.js';
-import { BEREICHE, type Bereich } from '../../app/(anwendung)/einstellungen/bereiche.js';
+import { BEREICHE, wurzeln, type Bereich } from '../../app/(anwendung)/einstellungen/bereiche.js';
 
 /**
  * Reihenfolge der Pipeline-Stufen (US-09/A-10) fuer die Uebersicht: Stufe 3
@@ -48,11 +48,6 @@ const REITER: ReadonlyArray<{ readonly wert: Reiter; readonly beschriftung: stri
   { wert: 'formular', beschriftung: 'Formular' },
   { wert: 'json', beschriftung: 'JSON' },
 ];
-
-/** Wurzelpfade eines Bereichs — ein Bereich kann mehrere umfassen (`bereiche.ts`). */
-function wurzeln(praefix: string | readonly string[]): readonly string[] {
-  return typeof praefix === 'string' ? [praefix] : praefix;
-}
 
 export function FirmenEinstellungen(
   { anfang }: { readonly anfang: Readonly<Record<string, unknown>> },

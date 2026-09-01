@@ -23,8 +23,9 @@ export type VeraenderbareOfferte = Veraenderbar<Offer>;
 
 const PRUEFSUMME = 'a'.repeat(64);
 
-// Lokal statt aus apps/web/test importiert: check-deps.ts verbietet @offert/offer ->
-// @offert/web, und ein Import ueber die Paketgrenze waere genau das.
+// Lokal statt aus einem fremden Testbaum importiert (weder apps/web/test noch
+// packages/core/test): Testhelfer bleiben je Paket eigenstaendig, ein Import in den
+// Testbaum eines anderen Pakets koppelte die Suiten aneinander.
 const BEWERTUNGEN_STANDARD = {
   zustandsbewertungen: {
     bathrooms: 'well_maintained', kitchen: 'well_maintained',

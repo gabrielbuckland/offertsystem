@@ -82,24 +82,20 @@ interface PipelineExtras {
 const FEHLT = '—';
 
 /**
- * Rohwerte aus `dossierDefaults` sind entweder `null`, ein Primitivwert oder ein leeres/
- * gefuelltes Record (`zustandsbewertungen`, `qualitaetsbewertungen`). Es gibt keine
- * Rechenstufe dahinter — nur `null` gilt als fehlend (I-24), ein leeres Record ebenso,
- * weil es inhaltlich nichts traegt.
+ * `dossierDefaults` fuehrt genau die beiden Bewertungsobjekte `zustandsbewertungen` und
+ * `qualitaetsbewertungen`, jedes mit der vollstaendigen PriceHubble-Feldmenge
+ * (`DossierDefaultsSchema`, strikt). Es gibt keine Rechenstufe dahinter und keinen
+ * Fehlfall: Eine leere, fehlende oder skalare Form haelt schon die Konfigurationspruefung
+ * auf, hier kaeme sie nie an.
  */
-function formatiereRohwert(wert: unknown): string {
-  if (wert === null || wert === undefined) return FEHLT;
-  if (typeof wert === 'object') {
-    const eintraege = Object.entries(wert as Record<string, unknown>);
-    return eintraege.length === 0 ? FEHLT : eintraege.map(([k, v]) => `${k}: ${String(v)}`).join(', ');
-  }
-  return String(wert);
+function formatiereBewertungen(bewertungen: Readonly<Record<string, unknown>>): string {
+  return Object.entries(bewertungen).map(([feld, wert]) => `${feld}: ${String(wert)}`).join(', ');
 }
 
 /**
  * Vergleicht den Bezugspfad einer Zeile mit dem Pfad eines Protokolleintrags,
  * segmentweise. `*` im Bezugspfad steht fuer genau ein beliebiges Segment
- * (`dossierParameter.*.stockwerk`).
+ * (`dossierParameter.*.zustandsbewertungen` trifft jeden Wohnungstyp).
  *
  * Verglichen wird in BEIDE Richtungen, weil das Protokoll gleichzeitig feiner und
  * groeber sein kann als die angezeigte Zeile: Der Merge protokolliert jedes geaenderte
@@ -154,10 +150,10 @@ function baueStufeEingabe(
   basis: OffertKonfiguration,
   ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
 ): PipelineStufe {
-  const defaults = basis.dossierDefaults as unknown as Record<string, unknown>;
-  const zeilen: PipelineZeile[] = Object.entries(defaults).map(([feldname, wert]) => ({
+  const defaults = basis.dossierDefaults as unknown as Record<string, Record<string, unknown>>;
+  const zeilen: PipelineZeile[] = Object.entries(defaults).map(([feldname, bewertungen]) => ({
     beschriftung: feldname,
-    wert: formatiereRohwert(wert),
+    wert: formatiereBewertungen(bewertungen),
     // Zwei Wege fuehren zu einem projektbezogenen Dossier-Wert: die Voreinstellung
     // selbst oder der Wert eines einzelnen Wohnungstyps.
     herkunft: herkunft(ueberschreibungen,

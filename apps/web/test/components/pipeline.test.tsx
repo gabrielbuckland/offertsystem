@@ -89,9 +89,14 @@ describe('bauePipelineDaten', () => {
   });
 
   it('kennzeichnet ueberschriebene Pfade als projektbezogen', () => {
-    const stufen = bauePipelineDaten(basis(), {
-      ueberschreibungen: [{ pfad: 'dossierParameter.R1.zustandsbewertungen',
-        defaultwert: null, projektwert: 86 }],
+    const firma = basis();
+    const zustand = firma.dossierDefaults.zustandsbewertungen;
+    const stufen = bauePipelineDaten(firma, {
+      ueberschreibungen: [{
+        pfad: 'dossierParameter.R1.zustandsbewertungen',
+        defaultwert: zustand,
+        projektwert: { ...zustand, kitchen: 'new_or_recently_renovated' },
+      }],
     });
     const eingabe = stufen.find((s) => s.nr === 1)!;
     expect(alleZeilen(eingabe).some((z) => z.herkunft === 'projekt')).toBe(true);

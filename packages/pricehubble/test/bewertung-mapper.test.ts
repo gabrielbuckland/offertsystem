@@ -151,6 +151,8 @@ describe('E3-Body und PATCH-Verifikation (Spec 04 §1.4, §5.4)', () => {
 
   it('sendet condition und quality mit genau den vier PriceHubble-Feldern', () => {
     const body = dossierBody(parametrisierung);
+    // `DossierBody['property']` ist ein loses `Readonly<Record<string, unknown>>`; die
+    // Feldnamen sind dort nicht typisiert, `Object.keys` braucht darum den Cast.
     expect(Object.keys(body.property['condition'] as object).sort())
       .toEqual(['bathrooms', 'flooring', 'kitchen', 'windows']);
     expect(Object.keys(body.property['quality'] as object).sort())

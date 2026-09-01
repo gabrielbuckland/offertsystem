@@ -72,7 +72,7 @@ const R: Referenzobjekt = {
 // darauf ankommt (Anlegen-Dialog uebernimmt Zustand/Qualitaet aus `dossierDefaults`),
 // setzt der jeweilige Test seine eigene Fixture (siehe `referenzobjekte-logik.test.ts`
 // fuer die reine Logik).
-const dossierDefaultsLeer: DossierDefaults = { ...BEWERTUNGEN_STANDARD };
+const dossierDefaultsStandard: DossierDefaults = { ...BEWERTUNGEN_STANDARD };
 
 function zeichne(
   referenzobjekte: readonly Referenzobjekt[],
@@ -89,7 +89,7 @@ function zeichne(
       referenzobjekte={referenzobjekte}
       einheiten={einheiten}
       spalten={spalten}
-      dossierDefaults={dossierDefaultsLeer}
+      dossierDefaults={dossierDefaultsStandard}
       baujahr={baujahr}
       aendere={aendere}
       rufeAb={() => undefined}

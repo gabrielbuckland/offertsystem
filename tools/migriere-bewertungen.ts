@@ -1,5 +1,7 @@
 // Einmalwerkzeug: bringt die Referenzobjekte abgelegter Projekte auf die feste
-// PriceHubble-Bewertungsmenge. Nach dem Lauf nicht Teil der Pruefkette.
+// PriceHubble-Bewertungsmenge. Der Lauf selbst ist einmalig (`npm run
+// migriere:bewertungen`); sein Unit-Test bleibt in der Pruefkette (`tools/test/`,
+// Vitest-Projekt `tools`).
 import * as fs from 'node:fs/promises';
 import { join } from 'node:path';
 // Relativ mit `.ts`-Endung wie `tools/beispiel-offerte.ts`: Die Werkzeuglaufzeit

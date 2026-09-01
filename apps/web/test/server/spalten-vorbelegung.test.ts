@@ -64,6 +64,24 @@ describe('vorbelegteSpalten', () => {
     expect(spalten[0]!.regel).toBeUndefined();
     expect(spalten[0]!.vorgabewert).toBe(0);
   });
+
+  it('vergibt S-1…S-n in Vorlagenreihenfolge und uebernimmt je Vorlage deren Form', () => {
+    const k = standardKonfiguration();
+    const spalten = vorbelegteSpalten(k);
+
+    expect(spalten.map((s) => s.id)).toEqual(k.anpassungsVorlagen.map((_, i) => `S-${i + 1}`));
+    for (const [s, v] of spalten.map((s, i) => [s, k.anpassungsVorlagen[i]!] as const)) {
+      expect(s.bezeichnung).toBe(v.bezeichnung);
+      expect(s.erfassungsform).toBe(v.erfassungsform);
+      if (v.regel === undefined) {
+        expect(s).not.toHaveProperty('regel');
+        expect(s.vorgabewert).toBe(0);
+      } else {
+        expect(s.regel).toEqual(v.regel);
+        expect(s).not.toHaveProperty('vorgabewert');
+      }
+    }
+  });
 });
 
 describe('spalteAusVorlage', () => {
@@ -93,11 +111,5 @@ describe('spalteAusVorlage', () => {
       regel: { merkmal: 'stockwerk', bereiche } };
     const s = spalteAusVorlage(v, 'S-1');
     expect(s.regel!.bereiche[0]).not.toBe(bereiche[0]);
-  });
-
-  it('vorbelegteSpalten bleibt die Abbildung ueber alle Vorlagen', () => {
-    const k = standardKonfiguration();
-    expect(vorbelegteSpalten(k))
-      .toEqual(k.anpassungsVorlagen.map((v, i) => spalteAusVorlage(v, `S-${i + 1}`)));
   });
 });
