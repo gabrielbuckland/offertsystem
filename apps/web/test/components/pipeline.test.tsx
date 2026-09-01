@@ -50,7 +50,7 @@ function mitProjektDelta() {
   const bestehenderFaktor = Object.keys(firma.aufwandfaktoren).sort((a, b) => a.localeCompare(b))[0]!;
   const neuerFaktor = 'projekt_laerm';
   const ergebnis = mergeKonfiguration(firma, {
-    dossierDefaults: { stockwerk: 7 },
+    dossierDefaults: { zustandsbewertungen: { kitchen: 'well_maintained' } },
     flaeche: { alpha: 0.9 },
     honorar: { skalierung: { gMin: 0.9 } },
     aufwandfaktoren: {
@@ -90,7 +90,7 @@ describe('bauePipelineDaten', () => {
 
   it('kennzeichnet ueberschriebene Pfade als projektbezogen', () => {
     const stufen = bauePipelineDaten(basis(), {
-      ueberschreibungen: [{ pfad: 'dossierParameter.R1.flaecheInnen',
+      ueberschreibungen: [{ pfad: 'dossierParameter.R1.zustandsbewertungen',
         defaultwert: null, projektwert: 86 }],
     });
     const eingabe = stufen.find((s) => s.nr === 1)!;
@@ -102,11 +102,11 @@ describe('bauePipelineDaten', () => {
     const stufen = bauePipelineDaten(delta.basis, { ueberschreibungen: delta.ueberschreibungen });
     const eingabe = stufen.find((s) => s.nr === 1)!;
 
-    // `dossierDefaults.stockwerk` steht im Protokoll — die Zeile muss es zeigen.
-    expect(zeile(eingabe, 'stockwerk').herkunft).toBe('projekt');
+    // `dossierDefaults.zustandsbewertungen.kitchen` steht im Protokoll — die Zeile muss es zeigen.
+    expect(zeile(eingabe, 'zustandsbewertungen').herkunft).toBe('projekt');
     // Gegenprobe: nicht uebersteuerte Felder bleiben firmenweit, die Anzeige faerbt
     // nicht pauschal ein, sobald irgendein Delta vorliegt.
-    expect(zeile(eingabe, 'energielabel').herkunft).toBe('firmenweit');
+    expect(zeile(eingabe, 'qualitaetsbewertungen').herkunft).toBe('firmenweit');
   });
 
   it('weist die uebersteuerten Parameter der Stufen 2 und 5 als projektbezogen aus', () => {

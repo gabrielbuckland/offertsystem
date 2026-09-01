@@ -54,7 +54,16 @@ describe('ladeKonfiguration', () => {
     const ohne = ladeKonfiguration({ pfad: STANDARD });
     const mit = ladeKonfiguration({
       pfad: STANDARD,
-      ueberschreibungen: { dossierParameter: { typ_3_5: { flaecheInnen: 92 } } },
+      ueberschreibungen: {
+        dossierParameter: {
+          typ_3_5: {
+            zustandsbewertungen: {
+              bathrooms: 'well_maintained', kitchen: 'well_maintained',
+              flooring: 'well_maintained', windows: 'well_maintained',
+            },
+          },
+        },
+      },
     });
     expect(ohne.ok && mit.ok).toBe(true);
     if (!ohne.ok || !mit.ok) return;
@@ -209,18 +218,26 @@ describe('ladeKonfiguration', () => {
   });
 
   it('legt projektbezogene Dossier-Voreinstellungen unter die Dossier-Parameter (W-3)', () => {
-    // Die Projektebene setzt `stockwerk`, fuehrt daneben aber eigene `dossierParameter`
-    // fuer einen Wohnungstyp. Vor der Korrektur setzte die Zusammenfuehrung dort auf der
-    // ungemergten Firmenbasis auf und verschluckte die Voreinstellung lautlos.
+    // Die Projektebene setzt `zustandsbewertungen.kitchen`, fuehrt daneben aber eigene
+    // `dossierParameter` fuer einen Wohnungstyp (ein anderes Feld, `qualitaetsbewertungen`).
+    // Vor der Korrektur setzte die Zusammenfuehrung dort auf der ungemergten Firmenbasis auf
+    // und verschluckte die Voreinstellung lautlos.
     const ergebnis = ladeKonfiguration({
       pfad: STANDARD,
       ueberschreibungen: {
-        dossierDefaults: { stockwerk: 7 },
-        dossierParameter: { typ_3_5: { flaecheInnen: 90 } },
+        dossierDefaults: { zustandsbewertungen: { kitchen: 'well_maintained' } },
+        dossierParameter: {
+          typ_3_5: {
+            qualitaetsbewertungen: {
+              bathrooms: 'luxury', kitchen: 'luxury', flooring: 'luxury', windows: 'luxury',
+            },
+          },
+        },
       },
     });
     expect(ergebnis.ok).toBe(true);
     if (!ergebnis.ok) return;
-    expect(ergebnis.konfiguration.dossierParameter['typ_3_5']?.stockwerk).toBe(7);
+    expect(ergebnis.konfiguration.dossierParameter['typ_3_5']?.zustandsbewertungen.kitchen)
+      .toBe('well_maintained');
   });
 });

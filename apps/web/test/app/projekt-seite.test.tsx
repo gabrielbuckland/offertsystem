@@ -32,7 +32,7 @@ const ADRESSE = { strasse: 'Seestrasse', hausnummer: '1', plz: '8001', ort: 'Zü
  * und der Test pruefte nur noch den Fehlerpfad.
  */
 const DELTA = {
-  dossierDefaults: { stockwerk: 7 },
+  dossierDefaults: { zustandsbewertungen: { kitchen: 'well_maintained' } },
   aufwandfaktoren: {
     lage_gesamt: { gewicht: 0.45 },
     laerm: {
@@ -93,7 +93,7 @@ describe('Projektdetailseite rechnet und zeigt auf derselben Konfiguration (K-2)
 
   it('belegt die Referenzobjekte mit den projektbezogenen Dossier-Vorgaben vor', async () => {
     const props = await ansichtProps(DELTA);
-    expect(props.konfigurationBasis.dossierDefaults.stockwerk).toBe(7);
+    expect(props.konfigurationBasis.dossierDefaults.zustandsbewertungen.kitchen).toBe('well_maintained');
   });
 
   it('reicht das Ueberschreibungsprotokoll an den Rechenweg durch', async () => {
@@ -102,12 +102,13 @@ describe('Projektdetailseite rechnet und zeigt auf derselben Konfiguration (K-2)
     const props = await ansichtProps(DELTA);
     expect(props.ueberschreibungen ?? []).not.toHaveLength(0);
     expect((props.ueberschreibungen ?? []).map((u) => u.pfad))
-      .toContain('dossierDefaults.stockwerk');
+      .toContain('dossierDefaults.zustandsbewertungen.kitchen');
   });
 
   it('bleibt ohne Delta auf den Firmenwerten', async () => {
     const props = await ansichtProps();
-    expect(props.konfigurationBasis.dossierDefaults.stockwerk).toBeNull();
+    expect(props.konfigurationBasis.dossierDefaults.zustandsbewertungen.kitchen)
+      .toBe('new_or_recently_renovated');
     expect(props.faktorformular.felder).toHaveLength(0);
     expect(props.ueberschreibungen ?? []).toHaveLength(0);
   });
