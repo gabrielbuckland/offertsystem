@@ -22,12 +22,18 @@ const minimal = {
     skalierung: { form: 'linear', gMin: 0.85, gMax: 1.15 },
   },
   dossierDefaults: {
-    flaecheInnen: null,
-    flaecheAussen: null,
-    stockwerk: null,
-    energielabel: null,
-    zustandsbewertungen: {},
-    qualitaetsbewertungen: {},
+    zustandsbewertungen: {
+      bathrooms: 'new_or_recently_renovated',
+      kitchen: 'new_or_recently_renovated',
+      flooring: 'new_or_recently_renovated',
+      windows: 'new_or_recently_renovated',
+    },
+    qualitaetsbewertungen: {
+      bathrooms: 'high_quality',
+      kitchen: 'high_quality',
+      flooring: 'high_quality',
+      windows: 'high_quality',
+    },
   },
   api: {
     baseUrl: 'https://api.pricehubble.com',
@@ -161,5 +167,62 @@ describe('Ebene 1 — Struktur', () => {
     if (!ergebnis.success) return;
     expect(ergebnis.data.merkmale).toEqual([]);
     expect(ergebnis.data.anpassungsVorlagen[0]?.erfassungsform).toBe('relativ');
+  });
+});
+
+describe('dossierDefaults — feste PriceHubble-Feldmenge', () => {
+  const gueltig = {
+    zustandsbewertungen: {
+      bathrooms: 'well_maintained', kitchen: 'well_maintained',
+      flooring: 'new_or_recently_renovated', windows: 'renovation_needed',
+    },
+    qualitaetsbewertungen: {
+      bathrooms: 'normal', kitchen: 'high_quality',
+      flooring: 'simple', windows: 'luxury',
+    },
+  };
+
+  it('nimmt die vier Felder mit gueltigen Aufzaehlungswerten an', () => {
+    const k = { ...minimal, dossierDefaults: gueltig };
+    expect(RohKonfigurationSchema.safeParse(k).success).toBe(true);
+  });
+
+  it('weist einen anbieterfremden Schluessel zurueck', () => {
+    const k = {
+      ...minimal,
+      dossierDefaults: {
+        ...gueltig,
+        zustandsbewertungen: { ...gueltig.zustandsbewertungen, Gesamteindruck: 'gehoben' },
+      },
+    };
+    expect(RohKonfigurationSchema.safeParse(k).success).toBe(false);
+  });
+
+  it('weist einen Wert ausserhalb der Aufzaehlung zurueck', () => {
+    const k = {
+      ...minimal,
+      dossierDefaults: {
+        ...gueltig,
+        qualitaetsbewertungen: { ...gueltig.qualitaetsbewertungen, kitchen: 'gehoben' },
+      },
+    };
+    expect(RohKonfigurationSchema.safeParse(k).success).toBe(false);
+  });
+
+  it('weist ein fehlendes Feld zurueck — die Firmenvorgabe ist vollstaendig', () => {
+    const { windows: _weg, ...unvollstaendig } = gueltig.zustandsbewertungen;
+    const k = {
+      ...minimal,
+      dossierDefaults: { ...gueltig, zustandsbewertungen: unvollstaendig },
+    };
+    expect(RohKonfigurationSchema.safeParse(k).success).toBe(false);
+  });
+
+  it('fuehrt die vier Skalarfelder nicht mehr', () => {
+    const k = {
+      ...minimal,
+      dossierDefaults: { ...gueltig, flaecheInnen: 80 },
+    };
+    expect(RohKonfigurationSchema.safeParse(k).success).toBe(false);
   });
 });
