@@ -363,6 +363,50 @@ describe('AnpassungsSpalten — Uebernahme einer firmenweiten Vorlage', () => {
     const optionenMarkup = renderToStaticMarkup(<>{vorlagenSelect!.children}</>);
     expect(optionenMarkup).toContain('Seesicht');
   });
+
+  it('uebernimmt beim Klick auf "Aus Vorlage" die ausgewaehlte Vorlage mit der naechsten Zaehler-ID', () => {
+    erfasst.buttons.length = 0;
+    erfasst.selects.length = 0;
+    const aendere = vi.fn();
+    renderToStaticMarkup(
+      <AnpassungsSpalten
+        spalten={[spalte('S-2', 'Zweite')]}
+        merkmale={[]}
+        vorlagen={[{
+          id: 'seesicht',
+          bezeichnung: 'Seesicht',
+          vorgabefaktor: 0.08,
+          erfassungsform: 'relativ',
+          begruendungVorschlag: 'Seesicht.',
+        }]}
+        aendere={aendere}
+        entferneSpalte={() => undefined}
+        uebernehmeAufEinheiten={() => undefined}
+      />,
+    );
+
+    const vorlagenSelect = erfasst.selects.find((s) => s['aria-label'] === 'Vorlage')!;
+    const uebernehmenButton = erfasst.buttons.find((b) => b.children === 'Aus Vorlage')!;
+
+    // Ohne Auswahl: der Klick darf nichts aendern (Guard in uebernimmAusVorlage).
+    uebernehmenButton.onClick();
+    expect(aendere).not.toHaveBeenCalled();
+
+    vorlagenSelect.onChange({ target: { value: 'seesicht' } });
+    uebernehmenButton.onClick();
+
+    expect(aendere).toHaveBeenCalledTimes(1);
+    const neueSpalten = aendere.mock.calls[0]![0] as readonly AnpassungsSpalte[];
+    expect(neueSpalten).toHaveLength(2);
+    const neu = neueSpalten[1]!;
+    // ID aus dem laufenden Zaehler (S-2 vorhanden), nie aus Index oder Vorlagen-ID.
+    expect(neu.id).toBe('S-3');
+    expect(neu.bezeichnung).toBe('Seesicht');
+    expect(neu.erfassungsform).toBe('relativ');
+    expect(neu.vorgabewert).toBe(0);
+    expect('vorgabefaktor' in neu).toBe(false);
+    expect('begruendungVorschlag' in neu).toBe(false);
+  });
 });
 
 describe('Spalten-Umbau Vorgabewert <-> Staffel haelt den Schema-Ausschluss ein', () => {

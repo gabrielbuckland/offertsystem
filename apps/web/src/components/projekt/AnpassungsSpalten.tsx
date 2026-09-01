@@ -144,9 +144,18 @@ export function AnpassungsSpalten(
   }
 
   const [gewaehlteVorlage, setzeGewaehlteVorlage] = useState('');
+  // Zusaetzlich zum State auch als Ref gefuehrt: `uebernimmAusVorlage` braucht den
+  // aktuellen Auswahlwert synchron im Klick-Handler, nicht erst nach dem naechsten
+  // Re-Render (das der State-Setter allein nicht garantiert auslesbar macht).
+  const gewaehlteVorlageRef = useRef('');
+
+  function waehleVorlage(id: string) {
+    gewaehlteVorlageRef.current = id;
+    setzeGewaehlteVorlage(id);
+  }
 
   function uebernimmAusVorlage() {
-    const vorlage = vorlagen.find((v) => v.id === gewaehlteVorlage);
+    const vorlage = vorlagen.find((v) => v.id === gewaehlteVorlageRef.current);
     if (vorlage === undefined) return;
     // ID aus dem laufenden Zaehler: aus dem Index gebildet erbte eine neue Spalte die
     // `spaltenwerte` einer waehrend der Sitzung entfernten Spalte gleicher ID.
@@ -168,7 +177,7 @@ export function AnpassungsSpalten(
             className="h-9 w-56"
             aria-label="Vorlage"
             value={gewaehlteVorlage}
-            onChange={(e) => setzeGewaehlteVorlage(e.target.value)}
+            onChange={(e) => waehleVorlage(e.target.value)}
           >
             <option value="">Vorlage wählen …</option>
             {vorlagen.map((v) => (
