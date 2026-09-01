@@ -10,7 +10,13 @@ function beispiel() {
       id: 'R-1', zimmerzahl: 3.5,
       parametrisierung: {
         flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'B',
-        zustandsbewertungen: {}, qualitaetsbewertungen: {},
+        zustandsbewertungen: {
+          bathrooms: 'well_maintained', kitchen: 'well_maintained',
+          flooring: 'well_maintained', windows: 'well_maintained',
+        },
+        qualitaetsbewertungen: {
+          bathrooms: 'normal', kitchen: 'normal', flooring: 'normal', windows: 'normal',
+        },
         anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
       },
     }],

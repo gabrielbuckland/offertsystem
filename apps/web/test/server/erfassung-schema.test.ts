@@ -19,7 +19,13 @@ function beispielErfassung() {
       zimmerzahl: 3.5,
       parametrisierung: {
         flaecheInnen: 82, flaecheAussen: 12, stockwerk: 2, energielabel: 'A',
-        zustandsbewertungen: { bathrooms: 'new' }, qualitaetsbewertungen: { bathrooms: 'normal' },
+        zustandsbewertungen: {
+          bathrooms: 'well_maintained', kitchen: 'well_maintained',
+          flooring: 'well_maintained', windows: 'well_maintained',
+        },
+        qualitaetsbewertungen: {
+          bathrooms: 'normal', kitchen: 'normal', flooring: 'normal', windows: 'normal',
+        },
         anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'Waermepumpe',
       },
     }],

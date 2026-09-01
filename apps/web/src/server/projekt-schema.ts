@@ -9,7 +9,9 @@
  * ist und nicht ueber einen einzelnen Wert (I-01).
  */
 import { z } from 'zod';
-import { normalisiereBereiche, pruefeBereiche } from '@offert/core';
+import {
+  normalisiereBereiche, pruefeBereiche, QualitaetsbewertungenSchema, ZustandsbewertungenSchema,
+} from '@offert/core';
 import { offertDokumentSchema } from '@offert/offer';
 
 export const SCHEMA_VERSION = 1;
@@ -19,8 +21,8 @@ const parametrisierungSchema = z.object({
   flaecheAussen: z.number().nonnegative(),
   stockwerk: z.number().int(),
   energielabel: z.string(),
-  zustandsbewertungen: z.record(z.string()),
-  qualitaetsbewertungen: z.record(z.string()),
+  zustandsbewertungen: ZustandsbewertungenSchema,
+  qualitaetsbewertungen: QualitaetsbewertungenSchema,
   anzahlBadezimmer: z.number().int().nonnegative(),
   lift: z.boolean(),
   baujahr: z.number().int(),
