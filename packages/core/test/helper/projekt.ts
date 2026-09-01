@@ -42,14 +42,24 @@ export function adresseFixture(): Adresse {
   return { strasse: 'Bahnhofstrasse', hausnummer: '1', plz: '6003', ort: 'Luzern' };
 }
 
+export const BEWERTUNGEN_STANDARD = {
+  zustandsbewertungen: {
+    bathrooms: 'well_maintained', kitchen: 'well_maintained',
+    flooring: 'well_maintained', windows: 'well_maintained',
+  },
+  qualitaetsbewertungen: {
+    bathrooms: 'normal', kitchen: 'normal', flooring: 'normal', windows: 'normal',
+  },
+} as const;
+
 export function parametrisierungFixture(): RepraesentativeParametrisierung {
   return {
     flaecheInnen: quadratmeter(92.5),
     flaecheAussen: quadratmeterAbNull(0),
     stockwerk: 1,
     energielabel: 'B',
-    zustandsbewertungen: { bathrooms: 'well_maintained' },
-    qualitaetsbewertungen: { bathrooms: 'normal' },
+    zustandsbewertungen: BEWERTUNGEN_STANDARD.zustandsbewertungen,
+    qualitaetsbewertungen: BEWERTUNGEN_STANDARD.qualitaetsbewertungen,
     anzahlBadezimmer: 1,
     lift: true,
     baujahr: 2025,

@@ -3,14 +3,15 @@ import { erzeugeLiegenschaft } from '../../src/domain/liegenschaft.js';
 import type { LiegenschaftEntwurf } from '../../src/domain/liegenschaft.js';
 import { quadratmeter, quadratmeterAbNull } from '../../src/domain/geld.js';
 import { einheitId, liegenschaftId, wohnungsnummer, wohnungstypId } from '../../src/domain/ids.js';
+import { BEWERTUNGEN_STANDARD } from '../helper/projekt.js';
 
 const parametrisierung = {
   flaecheInnen: quadratmeter(92.5),
   flaecheAussen: quadratmeterAbNull(0),
   stockwerk: 1,
   energielabel: 'B',
-  zustandsbewertungen: { bathrooms: 'well_maintained' },
-  qualitaetsbewertungen: { bathrooms: 'normal' },
+  zustandsbewertungen: BEWERTUNGEN_STANDARD.zustandsbewertungen,
+  qualitaetsbewertungen: BEWERTUNGEN_STANDARD.qualitaetsbewertungen,
   anzahlBadezimmer: 1,
   lift: true,
   baujahr: 2025,
