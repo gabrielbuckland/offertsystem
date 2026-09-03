@@ -16,10 +16,10 @@ import {
   type CoverageArtefakt, type Invariante, type TestArtefakt,
 } from './a5.ts';
 import {
-  p1Szenarien, p2Invarianten, p2Konfigpruefung, p2Stufen,
+  p2Invarianten, p2Konfigpruefung, p2Stufen,
   p4Erweiterung, p5Integration, p6Entkopplung, p7Marge, p7Sensitivitaet, p8Pruefpunkte,
   type ExtensionArtefakt, type KonfigArtefakt, type LaufArtefakt, type ManuellArtefakt,
-  type MargenArtefakt, type OatZeile, type PropertyArtefakt, type SzenarienArtefakt,
+  type MargenArtefakt, type OatZeile, type PropertyArtefakt,
 } from './kapitel6.ts';
 import { pruefeBeispielOfferte } from './offerte.ts';
 import { meldeFehlend, pruefeSeed, sammle } from './sammler.ts';
@@ -79,7 +79,6 @@ export function hauptlauf(opt: Laufoptionen = {}): readonly string[] {
     'a5-toleranzen.tex': a5Toleranzen(invarianten),
   };
   const kapitel: Record<string, string> = {
-    'p1-szenarien.tex': p1Szenarien(i['scenarios'] as SzenarienArtefakt),
     'p2-stufen.tex': p2Stufen(tests, coverage),
     'p2-invarianten.tex': p2Invarianten(i['property'] as PropertyArtefakt),
     'p2-konfigpruefung.tex': p2Konfigpruefung(konfig),

@@ -1,10 +1,10 @@
 /**
- * Keine Modellformel. Rendert die Tabellen der Platzhalter P1 bis P8 aus den Artefakten.
+ * Keine Modellformel. Rendert die Tabellen der Platzhalter P2 bis P8 aus den Artefakten.
  *
  * Jede Funktion beginnt mit einem Hinweiskopf und nennt in der Beschriftung ihr
  * Quellartefakt. Kein Zahlenwert gelangt von Hand in den Bericht.
  */
-import { frankenAusRappen, hinweiskopf, latexEscape, longtable, zahlDeCh } from './latex.ts';
+import { hinweiskopf, latexEscape, longtable, zahlDeCh } from './latex.ts';
 import type { Testfall } from './vitest-reporter.ts';
 import { gewichteteAbdeckung, type CoverageArtefakt } from './a5.ts';
 
@@ -223,52 +223,6 @@ export function p4Erweiterung(extension: ExtensionArtefakt): string {
   }
   return hinweiskopf('artifacts/eval/extension/<zeitstempel>/extension.json')
     + regelfallTabelle + sonderfallTabelle;
-}
-
-// --- P1: Szenarien ------------------------------------------------------------------
-
-export interface SzenarienArtefakt {
-  readonly schwelle: number;
-  readonly gesamt: string;
-  readonly szenarien: readonly {
-    readonly id: string;
-    readonly bestanden: boolean;
-    readonly referenz: { verkaufssumme: number; honorarMin: number; honorarMax: number };
-    readonly ist: { verkaufssumme: number; honorarMin: number; honorarMax: number };
-    readonly abweichung: { verkaufssumme: number; honorarMin: number; honorarMax: number };
-    readonly stufendiagnose?: Readonly<Record<string, number>>;
-    readonly lagedatenHerkunft?: string;
-  }[];
-}
-
-export function p1Szenarien(
-  szenarien: SzenarienArtefakt,
-  herkunft: Readonly<Record<string, string>> = {},
-): string {
-  const zeilen = szenarien.szenarien.map((s) => [
-    latexEscape(s.id),
-    frankenAusRappen(s.referenz.verkaufssumme),
-    frankenAusRappen(s.ist.verkaufssumme),
-    `${zahlDeCh(s.abweichung.verkaufssumme * 100, 2)}\\,\\%`,
-    `${zahlDeCh(s.abweichung.honorarMin * 100, 2)}\\,\\%`,
-    `${zahlDeCh(s.abweichung.honorarMax * 100, 2)}\\,\\%`,
-    s.bestanden ? 'bestanden' : 'nicht bestanden',
-    s.stufendiagnose === undefined
-      ? '--'
-      : latexEscape(Object.entries(s.stufendiagnose).map(([k, v]) => `${k}=${v}`).join('; ')),
-    latexEscape(s.lagedatenHerkunft ?? herkunft[s.id] ?? '--'),
-  ]);
-  return hinweiskopf('artifacts/scenarios/<zeitstempel>/szenarien.json') + longtable({
-    spalten: ['l', 'r', 'r', 'r', 'r', 'r', 'l', 'p{0.16\\textwidth}', 'l'],
-    kopf: ['Szen.', 'Referenz $V$ [CHF]', 'Ist $V$ [CHF]', '$\\Delta V$',
-           '$\\Delta H_{\\min}$', '$\\Delta H_{\\max}$', 'Bewertung', 'Stufendiagnose',
-           'Lagedaten'],
-    zeilen,
-    beschriftung: `Szenarienlauf gegen die unabhängige Referenzrechnung; bestanden gilt `
-      + `bei einer Abweichung bis ${zahlDeCh(szenarien.schwelle * 100, 1)} Prozent. `
-      + 'Die Spalte Lagedaten weist die Herkunft der Lagescores aus (R-01).',
-    label: 'tab:p1_szenarien',
-  });
 }
 
 // --- P2: Stufen, Invarianten, Konfigurationspruefung --------------------------------

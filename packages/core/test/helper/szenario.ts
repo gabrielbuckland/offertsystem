@@ -22,7 +22,6 @@ export interface SzenarioErgebnis {
   // die Szenarientabelle keine empirische Lageabhaengigkeit suggeriert.
   readonly lagedatenHerkunft: string;
   readonly bestanden: boolean;
-  readonly stufendiagnose?: Readonly<Record<string, number>>;
 }
 
 export function ladeSzenario(id: string): SzenarioFixture {
@@ -70,24 +69,6 @@ export function fuehreSzenarioAus(
   return {
     id, ergebnis: lauf.wert, ergebnisAusgegeben: true, referenz, ist, abweichung, bestanden,
     lagedatenHerkunft: fixture.lagedaten_herkunft,
-    // Ursachenanalyse ist Teil des Werkzeugs, nicht Handarbeit im Nachgang.
-    ...(bestanden ? {} : { stufendiagnose: stufendiagnose(id, lauf.wert) }),
-  };
-}
-
-function stufendiagnose(
-  id: string, ergebnis: BerechnungsErgebnis,
-): Readonly<Record<string, number>> {
-  const qm = ladeReferenz('02_qm_preis');
-  const preise = ladeReferenz('03_wohnungspreis');
-  const summe = ladeReferenz('04_verkaufssumme');
-  const ersteAbleitung = ergebnis.verkaufssumme.typAbleitungen[0]!;
-  const erstePosition = ergebnis.verkaufssumme.positionen[0]!;
-  return {
-    '02_qm_preis': ersteAbleitung.quadratmeterpreis - Number(qm[0]!['q_t']),
-    '03_wohnungspreis': erstePosition.preis - Number(preise[0]!['p_j_rappen']),
-    '04_verkaufssumme': ergebnis.verkaufssumme.verkaufssumme
-      - Number(summe.find((z) => z['szenario_id'] === id)?.['V_rappen'] ?? 0),
   };
 }
 
