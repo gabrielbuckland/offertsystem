@@ -1,16 +1,19 @@
 'use client';
 
 /**
- * Eingabemodal fuer den gewaehlten Honorarbetrag vor dem Erzeugen der Offerte: Die
+ * Eingabemodal fuer den gewaehlten Honorarsatz vor dem Erzeugen der Offerte: Der
+ * Vermarkter entscheidet in Prozent der Verkaufssumme, weil die Empfehlungsrange in
+ * derselben Groesse gefuehrt wird; abgelegt wird der daraus abgeleitete Betrag. Die
  * Honorarrange ist ein INTERNES Instrument, der Eigentuemer sieht in der Offerte einen
  * einzigen Betrag. Natives `<dialog>` mit `showModal()` — keine Dialog-Primitive/Radix
  * im Projekt.
  */
 import { useEffect, useRef, useState } from 'react';
+import { formatiereBetrag } from '@offert/offer';
 import { Button } from './button.js';
 import { Hinweis } from './hinweis.js';
 import {
-  formatiereHonorarAlsProzent, frankenEingabeZuRappen, honorarAbweichung, honorarSperrgrund,
+  formatiereHonorarAlsProzent, honorarAbweichung, honorarSperrgrund, prozentEingabeZuRappen,
 } from './honorar-eingabe-logik.js';
 import { Input } from './input.js';
 import { Label } from './label.js';
@@ -19,8 +22,9 @@ export interface HonorarEingabeDialogProps {
   readonly offen: boolean;
   readonly honorarMin: number;
   readonly honorarMax: number;
-  /** Bezugsgroesse der Prozentanzeige; `undefined`, solange die Berechnung (noch) keine
-   *  Verkaufssumme liefert — die Anzeige faellt dann auf `–` zurueck. */
+  /** Bezugsgroesse der Prozenteingabe. `undefined`, solange die Berechnung (noch) keine
+   *  Verkaufssumme liefert — dann laesst sich kein Prozentsatz in einen Betrag
+   *  umrechnen und das Bestaetigen bleibt gesperrt. */
   readonly verkaufssumme: number | undefined;
   readonly schliesse: () => void;
   readonly bestaetige: (gewaehltesHonorar: number) => void;
@@ -45,19 +49,18 @@ export function HonorarEingabeDialog(
     if (!offen && dialog.open) dialog.close();
   }, [offen]);
 
-  const betrag = frankenEingabeZuRappen(eingabe);
+  // Abweichung wird weiterhin am Rappenbetrag gegen `honorarMin`/`honorarMax` geprueft:
+  // erst umrechnen, dann einordnen.
+  const betrag = prozentEingabeZuRappen(eingabe, verkaufssumme);
   const abweichung = betrag === undefined
     ? undefined
     : honorarAbweichung(betrag, { min: honorarMin, max: honorarMax });
-  const eingabeProzentText = betrag === undefined
-    ? undefined
-    : formatiereHonorarAlsProzent(betrag, verkaufssumme);
-  const sperrgrund = honorarSperrgrund(eingabe, betrag);
+  const sperrgrund = honorarSperrgrund(eingabe, betrag, verkaufssumme);
 
   return (
     <dialog
       ref={dialogRef}
-      aria-label="Honorarbetrag"
+      aria-label="Honorarsatz"
       onClose={schliesse}
       // `m-auto` gegen Tailwinds Preflight-`margin: 0`.
       className="m-auto w-[min(28rem,calc(100vw-2.5rem))] rounded-xl border border-border bg-background p-0 backdrop:bg-foreground/40"
@@ -65,7 +68,7 @@ export function HonorarEingabeDialog(
       {offen && (
         <div className="flex flex-col gap-4 p-6">
           <div>
-            <h2 className="text-lg font-semibold">Honorarbetrag für die Offerte</h2>
+            <h2 className="text-lg font-semibold">Honorarsatz für die Offerte</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Empfohlen: {formatiereHonorarAlsProzent(honorarMin, verkaufssumme)} –{' '}
               {formatiereHonorarAlsProzent(honorarMax, verkaufssumme)} der Verkaufssumme.
@@ -74,7 +77,7 @@ export function HonorarEingabeDialog(
             </p>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="honorar-eingabe">Honorar (CHF)</Label>
+            <Label htmlFor="honorar-eingabe">Honorar (% der Verkaufssumme)</Label>
             <Input
               id="honorar-eingabe"
               type="number"
@@ -82,17 +85,17 @@ export function HonorarEingabeDialog(
               value={eingabe}
               onChange={(e) => setzeEingabe(e.target.value)}
             />
-            {eingabeProzentText !== undefined && (
+            {betrag !== undefined && (
               <p className="text-sm text-muted-foreground">
-                Entspricht {eingabeProzentText} der Verkaufssumme.
+                Entspricht einem Honorar von {formatiereBetrag(betrag)}.
               </p>
             )}
           </div>
           {abweichung !== undefined && abweichung !== 'im-bereich' && (
             <Hinweis art="warnung">
               {abweichung === 'unter-range'
-                ? 'Der Betrag liegt unter der empfohlenen Range.'
-                : 'Der Betrag liegt über der empfohlenen Range.'}
+                ? 'Der Honorarsatz liegt unter der empfohlenen Range.'
+                : 'Der Honorarsatz liegt über der empfohlenen Range.'}
             </Hinweis>
           )}
           {/* Keine stumme Deaktivierung: der Vermarkter sieht, warum «Offerte erzeugen»

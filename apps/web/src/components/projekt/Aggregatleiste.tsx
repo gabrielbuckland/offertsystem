@@ -2,6 +2,7 @@
 import { formatiereAggregat, formatiereScore } from '@offert/offer';
 import { Button } from '../ui/button.js';
 import { Hinweis } from '../ui/hinweis.js';
+import { formatiereHonorarAlsProzent } from '../ui/honorar-eingabe-logik.js';
 
 export interface AggregatleisteProps {
   readonly verkaufssumme: number | undefined;
@@ -48,12 +49,16 @@ export function Aggregatleiste(
             </dd>
           </div>
           <div>
+            {/* Prozent statt Franken: der Vermarkter entscheidet den Honorarsatz in
+                Prozent der Verkaufssumme (Eingabemodal), die Range ist die Empfehlung
+                dazu und muss in derselben Groesse ablesbar sein. */}
             <dt className="text-sm text-muted-foreground">Honorarrange</dt>
             <dd className="text-lg font-medium">
               {honorarAbbruchMeldung !== undefined
                 || honorarMin === undefined || honorarMax === undefined
                 ? '—'
-                : `${formatiereAggregat(honorarMin)} – ${formatiereAggregat(honorarMax)}`}
+                : `${formatiereHonorarAlsProzent(honorarMin, verkaufssumme)} – `
+                  + `${formatiereHonorarAlsProzent(honorarMax, verkaufssumme)}`}
             </dd>
           </div>
           <div title="Aufwandintensität der Vermarktung. Skaliert die Honorarrange innerhalb ihrer Stufe.">

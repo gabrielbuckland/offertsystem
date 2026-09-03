@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { formatiereAggregat, formatiereHonorarProzent } from '@offert/offer';
 import {
   Aggregatleiste,
   type AggregatleisteProps,
@@ -28,6 +29,18 @@ describe('Aggregatleiste', () => {
                       honorarMax={undefined} />);
     expect(html).toContain('—');
     expect(html).not.toContain('0.00');
+  });
+
+  it('zeigt die Honorarrange als Prozentsatz der Verkaufssumme, nicht als Frankenbetrag '
+    + '— der Vermarkter entscheidet den Honorarsatz in derselben Groesse', () => {
+    const props = basisProps();
+    const html = renderToStaticMarkup(<Aggregatleiste {...props} />);
+    expect(html).toContain(
+      formatiereHonorarProzent(props.honorarMin! / props.verkaufssumme!));
+    expect(html).toContain(
+      formatiereHonorarProzent(props.honorarMax! / props.verkaufssumme!));
+    expect(html).not.toContain(formatiereAggregat(props.honorarMin!));
+    expect(html).not.toContain(formatiereAggregat(props.honorarMax!));
   });
 
   it('sperrt die Schaltflaeche, solange kein Ergebnis vorliegt', () => {
