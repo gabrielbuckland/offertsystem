@@ -30,10 +30,11 @@
     "eval:extension-metrics": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/extension-metrics/main.ts",
     "eval:extension-scenario": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/extension-scenario/main.ts",
     "eval:tornado": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/tornado/main.ts",
+    "eval:honorarkurve": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/honorarkurve/main.ts",
     "eval:report": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/report/main.ts",
     "beispiel:offerte": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/beispiel-offerte.ts",
     "migriere:bewertungen": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/migriere-bewertungen.ts",
-    "eval:all": "npm run eval:oat && npm run eval:degression-margin && npm run eval:tornado && npm run eval:report"
+    "eval:all": "npm run eval:oat && npm run eval:degression-margin && npm run eval:tornado && npm run eval:honorarkurve && npm run eval:report"
   },
   "devDependencies": {
     "@eslint/js": "9.9.0",
