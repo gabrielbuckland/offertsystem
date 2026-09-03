@@ -14,7 +14,7 @@ eingetippten Zahlenwert — sie ist damit in einem Tabellenprogramm nachvollzieh
 und nachrechenbar. Die CSV-Ausleitung traegt die von diesem Skript berechneten
 Werte; beide Wege muessen uebereinstimmen.
 
-Rundung: kaufmaennisch, halbe Betraege vom Nullpunkt weg, identisch zu Brief §5.3.
+Rundung: kaufmaennisch, halbe Betraege vom Nullpunkt weg (E-10).
 Gerundet wird an genau zwei Stellen der Preisableitung (R1 Referenzwertuebernahme,
 R2 Wohnungspreis) sowie in der Honorarkette nach der Multiplikation mit g(D) (R3).
 `q_t`, `basispreis`, `basisMin` und `basisMax` bleiben ungerundet.
@@ -35,7 +35,7 @@ WURZEL = Path(__file__).resolve().parents[2]
 MAPPE = WURZEL / "docs" / "referenz" / "referenzberechnung.xlsx"
 CSV_ZIEL = WURZEL / "packages" / "core" / "test" / "fixtures" / "reference"
 
-# --- Modellparameter der Standardkonfiguration (Spec 02 §5) ---------------------
+# --- Modellparameter der Standardkonfiguration -----------------------------------
 ALPHA = 0.5
 G_MIN, G_MAX = 0.85, 1.15
 STUETZSTELLEN = [
@@ -50,7 +50,7 @@ STUETZSTELLEN = [
 
 
 def runde_auf_rappen(betrag: float) -> int:
-    """Kaufmaennisch, halbe Betraege vom Nullpunkt weg (Brief §5.3, E-10)."""
+    """Kaufmaennisch, halbe Betraege vom Nullpunkt weg (E-10)."""
     vorzeichen = -1 if betrag < 0 else 1
     return vorzeichen * math.floor(abs(betrag) + 0.5)
 

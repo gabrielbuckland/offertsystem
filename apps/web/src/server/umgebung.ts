@@ -1,5 +1,5 @@
 /**
- * Einziger Ort, an dem Umgebungsvariablen gelesen werden (Spec 01 §7.2). Kein Rueckfall
+ * Einziger Ort, an dem Umgebungsvariablen gelesen werden. Kein Rueckfall
  * auf Ersatzwerte: Fehlen bei VALUATION_PROVIDER=pricehubble die Zugangsdaten, bricht der
  * Start ab (I-24, NFA-10) — ein stiller Rueckfall auf Mock-/Fixture-Daten im Live-Betrieb
  * waere in der Offerte nicht erkennbar.
@@ -65,7 +65,7 @@ export interface Umgebung {
   readonly phBaseUrl: string | undefined;
   readonly phUsername: string | undefined;
   readonly phPassword: string | undefined;
-  /** Manuell besorgter Token; ersetzt phUsername/phPassword (E-31, Spec 04 §8.3). */
+  /** Manuell besorgter Token; ersetzt phUsername/phPassword (E-31). */
   readonly phAccessToken: string | undefined;
   readonly phDossierId: string | undefined;
 }

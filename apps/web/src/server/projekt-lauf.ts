@@ -1,6 +1,6 @@
 /**
- * Der EINE zweistufige Rechenweg vom Projekt zur Offerte (PE-21). Baut die Offerte
- * IMMER, persistiert wird sie nur von der Offert-Route (Spec §4).
+ * Der EINE zweistufige Rechenweg vom Projekt zur Offerte (PE-21). Baut die Offerte,
+ * persistiert sie aber nicht.
  *
  * Zweistufig, weil in Franken erfasste Zu-/Abschlaege den ungerundeten Basispreis
  * brauchen (PE-21) und dieser erst aus einem Lauf OHNE Anpassungen hervorgeht (E-09).
@@ -137,8 +137,7 @@ export async function fuehreProjektlauf(
   if (!beschafft.wert.buendel.vollstaendig) return { art: 'bewertungLuecke' };
 
   // PE-04, E-29: Bewusste Nebenwirkung — auch eine reine Berechnung verbraucht eine
-  // Referenznummer aus `A-<Jahr>-<NNN>`, abgelegte Offerten haben also Luecken
-  // (OFFEN-05-1 beim Auftraggeber offen).
+  // Referenznummer aus `A-<Jahr>-<NNN>`, abgelegte Offerten haben also Luecken.
   const meta = erzeugeLaufmetadaten(fingerabdruck);
   const basisEingang = zuEingangsArgumenten(
     ohne.wert, beschafft.wert, konfiguration, meta.erstelltAm, { ohneAnpassungen: true });

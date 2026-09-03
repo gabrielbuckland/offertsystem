@@ -1,7 +1,7 @@
 /**
- * Keine Formel. Die neun adapterinternen Fehlertypen des Abrufpfads (Spec 04 §6.5.1).
+ * Keine Formel. Die neun adapterinternen Fehlertypen des Abrufpfads.
  * Der zehnte Typ, `KonfigurationsFehler`, liegt auf dem Initialisierungspfad und
- * steht bewusst nicht in dieser Aufzaehlung (§6.5.3, E-02).
+ * steht bewusst nicht in dieser Aufzaehlung (E-02).
  *
  * Die Reihenfolge ist verbindlich: Sie ist zugleich die Zeilenfolge der
  * Abbildungstabelle in `acl/fehler-uebersetzung.ts`.

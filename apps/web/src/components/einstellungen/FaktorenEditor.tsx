@@ -2,7 +2,7 @@
 
 /**
  * Editor fuer den Teilbaum `aufwandfaktoren` — Herkunft, Normalisierung und Gewichtung der
- * Faktoren, aus denen sich der Aufwandindikator D ergibt (Spec §6).
+ * Faktoren, aus denen sich der Aufwandindikator D ergibt.
  *
  * Kennt nur die FORM des Teilbaums (`FaktorRoh`), keine Konfigurationsbezeichner — ein
  * Architekturtest scannt diesen Ordner auf woertlich verdrahtete Bezeichner. Die neun

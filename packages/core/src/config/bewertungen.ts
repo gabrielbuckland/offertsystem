@@ -2,8 +2,8 @@
 //
 // Feldmenge und Aufzaehlungswerte der PriceHubble-Objekte `condition` und `quality`
 // (docs.pricehubble.com, dossier_creation/valuation). Wissen ueber ein FREMDES
-// Datenformat zum Zweck der Zurueckweisung — dieselbe Ausnahme, die schema.ts fuer die
-// neun Lagescore-Namen traegt, nicht die Bevorzugung eines Faktors in der Rechnung.
+// Datenformat zum Zweck der Zurueckweisung, nicht die Bevorzugung eines Faktors
+// in der Rechnung.
 import { z } from 'zod';
 
 export const BEWERTUNGSFELDER = ['bathrooms', 'kitchen', 'flooring', 'windows'] as const;

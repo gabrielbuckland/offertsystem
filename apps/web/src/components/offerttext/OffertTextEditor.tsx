@@ -1,7 +1,6 @@
 'use client';
 
-// WYSIWYG-Editor des Offerttexts (Spec 2026-08-27 §3). StarterKit ist auf die Teilmenge des
-// Dokumentschemas eingeschraenkt.
+// StarterKit ist auf die Teilmenge des Dokumentschemas eingeschraenkt.
 // C-1: Drei Netze gegen schemawidrigen Inhalt — `ListItem.content: 'paragraph'` (verhindert
 // verschachtelte Listen via Tab strukturell), die Preistabelle-Sperre in einem Listenpunkt,
 // und `istGueltigesOffertDokument`, das jede Aenderung vor `beiAenderung` (Autosave/PUT)

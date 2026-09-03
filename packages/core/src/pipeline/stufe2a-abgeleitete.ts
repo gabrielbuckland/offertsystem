@@ -20,7 +20,7 @@ export interface GeschlossenerEingang extends PipelineEingang {
  * Kennzahlen der Quelle `abgeleitet`.
  * - `einheitenzahl`: m aus eq:verkaufssumme.
  * - `mittlererQuadratmeterpreis`: q-quer = (Summe_j q_t(j) * A_j) / (Summe_j A_j) in
- *   Rappen/m^2, gebildet VOR den Zu-/Abschlaegen (Spec 02 §5.3, E-07).
+ *   Rappen/m^2, gebildet VOR den Zu-/Abschlaegen (E-07).
  */
 function bildeAbleitungen(verkauf: VerkaufssummeErgebnis): ReadonlyMap<AbleitungsName, number> {
   const flaechensumme = verkauf.positionen.reduce((s, p) => s + p.gewichteteFlaeche, 0);
@@ -63,7 +63,7 @@ export function ergaenzeAbgeleiteteFaktoren(
   }
 
   // Erneut aufsteigend sortiert einsetzen, damit die Einfuegereihenfolge der Map
-  // ergebnisunabhaengig bleibt (Spec 03 §9.3).
+  // ergebnisunabhaengig bleibt.
   const sortiert = new Map(
     [...rohfaktoren.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
   );

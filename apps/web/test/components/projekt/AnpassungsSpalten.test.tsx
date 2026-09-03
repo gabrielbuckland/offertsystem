@@ -1,11 +1,7 @@
 /**
- * Diese Suite deckt genau die Stelle ab, die Task 9's Review als ungetestet flaggte:
- * die Spaltenentfernung. `renderToStaticMarkup` liefert keine anfassbaren Handler (das
- * Repo hat weder jsdom noch @testing-library/react — siehe repo-fakten.md), darum werden
- * `Button`/`Input` gemockt, um die waehrend eines echten Renderdurchlaufs erzeugten
- * Closures abzufangen und danach direkt aufzurufen ("Handler direkt treiben" statt
- * simulierter Klicks). Das ist ehrlich, weil derselbe Code laeuft wie im echten
- * Renderpfad — nur die DOM-Wiedergabe selbst wird uebersprungen.
+ * `renderToStaticMarkup` liefert keine anfassbaren Handler, darum werden `Button`/`Input`
+ * gemockt, um die waehrend eines echten Renderdurchlaufs erzeugten Closures abzufangen
+ * und danach direkt aufzurufen, statt Klicks zu simulieren.
  */
 import { renderToStaticMarkup } from 'react-dom/server';
 import {
@@ -148,9 +144,9 @@ describe('AnpassungsSpalten — freigewordene Kennungen werden nicht wiederverwe
     hinzufuegenButton.onClick();
     const zweiteNeueId = (aendere.mock.calls[1]![0] as readonly AnpassungsSpalte[]).at(-1)!.id;
 
-    // Eine aus der jeweils AKTUELLEN Liste neu abgeleitete Kennung (der urspruengliche
-    // Fehler, siehe Kommentar in AnpassungsSpalten.tsx) haette hier zweimal 'S-3'
-    // geliefert, weil beide Klicks von derselben ungeaenderten `spalten`-Prop ausgehen.
+    // Eine aus der jeweils AKTUELLEN Liste neu abgeleitete Kennung haette hier zweimal
+    // 'S-3' geliefert, weil beide Klicks von derselben ungeaenderten `spalten`-Prop
+    // ausgehen.
     expect(ersteNeueId).not.toBe('S-2');
     expect(zweiteNeueId).not.toBe('S-2');
     expect(zweiteNeueId).not.toBe(ersteNeueId);
@@ -171,12 +167,6 @@ describe('AnpassungsSpalten — freigewordene Kennungen werden nicht wiederverwe
   });
 });
 
-/**
- * Der Vorgabewert war ein Bedienelement ohne Wirkung und trug den Einheitenfehler bereits
- * angelegt in sich: erfasst als roher Faktor bzw. als Rappen, waehrend dieselbe Groesse
- * einen Block weiter unten als Prozent bzw. Franken erfasst wird — und ohne Einheit im
- * Kolonnenkopf. Genau die Konstellation, aus der der Faktor-100-Fehler entstanden ist.
- */
 describe('AnpassungsSpalten — Vorgabewert in der Einheit des Menschen', () => {
   function mitVorgabewert(
     erfassungsform: AnpassungsSpalte['erfassungsform'], vorgabewert: number,
@@ -220,11 +210,9 @@ describe('AnpassungsSpalten — Vorgabewert in der Einheit des Menschen', () => 
 });
 
 /**
- * Deckt die Luecke ab, die Task 8's Review fand: `regel` und `vorgabewert` schliessen
- * sich seit Task 3 im Schema aus (`REGEL_UND_VORGABEWERT`). Vor dieser Aenderung bot die
- * Tabelle das Vorgabewert-Feld auch fuer eine Spalte mit Regel an — jede Eingabe darin
- * machte das Projekt unspeicherbar. Erreichbar im normalen Betrieb, weil
- * `config/company-defaults.json` die regelbehaftete Vorlage `stockwerklage` mitbringt.
+ * `regel` und `vorgabewert` schliessen sich im Schema aus (`REGEL_UND_VORGABEWERT`).
+ * Erreichbar im normalen Betrieb, weil `config/company-defaults.json` die regelbehaftete
+ * Vorlage `stockwerklage` mitbringt.
  */
 describe('AnpassungsSpalten — Vorgabewert entfaellt bei einer Spalte mit Regel', () => {
   const spalteMitRegel: AnpassungsSpalte = {
@@ -292,11 +280,6 @@ describe('AnpassungsSpalten — eine neue Spalte ist sofort speicherbar', () => 
   });
 });
 
-/**
- * Die Staffel einer Regelspalte muss in der Projektansicht ABLESBAR sein — vorher stand
- * dort nur «Wird von der hinterlegten Regel bestimmt», und welcher Betrag in welchem
- * Segment gilt, war nirgends sichtbar (Rueckmeldung Auftraggeber 2026-08-28).
- */
 describe('beschreibeStaffel — weist Segmente und Betraege lesbar aus', () => {
   it('formatiert eine absolute Staffel in Franken mit Merkmalsbezeichnung', () => {
     const s: AnpassungsSpalte = {

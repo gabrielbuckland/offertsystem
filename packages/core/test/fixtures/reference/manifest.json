@@ -3,7 +3,7 @@
   "erzeuger": "tools/referenz/referenzmappe.py",
   "exportdatum": "2026-08-16",
   "unabhaengigkeit": "Die Referenzwerte entstehen auf einem zweiten, vom Produktivcode getrennten Rechenweg: Das Erzeugerskript ist Python, importiert nichts aus packages/core und fuehrt die Formeln aus Kapitel 3.3 eigenstaendig. Die Arbeitsmappe traegt dieselben Schritte als Tabellenformel.",
-  "einschraenkung": "Die von Plan P2 Aufgabe 19 geforderte Commit-Reihenfolge (Referenzwerte als Commit A VOR der Implementierung der Stufen, Commit B danach) ist NICHT eingehalten. Die Ausfuehrungsreihenfolge in 00-planentscheide.md Abschnitt F ordnet die Referenzmappe als Schritt 7 nach den Stufen ein (Schritt 5); beide Vorgaben widersprechen sich, und das uebergeordnete Dokument gewinnt. Die Unabhaengigkeit ist damit ueber den getrennten Rechenweg belegt, nicht zusaetzlich ueber die Versionsgeschichte. Wer die zeitliche Unabhaengigkeit beweisen will, muss die Mappe vor der naechsten Modellaenderung erneut erzeugen und den Commit vor der Aenderung setzen.",
+  "einschraenkung": "Die Unabhaengigkeit ist ueber den getrennten Rechenweg belegt, nicht ueber die Versionsgeschichte (kein separates Commit-Paar). Wer die zeitliche Unabhaengigkeit beweisen will, muss die Mappe vor der naechsten Modellaenderung erneut erzeugen und den Commit vor der Aenderung setzen.",
   "commitPaar": null,
   "blaetter": [
     {

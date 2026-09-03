@@ -4,9 +4,9 @@
  * `konfig_sha256` des Laufkopfs (SHA-256 ueber den DATEIINHALT von
  * company-defaults.json) und `konfigPruefsumme` der Offerte (SHA-256 ueber die
  * KANONISCH SERIALISIERTE EFFEKTIVE Konfiguration inkl. projektbezogener
- * Ueberschreibungen, E-26, Spec 02 §6) koennen nie gleich sein — ein direkter Vergleich
- * waere immer rot. Geprueft wird stattdessen ueber die Konfigurationsversion (in beiden
- * Groessen vorhanden und vergleichbar) und das Vorhandensein der eingebetteten Kopie.
+ * Ueberschreibungen, E-26) koennen nie gleich sein — ein direkter Vergleich waere immer
+ * rot. Geprueft wird stattdessen ueber die Konfigurationsversion (in beiden Groessen
+ * vorhanden und vergleichbar) und das Vorhandensein der eingebetteten Kopie.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';

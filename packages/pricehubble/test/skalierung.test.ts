@@ -3,13 +3,13 @@ import { anfrage, adresse, baueAdapter } from './adapter-hilfen.js';
 
 /**
  * I-27 / NFA-12: Die Abrufzahl skaliert mit der Zahl der Wohnungstypen `T`, nicht mit
- * der Einheitenzahl `m`. Verbindliche Grundformel `N = 2 + 3*T` (Spec 04 §3.4).
+ * der Einheitenzahl `m`. Verbindliche Grundformel `N = 2 + 3*T`.
  *
  * Je Typ fallen drei Abrufe an: E3 PATCH, der Zuruecklese-GET fuer die Verifikation
- * nach §5.4 und E4 POST. Der GET ist unvermeidbar, weil E3 mit leerem Rumpf antwortet
+ * und E4 POST. Der GET ist unvermeidbar, weil E3 mit leerem Rumpf antwortet
  * (live belegt 2026-09-01) — ohne ihn gaebe es keinen Rueckvergleich.
  * Gemessen wird auf der HTTP-Ebene; am Interface waere die Zahl konstruktionsbedingt
- * immer 1 und die Messung wertlos (Spec 06 §6.0).
+ * immer 1 und die Messung wertlos.
  */
 async function zaehleAbrufe(typen: number): Promise<number> {
   const { adapter, protokoll } = baueAdapter();

@@ -1,5 +1,5 @@
 /**
- * Keine Formel. Platzhalterkatalog der Offerttexte (Spec 2026-08-27 §2).
+ * Keine Formel. Platzhalterkatalog der Offerttexte.
  *
  * Die EINE Stelle, an der Berechnungsergebnis und Vorlagentext zusammenkommen. Editor-
  * Einfügemenü (apps/web), Vorlagenvalidierung und Auflösung lesen denselben Katalog.
@@ -30,7 +30,7 @@ export interface PlatzhalterWerte {
   readonly preistabelle: readonly PreisZeile[];
 }
 
-// M-1: `preistabelle` ist im Katalog gelistet, aber KEIN Mitglied von
+// `preistabelle` ist im Katalog gelistet, aber KEIN Mitglied von
 // `TEXT_PLATZHALTER` — sie ist der Block-Platzhalter (`platzhalterTabelle`), nicht ein
 // Text-Platzhalter. Der Typ macht das sichtbar, statt beide unter einem `string` zu
 // vermischen; die Unterscheidung nach Knotenart trifft `sammlePlatzhalterIds`
@@ -64,7 +64,7 @@ export function platzhalterWerte(
       // Fehlt (Offerte ohne gewaehlten Betrag, z. B. ein Altartefakt), bleiben beide
       // Schluessel weg — die Aufloesung meldet den fehlenden Platzhalter dann selbst
       // (aufloesung.ts, `PlatzhalterFehler`), statt hier die Honorarrange zu erfinden.
-      // ZWEI Platzhalter statt einem (Nachtrag Spec 2026-08-29): Ein gerundeter
+      // ZWEI Platzhalter statt einem: Ein gerundeter
       // Prozentsatz allein liesse sich vom Eigentuemer nicht verlustfrei auf den
       // massgebenden Betrag zurueckrechnen (3.14 % gerundet auf 3.1 % weicht bei
       // hohen Verkaufssummen um mehrere tausend Franken vom tatsaechlichen Honorar

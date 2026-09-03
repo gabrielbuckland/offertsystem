@@ -82,11 +82,10 @@ describe('projiziere', () => {
 
   it('delegiert die Regel-/Uebersteuerungsauswertung an ermittleWirksamenWert (Smoke-Test)', () => {
     // Die Feinlogik (Regel vs. Uebersteuerung, fehlender Merkmalswert, 0-Werte als
-    // gueltiges Ergebnis) ist bereits vollstaendig in wirksamer-wert.test.ts abgedeckt,
-    // da projiziere() nur an ermittleWirksamenWert delegiert. Hier genuegt der Nachweis,
-    // dass die Uebersteuerung samt Regelspur unveraendert durchgereicht wird und dass ein
-    // wirksamer Wert von 0 — egal ob aus Regel oder Zelle — projektionsseitig zu keiner
-    // Position fuehrt.
+    // gueltiges Ergebnis) liegt bei ermittleWirksamenWert, an das projiziere() nur
+    // delegiert. Hier genuegt der Nachweis, dass die Uebersteuerung samt Regelspur
+    // unveraendert durchgereicht wird und dass ein wirksamer Wert von 0 — egal ob aus
+    // Regel oder Zelle — projektionsseitig zu keiner Position fuehrt.
     const uebersteuert = projiziere(projektMitRegel({ stockwerk: 1 }, { 'S-1': 500000 }), { 'E-1': 100_000_00 });
     expect(uebersteuert.ok).toBe(true);
     if (!uebersteuert.ok) return;

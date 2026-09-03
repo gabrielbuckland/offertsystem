@@ -1,10 +1,6 @@
-/**
- * `renderToStaticMarkup` haengt keine Handler an (kein jsdom/@testing-library im Repo,
- * siehe `AnpassungsSpalten.test.tsx`) — deshalb werden `Button`/`Input` gemockt, um die
- * waehrend eines echten Renderdurchlaufs erzeugten Closures abzufangen und danach direkt
- * aufzurufen ("Handler direkt treiben" statt simulierter Klicks). Derselbe Code laeuft
- * wie im echten Renderpfad, nur die DOM-Wiedergabe selbst wird uebersprungen.
- */
+// `renderToStaticMarkup` haengt keine Handler an, deshalb werden `Button`/`Input`
+// gemockt, um die waehrend des Renderdurchlaufs erzeugten Closures abzufangen und
+// direkt aufzurufen, statt Klicks zu simulieren.
 import { renderToStaticMarkup } from 'react-dom/server';
 import {
   describe, expect, it, vi,
@@ -68,8 +64,6 @@ describe('MerkmalEditor — Merkmal hinzufuegen', () => {
 describe('naechsteMerkmalId', () => {
   it('leitet die Kennung aus der hoechsten vergebenen merkmal_<n>-Kennung ab, nicht aus der '
     + 'Listenlaenge — sonst kollidiert Hinzufuegen nach Loeschen (Review-Finding 6)', () => {
-      // Zwei hinzufuegen (merkmal_1, merkmal_2), das erste loeschen, wieder hinzufuegen:
-      // `merkmale.length + 1` ergaebe erneut `merkmal_2` und kollidiert mit dem Ueberlebenden.
       const nachLoeschen = [merkmal('merkmal_2', 'Neues Merkmal')];
       expect(naechsteMerkmalId(nachLoeschen)).toBe('merkmal_3');
     });
@@ -90,7 +84,6 @@ describe('MerkmalEditor — Bezeichnung bearbeiten', () => {
       />,
     );
 
-    // Zweites Merkmal ist die zweite Bezeichnungs-Zeile.
     erfasst.inputs[1]!.onChange({ target: { value: 'Wohnflaeche' } });
 
     expect(aendere).toHaveBeenCalledWith([

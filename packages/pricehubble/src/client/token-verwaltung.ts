@@ -1,11 +1,11 @@
 /**
- * Keine Formel. Token-Haltung nach Spec 04 §2.
+ * Keine Formel. Token-Haltung.
  *
- * Der Token liegt ausschliesslich im Prozessspeicher — kein DBMS (Brief §5.2) und kein
+ * Der Token liegt ausschliesslich im Prozessspeicher — kein DBMS und kein
  * Datei-Cache, weil Geheimnismaterial sonst persistiert wuerde.
  *
  * Die Ablaufzeit wird NICHT aus `expires_in` abgeleitet: Das Feld ist in der
- * Bruno-Beispielantwort nicht belegt (OFFEN-1). Stattdessen gilt
+ * Bruno-Beispielantwort nicht belegt. Stattdessen gilt
  * `api.tokenGueltigkeitMin` abzueglich `api.tokenSicherheitsmargeMin`.
  */
 import type { ApiKonfiguration } from '../config/api-konfiguration.js';
@@ -14,7 +14,7 @@ import type { AdapterFehler } from './fehler.js';
 import type { AnfrageBeschreibung, HttpClient, HttpErgebnis } from './http-client.js';
 import type { Uhr } from './uhr.js';
 
-/** Einheitenumrechnung Minuten -> Millisekunden; kein Verhaltensparameter (G-4). */
+/** Einheitenumrechnung Minuten -> Millisekunden; kein Verhaltensparameter. */
 const MS_JE_MINUTE = 60_000;
 
 export interface Zugangsdaten {
@@ -23,7 +23,7 @@ export interface Zugangsdaten {
 }
 
 /**
- * Zweiter Zugangsweg: ein von Hand besorgter Token (E-31, Spec 04 §8.3). Er erlaubt
+ * Zweiter Zugangsweg: ein von Hand besorgter Token (E-31). Er erlaubt
  * einen Lauf gegen die echte API, ohne dass Zugangsdaten in den Prozess gelangen.
  * Seine Restlaufzeit ist unbekannt, deshalb gelten fuer ihn weder
  * `api.tokenGueltigkeitMin` noch die reaktive Erneuerung bei 401.
@@ -81,9 +81,9 @@ export class TokenVerwaltung {
   }
 
   /**
-   * Reaktive Erneuerung (Spec 04 §2): Bei 401 wird genau einmal neu eingeloggt und
-   * der Request genau einmal wiederholt. Diese Wiederholung ist KEIN Retry im Sinne
-   * von §6 und zaehlt nicht gegen `api.retry.maxVersuche`.
+   * Reaktive Erneuerung: Bei 401 wird genau einmal neu eingeloggt und
+   * der Request genau einmal wiederholt. Diese Wiederholung ist KEIN Retry und zaehlt
+   * nicht gegen `api.retry.maxVersuche`.
    */
   public async mitToken(
     baue: (token: string) => AnfrageBeschreibung,

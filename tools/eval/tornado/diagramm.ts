@@ -1,6 +1,5 @@
 /**
- * Keine Modellformel. Aggregation und Zeichenmodell des Tornado-Diagramms
- * (Spec 06 §7.4).
+ * Keine Modellformel. Aggregation und Zeichenmodell des Tornado-Diagramms.
  *
  * `oat.json` fuehrt je Parameter, Stufe UND Szenario eine Zeile. Das Diagramm zeigt je
  * Parameter zwei Balken: die staerkste negative und die staerkste positive Aenderung.

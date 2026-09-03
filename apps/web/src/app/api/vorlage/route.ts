@@ -1,7 +1,6 @@
 /**
- * Lese- und Schreibpfad der Offerttext-Vorlage (Spec 2026-08-27 §1/§3). Antwortformen
- * wie /api/einstellungen: 422 mit `befunde` (Pfad + Text), damit der Editor Meldungen
- * am Feld verankern kann.
+ * Lese- und Schreibpfad der Offerttext-Vorlage. Antwortformen wie /api/einstellungen:
+ * 422 mit `befunde` (Pfad + Text), damit der Editor Meldungen am Feld verankern kann.
  */
 import { holeLaufzeit } from '../../../server/laufzeit.js';
 import { ladeVorlage, schreibeVorlage } from '../../../server/vorlagen-ablage.js';

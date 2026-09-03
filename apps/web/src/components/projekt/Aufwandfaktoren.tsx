@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Aufwandfaktoren-Formular (Design-Spec §6.3): datengetrieben aus
+ * Aufwandfaktoren-Formular: datengetrieben aus
  * `baueFaktorformular(konfiguration).felder` erzeugt, keine feste Faktorliste im Code —
  * ein neuer Faktor soll ohne Codeaenderung funktionieren.
  *

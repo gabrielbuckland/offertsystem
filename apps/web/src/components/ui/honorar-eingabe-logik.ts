@@ -1,14 +1,12 @@
-// Reine Logik des Honorar-Eingabemodals (honorar-eingabe-dialog.tsx), getrennt von der
-// Darstellung fuer DOM-freie Tests (Muster schluessel-wert-logik.ts).
+// Reine Logik des Honorar-Eingabemodals, getrennt von der Darstellung fuer DOM-freie Tests.
 import { berechneHonorarProzent, formatiereHonorarProzent } from '@offert/offer';
 
 export { honorarAbweichung, type HonorarAbweichung } from '@offert/offer';
 
 /**
  * Formatierte Prozentanzeige eines Frankenbetrags (Empfehlungsrange oder Eingabe) an der
- * Verkaufssumme (Spec 2026-08-29): Anzeige ist Prozent, Eingabefeld bleibt Franken. `–`
- * statt einer kaputten Zahl, wenn die Verkaufssumme fehlt oder keine sinnvolle
- * Bezugsgroesse ist (`berechneHonorarProzent`).
+ * Verkaufssumme: Anzeige ist Prozent, Eingabefeld bleibt Franken. `–` statt einer
+ * kaputten Zahl, wenn die Verkaufssumme fehlt oder keine sinnvolle Bezugsgroesse ist.
  */
 export function formatiereHonorarAlsProzent(
   betragRappen: number, verkaufssummeRappen: number | undefined,
@@ -26,14 +24,12 @@ export function frankenEingabeZuRappen(text: string): number | undefined {
 }
 
 /**
- * Sperrgrund fuers Bestaetigen, oder `undefined`, wenn ein gueltiger Betrag vorliegt
- * (Nachtrag Spec 2026-08-29): Das Feld startet LEER — keine Vorbelegung mit dem
- * Range-Mittelwert mehr. Eine Systemvorbelegung, die der Vermarkter nur noch bestaetigt,
- * liefe als SEINE Entscheidung ins Dokument (Herkunft `marketer-decision`), obwohl sie
- * das System gesetzt hat; dieselbe Automation-Bias-Argumentation begruendet in der
- * Arbeit (§5.4/§6.8), warum Zu-/Abschlagsvorlagen vorgeschlagen statt vorbelegt werden.
- * Zwei Faelle statt eines generischen Textes, damit der Vermarkter sieht, WARUM
- * gesperrt ist: nichts eingegeben vs. eine unbrauchbare Eingabe (z. B. Text).
+ * Sperrgrund fuers Bestaetigen, oder `undefined`, wenn ein gueltiger Betrag vorliegt.
+ * Das Feld startet LEER — keine Vorbelegung mit dem Range-Mittelwert. Eine
+ * Systemvorbelegung, die der Vermarkter nur noch bestaetigt, liefe als SEINE Entscheidung
+ * ins Dokument (Herkunft `marketer-decision`), obwohl sie das System gesetzt hat
+ * (Automation Bias). Zwei Faelle statt eines generischen Textes, damit der Vermarkter
+ * sieht, WARUM gesperrt ist: nichts eingegeben vs. eine unbrauchbare Eingabe (z. B. Text).
  */
 export function honorarSperrgrund(eingabe: string, betrag: number | undefined): string | undefined {
   if (betrag !== undefined) return undefined;

@@ -1,5 +1,5 @@
 /**
- * Keine Formel. Platzhalter-Auflösung beim Finalisieren (Spec 2026-08-27 §2).
+ * Keine Formel. Platzhalter-Auflösung beim Finalisieren.
  *
  * Reine Funktion Dokument+Werte -> Dokument, läuft genau EINMAL beim Finalisieren — das
  * abgelegte Artefakt enthält das Ergebnis, nie die Vorlage (US-13). Deshalb wird hier

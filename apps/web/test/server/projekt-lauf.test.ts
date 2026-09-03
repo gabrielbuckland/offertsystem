@@ -61,7 +61,7 @@ describe('Projektlauf', () => {
       const lauf = await fuehreProjektlauf(id, laufzeit.wert);
       expect(lauf.art).toBe('offerte');
       if (lauf.art !== 'offerte') return;
-      // Dieselbe Struktur wie im Offert-Artefakt — kein zweites Datenbild (Spec §4):
+      // Dieselbe Struktur wie im Offert-Artefakt — kein zweites Datenbild:
       expect(priceDerivationSchema.safeParse(lauf.offerte.derivation).success).toBe(true);
       expect(aggregateValuesSchema.safeParse(lauf.offerte.aggregates).success).toBe(true);
       // Die Zuordnung Wohnungsnummer -> Einheitenkennung stammt aus dem Projekt; das

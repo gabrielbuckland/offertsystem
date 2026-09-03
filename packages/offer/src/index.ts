@@ -60,9 +60,8 @@ export {
   formatiereZimmerzahl,
 } from './format/de-ch.js';
 
-// M-10 galt nur, solange kein Aufrufer ueber den Index importierte (Global Constraint);
-// apps/web importiert diese Symbole inzwischen ausschliesslich ueber den Paketindex statt
-// ueber Modulpfade (Paketgrenzen-Bereinigung), daher jetzt regulaer re-exportiert.
+// apps/web importiert diese Symbole ausschliesslich ueber den Paketindex, nicht ueber
+// Modulpfade — deshalb regulaer re-exportiert.
 export {
   offertDokumentSchema,
   sammlePlatzhalterIds,

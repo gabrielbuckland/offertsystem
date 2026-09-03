@@ -131,8 +131,7 @@ describe('basispreiseFuerErfassung (PE-21)', () => {
   });
 
   it('meldet einen unbekannten Wohnungstyp, statt eine ungueltige Liegenschaft zu bauen', () => {
-    // eingang.ok === false: erzeugeLiegenschaft() scheitert an WOHNUNGSTYP_UNBEKANNT,
-    // weil die Einheit auf einen nicht deklarierten Wohnungstyp verweist.
+    // Die Einheit verweist auf einen nicht deklarierten Wohnungstyp.
     const ergebnis = basispreiseFuerErfassung(
       erfassung('T-UNBEKANNT'),
       beschafft(new Map([['T-3.5' as WohnungstypId, bewertung(85_000_000)]])),
@@ -145,8 +144,7 @@ describe('basispreiseFuerErfassung (PE-21)', () => {
   });
 
   it('meldet eine fehlende Referenzbewertung aus Stufe 1, statt mit einem Ersatzwert zu rechnen', () => {
-    // stufe1.ok === false: bereiteEingabeAuf() scheitert an REFERENZBEWERTUNG_FEHLT, weil
-    // fuer T-3.5 keine Bewertung im Buendel liegt.
+    // Fuer T-3.5 liegt keine Bewertung im Buendel.
     const ergebnis = basispreiseFuerErfassung(
       erfassung('T-3.5'),
       beschafft(new Map()),
@@ -159,9 +157,8 @@ describe('basispreiseFuerErfassung (PE-21)', () => {
   });
 
   it('meldet eine Referenzflaeche von 0 aus Stufe 2, statt durch 0 zu teilen', () => {
-    // stufe2.ok === false: berechneVerkaufssumme() scheitert an REFERENZFLAECHE_NULL, weil
-    // die repraesentative Parametrisierung ohne Innen- und Aussenflaeche keine gewichtete
-    // Referenzflaeche ergibt.
+    // Die repraesentative Parametrisierung ohne Innen- und Aussenflaeche ergibt keine
+    // gewichtete Referenzflaeche.
     const ohneFlaeche = erfassung('T-3.5');
     (ohneFlaeche.wohnungstypen[0]!.parametrisierung as { flaecheInnen: number }).flaecheInnen = 0;
     (ohneFlaeche.wohnungstypen[0]!.parametrisierung as { flaecheAussen: number }).flaecheAussen = 0;

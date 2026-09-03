@@ -1,4 +1,4 @@
-/** Keine Formel. Strukturierte Protokollereignisse mit Maskierung (Spec 04 §6.7, AK-18). */
+/** Keine Formel. Strukturierte Protokollereignisse mit Maskierung (AK-18). */
 export interface VersuchEreignis {
   readonly ts: string;
   readonly endpoint: string;
@@ -32,7 +32,7 @@ export interface Protokoll {
 
 const GEHEIME_KOPFZEILEN = new Set(['authorization', 'cookie', 'set-cookie']);
 
-/** Spec 04 §2 Regel 3 und §6.7: kein Token, kein Passwort, keine E-Mail im Protokoll. */
+/** Kein Token, kein Passwort, keine E-Mail im Protokoll. */
 export function maskiereKopfzeilen(
   kopfzeilen: Readonly<Record<string, string>>,
 ): Record<string, string> {

@@ -1,4 +1,4 @@
-// Dateibasierte Ablage der Offerttext-Vorlage (Spec 2026-08-27 §1). Fehlende Datei ist kein
+// Dateibasierte Ablage der Offerttext-Vorlage. Fehlende Datei ist kein
 // Fehler, sondern der Auslieferungszustand (eingebaute Neubau-Standardvorlage gilt).
 // Geschrieben wird nur nach bestandener Pruefung: I-21 zurueckweisen statt melden (eine
 // Vorlage mit unbekanntem Platzhalter liesse jedes Finalisieren scheitern), M-1

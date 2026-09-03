@@ -1,5 +1,5 @@
 /**
- * Anti-Corruption Layer, Lagerichtung (Spec 04 §4.2). Keine Formel.
+ * Anti-Corruption Layer, Lagerichtung. Keine Formel.
  *
  * Drei Festlegungen, die hier durchgesetzt werden:
  *  - KEINE Verdichtung zu einem Sammelwert (I-26).

@@ -2,9 +2,9 @@
  * Keine eigene Modellformel; der Lauf ruft ausschliesslich den Kern.
  *
  * Die Umsetzung Szenario -> `EingangsArgumente` steht hier und nicht in den Testhelfern
- * des Kerns: `tools/eval` haengt nach Spec 06 §7 nur von `packages/core/src` ab, nicht von
- * dessen Testbaum. Der Unterschied zur Testfassung ist bewusst: Hier wird die
- * Konfiguration UEBERGEBEN, weil die Werkzeuge gerade Varianten davon rechnen.
+ * des Kerns: `tools/eval` haengt nur von `packages/core/src` ab, nicht von dessen
+ * Testbaum. Der Unterschied zur Testfassung ist bewusst: Hier wird die Konfiguration
+ * UEBERGEBEN, weil die Werkzeuge gerade Varianten davon rechnen.
  */
 import {
   berechne,

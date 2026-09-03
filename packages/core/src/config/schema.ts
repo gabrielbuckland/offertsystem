@@ -1,5 +1,5 @@
 /**
- * Keine Formel. Ebene 1 der Konfigurationspruefung: Struktur (Spec 02 §3.1).
+ * Keine Formel. Ebene 1 der Konfigurationspruefung: Struktur.
  * Die geprueften Parameter gehen in eq:flaeche, eq:normalisierung,
  * eq:aufwandindikator und eq:honorar_mapping ein; gerechnet wird hier nicht.
  * Geprueft werden Pflichtfelder, JSON-Typen, unbekannte Schluessel, Aufzaehlungen
@@ -171,7 +171,7 @@ export const RohKonfigurationSchema = z.object({
   preisanpassung: PreisanpassungSchema,
   anpassungsVorlagen: z.array(AnpassungsVorlageSchema),
   merkmale: z.array(MerkmalSchema).default([]),
-  // Abbildung Faktorbezeichner -> Parameter, KEINE Aufzaehlung (Brief §5.4, I-13).
+  // Abbildung Faktorbezeichner -> Parameter, KEINE Aufzaehlung (I-13).
   aufwandfaktoren: z.record(z.string().regex(BEZEICHNER_MUSTER), FaktorSchema),
   honorar: HonorarSchema,
   dossierDefaults: DossierDefaultsSchema,

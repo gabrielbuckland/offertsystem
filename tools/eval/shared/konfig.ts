@@ -85,8 +85,7 @@ export function findeUmfangfaktor(k: Konfiguration): Umfangfaktor | null {
  * eq:normalisierung inkl. aeusserer Kappung; `min > max` ist gewollte Umpolung.
  *
  * Zweitimplementierung derselben Formel, bewusst: Der Margen-Rechner arbeitet analytisch
- * ohne Pipeline-Durchlauf (Spec 06 §7.2); ein Test prueft sie gegen die
- * Normalisierungsstufe des Kerns.
+ * ohne Pipeline-Durchlauf; ein Test prueft sie gegen die Normalisierungsstufe des Kerns.
  */
 export function normiereMitKappung(roh: number, min: number, max: number): number {
   if (min === max) throw new Error('CFG_NORM_BOUNDS: min und max sind identisch');

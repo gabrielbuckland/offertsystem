@@ -33,7 +33,7 @@ import { jitterStromAusLaufSeed } from '../client/zufall.js';
 import { MockValuationProvider } from './mock-valuation-provider.js';
 import { PriceHubbleAdapter } from './pricehubble-adapter.js';
 
-/** PH_ACCESS_TOKEN gewinnt; sonst der Login mit Zugangsdaten (E-31, Spec 04 §8.3). */
+/** PH_ACCESS_TOKEN gewinnt; sonst der Login mit Zugangsdaten (E-31). */
 function zugangAus(env: AdapterUmgebung): Zugang {
   const token = (env.PH_ACCESS_TOKEN ?? '').trim();
   if (token !== '') {

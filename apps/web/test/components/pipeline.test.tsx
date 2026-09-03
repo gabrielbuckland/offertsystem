@@ -21,8 +21,8 @@ function alleZeilen(stufe: PipelineStufe): readonly PipelineZeile[] {
   return stufe.abschnitte.flatMap((a) => a.zeilen ?? []);
 }
 
-/** Herleitung aus der echten Beispiel-Offerte (offerte-bauer.ts): derselbe Kern, dieselbe
- *  Konfiguration — die Formelzeilen muessen exakt die Kernwerte ausweisen (I-24). */
+/** Herleitung aus der echten Beispiel-Offerte: derselbe Kern, dieselbe Konfiguration —
+ *  die Formelzeilen muessen exakt die Kernwerte ausweisen (I-24). */
 function herleitung() {
   const offerte = baueBeispielOfferte();
   return { derivation: offerte.derivation, aggregates: offerte.aggregates };
@@ -76,9 +76,8 @@ describe('bauePipelineDaten', () => {
     expect(stufen.map((s) => s.nr)).toEqual([1, 2, 3, 4, 5]);
     const faktorStufe = stufen.find((s) => s.nr === 3)!;
     // Datengetrieben (US-09): jeder konfigurierte Faktor erscheint mit seiner
-    // Bezeichnung — hier die drei der Standardkonfiguration (seit 1.1.0 ohne
-    // manuellen Faktor, config/README.md), ohne dass dieser Test
-    // oder die Komponente einen Bezeichner fest verdrahtet.
+    // Bezeichnung, ohne dass dieser Test oder die Komponente einen Bezeichner fest
+    // verdrahtet.
     expect(alleZeilen(faktorStufe).length).toBeGreaterThanOrEqual(3);
   });
 
@@ -118,7 +117,6 @@ describe('bauePipelineDaten', () => {
     const delta = mitProjektDelta();
     const stufen = bauePipelineDaten(delta.basis, { ueberschreibungen: delta.ueberschreibungen });
 
-    // Beide Zeilen waren bis zur Behebung von K-2 fest auf «firmenweit» verdrahtet.
     const verkauf = stufen.find((s) => s.nr === 2)!;
     expect(zeile(verkauf, 'Gewicht der Aussenfläche α').herkunft).toBe('projekt');
     expect(zeile(verkauf, 'Zulässige Zu-/Abschlagssumme je Einheit').herkunft).toBe('firmenweit');
@@ -234,9 +232,8 @@ describe('istProjektbezogen', () => {
   });
 
   it('keine Zeile verdrahtet ihre Herkunft fest', () => {
-    // Gegenprobe zur Ursache von K-2: In den Stufen 2 und 5 stand die Herkunft als
-    // Literal im Quelltext und war damit vom Protokoll abgekoppelt. Faellt jemand
-    // dorthin zurueck, faellt es hier auf, bevor der Rechenweg wieder falsch anzeigt.
+    // Waere die Herkunft als Literal im Quelltext verdrahtet, faellt sie vom Protokoll
+    // ab; dieser Test faengt den Rueckfall, bevor der Rechenweg falsch anzeigt (K-2).
     const quelle = readFileSync(
       new URL('../../src/components/pipeline/pipeline-daten.ts', import.meta.url), 'utf8');
     expect(quelle).not.toContain("herkunft: 'firmenweit'");
@@ -250,8 +247,7 @@ describe('PipelineAnsicht', () => {
       <PipelineAnsicht stufen={bauePipelineDaten(basis())} />);
     // Die Projektseite fuehrt KEINEN Weg in die Konfiguration ausser dem Verweis — sonst
     // bearbeitete der Vermarkter aus dem Projekt heraus Werte, die auf alle Projekte
-    // wirken. Die Einstellungen-Uebersicht selbst bettet die Editoren inzwischen direkt
-    // ein (`einstellungen/page.tsx`), statt ueber diese Komponente dorthin zu verlinken.
+    // wirken.
     expect(html).not.toContain('Bearbeiten');
   });
 });

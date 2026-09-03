@@ -1,5 +1,5 @@
 /**
- * Keine Formel. Neubau-Standardvorlage des Offerttexts (Spec 2026-08-27 §5).
+ * Keine Formel. Neubau-Standardvorlage des Offerttexts.
  *
  * Inhaltlich abgeleitet aus der realen Primus-Vermarktungsofferte
  * (bachelorarbeit/assets/Offerte Beispiel.docx), umgebaut von Umnutzung/Mieterverkauf
@@ -82,7 +82,7 @@ export function standardVorlage(): OffertDokument {
         'Briefing des Notars und Koordination der öffentlichen Beurkundungen',
       ),
       h2('Honorar'),
-      // Prozentsatz UND Frankenbetrag nebeneinander (Nachtrag Spec 2026-08-29): Der
+      // Prozentsatz UND Frankenbetrag nebeneinander: Der
       // gerundete Prozentsatz allein liesse sich vom Eigentuemer nicht verlustfrei auf
       // den massgebenden Betrag zurueckrechnen. Klammerform statt Nebensatz, damit der
       // Satz auch dann aufgeht, wenn `honorar` mangels Verkaufssumme «–» ist — der

@@ -1,8 +1,7 @@
 'use client';
 
-// `verarbeiteBerechnungsAntwort` ist bewusst als reine Funktion von `verwendeBerechnung`
-// getrennt: kein jsdom/Hook-Testbibliothek im Repo (`environment: 'node'`), die
-// Entscheidungslogik laesst sich so ohne DOM pruefen — analog `antwort-rumpf.ts`/`zellen-logik.ts`.
+// `verarbeiteBerechnungsAntwort` ist bewusst von `verwendeBerechnung` getrennt: reine
+// Funktion, dadurch ohne DOM testbar.
 import { useCallback, useRef, useState } from 'react';
 import type { Projekt } from '../../server/projekt-schema.js';
 import { rufeApi, type ApiErgebnis } from '../rufe-api.js';
@@ -10,11 +9,8 @@ import { baueSpeicherwarteschlange, type Speicherwarteschlange } from './verwend
 import type { Preis } from './EinheitenTabelle.js';
 
 /**
- * Antwortform von `POST /api/projekt/[id]/berechnung` (`server/projekt-lauf.ts`).
- * `unvollstaendig` und `honorarAbbruch` kommen beide mit Status 200: Ersteres bedeutet
- * fehlende Referenzobjekte/Einheiten (I-24, kein Fehler), Letzteres eine Verkaufssumme
- * ausserhalb der Staffel (E-04) — Preise/Aufwandindikator bleiben gueltig, nur die
- * Honorarrange fehlt.
+ * Antwortform von `POST /api/projekt/[id]/berechnung`. `unvollstaendig` (I-24) und
+ * `honorarAbbruch` (E-04) kommen beide mit Status 200, kein Fehler.
  */
 export interface BerechnungsAntwort {
   readonly einheiten?: readonly {
@@ -34,7 +30,7 @@ export interface BerechnungsAntwort {
     readonly positionen: readonly { readonly wohnungsnummer: string; readonly preis: number }[];
     readonly meldung: string;
   };
-  /** Fuer die Anzeige zaehlt ausschliesslich `text` (siehe `LaufFehler` in `projekt-lauf.ts`). */
+  /** Fuer die Anzeige zaehlt ausschliesslich `text`. */
   readonly fehler?: { readonly text: string };
 }
 
@@ -61,9 +57,9 @@ const OHNE_AGGREGATE: Omit<BerechnungsStand, 'laeuft'> = {
 
 /**
  * Reine Verarbeitung des Antwortrumpfs, ohne Netzwerk und ohne React-Zustand. Vier
- * Faelle: Erfolg, `unvollstaendig` (I-24, kein Fehler), `honorarAbbruch` (E-04, kein
- * Fehler), fehlgeschlagene Antwort. `einheiten` liefert die Zuordnung Wohnungsnummer ->
- * Einheitenkennung, die das E-04-Teilergebnis selbst nicht mitbringt.
+ * Faelle: Erfolg, `unvollstaendig` (I-24), `honorarAbbruch` (E-04), fehlgeschlagene
+ * Antwort. `einheiten` liefert die Zuordnung Wohnungsnummer -> Kennung, die das
+ * E-04-Teilergebnis selbst nicht mitbringt.
  */
 export function verarbeiteBerechnungsAntwort(
   antwort: ApiErgebnis<BerechnungsAntwort>,
@@ -87,10 +83,9 @@ export function verarbeiteBerechnungsAntwort(
   }
 
   if (rumpf.honorarAbbruch !== undefined) {
-    // E-04: Preise bleiben gueltig und muessen sichtbar bleiben (Spec §5). Route fuehrt
-    // sie nach Wohnungsnummer statt Kennung (Offert-Schema kennt nur die Nummer); der
-    // Client stellt den Bezug her. `basispreis` bleibt weg, da das Teilergebnis keinen
-    // fuehrt (Spalte zeigt «—»).
+    // E-04: Preise bleiben gueltig und sichtbar. Route fuehrt sie nach Wohnungsnummer
+    // statt Kennung (Offert-Schema kennt nur die Nummer); der Client stellt den Bezug
+    // her. `basispreis` bleibt weg, da das Teilergebnis keinen fuehrt (Spalte zeigt «—»).
     const nachNummer = new Map(einheiten.map((e) => [e.wohnungsnummer, e.id]));
     const teilpreise: Record<string, Preis> = {};
     for (const position of rumpf.honorarAbbruch.positionen) {
@@ -122,10 +117,10 @@ export function verarbeiteBerechnungsAntwort(
 }
 
 /**
- * Haelt den Berechnungsstand ueber eine eigene Speicherwarteschlange (wie in
- * `verwende-projekt.ts`): hoechstens ein Versuch gleichzeitig, eine langsame aeltere
- * Antwort darf eine schnellere neuere nicht ueberschreiben. Eigener Zustand, da Speichern
- * und Berechnen unabhaengige Netzwerkvorgaenge sind.
+ * Haelt den Berechnungsstand ueber eine eigene Speicherwarteschlange: hoechstens ein
+ * Versuch gleichzeitig, eine langsame aeltere Antwort darf eine schnellere neuere nicht
+ * ueberschreiben. Eigener Zustand, da Speichern und Berechnen unabhaengige
+ * Netzwerkvorgaenge sind.
  */
 export function verwendeBerechnung(): {
   readonly stand: BerechnungsStand;

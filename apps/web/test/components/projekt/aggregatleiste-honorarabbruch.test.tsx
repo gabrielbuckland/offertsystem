@@ -1,17 +1,14 @@
 /**
- * Regressionstest fuer den Task-9/10-Review-Fund: Bei einem Honorarabbruch (E-04) darf
- * nur die Honorarrange fehlen — Verkaufssumme und Aufwandindikator D bleiben gueltig und
- * MUESSEN in der Aggregatleiste sichtbar bleiben, waehrend die Offert-Schaltflaeche
- * gesperrt bleibt (kein Artefakt, Route antwortet 422, I-24).
+ * Bei einem Honorarabbruch (E-04) darf nur die Honorarrange fehlen — Verkaufssumme und
+ * Aufwandindikator D bleiben gueltig und MUESSEN in der Aggregatleiste sichtbar bleiben,
+ * waehrend die Offert-Schaltflaeche gesperrt bleibt (kein Artefakt, Route antwortet 422,
+ * I-24).
  *
- * `ProjektAnsicht.tsx` selbst laesst sich mangels jsdom/Hook-Testbibliothek nicht rendern
- * (siehe `ProjektAnsicht.test.ts`, das deshalb nur den Quelltext per Regex prueft). Dieser
- * Test geht stattdessen ueber den ECHTEN Produktionspfad: `verarbeiteBerechnungsAntwort`
- * (derselbe Code wie in `verwende-berechnung.ts`) liefert den Stand aus einer echten
- * Honorarabbruch-Antwort, die zwei Anzeige-Fallback-Zeilen aus `ProjektAnsicht.tsx` werden
- * hier woertlich nachvollzogen und erst DANN an die echte `Aggregatleiste`-Komponente
- * gereicht — genau die Verdrahtung, die beim isolierten `Aggregatleiste.test.tsx` (Props
- * direkt hineingereicht) durchrutschte.
+ * `ProjektAnsicht.tsx` selbst laesst sich mangels jsdom/Hook-Testbibliothek nicht rendern.
+ * Dieser Test geht stattdessen ueber den ECHTEN Produktionspfad: `verarbeiteBerechnungsAntwort`
+ * liefert den Stand aus einer echten Honorarabbruch-Antwort, die zwei Anzeige-Fallback-
+ * Zeilen werden hier woertlich nachvollzogen und erst DANN an die echte `Aggregatleiste`-
+ * Komponente gereicht — nicht nur mit direkt hineingereichten Props isoliert getestet.
  */
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
@@ -40,14 +37,14 @@ describe('Aggregatleiste bei Honorarabbruch — ueber den echten Verarbeitungspf
       },
     };
 
-    // Echter Produktionscode (Task 9), keine Handkonstruktion des Stands.
+    // Echter Produktionscode, keine Handkonstruktion des Stands.
     const { stand } = verarbeiteBerechnungsAntwort(antwort, EINHEITEN);
     expect(stand.honorarMin).toBeUndefined();
     expect(stand.honorarMax).toBeUndefined();
 
-    // Woertliche Nachbildung der beiden Fallback-Zeilen aus ProjektAnsicht.tsx (oben per
-    // Quelltext-Check gegen Drift abgesichert) — `herleitung`/`aufwandindikator` bleiben
-    // hier `undefined`, weil ein Honorarabbruch keine Herleitung mitfuehrt.
+    // Woertliche Nachbildung der beiden Fallback-Zeilen aus ProjektAnsicht.tsx —
+    // `herleitung`/`aufwandindikator` bleiben hier `undefined`, weil ein Honorarabbruch
+    // keine Herleitung mitfuehrt.
     const aufwandindikator: number | undefined = undefined;
     const verkaufssummeAnzeige = stand.honorarAbbruch?.verkaufssumme ?? stand.verkaufssumme;
     const aufwandindikatorAnzeige = stand.honorarAbbruch?.aufwandindikator ?? aufwandindikator;

@@ -1,5 +1,5 @@
-// g: [0,1] -> [g_min, g_max], monoton steigend, mit 0 < g_min <= 1 <= g_max (Brief §4,
-// I-15, I-16). Teil von eq:honorar_mapping. g(D) wirkt als gemeinsamer Faktor auf H_min
+// g: [0,1] -> [g_min, g_max], monoton steigend, mit 0 < g_min <= 1 <= g_max
+// (I-15, I-16). Teil von eq:honorar_mapping. g(D) wirkt als gemeinsamer Faktor auf H_min
 // und H_max, wodurch die relative Range-Breite erhalten bleibt (I-17).
 import type { Skalierungsparameter } from '../config/typen.js';
 

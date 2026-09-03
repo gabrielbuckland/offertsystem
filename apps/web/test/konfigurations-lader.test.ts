@@ -155,12 +155,8 @@ describe('ladeKonfiguration', () => {
     expect(ergebnis.fehler[0]?.code).toBe('CFG_MERGE_LOCKED_PATH');
   });
 
-  /**
-   * NEGATIVNACHWEIS — traegt die Zusage des Berichts (§ 6.6, A3 US-08). Seit die
-   * Sperrliste auf meta/api geschrumpft ist, KANN eine projektbezogene Anpassung eine
-   * Invariante verletzen. Dass sie dann zurueckgewiesen und nicht gerechnet wird, ist
-   * genau hier belegt.
-   */
+  // US-08: Eine projektbezogene Anpassung, die eine Invariante verletzt, wird
+  // zurueckgewiesen statt gerechnet.
   it('weist eine invariantenverletzende Uebersteuerung zurueck statt zu rechnen', () => {
     const ergebnis = ladeKonfiguration({
       pfad: STANDARD,
@@ -173,14 +169,9 @@ describe('ladeKonfiguration', () => {
     expect(Object.hasOwn(ergebnis, 'konfiguration')).toBe(false);
   });
 
-  // HINWEIS (Korrektur zum Brief, siehe Bericht): Ueberschreibungen ersetzen Arrays
-  // VOLLSTAENDIG (merge.ts, Kommentar bei `verschmelzeTeilbaum`) statt sie elementweise
-  // zusammenzufuehren. Eine auf zwei Punkte verkuerzte Stuetzstellenreihe verletzt die
-  // Stufendegression (eq:degression_stufe) rechnerisch NICHT, weil die Pruefung an der
-  // ersten Stuetzstelle (v=0) beginnt und dort der Sonderfall greift. Der Nachweis
-  // braucht daher die volle Reihe der Standardkonfiguration mit einer einzelnen
-  // gekippten Randkurve — analog zur Fixture
-  // `packages/core/test/fixtures/config-invalid/degression-stufe-verletzt.json`.
+  // Ueberschreibungen ersetzen Arrays vollstaendig statt sie elementweise
+  // zusammenzufuehren, deshalb braucht der Nachweis die volle Stuetzstellenreihe der
+  // Standardkonfiguration mit einer einzelnen gekippten Randkurve.
   it('weist eine degressionsverletzende Stuetzstellenreihe zurueck', () => {
     const ergebnis = ladeKonfiguration({
       pfad: STANDARD,
@@ -206,10 +197,8 @@ describe('ladeKonfiguration', () => {
   });
 
   it('weist ein null auf einen ganzen Teilbaum in der Nachvalidierung zurueck (W-7)', () => {
-    // Gegenstueck zum Merge-Test «ersetzt einen Teilbaum durch null»: Der Merge laesst
-    // das durch (Skalare ersetzen den Teilbaum als Ganzes), erst die erneute Pruefung der
-    // ZUSAMMENGEFUEHRTEN Basis faengt es ab. Genau diese Arbeitsteilung traegt seit der
-    // geschrumpften Sperrliste die Invariantengarantie.
+    // Der Merge laesst ein null auf einen Teilbaum durch (Skalare ersetzen den Teilbaum
+    // als Ganzes); erst die erneute Pruefung der zusammengefuehrten Basis faengt es ab.
     const ergebnis = ladeKonfiguration({ pfad: STANDARD, ueberschreibungen: { honorar: null } });
     expect(ergebnis.ok).toBe(false);
     if (ergebnis.ok) return;
@@ -220,8 +209,6 @@ describe('ladeKonfiguration', () => {
   it('legt projektbezogene Dossier-Voreinstellungen unter die Dossier-Parameter (W-3)', () => {
     // Die Projektebene setzt `zustandsbewertungen.kitchen`, fuehrt daneben aber eigene
     // `dossierParameter` fuer einen Wohnungstyp (ein anderes Feld, `qualitaetsbewertungen`).
-    // Vor der Korrektur setzte die Zusammenfuehrung dort auf der ungemergten Firmenbasis auf
-    // und verschluckte die Voreinstellung lautlos.
     const ergebnis = ladeKonfiguration({
       pfad: STANDARD,
       ueberschreibungen: {

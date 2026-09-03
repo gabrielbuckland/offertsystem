@@ -43,7 +43,7 @@ afterAll(() => {
       laufzeitMs: Date.now() - beginn,
       // Contract-Tests melden eine Vertragsabweichung, sie verhindern sie nicht.
       wirkung: 'detektiv',
-      // Solange Aufgabe 18 blockiert ist, gibt es keine aufgezeichneten Fixtures (G-2).
+      // Es gibt bislang keine aufgezeichneten Fixtures unter fixtures/pricehubble/recorded.
       fixtures_herkunft: 'synthetisch',
     },
   );

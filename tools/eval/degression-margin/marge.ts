@@ -1,6 +1,6 @@
 /**
  * Auswertung von eq:netto_degression ueber ein Gitter — analytisch, ohne
- * Pipeline-Durchlauf (Spec 06 §7.2).
+ * Pipeline-Durchlauf.
  *
  * Zwei Projekte unterscheiden sich ausschliesslich in der Einheitenzahl bei gleichem
  * mittlerem Einheitenpreis, also lambda = V2/V1 = m2/m1 > 1. Die Bedingung
@@ -85,11 +85,11 @@ export interface Konstellation {
 }
 
 /**
- * Vergleichsschwelle fuer den zweiten Kennwert. Spec 02 §5.8.4 leitet die Reserve am
- * Grenzfall grosser Projektspruenge her (lambda = 9); ueber das feine Gitter liegt das
- * Minimum dagegen bei lambda knapp ueber 1, wo Degressionsgewinn und Aufwandzuschlag
- * beide fast null sind. Beide Kennwerte werden ausgewiesen, damit der Vergleich mit der
- * Herleitung moeglich bleibt, ohne die eigentliche Messung zu beschoenigen.
+ * Vergleichsschwelle fuer den zweiten Kennwert: Die Reserve wird am Grenzfall grosser
+ * Projektspruenge hergeleitet (lambda = 9); ueber das feine Gitter liegt das Minimum
+ * dagegen bei lambda knapp ueber 1, wo Degressionsgewinn und Aufwandzuschlag beide fast
+ * null sind. Beide Kennwerte werden ausgewiesen, damit der Vergleich mit der Herleitung
+ * moeglich bleibt, ohne die eigentliche Messung zu beschoenigen.
  */
 export const LAMBDA_SCHWELLE_GROSS = 3;
 

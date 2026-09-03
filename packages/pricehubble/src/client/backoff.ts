@@ -1,7 +1,7 @@
 /**
- * Keine Formel. Exponentieller Backoff mit Full Jitter (Spec 04 §6.2).
+ * Keine Formel. Exponentieller Backoff mit Full Jitter.
  * Saemtliche Parameter stammen aus `config.api.retry.*` — im Code steht keine
- * Zahlenkonstante (E-13, G-4).
+ * Zahlenkonstante (E-13).
  */
 import type { RetryKonfiguration } from '../config/api-konfiguration.js';
 import type { Zufallsquelle } from './zufall.js';

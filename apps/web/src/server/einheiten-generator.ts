@@ -5,8 +5,8 @@
  *
  * Die Kennung (`id`) wird UNABHAENGIG von der Wohnungsnummer vergeben: Die Wohnungsnummer
  * ist ein editierbares Anzeigefeld, die Kennung dagegen der Schluessel, unter dem
- * Basispreis und Anpassungen gefuehrt werden (projektion.ts, berechnung/route.ts). Waere
- * die Kennung aus der Nummer abgeleitet, koennten zwei Einheiten nach Umbenennung/
+ * Basispreis und Anpassungen gefuehrt werden. Waere die Kennung aus der Nummer
+ * abgeleitet, koennten zwei Einheiten nach Umbenennung/
  * Neuvergabe derselben Nummer dieselbe Kennung erhalten — mit stiller Preisverwechslung,
  * weil `projektSchema` nur auf die Wohnungsnummer prueft. Der Zaehler liest deshalb die
  * hoechste bereits vergebene KENNUNG, nicht die Wohnungsnummer.

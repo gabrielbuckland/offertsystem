@@ -1,5 +1,5 @@
 /**
- * Keine Formel. Benutzerverstaendliche Meldungen (NFA-11, Spec 04 §6.5.1).
+ * Keine Formel. Benutzerverstaendliche Meldungen (NFA-11).
  *
  * Sie entstehen im ACL — das ist die in E-03 benannte Ausnahme von der Regel, dass
  * Fehlertexte nicht im Kern entstehen: Es geht um Meldungen eines Fremddienstes, die

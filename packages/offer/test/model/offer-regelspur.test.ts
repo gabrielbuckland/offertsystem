@@ -26,7 +26,7 @@ describe('adjustmentSchema — Regelspur', () => {
 
   // regel und uebersteuert sind unabhaengig optional: Fehlt das Merkmal der Regel an
   // der Einheit, gibt es keinen auswertbaren Regelwert, aber die erfasste Uebersteuerung
-  // gilt trotzdem (Task 5, wirksamer-wert.ts). Eines impliziert das andere nicht.
+  // gilt trotzdem (siehe wirksamer-wert.ts in apps/web). Eines impliziert das andere nicht.
   it('nimmt eine Uebersteuerung OHNE Regelspur an', () => {
     expect(adjustmentSchema.safeParse({ ...BASIS, uebersteuert: true }).success).toBe(true);
   });

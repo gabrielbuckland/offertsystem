@@ -1,5 +1,5 @@
 /**
- * Keine Formel. Datenvertrag der Offerte in fuenf Bereichen (Spec 05 §1.2).
+ * Keine Formel. Datenvertrag der Offerte in fuenf Bereichen.
  *
  * Rundungsordnung (E-09): R1 `referenceValuation.marktwert`, R2 `unitPrice`,
  * R3 `feeRange.min/max` und `gewaehltesHonorar` sind ganzzahlig. `pricePerSqm`, `basePrice`,
@@ -20,7 +20,7 @@ const rappenGenau = z.number().finite();               // ungerundeter Zwischenw
 const quadratmeter = z.number().finite().positive();
 
 /**
- * Erster Bereich der Offerte: Kennung des erzeugenden Projekts (Spec 05 §8).
+ * Erster Bereich der Offerte: Kennung des erzeugenden Projekts.
  * `projektId` ist keine Dublette von `offertId` — ein Projekt kann mehrere Offerten
  * hervorbringen. Kundenname/Kontakt bewusst nicht Teil des Prototyps: Er berechnet
  * den Kalkulationsteil und adressiert keinen Empfaenger.
@@ -50,7 +50,7 @@ export const adjustmentSchema = z.object({
   enteredAs: z.enum(['factor', 'amount']),
   enteredAmount: rappen.optional(),
   justification: z.string().min(1),                    // Pflichtfeld, US-04, I-09
-  vorlageId: z.string().min(1).optional(),             // dokumentarisch, Spec 02 §3.4.1
+  vorlageId: z.string().min(1).optional(),             // rein dokumentarisch
   /** Nachweis der Regel, aus der der Wert stammt; rein dokumentarisch, erscheint
    *  bewusst NICHT im gerenderten Dokument (geht an den Eigentuemer, nicht an den
    *  Vermarkter). */
@@ -152,7 +152,7 @@ export const aggregateValuesSchema = z.object({
     'local-calculation',
   ),
   /**
-   * Der EINE Honorarbetrag, den die Offerte dem Eigentuemer nennt (Spec 2026-08-29).
+   * Der EINE Honorarbetrag, den die Offerte dem Eigentuemer nennt.
    * `feeRange` bleibt daneben bestehen — sie ist die interne Empfehlung, keine dem
    * Eigentuemer zu zeigende Zahl. Herkunft `marketer-decision`, nicht
    * `local-calculation`: Der Betrag ist eine Eingabe des Vermarkters, keine Ableitung.
@@ -172,20 +172,19 @@ export const offerMetadataSchema = z.object({
     konfidenzklasse: z.enum(['poor', 'medium', 'good']),
   }).strict()).min(1),
   /** Eingebettete Kopie der Konfiguration, kein Verweis — sonst verfehlt US-10/US-13
-   *  beim naechsten Konfigwechsel. Kurzausweis heisst bei P1 `KonfigurationsFingerabdruck`
-   *  (PE-04). */
+   *  beim naechsten Konfigwechsel. Kurzausweis heisst bei P1 `KonfigurationsFingerabdruck` (PE-04). */
   konfigurationsAbdruck: z.record(z.unknown()),
   konfigVersion: z.string().min(1),
   /** SHA-256 der kanonisch serialisierten Konfiguration, eigenes Feld (E-26, PE-04). */
   konfigPruefsumme: z.string().regex(/^[0-9a-f]{64}$/),
   /** Ergebnis von `serialisiereEingang(EingangsArgumente)` aus @offert/core (PE-08),
-   *  nicht die Formulardaten. Basis des Reproduktionstests (Spec 06 §9);
-   *  `deserialisiereEingang` fuehrt sie zurueck. */
+   *  nicht die Formulardaten. Basis des Reproduktionstests; `deserialisiereEingang`
+   *  fuehrt sie zurueck. */
   berechnungsEingabe: z.record(z.unknown()),
 }).strict();
 
 /**
- * Kundengerichteter Offerttext (Spec 2026-08-27 §1): Ergebnis der Platzhalter-Aufloesung,
+ * Kundengerichteter Offerttext: Ergebnis der Platzhalter-Aufloesung,
  * NIE die Vorlage — selbsttragend, unabhaengig vom Vorlagenstand (US-13). Optional, damit
  * Altartefakte gueltig bleiben (I-24). `auftraggeber` steht hier statt im Offert-Kern,
  * da Empfaengerangabe des Dokuments, keine Rechengroesse.

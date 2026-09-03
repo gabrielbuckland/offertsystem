@@ -60,11 +60,10 @@ describe('Standardkonfiguration', () => {
     expect(faktor?.quelle).toBe('abgeleitet');
   });
 
-  // Seit Konfigversion 1.1.0 fuehren die Firmen-Defaults keinen manuellen Faktor mehr
-  // (config/README.md): D leitet sich vollautomatisch aus Lagescore und abgeleiteten
-  // Groessen her; die Vermarkter-Einschaetzung laeuft ueber die D-Uebersteuerung im
-  // Projekt. Dieser Test sichert genau das ab — ein wieder auftauchender manueller
-  // Faktor braeuchte auch wieder eine Erfassungsstelle (Aufwandfaktoren-Block).
+  // Die Firmen-Defaults fuehren keinen manuellen Faktor: D leitet sich vollautomatisch aus
+  // Lagescore und abgeleiteten Groessen her; die Vermarkter-Einschaetzung laeuft ueber die
+  // D-Uebersteuerung im Projekt. Ein wieder auftauchender manueller Faktor braeuchte auch
+  // wieder eine Erfassungsstelle (Aufwandfaktoren-Block).
   it('fuehrt keinen manuellen Faktor — D ist vollstaendig ableitbar', () => {
     const ergebnis = validiereKonfiguration(roh);
     expect(ergebnis.ok).toBe(true);

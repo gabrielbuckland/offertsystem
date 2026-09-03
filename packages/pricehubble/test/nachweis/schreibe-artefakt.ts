@@ -57,9 +57,9 @@ export interface Nachweisinhalt {
    */
   readonly wirkung?: 'detektiv';
   /**
-   * Nur Contract-Artefakt: Herkunft der geprueften Fixtures. Solange Aufgabe 18
-   * blockiert ist, steht hier 'synthetisch' — damit ist die Nachweisluecke aus G-2
-   * im Artefakt selbst ablesbar und nicht nur im Fliesstext behauptet.
+   * Nur Contract-Artefakt: Herkunft der geprueften Fixtures. Solange es keine
+   * aufgezeichneten Antworten gibt, steht hier 'synthetisch' — damit ist die
+   * Nachweisluecke im Artefakt selbst ablesbar und nicht nur im Fliesstext behauptet.
    */
   readonly fixtures_herkunft?: 'synthetisch' | 'aufgezeichnet' | 'gemischt';
   /** Nur Integrations-Artefakt: eine Zeile je gefahrener Fehlerkategorie. */

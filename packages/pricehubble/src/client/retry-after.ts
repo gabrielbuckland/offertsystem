@@ -1,4 +1,4 @@
-/** Keine Formel. Auswertung des `Retry-After`-Headers (Spec 04 §6.4). */
+/** Keine Formel. Auswertung des `Retry-After`-Headers. */
 import type { RetryKonfiguration } from '../config/api-konfiguration.js';
 
 export type RetryAfterEntscheid =
@@ -9,7 +9,7 @@ export type RetryAfterEntscheid =
 /**
  * `Retry-After` ist entweder eine Sekundenzahl oder ein HTTP-Datum (RFC 9110).
  * Der Header ist in der Bruno-Beispielantwort NICHT belegt; er wird deshalb als
- * optional vorhanden behandelt (Spec 04 §1.7, Nachweisluecke G-2).
+ * optional vorhanden behandelt.
  */
 export function leseRetryAfterMs(
   header: string | null | undefined,
@@ -31,9 +31,8 @@ export function leseRetryAfterMs(
 
 /**
  * Oberhalb von `api.retry.retryAfterMaxSekunden` wird nicht gewartet, sondern sofort
- * aufgegeben (Spec 04 §6.4 Punkt 2, D-6): Der Vermarkter arbeitet interaktiv, und eine
- * Blockade von Minuten waere fuer ihn von einem Haenger nicht unterscheidbar. Die
- * Abweichung von US-15 ist als Nachfuehrungsbedarf N-12 ausgewiesen.
+ * aufgegeben: Der Vermarkter arbeitet interaktiv, und eine Blockade von Minuten waere
+ * fuer ihn von einem Haenger nicht unterscheidbar. Bewusste Abweichung von US-15.
  */
 export function bewerteRetryAfter(
   header: string | null | undefined,

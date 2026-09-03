@@ -1,5 +1,5 @@
 /**
- * eq:aufwandindikator, Nebenbedingung Sigma w_d = 1 (Spec 06 §7.1).
+ * eq:aufwandindikator, Nebenbedingung Sigma w_d = 1.
  *
  * Ein strikt isoliertes Variieren eines Gewichts ist unter dieser Nebenbedingung nicht
  * moeglich. Die uebrigen Gewichte werden deshalb PROPORTIONAL zu ihrem bisherigen

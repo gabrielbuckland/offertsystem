@@ -1,4 +1,4 @@
-/** Leerzustand mit Handlungsaufforderung (Spec §3) statt einzeiliger Feststellung. */
+/** Leerzustand mit Handlungsaufforderung statt einzeiliger Feststellung. */
 export function LeererZustand({ titel, beschreibung, aktion }: {
   readonly titel: string;
   readonly beschreibung: string;

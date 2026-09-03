@@ -1,5 +1,5 @@
 /**
- * Keine Formel. Formatierung an der Darstellungsgrenze (NFA-13, Brief §5.3).
+ * Keine Formel. Formatierung an der Darstellungsgrenze (NFA-13).
  *
  * Einzige Arithmetik: Division Rappen -> Franken, keine Rechenstufe sondern
  * Einheitenumrechnung. Keine Umkehrfunktion — gespeicherte Artefakte bleiben
@@ -8,12 +8,12 @@
  * ICU liefert fuer die Tausendertrennung von `de-CH` je nach Laufzeit ein anderes
  * Zeichen (Node 22: U+2019, Chromium 151: ASCII-Apostroph U+0027) — dieselbe Funktion
  * laeuft aber serverseitig (Druck) und im Browser (Client-Komponenten), sonst driften
- * PDF und Bildschirm auseinander (NFA-13, P-06). Deshalb wird ueber `formatToParts`
+ * PDF und Bildschirm auseinander (NFA-13). Deshalb wird ueber `formatToParts`
  * gezielt das Teilstueck vom Typ `group` getauscht statt ein Zeichen im fertigen String
  * zu ersetzen — Rundung, Dezimaltrennung, Waehrung und Vorzeichen bleiben bei ICU.
  */
 
-/** Rappen -> Franken; einzige Umrechnungsstelle des Systems (Brief §5.3). */
+/** Rappen -> Franken; einzige Umrechnungsstelle des Systems. */
 function zuFranken(rappen: number): number {
   return rappen / 100;
 }
@@ -53,7 +53,7 @@ const PROZENT = new Intl.NumberFormat('de-CH', {
 });
 
 /**
- * Eigener Formatierer statt Wiederverwendung von `PROZENT` (Spec 2026-08-29): `PROZENT`
+ * Eigener Formatierer statt Wiederverwendung von `PROZENT`: `PROZENT`
  * traegt `signDisplay: 'exceptZero'` fuer Zu-/Abschlaege (immer mit Vorzeichen), das
  * Honorar ist aber nie negativ und ein erzwungenes "+" waere hier falsch. Beide teilen
  * dieselbe Nachkommastellen-Vorgabe (eine Stelle) und denselben ICU-Ausgabepfad

@@ -1,5 +1,5 @@
 /**
- * Keine Modellformel. Erweiterungsszenario Risikoindex (Spec 02 §7.1).
+ * Keine Modellformel. Erweiterungsszenario Risikoindex.
  *
  * Die Renormalisierung ist BEWUSST NICHT automatisiert: Eine automatische Normierung
  * wuerde die Summenbedingung trivial erfuellen und damit die dritte Pruefebene ihres
@@ -57,7 +57,7 @@ export function erweitereUmRisikoindex(basisRoh: unknown): unknown {
   return roh;
 }
 
-/** Gegenprobe: Aufnahme OHNE Renormalisierung, Sigma w = 1.10 (Spec 02 §7.3). */
+/** Gegenprobe: Aufnahme OHNE Renormalisierung, Sigma w = 1.10. */
 export function verletzendeVariante(basisRoh: unknown): unknown {
   const roh = klone(basisRoh) as RohFaktoren;
   roh.aufwandfaktoren['risikoindex'] = { ...RISIKOINDEX };

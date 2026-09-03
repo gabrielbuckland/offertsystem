@@ -31,12 +31,12 @@ export function ErgebnisDarstellung({ offerte }: { offerte: Offer }) {
         </div>
       </nav>
       {offerte.dokument === undefined ? (
-        // Alt-Artefakt aus der Zeit vor dem Dokumentblock: unverändert darstellen (I-24).
+        // Fehlt `dokument` (aeltere Artefakte ohne Dokumentblock): unveraendert darstellen (I-24).
         <OfferteDokument offerte={offerte} />
       ) : (
         <>
           <VermarktungsOfferte offerte={offerte} />
-          {/* Rechenweg nur im Tool (Benutzerentscheid 2026-08-27), nicht im Dokument. */}
+          {/* Rechenweg nur im Tool, nicht im Dokument. */}
           <details className="bedienelement">
             <summary>Rechenweg (intern)</summary>
             <OfferteDokument offerte={offerte} />

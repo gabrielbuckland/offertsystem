@@ -1,5 +1,5 @@
-// Keine Formel. Laufzeit-Fehlercodes der Stufen (Spec 03 §8). Die Ladezeitvariante
-// desselben Sachverhalts traegt einen CFG_*-Code aus Spec 02 (E-16).
+// Keine Formel. Laufzeit-Fehlercodes der Stufen. Die Ladezeitvariante
+// desselben Sachverhalts traegt einen CFG_*-Code (E-16).
 export type BerechnungsFehlerCode =
   | 'NORM_GRENZEN_IDENTISCH' // S-01, Laufzeit-Vorbedingung
   | 'FAKTOR_FEHLT' // S-02

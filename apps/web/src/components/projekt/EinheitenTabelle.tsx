@@ -1,7 +1,7 @@
 'use client';
 
-// Zentraler Block der Detailseite (Design-Spec §1, §4): eine Zeile je Einheit, editierbar
-// an Ort und Stelle, mit dem berechneten Preis sichtbar neben den Eingaben.
+// Zentraler Block der Detailseite: eine Zeile je Einheit, editierbar an Ort und Stelle,
+// mit dem berechneten Preis sichtbar neben den Eingaben.
 import {
   createColumnHelper, flexRender, getCoreRowModel, useReactTable,
 } from '@tanstack/react-table';

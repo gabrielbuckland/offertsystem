@@ -32,7 +32,7 @@ export function naechsteId(vorhandene: readonly Referenzobjekt[]): string {
 // `ProjektEinheit`). `baujahr` kommt vom Projekt, nicht aus einem eigenen Dialogfeld: bei
 // einem Neubauprojekt hat jede Wohnung dasselbe Baujahr. `zustandsbewertungen`/
 // `qualitaetsbewertungen` kommen aus den firmenweiten Dossier-Voreinstellungen, aus
-// demselben Grund (Rueckmeldung Auftraggeber). Energielabel, Badezimmer, Lift, Heizungsart
+// demselben Grund. Energielabel, Badezimmer, Lift, Heizungsart
 // bleiben bei ihren Platzhaltern: PriceHubble fuehrt sie nicht als Pflichtfelder.
 export function neuesReferenzobjekt(
   zimmerzahl: number,

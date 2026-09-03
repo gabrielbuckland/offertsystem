@@ -7,7 +7,6 @@ import { standardKonfiguration } from '../bau/offerte-bauer.js';
 
 type Teilparameter = Partial<FaktorParameter> & Pick<FaktorParameter, 'quelle'>;
 
-/** Baut eine Konfiguration mit genau der uebergebenen Faktormenge. */
 function konfigMit(faktoren: Readonly<Record<string, Teilparameter>>): Konfiguration {
   const basis = standardKonfiguration();
   const menge: Faktormenge = new Map(
@@ -45,7 +44,6 @@ describe('Genau n Felder aus n manuellen Faktoren', () => {
   });
 
   it('liefert dieselbe Struktur mit n+1 Faktoren ohne Teste-Aenderung', () => {
-    // Der Vorabnachweis, der die Null-Dateien-Messung in 6.3 erst aussagekraeftig macht.
     const basis = baueFaktorformular(konfigMitManuellen(3)).felder;
     const erweitert = baueFaktorformular(konfigMitManuellen(4)).felder;
     expect(basis).toHaveLength(3);

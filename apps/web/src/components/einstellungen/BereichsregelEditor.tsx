@@ -2,11 +2,10 @@
 
 // Bearbeitet die Staffel einer Anpassungsvorlage. Gezeigt/erfasst wird die Einheit, in der
 // ein Mensch denkt (Prozent bei 'relativ', Franken bei 'absolut'), abgelegt die des Kerns
-// (Faktor bzw. Rappen) — Skalen nicht mischen, das hat schon einmal den Faktor-100-Fehler
-// verursacht. Restfall (letzte Zeile) traegt bewusst KEINE Schwelleneingabe: er ist das, was
-// die Auswertung total macht, und darf nicht wegkonfiguriert werden. Typen kommen aus
-// `@offert/core`, nicht aus `server/projekt-schema.js`: dieser Editor bearbeitet die
-// firmenweite Konfiguration, nicht ein Projektartefakt.
+// (Faktor bzw. Rappen) — Skalen nicht mischen. Restfall (letzte Zeile) traegt bewusst KEINE
+// Schwelleneingabe: er ist das, was die Auswertung total macht, und darf nicht
+// wegkonfiguriert werden. Typen kommen aus `@offert/core`, nicht aus dem Projektschema:
+// dieser Editor bearbeitet die firmenweite Konfiguration, nicht ein Projektartefakt.
 import { Trash2 } from 'lucide-react';
 import { pruefeBereiche, type Bereichsregel, type Merkmal } from '@offert/core';
 import { Button } from '../ui/button.js';

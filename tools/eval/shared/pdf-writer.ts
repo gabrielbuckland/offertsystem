@@ -1,8 +1,8 @@
 /**
  * Keine Modellformel. Minimaler Vektor-PDF-Schreiber fuer das Tornado-Diagramm.
  *
- * Warum kein Diagrammpaket: Spec 06 §7.4 verlangt eine Vektorgrafik ohne externe
- * Abhaengigkeiten zur Laufzeit des Berichts. Ein Tornado-Diagramm besteht aus gefuellten
+ * Warum kein Diagrammpaket: Der Bericht verlangt eine Vektorgrafik ohne externe
+ * Abhaengigkeiten zur Laufzeit. Ein Tornado-Diagramm besteht aus gefuellten
  * Rechtecken, Linien und Text; eine Bibliothek braechte einen Rendering-Pfad mit, der im
  * Bericht nicht nachvollziehbar waere.
  *

@@ -1,8 +1,3 @@
-/**
- * ABWEICHUNG VOM PLAN, bewusst: Die erwarteten Dateinamen folgen dem hiesigen Fixture
- * (Muster Immobilien AG, Musterstrasse) statt dem im Plan notierten Beispiel
- * (Meier, Baumgartenweg). Geprueft wird die Bildungsregel, nicht ein Literal.
- */
 import { readFileSync } from 'node:fs';
 import { mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -12,8 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 /**
  * `node:fs/promises` ist ein Modulnamensraum; seine Exporte sind nicht neu belegbar,
  * `vi.spyOn` scheitert daran. Statt dessen wird das Modul ersetzt und `rename` ueber
- * eine Schalterfunktion einmalig zum Scheitern gebracht — die Zusage «kein halb
- * geschriebenes Artefakt» ist nur mit einem echten Fehlschlag pruefbar.
+ * eine Schalterfunktion einmalig zum Scheitern gebracht.
  */
 const renameBricht = { einmal: false };
 vi.mock('node:fs/promises', async () => {

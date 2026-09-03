@@ -5,8 +5,8 @@ import { standardHandler } from './handlers.js';
 export const mswServer = setupServer(...standardHandler);
 
 /**
- * `onUnhandledRequest: 'error'` ist der Netzwerk-Interceptor aus Spec 06 §6.2:
- * Jeder nicht abgedeckte ausgehende Request wird zum Testfehler. Damit ist
+ * `onUnhandledRequest: 'error'` ist der Netzwerk-Interceptor: Jeder nicht
+ * abgedeckte ausgehende Request wird zum Testfehler. Damit ist
  * Entkopplungskriterium (a) maschinell belegt statt zugesichert.
  */
 beforeAll(() => mswServer.listen({ onUnhandledRequest: 'error' }));

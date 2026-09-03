@@ -46,13 +46,9 @@ describe('erzeugeLaufmetadaten (E-29)', () => {
 
 describe('Genau eine Pruefsummenbildung (PE-04)', () => {
   it('bildet keine zweite Pruefsumme neben dem Lader', () => {
-    // Der eigentliche Regressionsschutz: Er schlaegt fehl, sobald irgendwo eine zweite
-    // Hash-Bildung entsteht — auch in einem Jahr, wenn niemand mehr weiss, warum das ein
-    // Problem war.
-    // ABWEICHUNG VOM PLAN, bewusst: Der Plan durchsucht `packages` vollstaendig. Damit
-    // faellt `packages/core/test/helper/referenz.ts` mit hinein — dort sichert eine
-    // SHA-256-Summe die Unversehrtheit der Referenz-CSV, ein anderer Zweck und keine
-    // zweite Konfigurationspruefsumme. Gesucht wird deshalb im Produktivcode.
+    // Schlaegt fehl, sobald irgendwo eine zweite Hash-Bildung entsteht. Gesucht wird im
+    // Produktivcode: `packages/core/test/helper/referenz.ts` sichert mit SHA-256 nur die
+    // Unversehrtheit der Referenz-CSV, kein zweiter Konfigurationspruefsummen-Pfad.
     const treffer = execSync('grep -rln "createHash" apps/web/src packages/*/src || true',
       { encoding: 'utf8', cwd: WURZEL }).trim().split('\n').filter((z) => z !== '');
     expect(treffer).toEqual(['apps/web/src/server/kanonisch.ts']);

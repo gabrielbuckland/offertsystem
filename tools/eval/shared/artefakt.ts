@@ -1,13 +1,12 @@
 /**
  * Keine Modellformel. Laufkopf, Artefaktschreiber und Zeiger der Evaluationswerkzeuge.
  *
- * Jedes Artefakt traegt einen Laufkopf mit acht Pflichtfeldern; ohne ihn bricht der
- * Anhanggenerator ab. Der Kopf macht jede Zahl im Bericht auf Commit, Konfigurationsdatei
- * und Pruefsumme zurueckfuehrbar — sonst waere ein Artefakt nur eine Behauptung.
+ * Jedes Artefakt traegt einen Laufkopf mit acht Pflichtfeldern: Er macht jede Zahl im
+ * Bericht auf Commit, Konfigurationsdatei und Pruefsumme zurueckfuehrbar — sonst waere
+ * ein Artefakt nur eine Behauptung.
  *
- * `latest.json` ist bewusst eine Datei und kein Symlink: Der Anhanggenerator liest
- * ausschliesslich ueber ihn, damit die Laufauswahl nicht implizit ueber
- * Verzeichnissortierung geschieht.
+ * `latest.json` ist bewusst eine Datei und kein Symlink, damit die Laufauswahl nicht
+ * implizit ueber Verzeichnissortierung geschieht.
  */
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -67,7 +66,7 @@ export function schreibeArtefakt(
   dateien: Readonly<Record<string, string>>,
   aktualisiereZeiger = true,
 ): string {
-  // `tests` liegt NICHT unter eval/ (Spec 06 §8): dort nur Ausgaben der Evaluationswerkzeuge.
+  // `tests` liegt NICHT unter eval/: dort nur Ausgaben der Evaluationswerkzeuge.
   const ablage = kopf.instrument === 'tests'
     ? join(wurzel, 'artifacts', 'tests')
     : join(wurzel, 'artifacts', 'eval', kopf.instrument);

@@ -38,10 +38,8 @@ describe('erzeugeEinheiten', () => {
 
   it('vergibt eindeutige Ids, auch wenn eine Einheit geloescht und eine andere '
     + 'umbenannt wurde', () => {
-    // Nutzer loescht die erste Einheit und benennt die verbleibende zweite um (Task 11,
-    // editierbare Wohnungsnummer). Deren Kennung bleibt unveraendert, ihre Nummer ist nun
-    // frei fuer die naechste Generierung — genau dieser Fall liess die alte, aus der
-    // Nummer abgeleitete Kennung mit der neu erzeugten Einheit kollidieren.
+    // Die erste Einheit wird geloescht, die verbleibende zweite umbenannt: ihre Kennung
+    // bleibt unveraendert, ihre Nummer wird frei fuer die naechste Generierung.
     const erste = erzeugeEinheiten([{ referenzobjektId: 'R-1', anzahl: 2 }], REFS, [], OHNE_SPALTEN);
     const uebrig = [{ ...erste[1]!, wohnungsnummer: 'PH' }];
     const weitere = erzeugeEinheiten([{ referenzobjektId: 'R-1', anzahl: 1 }], REFS, uebrig, OHNE_SPALTEN);
@@ -50,11 +48,6 @@ describe('erzeugeEinheiten', () => {
   });
 });
 
-/**
- * Der Vorgabewert einer Spalte war ein Bedienelement ohne Wirkung: Er wurde erfasst und
- * gespeichert, aber von niemandem gelesen — weder von `projektion.ts` noch beim Anlegen
- * einer Einheit. Diese Suite haelt fest, dass er jetzt in neue Einheiten uebernommen wird.
- */
 describe('erzeugeEinheiten — Vorgabewerte der Spalten', () => {
   const spalte = (id: string, vorgabewert: number, erfassungsform: AnpassungsSpalte['erfassungsform'] = 'relativ'): AnpassungsSpalte => ({
     id, bezeichnung: `Spalte ${id}`, erfassungsform, vorgabewert,
@@ -68,8 +61,7 @@ describe('erzeugeEinheiten — Vorgabewerte der Spalten', () => {
   });
 
   it('traegt einen neutralen Vorgabewert gar nicht erst ein', () => {
-    // Eine Null im Artefakt saehe aus wie eine erfasste Entscheidung, ist aber keine;
-    // `projiziere` ueberspringt sie ohnehin.
+    // Eine Null im Artefakt saehe aus wie eine erfasste Entscheidung, ist aber keine.
     const neue = erzeugeEinheiten(
       [{ referenzobjektId: 'R-1', anzahl: 1 }], REFS, [],
       [spalte('S-1', 0), spalte('S-2', -0.08)]);

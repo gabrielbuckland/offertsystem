@@ -6,7 +6,7 @@
  * gelangt, ohne durch `tests.json` gelaufen zu sein.
  *
  * Fehlt eines der fuenf Metadatenfelder, traegt es `null` — der Anhanggenerator setzt
- * dafuer sichtbar «METADATEN FEHLEN» (Spec 06 §8.2), statt still zu schweigen.
+ * dafuer sichtbar «METADATEN FEHLEN», statt still zu schweigen.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -86,11 +86,10 @@ export function faelleAus(dateien: readonly RohDatei[], wurzel: string): readonl
 }
 
 /**
- * Nur ein Lauf mit annotierter Kernalgorithmik darf den latest-Zeiger tragen:
- * Der Anhanggenerator (a5.ts) baut den Nachweis aus dem letzten vollstaendigen
- * Lauf; Teil-Laeufe (Contract-only, Einzeldateien) wuerden ihn sonst mit einer
- * Basis ohne dokumentierte Faelle ueberschreiben und den naechsten
- * `verify`-Lauf grundlos scheitern lassen (F-077).
+ * Nur ein Lauf mit annotierter Kernalgorithmik darf den latest-Zeiger tragen: Ein
+ * Teil-Lauf (Contract-only, Einzeldateien) wuerde ihn sonst mit einer Basis ohne
+ * dokumentierte Faelle ueberschreiben und den naechsten `verify`-Lauf grundlos
+ * scheitern lassen (F-077).
  */
 export function traegtDokumentierteFaelle(faelle: readonly Testfall[]): boolean {
   return faelle.some(

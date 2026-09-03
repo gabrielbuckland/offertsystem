@@ -1,5 +1,5 @@
 /**
- * Testdokumentation fuer Anhang E (Spec 06 §8.2).
+ * Testdokumentation fuer Anhang E.
  *
  * Der Testartefakt-Reporter (tools/eval/report/vitest-reporter.ts) liest je
  * Test `task.meta` und schreibt die Felder nach `tests.json`; der Anhang-

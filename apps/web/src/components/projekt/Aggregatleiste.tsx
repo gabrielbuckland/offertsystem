@@ -20,7 +20,7 @@ export interface AggregatleisteProps {
 }
 
 // I-24: fehlendes Aggregat wird als solches ausgewiesen, nicht als Null (Null ist ein
-// gueltiger Rechenwert). Sticky Fusszeile (Design-Spec §4).
+// gueltiger Rechenwert).
 export function Aggregatleiste(
   {
     verkaufssumme, honorarMin, honorarMax, aufwandindikator, aufwandindikatorUebersteuert,

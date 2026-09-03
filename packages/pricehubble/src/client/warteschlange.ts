@@ -1,5 +1,5 @@
 /**
- * Keine Formel. Prozessweite Serialisierung je `dossierId` (Spec 04 §3.2).
+ * Keine Formel. Prozessweite Serialisierung je `dossierId`.
  *
  * Das Dossier ist eine zustandsbehaftete, gemeinsam genutzte Ressource; E3 und E4
  * bilden ein Read-Modify-Compute-Paar darauf. Zwei nebenlaeufige Typen-Durchlaeufe

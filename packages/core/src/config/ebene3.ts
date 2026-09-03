@@ -1,5 +1,5 @@
 /**
- * Ebene 3 der Konfigurationspruefung: fachliche Invarianten (Spec 02 §3.3).
+ * Ebene 3 der Konfigurationspruefung: fachliche Invarianten.
  * Ausgewertet allein gegen die Konfiguration, ohne Projektdaten (I-21).
  *
  * Formelbezug: eq:aufwandindikator (Gewichtssumme), eq:honorar_mapping
@@ -13,7 +13,7 @@ import { normalisiereBereiche, pruefeBereiche } from '../modell/bereichsregel.js
 
 /**
  * Toleranz der Summenbedingung. Bestandteil der Invariantendefinition I-12
- * (Brief §5.3) und deshalb hier dokumentiert, nicht im Testcode versteckt.
+ * und deshalb hier dokumentiert, nicht im Testcode versteckt.
  */
 export const GEWICHTSSUMME_TOLERANZ = 1e-9;
 

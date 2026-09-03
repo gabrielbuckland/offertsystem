@@ -2,16 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { JsonReiter } from '../../../src/components/einstellungen/JsonReiter.js';
 
-/**
- * Nur Darstellung ueber `renderToStaticMarkup` (gleiches Muster wie `shell.test.tsx`) —
- * das Repo hat weder `jsdom` noch `@testing-library/react` installiert, deshalb keine
- * `fireEvent`-Interaktionstests hier. Das Parse-/Serialisierungsverhalten (gueltiges
- * JSON, kaputtes JSON, Rundlauf) deckt `json-reiter-logik.test.ts` an den reinen
- * Funktionen ab, die diese Komponente verdrahtet.
- */
 describe('JsonReiter', () => {
-  // Smoke-Check: Das eigentliche Einruecken/Serialisieren (`alsText`) deckt
-  // `json-reiter-logik.test.ts` ab.
   it('zeigt den Wert im Textfeld', () => {
     const html = renderToStaticMarkup(
       <JsonReiter wert={{ flaeche: { alpha: 0.5 } }} aendere={() => {}}

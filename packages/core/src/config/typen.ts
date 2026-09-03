@@ -1,6 +1,6 @@
 // Keine Formel; traegt die Parameter von eq:flaeche (alpha), eq:normalisierung (Grenzen,
 // Strategie), eq:aufwandindikator (Gewichte) und eq:honorar_mapping (Stuetzstellen, g).
-// Die Faktormenge ist eine Abbildung, keine Aufzaehlung im Typsystem (Brief §5.4, I-13).
+// Die Faktormenge ist eine Abbildung, keine Aufzaehlung im Typsystem (I-13).
 import type { Gewicht, Rappen } from '../domain/geld.js';
 import type { FaktorId } from '../domain/ids.js';
 import type { Bereichsregel } from '../modell/bereichsregel.js';
@@ -9,7 +9,7 @@ import type { StrategieBezeichner } from '../normalization/bezeichner.js';
 export type FaktorQuelle = 'lagescore' | 'manuell' | 'abgeleitet';
 
 /**
- * Geschlossene Literal-Union ueber die implementierten Strategien (Spec 03 §7.5, S-07).
+ * Geschlossene Literal-Union ueber die implementierten Strategien (S-07).
  * Quelle ist die Bezeichner-Liste in `normalization/bezeichner.ts`; der Re-Export haelt
  * die bestehenden Importpfade stabil.
  */
@@ -63,7 +63,7 @@ export interface Skalierungsparameter {
 export interface Merkmal {
   readonly id: string;
   readonly bezeichnung: string;
-  /** Nur 'zahl': die Bereichssemantik setzt eine Ordnung voraus (Spec, Abgrenzung). */
+  /** Nur 'zahl': die Bereichssemantik setzt eine Ordnung voraus. */
   readonly form: 'zahl';
 }
 

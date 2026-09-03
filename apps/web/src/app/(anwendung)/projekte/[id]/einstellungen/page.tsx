@@ -1,7 +1,6 @@
 /**
  * Einstiegsseite der projektbezogenen Einstellungen (Ebene 2 des Zwei-Ebenen-Modells).
- * Reine Server-Komponente: holt Ebene 1 (`holeLaufzeit()`, PE-04) und Ebene 2
- * (`projekt.einstellungen`) getrennt und reicht beides durch. Zusammenfuehrung
+ * Holt Ebene 1 (PE-04) und Ebene 2 getrennt und reicht beides durch. Zusammenfuehrung
  * geschieht bewusst NICHT hier, sondern in `ProjektEinstellungen` — nur dort laesst
  * sich die effektive Konfiguration wieder in ein Delta zurueckrechnen.
  */

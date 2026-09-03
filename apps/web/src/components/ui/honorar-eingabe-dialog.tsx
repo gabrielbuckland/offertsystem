@@ -1,10 +1,10 @@
 'use client';
 
 /**
- * Eingabemodal fuer den gewaehlten Honorarbetrag vor dem Erzeugen der Offerte (Spec
- * 2026-08-29): Die Honorarrange ist ein INTERNES Instrument, der Eigentuemer sieht in
- * der Offerte einen einzigen Betrag. Natives `<dialog>` mit `showModal()` wie
- * `RechenwegDialog` — keine Dialog-Primitive/Radix im Projekt.
+ * Eingabemodal fuer den gewaehlten Honorarbetrag vor dem Erzeugen der Offerte: Die
+ * Honorarrange ist ein INTERNES Instrument, der Eigentuemer sieht in der Offerte einen
+ * einzigen Betrag. Natives `<dialog>` mit `showModal()` — keine Dialog-Primitive/Radix
+ * im Projekt.
  */
 import { useEffect, useRef, useState } from 'react';
 import { Button } from './button.js';
@@ -19,8 +19,8 @@ export interface HonorarEingabeDialogProps {
   readonly offen: boolean;
   readonly honorarMin: number;
   readonly honorarMax: number;
-  /** Bezugsgroesse der Prozentanzeige (Spec 2026-08-29); `undefined`, solange die
-   *  Berechnung (noch) keine Verkaufssumme liefert — die Anzeige faellt dann auf `–` zurueck. */
+  /** Bezugsgroesse der Prozentanzeige; `undefined`, solange die Berechnung (noch) keine
+   *  Verkaufssumme liefert — die Anzeige faellt dann auf `–` zurueck. */
   readonly verkaufssumme: number | undefined;
   readonly schliesse: () => void;
   readonly bestaetige: (gewaehltesHonorar: number) => void;
@@ -36,10 +36,9 @@ export function HonorarEingabeDialog(
     const dialog = dialogRef.current;
     if (dialog === null) return;
     if (offen && !dialog.open) {
-      // Feld startet LEER (Nachtrag Spec 2026-08-29): keine Vorbelegung mit dem
-      // Range-Mittelwert mehr — ein automatisch gesetzter Wert liefe als Entscheidung
-      // des Vermarkters durch, obwohl ihn das System gesetzt hat (Automation Bias,
-      // dieselbe Begruendung wie bei Zu-/Abschlagsvorlagen, §5.4/§6.8 der Arbeit).
+      // Feld startet LEER: keine Vorbelegung mit dem Range-Mittelwert — ein automatisch
+      // gesetzter Wert liefe als Entscheidung des Vermarkters durch, obwohl ihn das
+      // System gesetzt hat (Automation Bias).
       setzeEingabe('');
       dialog.showModal();
     }
@@ -60,7 +59,7 @@ export function HonorarEingabeDialog(
       ref={dialogRef}
       aria-label="Honorarbetrag"
       onClose={schliesse}
-      // `m-auto` gegen Tailwinds Preflight-`margin: 0` (siehe Referenzobjekte.tsx).
+      // `m-auto` gegen Tailwinds Preflight-`margin: 0`.
       className="m-auto w-[min(28rem,calc(100vw-2.5rem))] rounded-xl border border-border bg-background p-0 backdrop:bg-foreground/40"
     >
       {offen && (
@@ -96,8 +95,8 @@ export function HonorarEingabeDialog(
                 : 'Der Betrag liegt über der empfohlenen Range.'}
             </Hinweis>
           )}
-          {/* Keine stumme Deaktivierung (Nachtrag Spec 2026-08-29): der Vermarkter sieht,
-              warum «Offerte erzeugen» gesperrt ist, statt nur einen inaktiven Knopf. */}
+          {/* Keine stumme Deaktivierung: der Vermarkter sieht, warum «Offerte erzeugen»
+              gesperrt ist, statt nur einen inaktiven Knopf. */}
           {sperrgrund !== undefined && (
             <Hinweis art="info">{sperrgrund}</Hinweis>
           )}

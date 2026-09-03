@@ -12,10 +12,8 @@ describe('leseUmgebung', () => {
     expect(ergebnis.wert.companyDefaultsPfad).toMatch(/config[/\\]company-defaults\.json$/);
   });
 
-  // Regression: Die Vorgabewerte waren relativ und wurden gegen process.cwd()
-  // aufgeloest. `next dev` laeuft mit apps/web als Arbeitsverzeichnis, wodurch der
-  // Lader unter apps/web/config/ suchte und die Erfassung mit CFG_SCHEMA_TYPE
-  // abbrach. Die Vorgaben muessen deshalb arbeitsverzeichnisunabhaengig sein.
+  // `next dev` laeuft mit apps/web als Arbeitsverzeichnis; die Vorgaben muessen deshalb
+  // arbeitsverzeichnisunabhaengig sein.
   it('loest die Vorgabepfade absolut auf, unabhaengig vom Arbeitsverzeichnis', () => {
     const ergebnis = leseUmgebung({});
     expect(ergebnis.ok).toBe(true);

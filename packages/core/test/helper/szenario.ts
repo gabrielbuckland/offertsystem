@@ -1,6 +1,6 @@
 // Szenariotreiber (T2). Bewertungsdaten stammen aus der Mock-Implementierung bzw. aus
 // aufgezeichneten Antworten, nie aus einem Live-Abruf: die API kann fuer identische
-// Anfragen ueber die Zeit abweichende Werte liefern (Spec 06 §3).
+// Anfragen ueber die Zeit abweichende Werte liefern.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { berechne, type BerechnungsErgebnis } from '../../src/pipeline/berechne.js';
@@ -70,7 +70,7 @@ export function fuehreSzenarioAus(
   return {
     id, ergebnis: lauf.wert, ergebnisAusgegeben: true, referenz, ist, abweichung, bestanden,
     lagedatenHerkunft: fixture.lagedaten_herkunft,
-    // Ursachenanalyse ist Teil des Werkzeugs, nicht Handarbeit im Nachgang (Spec 06 §3).
+    // Ursachenanalyse ist Teil des Werkzeugs, nicht Handarbeit im Nachgang.
     ...(bestanden ? {} : { stufendiagnose: stufendiagnose(id, lauf.wert) }),
   };
 }

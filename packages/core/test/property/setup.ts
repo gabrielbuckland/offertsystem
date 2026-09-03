@@ -6,7 +6,7 @@
  * Prozess und erreicht die Arbeiter nicht. Ohne diese Datei liefen die Properties mit
  * fast-checks Vorgabe von 100 Laeufen und einem ZUFAELLIGEN Seed, waehrend
  * `properties.json` 1000 Laeufe mit festem Seed auswiese — ein gruener Nachweis ohne
- * Deckung, und der Seed-Mechanismus aus Spec 06 §4.2 waere wirkungslos.
+ * Deckung, und der Seed-Mechanismus waere wirkungslos.
  *
  * `globalSetup` reicht die beiden Werte ueber die Umgebung weiter; Arbeitsprozesse erben
  * sie beim Abzweigen. Denselben Weg nimmt bereits `PROPERTY_LAUF`.

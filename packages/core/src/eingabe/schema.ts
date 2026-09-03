@@ -1,5 +1,5 @@
 // Keine Formel. Typfamilie *Eingabe: permissiv, ohne Marken, aus dem Zod-Schema
-// abgeleitet. Einzige Stelle mit Plausibilitaetsgrenzen (Spec 03 §2.1, I-02).
+// abgeleitet. Einzige Stelle mit Plausibilitaetsgrenzen (I-02).
 import { z } from 'zod';
 import {
   BADEZIMMER_MAX, BADEZIMMER_MIN, EnergielabelSchema, HeizungsartSchema,

@@ -9,9 +9,8 @@
  *
  * Antwortform `befunde` (Pfad + Text) wie bei der firmenweiten Route: Die Editoren
  * verankern ihre Meldung am Feld, nicht am Formular. Dafuer laeuft die Uebersetzung ueber
- * DENSELBEN `zuBefunden`-Weg wie firmenweit (`einstellungen-ablage.ts`) — ein eigener
- * Weg hier hatte zuvor jeden Befund pauschal auf `'(konfiguration)'` verankert, und keine
- * Bereichskarte konnte ihn zeigen.
+ * denselben `zuBefunden`-Weg wie firmenweit — ein eigener Weg verankert Befunde sonst
+ * pauschal und keine Bereichskarte kann sie zeigen.
  */
 import { zuBefunden, type EinstellungsBefund } from '../../../../../server/einstellungen-ablage.js';
 import {

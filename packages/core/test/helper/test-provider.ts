@@ -1,4 +1,4 @@
-// Mock-Ebene 1 (Interface, Brief §5.6). Kein HTTP, keine Schemavalidierung.
+// Mock-Ebene 1 (Interface). Kein HTTP, keine Schemavalidierung.
 import type {
   BewertungsAnfrage, BewertungsBuendel, Lagescores, ProviderFehler,
   Referenzbewertung, ValuationProvider,

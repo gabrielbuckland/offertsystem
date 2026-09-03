@@ -1,5 +1,5 @@
 /**
- * Keine Formel. PDF-Export durch Druck DERSELBEN gerenderten Seite (Brief §5.7, I-25).
+ * Keine Formel. PDF-Export durch Druck DERSELBEN gerenderten Seite (I-25).
  *
  * Playwright druckt die Vorlage, erzeugt das Dokument nicht neu — «PDF und HTML zeigen
  * dieselben Zahlen» ist damit konstruktiv gesichert statt nachtraeglich geprueft.
@@ -12,7 +12,7 @@ import { chromium } from 'playwright';
 export interface DruckOptionen {
   readonly basisUrl: string;
   readonly offertId: string;
-  /** Fusszeile: Adresse und Erstelldatum identifizieren das Projekt (Spec 05 §2). */
+  /** Fusszeile: Adresse und Erstelldatum identifizieren das Projekt. */
   readonly adresse?: string;
   readonly erstelltAm?: string;
 }

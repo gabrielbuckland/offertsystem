@@ -1,7 +1,7 @@
 /**
- * Keine Formel. Anonymisierung nach Spec 04 §8.2 — angewendet VOR dem Schreiben, damit
- * unanonymisiertes Material zu keinem Zeitpunkt auf Platte liegt (E-31).
- * Kein Fixture enthaelt Zugangsdaten, Token oder personenbezogene Daten.
+ * Keine Formel. Anonymisierung — angewendet VOR dem Schreiben, damit unanonymisiertes
+ * Material zu keinem Zeitpunkt auf Platte liegt (E-31). Kein Fixture enthaelt
+ * Zugangsdaten, Token oder personenbezogene Daten.
  */
 export const TEST_UUID = '00000000-0000-4000-8000-000000000001';
 

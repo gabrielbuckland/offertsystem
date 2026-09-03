@@ -6,7 +6,7 @@
  * zwingend am Schluss. Diese Schreibweise kann per Konstruktion weder eine Luecke
  * noch eine Ueberlappung enthalten — eine ganze Fehlerklasse entfaellt, statt geprueft
  * zu werden. Bewusst keine Ausdruckssprache: eine Tabelle ist konfigurierbar, ein
- * Ausdruck waere Code in der Konfiguration (Kapitel 3, tab:architekturalternativen).
+ * Ausdruck waere Code in der Konfiguration.
  */
 
 export interface Bereich {

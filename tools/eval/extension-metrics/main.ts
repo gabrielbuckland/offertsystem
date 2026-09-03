@@ -1,8 +1,8 @@
 /**
- * Keine Modellformel. Erweiterbarkeitsmessung (Spec 06 §7.3, E-15, PE-16).
+ * Keine Modellformel. Erweiterbarkeitsmessung (E-15, PE-16).
  *
- * ABWEICHUNG VOM PLAN: Instrument ist `extension`, nicht `eval/extension` — der
- * Artefaktschreiber setzt `artifacts/eval/` bereits selbst davor.
+ * Instrument ist `extension`, nicht `eval/extension` — der Artefaktschreiber setzt
+ * `artifacts/eval/` bereits selbst davor.
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';

@@ -72,9 +72,7 @@ const artefakt = {
 const ziel = join(verzeichnis, 'config-validation.json');
 writeFileSync(ziel, `${JSON.stringify(artefakt, null, 2)}\n`, 'utf8');
 
-// Zeiger auf den juengsten Lauf. Der Sammler des Evaluationsplans sucht
-// Nachweisartefakte ueber latest.json und nicht ueber ein Verzeichnismuster;
-// ohne den Zeiger bricht er nach eigener Randbedingung ab (PE-18).
+// Zeiger auf den juengsten Lauf (PE-18).
 writeFileSync(
   join('artifacts', 'config', 'latest.json'),
   `${JSON.stringify({

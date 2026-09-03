@@ -141,7 +141,7 @@ describe('Abbruch mitten im Typen-Durchlauf (Spec 04 §3.3, US-15, NFA-10)', () 
     const { adapter } = baueAdapter();
     await adapter.bewerteWohnungstypen([anfrage(1), anfrage(2)]);
     // Genau ein PATCH: fuer Typ 1. Kein Rueckschreibversuch auf einer Ressource in
-    // unbestimmtem Zustand (Spec 04 §3.3 Punkt 2).
+    // unbestimmtem Zustand.
     expect(patches).toBe(1);
   });
 });

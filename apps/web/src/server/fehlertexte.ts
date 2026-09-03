@@ -1,7 +1,7 @@
 /**
  * Uebersetzungsschicht Fehlercode -> Anzeigetext (E-03). Der Kern kennt keine
  * Anzeigesprache, nur Sachverhalte; Texte liegen hier als Vorlagen und duerfen nur
- * Platzhalter verwenden, die der Kern auch uebergibt (Spec 03 §8).
+ * Platzhalter verwenden, die der Kern auch uebergibt.
  *
  * `KERN_VORLAGEN` ist als `Record<BerechnungsFehlerCode, Vorlage>` typisiert: Ein neuer
  * Code bricht die Uebersetzung beim Kompilieren, nicht erst zur Laufzeit.
@@ -97,9 +97,9 @@ const aggregatListe = (p: AggregatParameter, k: string): string =>
   ((p[k] as readonly string[] | undefined) ?? []).join(', ');
 
 /**
- * Uebersetzung fuer `erzeugeLiegenschaft`s Aggregatfehler (`liegenschaft.ts`) — strukturelle
- * Maengel im Projektstand (doppelte Wohnungsnummer, Referenzobjekt ohne Einheit etc.), noch
- * vor der eigentlichen Berechnung.
+ * Uebersetzung fuer `erzeugeLiegenschaft`s Aggregatfehler — strukturelle Maengel im
+ * Projektstand (doppelte Wohnungsnummer, Referenzobjekt ohne Einheit etc.), noch vor der
+ * eigentlichen Berechnung.
  */
 export const AGGREGAT_VORLAGEN: Record<AggregatFehlerCode, (p: AggregatParameter) => string> = {
   KEINE_EINHEIT: () => 'Für die Liegenschaft ist noch keine Einheit erfasst.',
@@ -139,7 +139,7 @@ export function uebersetzeAggregatFehler(fehler: readonly AggregatFehler[]): str
  */
 export const KONFIG_VORLAGEN = {
   // Kern liefert `bezeichner` und `verfuegbare` — letzteres als fertigen String, nicht
-  // als Liste (`validieren.ts`: `issue.options.join(', ')`).
+  // als Liste.
   CFG_STRATEGY_UNKNOWN: (p: Parameter) =>
     `Normalisierungsstrategie «${String(p['bezeichner'])}» ist nicht bekannt. `
     + `Verfügbar: ${String(p['verfuegbare'])}.`,
@@ -168,9 +168,9 @@ export function uebersetzeKonfigFehler(
 }
 
 /**
- * Benannte Ausnahme von E-03: Der ACL uebersetzt Fremdsystemfehler selbst (Spec 04 §6.5),
- * weil sie einem anderen Fehlerraum entstammen — nicht abschliessend bekannt und nach
- * NFA-11 gerade nicht ungefiltert durchzureichen. Diese Schicht bildet sie nicht erneut ab.
+ * Benannte Ausnahme von E-03: Der ACL uebersetzt Fremdsystemfehler selbst, weil sie einem
+ * anderen Fehlerraum entstammen — nicht abschliessend bekannt und nach NFA-11 gerade
+ * nicht ungefiltert durchzureichen. Diese Schicht bildet sie nicht erneut ab.
  */
 export function uebersetzeProviderFehler(fehler: ProviderFehler): AngezeigterFehler {
   if (fehler.art === 'kontingent') {

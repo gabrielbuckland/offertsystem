@@ -1,14 +1,9 @@
 /**
  * Keine Formel. Belegt die eine Verdrahtungsstelle (PE-24, PE-17, AK-17).
  *
- * ABWEICHUNG VOM PLAN, bewusst: Der Plan nennt die Fixtures
- * `./test/fixtures/company-defaults.json` und `company-defaults-kaputt.json`. Beide
- * gibt es nicht und beide waeren Kopien: Die gueltige Konfiguration liegt bereits als
- * `config/company-defaults.json` vor, die verletzenden Faelle erzeugt P1s
- * Negativmatrix unter `packages/core/test/fixtures/config-invalid/`. Eine dritte
- * Kopie waere ein zweiter Konfigurationsstand, der beim Nachziehen auseinanderlaeuft.
- * Die Pfade sind ueber `import.meta.dirname` aufgeloest, nicht ueber das
- * Arbeitsverzeichnis — dieselbe Form wie in `konfigurations-lader.test.ts`.
+ * Verweist auf `config/company-defaults.json` und die Negativfixtures unter
+ * `packages/core/test/fixtures/config-invalid/` statt eigener Kopien: eine dritte Kopie
+ * waere ein zweiter Konfigurationsstand, der beim Nachziehen auseinanderlaeuft.
  */
 import { execSync } from 'node:child_process';
 import { resolve } from 'node:path';
@@ -56,9 +51,7 @@ describe('Verdrahtung von Umgebung, Konfiguration, Adapter und Ablage', () => {
 
   it('traegt keinen Ablagepfad im Code der uebrigen Serverdateien', () => {
     // `umgebung.ts` ist ausgenommen: Es ist der einzige Ort, an dem Umgebungswerte
-    // gelesen werden (Spec 01 §7.2), und traegt den Vorgabewert deshalb zu Recht.
-    // Genau das ist die Zusage — der Pfad wird durchgereicht, nicht an zweiter
-    // Stelle bestimmt (E-14).
+    // gelesen werden, und traegt den Vorgabewert deshalb zu Recht (E-14).
     const treffer = execSync(
       'grep -rn "data/offerten" apps/web/src --include=*.ts --include=*.tsx'
       + ' | grep -v "server/umgebung.ts" || true',

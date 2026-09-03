@@ -1,11 +1,11 @@
 /**
- * Margen-Rechner: Artefakt zu eq:netto_degression (Spec 06 §7.2).
+ * Margen-Rechner: Artefakt zu eq:netto_degression.
  *
  * Rein analytisch aus Stuetzstellen und g-Bildbereich; es wird KEINE Konfiguration
  * gerechnet. Ein eigener Test belegt das am Quelltext.
  *
- * ABWEICHUNG VOM PLAN: Instrument ist `degression`, nicht `eval/degression` — der
- * Artefaktschreiber setzt `artifacts/eval/` bereits selbst davor.
+ * Instrument ist `degression`, nicht `eval/degression` — der Artefaktschreiber setzt
+ * `artifacts/eval/` bereits selbst davor.
  */
 import { bildeKopf, repoWurzel, schreibeArtefakt } from '../shared/artefakt.ts';
 import { BASIS_KONFIG_DATEI, ladeBasis } from '../shared/konfig.ts';

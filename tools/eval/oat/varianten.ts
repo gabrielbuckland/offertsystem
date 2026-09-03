@@ -1,5 +1,5 @@
 /**
- * Keine Modellformel; Variantenbildung fuer den OAT-Lauf (Spec 06 §7.1).
+ * Keine Modellformel; Variantenbildung fuer den OAT-Lauf.
  *
  * Sechs Dimensionen, je vier Stufen (-20/-10/+10/+20 Prozent). Varianten entstehen auf der
  * ROHFORM, weil nur sie Eingabe der Validierung ist (PE-01); jede Variante durchlaeuft

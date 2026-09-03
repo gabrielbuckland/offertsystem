@@ -1,5 +1,5 @@
 /**
- * Keine Formel. Reine Funktion Offer -> HTML (Spec 05 §5).
+ * Keine Formel. Reine Funktion Offer -> HTML.
  *
  * Ohne Zustand, ohne Datenabruf, ohne Effekte: Dieselbe Komponente traegt die
  * Bildschirmdarstellung UND den PDF-Druck (AK-2.1). Ein zweiter Renderpfad koennte
@@ -209,7 +209,7 @@ export function OfferteDokument({ offerte }: { offerte: Offer }) {
         <HerkunftsWert wert={a.feeRange}
                        beschriftung="Honorarrange (eq:honorar_mapping, intern)"
                        formatiere={(r) => `${formatiereAggregat(r.min)} – ${formatiereAggregat(r.max)}`} />
-        {/* Der Eigentuemer sieht EINEN Betrag, nie die Range (Spec 2026-08-29): Die
+        {/* Der Eigentuemer sieht EINEN Betrag, nie die Range: Die
             Range oben bleibt Teil der Herleitung fuer den Vermarkter, `gewaehltesHonorar`
             ist die dem Kunden genannte Zahl. Fehlt sie (Altartefakt ohne gewaehlten
             Betrag), zeigt die Stelle einen Bindestrich statt der verworfenen Range.

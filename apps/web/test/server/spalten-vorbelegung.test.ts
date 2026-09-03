@@ -14,9 +14,8 @@ describe('vorbelegteSpalten', () => {
     expect(spalten.length).toBeGreaterThan(0);
     for (const [s, v] of spalten.map((s, i) => [s, konfiguration.anpassungsVorlagen[i]!] as const)) {
       expect(s.bezeichnung).not.toBe('');
-      // Die Erfassungsform kommt jetzt aus der Vorlage, nicht mehr aus einer
-      // Konstanten — dieselbe Konfiguration traegt sowohl 'relativ'- als auch
-      // 'absolut'-Vorlagen (z. B. 'stockwerklage').
+      // Dieselbe Konfiguration traegt sowohl 'relativ'- als auch 'absolut'-Vorlagen
+      // (z. B. 'stockwerklage').
       expect(s.erfassungsform).toBe(v.erfassungsform);
     }
   });
@@ -26,7 +25,7 @@ describe('vorbelegteSpalten', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  // Regression: `bezeichnung` ist das kurze Etikett der Vorlage, nicht der ausformulierte
+  // `bezeichnung` ist das kurze Etikett der Vorlage, nicht der ausformulierte
   // `begruendungVorschlag`-Satz. Eine Verwechslung faellt am Spaltenkopf nicht sofort auf
   // (beides ist ein nichtleerer String), darum wird hier explizit auf den Wortlaut geprueft.
   it('uebernimmt die Vorlagenbezeichnung, nicht den Begruendungsvorschlag', () => {
@@ -51,9 +50,8 @@ describe('vorbelegteSpalten', () => {
     expect(spalten[0]!.vorgabewert).toBeUndefined();
   });
 
-  // Haelt bewusst am bisherigen Verhalten fest: Ohne Bedingung bleibt der Vorgabewert
-  // neutral, weil eine unbedingte Vorbelegung jeder Einheit alle Anpassungen zugleich
-  // gaebe. Genau diese Unterscheidung ist der Kern der Aenderung.
+  // Ohne Bedingung bleibt der Vorgabewert neutral, weil eine unbedingte Vorbelegung
+  // jeder Einheit alle Anpassungen zugleich gaebe.
   it('laesst eine Vorlage ohne Regel weiterhin ohne Vorgabewert starten', () => {
     const k = konfigurationMitVorlage({
       id: 'laermexposition', bezeichnung: 'Laermexposition',

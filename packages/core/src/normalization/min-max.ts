@@ -1,6 +1,6 @@
 // eq:normalisierung — x_dach = min(1, max(0, (x - x_min) / (x_max - x_min))).
 // Die aeussere Kappung ist Teil der Formel, keine Nachbehandlung (I-11). Die Umpolung
-// liegt in den Daten (vertauschte Grenzen), nicht im Code (I-13, Brief §4).
+// liegt in den Daten (vertauschte Grenzen), nicht im Code (I-13).
 import { score } from '../domain/geld.js';
 import { ok } from '../domain/result.js';
 import { grenzenIdentisch, type Normalisierungsstrategie } from './strategie.js';

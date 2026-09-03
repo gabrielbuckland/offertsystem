@@ -1,9 +1,8 @@
 'use client';
 
-// Verwaltet die firmenweiten Merkmale. Die Kennung wird aus der Bezeichnung abgeleitet und
-// ist danach schreibgeschuetzt: sie ist der Anker, ueber den eine Bereichsregel ihr Merkmal
-// findet (`regel.merkmal`); eine nachtraegliche Umbenennung liesse jede darauf verweisende
-// Regel ins Leere laufen.
+// Die Kennung wird aus der Bezeichnung abgeleitet und ist danach schreibgeschuetzt: sie ist
+// der Anker, ueber den eine Bereichsregel ihr Merkmal findet (`regel.merkmal`); eine
+// nachtraegliche Umbenennung liesse jede darauf verweisende Regel ins Leere laufen.
 import { Trash2 } from 'lucide-react';
 import type { Merkmal } from '@offert/core';
 import { Button } from '../ui/button.js';

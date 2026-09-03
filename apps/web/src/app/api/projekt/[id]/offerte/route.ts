@@ -1,10 +1,8 @@
 /**
- * Duenner Adapter: Laufzeit holen, `fuehreProjektlauf` fragen, das Ergebnis ablegen.
+ * Duenner Adapter: Laufzeit holen, `fuehreProjektlauf` fragen, das Ergebnis ablegen (PE-21).
  *
- * Der zweistufige Rechenweg steht in `server/projekt-lauf.ts` (PE-21) und ist mit der
- * Berechnungsroute geteilt; diese Route unterscheidet sich von jener allein darin, dass
- * sie die fertige Offerte zusaetzlich ABLEGT. Die Ablage geschieht nur im Erfolgsfall:
- * Weder eine Bewertungsluecke noch ein abgebrochenes Honorar erzeugt ein Artefakt (I-24).
+ * Die Ablage geschieht nur im Erfolgsfall: Weder eine Bewertungsluecke noch ein
+ * abgebrochenes Honorar erzeugt ein Artefakt (I-24).
  */
 import {
   validiereGewaehltesHonorar, herkunft, PlatzhalterFehler, loeseDokumentAuf, platzhalterWerte,
@@ -19,7 +17,8 @@ import { ladeVorlage } from '../../../../../server/vorlagen-ablage.js';
 interface Kontext { readonly params: Promise<{ readonly id: string }> }
 
 export async function POST(anfrage: Request, kontext: Kontext): Promise<Response> {
-  // Henne-Ei: siehe Berechnungsroute.
+  // Henne-Ei: Die Firmenlaufzeit liefert nur den Ablageort, das Projekt-Delta erst aus
+  // dem geladenen Projekt — daher zwei Aufrufe.
   const vorlaufzeit = holeLaufzeit();
   if (!vorlaufzeit.ok) {
     return Response.json({ fehler: { text: vorlaufzeit.meldungen.join(' ') } }, { status: 500 });
@@ -52,19 +51,17 @@ export async function POST(anfrage: Request, kontext: Kontext): Promise<Response
         },
       }, { status: 422 });
     case 'honorarAbbruch':
-      // Anders als die Berechnungsroute, die das Teilergebnis mit 200 ausweist: Ohne
-      // Honorarrange gibt es nichts zu offerieren, also entsteht kein Artefakt (I-24).
+      // Ohne Honorarrange gibt es nichts zu offerieren, also entsteht kein Artefakt (I-24).
       return Response.json(
         { fehler: uebersetzeStufenFehler(lauf.fehler) }, { status: 422 });
     case 'fehler':
-      // Unveraendert durchgereicht, samt `adressat` und ggf. `feldpfad` (s. Berechnungsroute).
+      // Unveraendert durchgereicht, samt `adressat` und ggf. `feldpfad`.
       return Response.json({ fehler: lauf.fehler }, { status: lauf.status });
     case 'offerte': {
       // Honorarbetrag zuerst: Ein falsches Format erzeugt KEIN Artefakt (I-24), analog
       // den Platzhalterfehlern unten. Geprueft wird nur die Form (Ganzzahl in Rappen);
       // eine Abweichung von der Honorarrange ist erlaubt — sie ist eine Empfehlung, keine
-      // Schranke (Spec 2026-08-29, honorar-eingabe.ts). Ohne gueltiges JSON gilt der
-      // Betrag als fehlend, nicht als Serverfehler.
+      // Schranke. Ohne gueltiges JSON gilt der Betrag als fehlend, nicht als Serverfehler.
       const koerper: unknown = await anfrage.json().catch(() => undefined);
       const honorarPruefung = validiereGewaehltesHonorar(
         (koerper as { readonly gewaehltesHonorar?: unknown } | undefined)?.gewaehltesHonorar,

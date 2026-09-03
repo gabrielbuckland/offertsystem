@@ -1,9 +1,8 @@
 /**
- * Keine Modellformel. Lader der Szenario-Fixtures aus P2.
+ * Keine Modellformel. Lader der Szenario-Fixtures.
  *
- * ABWEICHUNG VOM PLAN, bewusst: Der Plan sieht einen Zweig ueber ein Feld `varianten`
- * vor, um S4a und S4b aus einer Datei zu lesen. P2 hat sie als zwei eigenstaendige
- * Dateien abgelegt (`S4a.json`, `S4b.json`); der Zweig waere toter Code, der eine
+ * S4a und S4b liegen als zwei eigenstaendige Dateien vor (`S4a.json`, `S4b.json`), nicht
+ * als eine Datei mit einem Feld `varianten`. Ein Zweig dafuer waere toter Code, der eine
  * Struktur behauptet, die es nicht gibt. Geladen wird deshalb je Datei ein Szenario.
  */
 import { readFileSync, readdirSync } from 'node:fs';

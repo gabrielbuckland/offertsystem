@@ -1,6 +1,6 @@
-// Keine Formel. Aggregate Root nach 3.2; I-01 wird an genau dieser Stelle durchgesetzt.
+// Keine Formel. Aggregate Root; I-01 wird an genau dieser Stelle durchgesetzt.
 // Die Referenzbewertung liegt bewusst NICHT im Wohnungstyp, sondern in einer eigenen
-// Abbildung (Spec 03 §1.6).
+// Abbildung.
 import type { Adresse } from './adresse.js';
 import type { Einheit } from './einheit.js';
 import type { LiegenschaftId } from './ids.js';

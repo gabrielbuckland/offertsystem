@@ -1,5 +1,5 @@
 /**
- * Deckt den Schreibweg der PROJEKTBEZOGENEN Ebene ab (Task 6). Zurueckweisen statt
+ * Deckt den Schreibweg der PROJEKTBEZOGENEN Ebene ab. Zurueckweisen statt
  * melden (I-21): Ein invariantenverletzendes oder gesperrtes Delta darf das
  * Projektartefakt nicht veraendern — mehrere Tests pruefen das ausdruecklich, indem
  * sie nach einer 422-Antwort erneut laden und `einstellungen` unveraendert vorfinden.

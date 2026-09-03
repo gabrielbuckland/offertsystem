@@ -9,15 +9,10 @@ import {
 } from '../../../src/components/einstellungen/ProjektEinstellungen.js';
 
 /**
- * Nur Darstellung ueber `renderToStaticMarkup` (gleiches Muster wie `shell.test.tsx` und
- * `JsonReiter.test.tsx`) — das Repo hat weder `jsdom` noch `@testing-library/react`
- * installiert. Das Verhalten hinter den Knoepfen (effektiv anzeigen, Delta speichern)
- * deckt `projekt-einstellungen-logik.test.ts` an den reinen Funktionen ab.
- *
  * Firmenwerte sind die ECHTE `config/company-defaults.json` statt eines Minimal-Objekts:
  * Die vier Bereichs-Editoren lesen ihre Teilbaeume ungeprueft (`entwurf['honorar'] as
  * HonorarRoh` usw.), ein zurechtgeschnittenes Fixture liefe deshalb an einer fehlenden
- * Wurzel auf. Gleiches Vorgehen wie `standardkonfiguration.test.ts`.
+ * Wurzel auf.
  */
 const FIRMA = JSON.parse(readFileSync(
   resolve(import.meta.dirname, '../../../../../config/company-defaults.json'), 'utf8',
@@ -52,9 +47,9 @@ describe('ProjektEinstellungen', () => {
   });
 
   it('kennzeichnet bei einem Bereich mit mehreren Wurzeln nur die uebersteuerte', () => {
-    // «Preisanpassung» deckt vier Konfigurationswurzeln ab (`bereiche.ts`). Ein Abzeichen
-    // je Wurzel statt eines je Karte: Sonst faerbte eine einzige Uebersteuerung den
-    // ganzen Bereich als projektbezogen ein, obwohl drei Wurzeln den Firmenwerten folgen.
+    // «Preisanpassung» deckt vier Konfigurationswurzeln ab. Ein Abzeichen je Wurzel statt
+    // eines je Karte: Sonst faerbte eine einzige Uebersteuerung den ganzen Bereich als
+    // projektbezogen ein, obwohl drei Wurzeln den Firmenwerten folgen.
     const html = baueMarkup({ flaeche: { alpha: 0.6 } });
     const projektbezogen = html.match(/projektbezogen/g) ?? [];
     const firmenweit = html.match(/firmenweit/g) ?? [];
@@ -63,8 +58,7 @@ describe('ProjektEinstellungen', () => {
   });
 
   it('bindet den Auffangblock fuer nicht verankerbare Befunde ein (K-1)', () => {
-    // Quelltextnahe Verdrahtungspruefung nach demselben Vorgehen wie
-    // `ProjektAnsicht.test.ts`: Befunde entstehen erst nach einem gescheiterten
+    // Quelltextnahe Verdrahtungspruefung: Befunde entstehen erst nach einem gescheiterten
     // Speicherversuch und damit im Zustand, der ohne Hook-Testbibliothek nicht
     // herstellbar ist. Die Anzeige selbst prueft `BefundAuffang` unten direkt.
     const quelle = readFileSync(resolve(
@@ -101,8 +95,6 @@ describe('ProjektEinstellungen', () => {
 
 describe('JSON-Reiter der Projektebene (W-2)', () => {
   it('bietet den Umschalter Formular/JSON an', () => {
-    // Entwurf §4 verlangt den Umschalter auf BEIDEN Ebenen; umgesetzt war er nur
-    // firmenweit, wodurch der Nur-Lese-Zweig von `JsonReiter` toter Produktionscode war.
     const html = baueMarkup({});
     expect(html).toContain('aria-label="Darstellung"');
     expect(html).toContain('>JSON<');
@@ -110,10 +102,10 @@ describe('JSON-Reiter der Projektebene (W-2)', () => {
   });
 
   it('verdrahtet das Delta schreibbar und die effektive Konfiguration nur lesend', () => {
-    // Der Umschalter liegt im Client-Zustand; quelltextnahe Verdrahtungspruefung wie in
-    // `ProjektAnsicht.test.ts`. Die Richtung ist die tragende Aussage: Bearbeitet wird
-    // das Delta — waere die effektive Konfiguration schreibbar, machte jedes Speichern
-    // aus dem Projekt eine Vollkopie.
+    // Der Umschalter liegt im Client-Zustand, daher quelltextnahe Verdrahtungspruefung.
+    // Die Richtung ist die tragende Aussage: Bearbeitet wird das Delta — waere die
+    // effektive Konfiguration schreibbar, machte jedes Speichern aus dem Projekt eine
+    // Vollkopie.
     const quelle = readFileSync(resolve(
       import.meta.dirname,
       '../../../src/components/einstellungen/ProjektEinstellungen.tsx',

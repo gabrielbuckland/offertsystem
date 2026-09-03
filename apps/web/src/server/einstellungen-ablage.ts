@@ -1,4 +1,4 @@
-// Schreibweg der firmenweiten Ebene (Spec §6, I-21): geschrieben wird erst NACH bestandener
+// Schreibweg der firmenweiten Ebene (I-21): geschrieben wird erst NACH bestandener
 // Validierung, kein --force, kein Warnmodus. Vorversion wandert zeitgestempelt nach `backups/`.
 import { constants as fsKonstanten } from 'node:fs';
 import * as fs from 'node:fs/promises';
@@ -19,13 +19,12 @@ function istUebersetzbar(code: string): code is keyof typeof KONFIG_VORLAGEN {
 
 // `KONFIG_VORLAGEN` deckt nur 3 der 23 CFG_*-Codes ab; fuer die uebrigen (u. a.
 // CFG_TIER_DEGRESSION, CFG_SCHEMA_TYPE) faellt der Text unten auf Code+Rohparameter zurueck
-// statt auf einen Satz (E-03). Vervollstaendigung bewusst nicht hier erledigt (gehoert
-// fehlertexte.ts/anderer Spur) — Folgeposten, Ruecksprache Auftraggeber 2026-08-25.
+// statt auf einen Satz (E-03).
 function textFuer(befund: KonfigurationsFehler): string {
   if (istUebersetzbar(befund.code)) {
-    // TODO(KONFIG_VORLAGEN-Vervollstaendigung, Folgeposten oben): Sollte `Parameter` je einen
-    // Boolean-Wert fuehren, waere dieser Cast eine stille Typluecke — heute unschaedlich, weil
-    // keiner der drei abgedeckten Codes einen Boolean-Parameter traegt.
+    // TODO(KONFIG_VORLAGEN-Vervollstaendigung): Sollte `Parameter` je einen Boolean-Wert
+    // fuehren, waere dieser Cast eine stille Typluecke — heute unschaedlich, weil keiner
+    // der drei abgedeckten Codes einen Boolean-Parameter traegt.
     const parameter = befund.parameter as unknown as Parameters<typeof uebersetzeKonfigFehler>[1];
     return uebersetzeKonfigFehler(befund.code, parameter).text;
   }
@@ -37,10 +36,10 @@ function textFuer(befund: KonfigurationsFehler): string {
 
 /**
  * DER Uebersetzungsweg von `KonfigurationsFehler` nach `EinstellungsBefund` — exportiert,
- * damit ihn auch die projektbezogene Schreibroute (`api/projekt/[id]/einstellungen`)
- * benutzt statt eines eigenen. Zwei Wege haetten fuer denselben Fehler zwei Ergebnisse
- * geliefert: hier Feldpfad plus Anzeigefassung, dort ein pauschaler Formularanker und die
- * Rohform aus `laufzeit.ts` — und die Editoren koennten den zweiten nirgends verankern.
+ * damit auch andere Schreibrouten ihn benutzen statt eines eigenen. Zwei Wege haetten
+ * fuer denselben Fehler zwei Ergebnisse geliefert (Feldpfad plus Anzeigefassung vs. ein
+ * pauschaler Formularanker mit Rohform), und die Editoren koennten den zweiten nirgends
+ * verankern.
  */
 export function zuBefunden(fehler: readonly KonfigurationsFehler[]): EinstellungsBefund[] {
   return fehler.map((f) => ({ pfad: f.pfad, text: textFuer(f) }));
@@ -62,8 +61,8 @@ class SicherungsKollisionError extends Error {
 
 // Kollisionssicher statt auf Zufall vertrauend: zwei Schreibvorgaenge in derselben
 // Millisekunde erhalten sonst denselben Dateinamen und ein zweites `copyFile` ueberschriebe
-// die erste Sicherung still (Spec §6). Deshalb `COPYFILE_EXCL` plus Zaehlersuffix bei
-// Kollision, gedeckelt durch `MAX_SICHERUNGS_VERSUCHE` statt unbegrenzter Anfrage.
+// die erste Sicherung still. Deshalb `COPYFILE_EXCL` plus Zaehlersuffix bei Kollision,
+// gedeckelt durch `MAX_SICHERUNGS_VERSUCHE` statt unbegrenzter Anfrage.
 async function sichereVorversion(
   pfad: string, sicherungsVerzeichnis: string, zeitstempel: string,
 ): Promise<string> {

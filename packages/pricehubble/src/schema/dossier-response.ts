@@ -1,4 +1,4 @@
-/** Keine Formel. Contract-Schema der Dossier-Antwort (Spec 04 §1.3). */
+/** Keine Formel. Contract-Schema der Dossier-Antwort. */
 import { z } from 'zod';
 import { ValuationSaleSchema } from './valuation-sale.js';
 

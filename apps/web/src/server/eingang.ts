@@ -1,8 +1,8 @@
-// Beschaffung und Bau der `EingangsArgumente` (PE-22, PE-23, I-02). Reihenfolge nach Spec 04
-// §3.1: erst Lagescores der Projektadresse, dann Bewertungen je Wohnungstyp, beides VOR dem
-// Pipeline-Start (`lagescores` ist Pflichtfeld, Stufe 2a leitet daraus Faktoren ab). Einziger
-// Ort, an dem `EingangsArgumente` entstehen; `Liegenschaft` ausschliesslich ueber
-// `erzeugeLiegenschaft` (I-02), um die Aggregatinvarianten nicht zu umgehen.
+// Beschaffung und Bau der `EingangsArgumente` (PE-22, PE-23, I-02): erst Lagescores der
+// Projektadresse, dann Bewertungen je Wohnungstyp, beides VOR dem Pipeline-Start
+// (`lagescores` ist Pflichtfeld, Stufe 2a leitet daraus Faktoren ab). Einziger Ort, an dem
+// `EingangsArgumente` entstehen; `Liegenschaft` ausschliesslich ueber `erzeugeLiegenschaft`
+// (I-02), um die Aggregatinvarianten nicht zu umgehen.
 import {
   erzeugeLiegenschaft,
   type BewertungsAnfrage,
@@ -56,8 +56,7 @@ export async function beschaffe(
   return { ok: true, wert: { buendel: buendel.wert, lagescores: lagescores.wert } };
 }
 
-// Weglassen statt erfinden, je optionalem Feld einzeln (I-09, A-14): derselbe bedingte
-// Spread wie in `projektion.ts` und `baue-offerte.ts`, damit alle drei Stellen gleich lesen.
+// Weglassen statt erfinden, je optionalem Feld einzeln (I-09, A-14).
 function zuAbschlag(a: Erfassung['einheiten'][number]['anpassungen'][number]): ZuAbschlag {
   return {
     faktor: a.faktor,

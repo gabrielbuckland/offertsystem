@@ -3,29 +3,20 @@
 /**
  * Gemeinsamer Rahmen aller vier Bereichs-Editoren (dossier/preisanpassung/faktoren/
  * honorar) — Karte mit Titel, Zweck-Satz, dem Formular des Bereichs, sammelfaehigen
- * Befunden und einer Fussleiste mit explizitem Speichern/Verwerfen (Spec §6, kein
- * Autosave — Begruendung in `verwende-einstellungen.ts`).
+ * Befunden und einer Fussleiste mit explizitem Speichern/Verwerfen (kein Autosave).
  *
  * EIGENTUEMER des Bearbeitungszustands: `verwendeEinstellungen` wird GENAU HIER
- * aufgerufen, nicht in den Bereichsseiten (`[bereich]/page.tsx`) und nicht im konkreten
- * Feld-Editor (`Editor`-Prop; HonorarEditor usw., Tasks 15/16). Grund: Die Bereichsseite
- * ist eine Server-Komponente (sie laedt `rohKonfiguration` vom Dateisystem) und darf
- * keine Hooks aufrufen; zwei UNABHAENGIGE Hook-Aufrufe (einer hier, einer im
- * Feld-Editor) haetten zwei getrennte Entwuerfe zur Folge — eine Eingabe im Feld-Editor
- * bliebe dem Speichern-Knopf hier unbekannt. Der Zustand entsteht deshalb EINMAL, aus
- * der rohen Startkonfiguration (`anfang`-Prop, vom Server geladen und damit
- * serialisierbar), und wird dem konkreten Editor explizit als `einstellungen`-Prop
- * gereicht (`<Editor einstellungen={zustand} />`).
+ * aufgerufen, nicht in den Bereichsseiten und nicht im konkreten Feld-Editor
+ * (`Editor`-Prop). Zwei UNABHAENGIGE Hook-Aufrufe haetten zwei getrennte Entwuerfe zur
+ * Folge — eine Eingabe im Feld-Editor bliebe dem Speichern-Knopf hier unbekannt. Der
+ * Zustand entsteht deshalb EINMAL, aus der rohen Startkonfiguration (`anfang`-Prop),
+ * und wird dem konkreten Editor explizit als `einstellungen`-Prop gereicht
+ * (`<Editor einstellungen={zustand} />`).
  *
- * `Editor` ist eine KOMPONENTEN-Referenz (`BereichsEditor`, `verwende-einstellungen.ts`),
- * kein `children: ReactNode` mit stillschweigend hineingereichter Prop: Eine
- * Server-Komponente darf eine Client-Komponentenreferenz als Prop uebergeben (sie
- * serialisiert als Modulverweis, genau wie ein Element) — `[bereich]/page.tsx` bleibt
- * damit eine Server-Komponente und uebergibt einfach `Editor={HonorarEditor}`. Der
- * Vertrag "welche Props bekommt der Editor" steht dabei an EINER Stelle (`BereichsEditor`)
- * und ist typgeprueft; eine per `cloneElement` in beliebige Kinder injizierte Prop waere
- * das nicht — an der Definition von `HonorarEditor` selbst stuende nirgends, woher
- * `einstellungen` kommt.
+ * `Editor` ist eine KOMPONENTEN-Referenz (`BereichsEditor`), kein `children: ReactNode`
+ * mit stillschweigend hineingereichter Prop: Der Vertrag "welche Props bekommt der
+ * Editor" steht damit an EINER Stelle und ist typgeprueft; eine per `cloneElement` in
+ * beliebige Kinder injizierte Prop waere das nicht.
  */
 import { useState } from 'react';
 import { GESPERRTE_PFADE } from '@offert/core';
@@ -49,7 +40,7 @@ export interface EinstellungsEditorProps {
   readonly bereichPraefix: string | readonly string[];
   /** Rohe Startkonfiguration (ganzer Baum) — siehe Dateikommentar zur Aufteilung. */
   readonly anfang: Readonly<Record<string, unknown>>;
-  /** Konkreter Feld-Editor des Bereichs (Tasks 15/16). */
+  /** Konkreter Feld-Editor des Bereichs. */
   readonly Editor: BereichsEditor;
 }
 
@@ -57,13 +48,12 @@ export interface EinstellungsEditorProps {
  * Befunde, die KEIN Feld-Editor an seiner Zeile verankern kann — die Gegenmenge zu
  * `befundeFuerPfad` (reine Funktion, deshalb ohne DOM pruefbar).
  *
- * Seit Tasks 15/16 zeigt jeder Bereichseditor die Befunde seiner Felder selbst, je Zeile
- * ueber `befundeFuerPfad`. Das ist ein PRAEFIX-Treffer: Ein Befund auf
+ * Jeder Bereichseditor zeigt die Befunde seiner Felder selbst, je Zeile ueber
+ * `befundeFuerPfad`. Das ist ein PRAEFIX-Treffer: Ein Befund auf
  * `honorar.stuetzstellen[1].hMin` erschiene an seiner Zeile UND noch einmal in einer
  * Sammelliste des Rahmens — der Nutzer laese zwei Probleme, wo eines ist. Dem Rahmen
- * bleiben genau die zwei ortlosen Formen: der unanhaengige Befund (`pfad === ''`, der
- * Netz-/500-Fallback aus `verwendeEinstellungen`) und ein Befund auf der Bereichswurzel
- * selbst, zu der es keine Formularzeile gibt.
+ * bleiben genau die zwei ortlosen Formen: der unanhaengige Befund (`pfad === ''`) und
+ * ein Befund auf der Bereichswurzel selbst, zu der es keine Formularzeile gibt.
  */
 export function rahmenBefunde<T extends { readonly pfad: string }>(
   befunde: readonly T[], praefixe: readonly string[],
@@ -128,11 +118,8 @@ export function EinstellungsEditor({ titel, zweck, bereichPraefix, anfang, Edito
              */
             /* Die gesperrten Wurzeln werden ausgeblendet und beim Zurueckschreiben aus
              * dem unveraenderten Bestand wieder eingesetzt. Sonst hoebe der JSON-Reiter
-             * die Rollentrennung auf, die dieselbe Seite im Formular fuehrt: `api` ist
-             * dort bewusst nur lesend (Betriebsparameter der IT, US-08), waere hier aber
-             * ueber JEDE der vier Karten editier- und speicherbar gewesen — der
-             * Auftraggeber haette die Basis-URL auf einen fremden Host stellen koennen,
-             * und `schreibeCompanyDefaults` haette das als gueltiges Feld angenommen. */
+             * die Rollentrennung auf: `api` ist im Formular bewusst nur lesend
+             * (Betriebsparameter der IT, US-08). */
             <JsonReiter
               wert={ohneWurzeln(zustand.entwurf, GESPERRTE_PFADE)}
               aendere={(naechster) => zustand.aendere(

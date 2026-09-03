@@ -2,10 +2,9 @@
 
 /**
  * Zugriff auf die generierten Offerten eines Projekts als Button neben
- * «Projekteinstellungen» (Benutzerentscheid), Inhalt im Dialog statt in einer eigenen
- * Seitensektion. Natives `<dialog>` mit `showModal()` wie die uebrigen Dialoge der
- * Anwendung (`Referenzobjekte.tsx`, `RechenwegDialog.tsx`) — Fokusfalle, Esc und
- * Backdrop kommen vom Browser, kein eigener Offen-Zustand noetig.
+ * «Projekteinstellungen», Inhalt im Dialog statt in einer eigenen Seitensektion. Natives
+ * `<dialog>` mit `showModal()` — Fokusfalle, Esc und Backdrop kommen vom Browser, kein
+ * eigener Offen-Zustand noetig.
  */
 import { useRef } from 'react';
 import type { ListenEintrag } from '../../server/offerten-ablage.js';
@@ -33,9 +32,8 @@ export function OffertenSchaltflaeche({ eintraege }: OffertenSchaltflaecheProps)
       <dialog
         ref={dialogRef}
         aria-label="Offerten"
-        // `m-auto` haelt die Zentrierung explizit: siehe Kommentar am Anlegen-Dialog in
-        // `Referenzobjekte.tsx` (Tailwinds Preflight ueberschreibt sonst die
-        // UA-Zentrierung nativer Dialoge).
+        // `m-auto` haelt die Zentrierung explizit: Tailwinds Preflight ueberschreibt
+        // sonst die UA-Zentrierung nativer Dialoge.
         className="m-auto w-[min(56rem,calc(100vw-2.5rem))] rounded-xl border border-border bg-background p-6 backdrop:bg-foreground/40"
       >
         <div className="mb-4 flex items-center justify-between gap-4">

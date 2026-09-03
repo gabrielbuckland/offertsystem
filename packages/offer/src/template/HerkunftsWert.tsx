@@ -1,5 +1,5 @@
 /**
- * Keine Formel. Darstellungspflicht (Spec 05 §2.2, Regel 3): Es gibt keinen Pfad, der
+ * Keine Formel. Darstellungspflicht: Es gibt keinen Pfad, der
  * einen Wert ohne seine Herkunft ausgibt. Der Rohwert steckt in `Provenanced` und ist
  * nur ueber diese Komponente darstellbar.
  *

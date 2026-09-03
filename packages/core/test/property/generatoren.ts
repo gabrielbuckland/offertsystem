@@ -1,10 +1,8 @@
 /**
  * Generatoren und Baukasten der Property-Tests.
  *
- * Der Plan P2 setzt diese Datei in jeder Property-Datei voraus, definiert sie aber
- * nicht; sie entsteht hier. Kein Generator liest eine Uhr, die Umgebung oder das
- * Dateisystem — jede Zufaelligkeit kommt aus fast-check und damit aus dem Seed
- * (Spec 06 §4.2, I-14).
+ * Kein Generator liest eine Uhr, die Umgebung oder das Dateisystem — jede
+ * Zufaelligkeit kommt aus fast-check und damit aus dem Seed (I-14).
  */
 import fc from 'fast-check';
 import { gewicht, quadratmeter, quadratmeterAbNull, rappen, score } from '../../src/domain/geld.js';

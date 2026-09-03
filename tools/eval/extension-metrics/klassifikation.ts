@@ -1,5 +1,5 @@
 /**
- * Keine Modellformel. Messfilter der Erweiterbarkeitsmessung (E-15, Spec 06 §7.3).
+ * Keine Modellformel. Messfilter der Erweiterbarkeitsmessung (E-15).
  *
  * ALLEINIGE ZUSTAENDIGKEIT (PE-16): genau eine Implementierung der Messfilter, genau ein
  * Ort fuer die Null-Dateien-Messlatte.

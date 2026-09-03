@@ -1,9 +1,8 @@
 /**
  * E-04 end to end: Liegt die Verkaufssumme ausserhalb der konfigurierten Staffel, ist das
  * KEIN Eingabefehler, sondern ein Teilergebnis. Geprueft wird deshalb nicht die
- * Textuebersetzung des Fehlercodes (die war schon abgedeckt und hat den Defekt trotzdem
- * durchgelassen), sondern der Rueckgabetyp von `fuehreProjektlauf` samt Nutzlast:
- * Verkaufssumme, D und JEDE Wohnungsposition muessen vorhanden bleiben.
+ * Textuebersetzung des Fehlercodes, sondern der Rueckgabetyp von `fuehreProjektlauf` samt
+ * Nutzlast: Verkaufssumme, D und JEDE Wohnungsposition muessen vorhanden bleiben.
  */
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';

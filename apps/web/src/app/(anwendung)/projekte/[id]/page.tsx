@@ -26,12 +26,10 @@ export default async function ProjektSeite({ params }: Props) {
   if (projekt === null) notFound();
 
   /**
-   * Henne-Ei-Muster wie in den drei rechnenden Routen: Die Firmenlaufzeit liefert nur
-   * den Ablageort, aus dem das Projekt geladen wird; ANGEZEIGT und GERECHNET wird
-   * danach auf der projektbezogenen Laufzeit. Ohne diesen zweiten Schritt baute die
-   * Seite Faktorformular, Dossier-Vorbelegung und Rechenweg aus den Firmenwerten,
-   * waehrend `POST /berechnung` mit dem Delta rechnete — Anzeige und Rechnung liefen
-   * auseinander (K-2).
+   * Henne-Ei-Muster: Die Firmenlaufzeit liefert nur den Ablageort, aus dem das Projekt
+   * geladen wird; angezeigt und gerechnet wird danach auf der projektbezogenen Laufzeit.
+   * Ohne diesen zweiten Schritt liefen Anzeige und Berechnung mit unterschiedlichen
+   * Konfigurationen auseinander.
    */
   const projektLaufzeit = holeProjektLaufzeit(projekt);
   if (!projektLaufzeit.ok) {
@@ -41,15 +39,14 @@ export default async function ProjektSeite({ params }: Props) {
     return <main><h1>Projekt</h1><p>{projektLaufzeit.meldungen.join(' ')}</p></main>;
   }
   const { konfiguration, rohKonfiguration, fingerabdruck } = projektLaufzeit.wert;
-  // Filterung auf dieses Projekt liegt beim Aufrufer (Task 11, Schnittstellenvorgabe) —
-  // `listeOfferten` liefert ungefiltert alle Projekte.
+  // Filterung auf dieses Projekt liegt beim Aufrufer — `listeOfferten` liefert
+  // ungefiltert alle Projekte.
   const alleOfferten = await listeOfferten(laufzeit.wert.offertenVerzeichnis);
   const offerten = alleOfferten.filter((eintrag) => eintrag.projektId === id);
   return (
     <>
       {/* Ausserhalb des <main> von `ProjektAnsicht`: Die Brotkrume traegt den Rueckweg
-          auf Projektebene, der Link daneben fuehrt zur projektbezogenen Einstellungsebene
-          (Ebene 2, `projekte/[id]/einstellungen/page.tsx`). */}
+          auf Projektebene, der Link daneben fuehrt zur projektbezogenen Einstellungsebene. */}
       <div className="mb-2 flex items-center justify-between">
         <Brotkrume stufen={[
           { beschriftung: 'Projekte', href: '/projekte' },
@@ -70,9 +67,8 @@ export default async function ProjektSeite({ params }: Props) {
       <ProjektAnsicht
         projekt={projekt}
         faktorformular={baueFaktorformular(konfiguration)}
-        // Basis der Pipeline-Stufen im Rechenweg-Block (Task 9/7); dieselbe Rohkonfiguration,
-        // aus der `rohKonfiguration` in laufzeit.ts bereits fuer den Konfigurationsabdruck
-        // (PE-04) durch `unknown` geschleust wird — hier symmetrisch zurueckgeschaerft.
+        // Dieselbe Rohkonfiguration, die fuer den Konfigurationsabdruck (PE-04) bereits
+        // durch `unknown` geschleust wird — hier symmetrisch zurueckgeschaerft.
         konfigurationBasis={rohKonfiguration as unknown as OffertKonfiguration}
         // Das Ueberschreibungsprotokoll aus derselben Laufzeit: Es entscheidet im
         // Rechenweg je Zeile ueber «firmenweit» oder «projektbezogen» (A-13).

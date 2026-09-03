@@ -1,17 +1,17 @@
 /**
- * Keine eigene Formel. Ablauf je Offerte (Spec 04 §3.1), Abrufzahl `N = 2 + 2*T`
- * (I-27, NFA-12):
+ * Keine eigene Formel. Ablauf je Offerte, Abrufzahl `N = 2 + 3*T` (I-27, NFA-12):
  *
  *   0. (bedingt) E1 Login — nur ohne gueltigen Token
  *   1. E2 Get Dossier      — 1x, Ausgangszustand feststellen
  *   2. E5 Location Scores  — 1x, ueber `holeLagescores`
- *   3. je Wohnungstyp streng sequenziell: E3 PATCH -> E4 POST -> isValuationStale pruefen
+ *   3. je Wohnungstyp streng sequenziell: E3 PATCH -> GET (Rueckvergleich) ->
+ *      E4 POST -> isValuationStale pruefen
  *
  * Schritt 3 ist zwingend sequenziell: Das Dossier haelt zu jedem Zeitpunkt GENAU EINE
  * Parametrisierung. Nach dem PATCH fuer Typ t+1 ist die Bewertung des Typs t serverseitig
  * nicht mehr abrufbar.
  *
- * R-01: Der Prototyp arbeitet gegen ein fixes Test-Dossier mit unveraenderlicher Adresse.
+ * Der Prototyp arbeitet gegen ein fixes Test-Dossier mit unveraenderlicher Adresse.
  * Die erfasste Projektadresse wirkt daher nur auf E5, nicht auf die Bewertung.
  */
 import type {
@@ -54,7 +54,7 @@ type Zwischenergebnis<T> =
   | { readonly ok: true; readonly wert: T }
   | { readonly ok: false; readonly fehler: AdapterFehler };
 
-/** Genau ein Wiederholungsversuch der Bewertung bei `isValuationStale` (Spec 04 §3.3). */
+/** Genau ein Wiederholungsversuch der Bewertung bei `isValuationStale`. */
 const BEWERTUNGSVERSUCHE = 2;
 
 export class PriceHubbleAdapter implements ValuationProvider {
@@ -148,7 +148,7 @@ export class PriceHubbleAdapter implements ValuationProvider {
     }
 
     // E3 antwortet mit leerem Rumpf (`{}`, live belegt 2026-09-01) und gibt die
-    // gesetzten Felder NICHT zurueck. Der Rueckvergleich nach Spec 04 §5.4 liest den
+    // gesetzten Felder NICHT zurueck. Der Rueckvergleich liest den
     // Stand deshalb mit einem eigenen GET nach. Das kostet einen zusaetzlichen Request
     // je Wohnungstyp, erhaelt aber die Schutzabsicht: ein stillschweigend ignorierter
     // oder gerundeter Parameter darf nicht durchrutschen.
@@ -196,7 +196,7 @@ export class PriceHubbleAdapter implements ValuationProvider {
       }
     }
 
-    // Es wird NIE ein als veraltet markierter Wert uebernommen (Spec 04 §3.3 Punkt 6).
+    // Es wird NIE ein als veraltet markierter Wert uebernommen.
     return {
       ok: false,
       fehler: {
@@ -210,7 +210,7 @@ export class PriceHubbleAdapter implements ValuationProvider {
     };
   }
 
-  /** GET ohne Schemapruefung: liefert den Rumpf fuer den Rueckvergleich aus §5.4. */
+  /** GET ohne Schemapruefung: liefert den Rumpf fuer den Rueckvergleich. */
   private async liesDossierRoh(): Promise<Zwischenergebnis<RohAntwort>> {
     const { konfiguration, dossierId } = this.abh;
     const antwort = await this.abh.tokenVerwaltung.mitToken((token) => ({
@@ -263,9 +263,9 @@ export class PriceHubbleAdapter implements ValuationProvider {
   }
 
   /**
-   * Laufzeitvalidierung JEDER Antwort, bevor die Daten den ACL verlassen (Spec 04 §5.1,
-   * I-02). Protokolliert wird der Zod-Pfad und der erwartete Typ — nicht der beobachtete
-   * Wert, der Objektdaten enthalten koennte (§6.7).
+   * Laufzeitvalidierung JEDER Antwort, bevor die Daten den ACL verlassen (I-02).
+   * Protokolliert wird der Zod-Pfad und der erwartete Typ — nicht der beobachtete
+   * Wert, der Objektdaten enthalten koennte.
    */
   private pruefe<T>(
     schema: {

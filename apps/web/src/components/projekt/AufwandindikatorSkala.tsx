@@ -1,6 +1,6 @@
 // Verortet D zwischen seinen fachlichen Polen 0 (gering) und 1 (hoch), Zuordnung monoton
 // (I-15/I-16). Der Fuellstand wird nur fuers Zeichnen begrenzt: D kann ausserhalb [0, 1]
-// liegen (E-04), der angezeigte Zahlwert bleibt ehrlich (`ProjektBasisinformationen.tsx`).
+// liegen (E-04), der angezeigte Zahlwert bleibt ehrlich.
 export function AufwandindikatorSkala({ wert }: { readonly wert: number }) {
   const anteil = Math.min(1, Math.max(0, wert));
   return (

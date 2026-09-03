@@ -58,11 +58,6 @@ describe('Vollstaendigkeit der Abbildung', () => {
   });
 });
 
-/**
- * Regressionsanker fuer den gemeldeten Befund: Die Oberflaeche zeigte vor dieser
- * Uebersetzung den rohen Fehlercode samt JSON-Parametern an, z. B.
- * `WOHNUNGSTYP_OHNE_EINHEIT ({"wohnungstypen":["R2"]})`.
- */
 describe('uebersetzeAggregatFehler', () => {
   it('uebersetzt WOHNUNGSTYP_OHNE_EINHEIT in einen lesbaren Satz, nicht den rohen Code', () => {
     const text = uebersetzeAggregatFehler([
@@ -86,20 +81,10 @@ describe('uebersetzeAggregatFehler', () => {
 });
 
 /**
- * Regressionsanker fuer eine Klasse von Fehlern, die hier lange unbemerkt blieb: Die
- * Vorlagen lasen Parameternamen, die der Kern nie liefert — `v`/`vMin`/`vMax` statt
- * `verkaufssumme`/`bereichVon`/`bereichBis`, `k` statt `stufenindex`, `faktorliste` statt
- * `faktoren`, `grund`/`z`/`anpassungsliste` statt `art`/`zSumme`/`anpassungen`. Vier der
- * acht Vorlagen rendeten dadurch `NaN`, `undefined` oder eine leere Aufzaehlung.
- *
- * Die frueheren Tests konnten das nicht sehen, weil sie das `parameter`-Objekt SELBST
- * schrieben, und zwar mit den Namen der Vorlage: Sie prueften die Vorlage gegen sich
- * selbst. Deshalb entsteht hier jeder Fehler so, wie der Kern ihn erzeugt — durch einen
- * echten `berechne`-Lauf ueber eine gezielt verletzte Fixtur. Erst dadurch ist der
- * Parametername Vertragsgegenstand (Spec 03 §8) statt Testannahme.
- *
- * Die Sperre `not.toMatch(/undefined|NaN/)` ist der eigentliche Waechter: Sie haette alle
- * vier Abweichungen gemeldet, unabhaengig vom Wortlaut der jeweiligen Vorlage.
+ * Jeder Fehler entsteht hier durch einen echten `berechne`-Lauf ueber eine gezielt
+ * verletzte Fixtur, nicht durch ein handgeschriebenes `parameter`-Objekt — sonst pruefte
+ * die Vorlage nur gegen sich selbst. `not.toMatch(/undefined|NaN/)` faengt jeden Parameter
+ * ab, der nicht geliefert wird, unabhaengig vom Wortlaut der jeweiligen Vorlage.
  */
 describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
   function scheitert(eingang: EingangsArgumente): StufenFehler {
@@ -143,8 +128,8 @@ describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
   const faelle: readonly (readonly [string, Fall])[] = [
     ['FAKTOR_FEHLT', {
       code: 'FAKTOR_FEHLT',
-      // Seit Konfigversion 1.1.0 gibt es keinen manuellen Faktor mehr; der Fall wird
-      // ueber einen fehlenden Lagescore ausgeloest (gleicher Code, phase 'quelle').
+      // Es gibt keinen manuellen Faktor mehr; der Fall wird ueber einen fehlenden
+      // Lagescore ausgeloest (gleicher Code, phase 'quelle').
       eingang: () => {
         const basis = baueEingangsArgumente();
         return { ...basis, lagescores: { ...basis.lagescores, werte: new Map() } };
@@ -195,7 +180,6 @@ describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
         faktoren: new Map([...k.faktoren].map(([id, p]) =>
           [id, { ...p, gewicht: (p.gewicht + 0.5) as typeof p.gewicht }])),
       })),
-      // Die Faktorliste stand wegen `faktorliste` statt `faktoren` immer leer da.
       erwartet: () => ['lage_gesamt|Gesamtlage (PriceHubble-Lagescore)'],
     }],
     ['ANPASSUNG_UNZULAESSIG (Konfigurationsgrenze)', {
@@ -229,8 +213,7 @@ describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
           },
         };
       },
-      // Zweigwahl ueber `art === 'modellgrenze'`: Mit dem frueheren `grund === 'modell'`
-      // landete dieser Fall im Konfigurationszweig — samt NaN-Grenzen.
+      // Zweigwahl ueber `art === 'modellgrenze'`.
       erwartet: () => ['A1.01', 'grösser als −1', formatiereProzent(-1.5)],
     }],
     ['VERKAUFSSUMME_AUSSERHALB', {
@@ -276,23 +259,16 @@ describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
     const fehler = scheitert(mitKonfiguration((k) => ({
       ...k, honorar: { ...k.honorar, stuetzstellen: [stelle(0), stelle(1_000)] },
     })));
-    // Tausendertrennung U+2019, wie `de-CH` sie setzt (siehe packages/offer/test/format).
+    // Tausendertrennung U+2019, wie `de-CH` sie setzt.
     expect(uebersetzeStufenFehler(fehler).text).toContain('’');
     expect(uebersetzeStufenFehler(fehler).text).toContain('Die Honorarstaffelung ist zu erweitern.');
   });
 });
 
 /**
- * Dieselbe Pruefart wie fuer die Stufenfehler, fuer die Ladezeitcodes: Der
- * `KonfigurationsFehler` entsteht durch echte Kernpruefung ueber eine gezielt verletzte
- * Kopie von `config/company-defaults.json` — nie durch ein handgeschriebenes
- * Parameterobjekt.
- *
- * Die drei Vorlagen sind seit dem Schreibweg der Einstellungen (`einstellungen-ablage.ts`)
- * nicht mehr toter Code: Er ruft `uebersetzeKonfigFehler` fuer genau diese Codes auf und
- * beantwortet damit ein fehlgeschlagenes Speichern mit 422 statt 500. `CFG_STRATEGY_UNKNOWN`
- * WARF zuvor (`liste` rief `.join` auf dem String `verfuegbare` auf) — der erste Fall unten
- * haelt genau diese Regression fest.
+ * Dieselbe Pruefart wie fuer die Stufenfehler: Der `KonfigurationsFehler` entsteht durch
+ * echte Kernpruefung ueber eine gezielt verletzte Kopie von `config/company-defaults.json`,
+ * nie durch ein handgeschriebenes Parameterobjekt.
  */
 describe('Ladezeitvorlagen lesen die Parameter des Konfigurationspruefers', () => {
   const KONFIGURATIONSPFAD = new URL('../../../../config/company-defaults.json', import.meta.url);
@@ -332,8 +308,7 @@ describe('Ladezeitvorlagen lesen die Parameter des Konfigurationspruefers', () =
     faktoren[ersterFaktor]!['strategie'] = 'gibt-es-nicht';
 
     const treffer = befund(roh, 'CFG_STRATEGY_UNKNOWN');
-    // Regressionsanker: `verfuegbare` ist ein STRING. Der fruehere `liste`-Zugriff rief
-    // `.join` darauf auf und warf `TypeError`, statt einen Satz zu liefern.
+    // `verfuegbare` ist ein STRING.
     expect(typeof treffer.parameter['verfuegbare']).toBe('string');
     expect(() => angezeigt(treffer)).not.toThrow();
 

@@ -24,7 +24,7 @@ interface ErfassteZellenEingabe {
 // Faengt die an `ZellenEingabe` uebergebenen Props ab, rendert aber die echte Komponente
 // weiter (per `createElement`, nicht per Direktaufruf — sonst liefe deren `useState` ausserhalb
 // des React-Renderbaums). So bleiben alle bestehenden Assertions auf das gerenderte `value=`
-// gueltig, und Finding-1-Tests koennen zusaetzlich `aendere` direkt aufrufen.
+// gueltig, und Tests koennen zusaetzlich `aendere` direkt aufrufen.
 const erfassteZellen = vi.hoisted(() => ({ liste: [] as ErfassteZellenEingabe[] }));
 
 vi.mock('../../../src/components/projekt/ZellenEingabe.js', async (importOriginal) => {
@@ -131,7 +131,7 @@ describe('EinheitenTabelle', () => {
     expect(html).toContain('übersteuert');
   });
 
-  // Der Fall, den `ermittleWirksamenWert` seit Task 5 eigens ausweist: eine Uebersteuerung
+  // Der Fall, den `ermittleWirksamenWert` eigens ausweist: eine Uebersteuerung
   // auf einer Regel-Spalte, deren Merkmal an dieser Einheit gar keinen Wert fuehrt. Die
   // Regel kann dann gar nicht ausgewertet werden — `wirksam.regel` bleibt undefiniert —,
   // trotzdem gilt der eingetippte Wert. Ohne diesen Test koennte ein spaeterer Zugriff
@@ -152,10 +152,10 @@ describe('EinheitenTabelle', () => {
       expect(html).not.toContain('übersteuert');
     });
 
-  // Die Spec verlangt "Zuruecksetzen stellt den Regelwert wieder her" — das gilt nur,
-  // weil der Rueckruf den SCHLUESSEL aus `spaltenwerte` entfernt statt ihn auf 0 zu
-  // setzen (eine erfasste 0 waere eine bewusste Uebersteuerung, die die Regel weiterhin
-  // unterdrueckt). `toHaveProperty`/`=== undefined` uebersaehe eine Regression zu
+  // "Zuruecksetzen stellt den Regelwert wieder her" gilt nur, weil der Rueckruf den
+  // SCHLUESSEL aus `spaltenwerte` entfernt statt ihn auf 0 zu setzen (eine erfasste 0
+  // waere eine bewusste Uebersteuerung, die die Regel weiterhin unterdrueckt).
+  // `toHaveProperty`/`=== undefined` uebersaehe eine Regression zu
   // `{ ...spaltenwerte, [id]: undefined }` (der Schluessel waere weiterhin vorhanden,
   // nur sein Wert waere `undefined`) — deshalb hier explizit ueber die Schluesselliste.
   it('entfernt beim Zuruecksetzen den Schluessel aus spaltenwerte, statt ihn auf 0 zu setzen', () => {
@@ -177,7 +177,7 @@ describe('EinheitenTabelle', () => {
     expect(Object.prototype.hasOwnProperty.call(naechsteSpaltenwerte, 'S-3')).toBe(false);
   });
 
-  // Review-Finding 1: `ZellenEingabe` meldet auf Blur unbedingt, auch ohne Aenderung (reines
+  // `ZellenEingabe` meldet auf Blur unbedingt, auch ohne Aenderung (reines
   // Durchtabben). Fuer eine regelgetriebene Zelle darf das NICHT stillschweigend eine
   // Uebersteuerung erzeugen — sonst friert die Zelle ein und eine spaetere Aenderung der
   // firmenweiten Staffel erreicht die Einheit nie mehr.

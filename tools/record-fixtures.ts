@@ -1,5 +1,5 @@
 /**
- * Meilenstein M-FIX — Aufzeichnungspfad (E-31, Spec 04 §8.3).
+ * Aufzeichnungspfad fuer PriceHubble-Fixtures (E-31).
  *
  * Laufzeit: `node --experimental-strip-types` (Node >= 22.6, PE-09). Kein `tsx`.
  *
@@ -39,7 +39,7 @@ const PFLICHT = ['PH_BASE_URL', 'PH_DOSSIER_ID'] as const;
 /**
  * Zwei zulaessige Zugangswege: entweder PH_USERNAME und PH_PASSWORD, oder ein von
  * Hand besorgter PH_ACCESS_TOKEN. Der Token-Weg erlaubt den Aufzeichnungslauf, ohne
- * dass Zugangsdaten in den Prozess gelangen (E-31, Spec 04 §8.3).
+ * dass Zugangsdaten in den Prozess gelangen (E-31).
  */
 function leseZugang(env: Record<string, string | undefined>): Zugang {
   const token = (env['PH_ACCESS_TOKEN'] ?? '').trim();
@@ -194,8 +194,8 @@ async function main(): Promise<void> {
     if (!antwort.ok) {
       throw new Error(`${eintrag.endpunkt} fehlgeschlagen: ${antwort.fehler.art}`);
     }
-    // Anonymisierung VOR dem Schreiben (Spec 04 §8.3 Punkt 2): unanonymisiertes
-    // Material liegt zu keinem Zeitpunkt auf Platte.
+    // Anonymisierung VOR dem Schreiben: unanonymisiertes Material liegt zu keinem
+    // Zeitpunkt auf Platte.
     schreibe(eintrag.datei, anonymisiere(antwort.wert.rumpf));
     protokollzeilen.push(
       JSON.stringify({

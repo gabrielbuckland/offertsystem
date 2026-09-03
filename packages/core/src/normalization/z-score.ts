@@ -1,9 +1,8 @@
 // eq:normalisierung, Variante Z-Score — ausschliesslich mit nachgelagerter Kappung
-// zulaessig (Brief §5.5):
+// zulaessig:
 //   z = (x - mu) / sigma ;  x_dach = min(1, max(0, (z + c) / (2c))).
 // Ohne die Kappung verliesse z das Zielintervall unbeschraenkt und braeche I-22.
-// Nachweisartefakt fuer den Sonderfall der Messlatte aus 6.3; heute von keinem Faktor
-// verwendet (offener Punkt O-03: Herkunft von mu und sigma).
+// Heute von keinem Faktor verwendet; Herkunft von mu und sigma ist ein offener Punkt.
 import { score } from '../domain/geld.js';
 import { ok } from '../domain/result.js';
 import { grenzenIdentisch, type Normalisierungsstrategie } from './strategie.js';

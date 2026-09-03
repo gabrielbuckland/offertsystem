@@ -74,8 +74,8 @@ export function fuehreBoundaryPruefungAus(
 
 /**
  * Die Messung ist nur dann eine Aussage ueber die ARCHITEKTUR statt ueber die
- * Implementierung, wenn die Faktormenge datengetrieben gefuehrt wird (Brief §5.4).
- * Andernfalls erzwaenge bereits das Typsystem eine Codeaenderung.
+ * Implementierung, wenn die Faktormenge datengetrieben gefuehrt wird. Andernfalls
+ * erzwaenge bereits das Typsystem eine Codeaenderung.
  */
 const LITERALE_UNION = /type\s+FaktorId\s*=\s*'[^']+'(\s*\|\s*'[^']+')+/;
 

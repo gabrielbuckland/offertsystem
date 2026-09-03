@@ -1,5 +1,5 @@
 /**
- * Adapterinterner Fehlertyp Nr. 10 (Spec 04 §6.5.3, E-02).
+ * Adapterinterner Fehlertyp Nr. 10 (E-02).
  *
  * Er ist ausdruecklich KEINE ProviderFehler-Variante: Er tritt bei der
  * Initialisierung auf, nicht bei einem Abruf, und liegt damit auf demselben Pfad

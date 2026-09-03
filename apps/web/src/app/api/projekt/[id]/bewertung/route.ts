@@ -6,9 +6,9 @@
  * muss sehen, wann Credits verbraucht werden.
  *
  * Ohne Koerper (oder ohne `referenzobjektId` darin) laeuft der Abruf ueber alle
- * Referenzobjekte; mit `referenzobjektId` nur ueber das eine (Einzelabruf je Zeile,
- * `Referenzobjekte.tsx`). Die uebrigen Referenzobjekte bleiben in der Antwort
- * unveraendert, da `buendel.bewertungen` dann nur den einen Eintrag enthaelt.
+ * Referenzobjekte; mit `referenzobjektId` nur ueber das eine. Die uebrigen
+ * Referenzobjekte bleiben in der Antwort unveraendert, da `buendel.bewertungen` dann
+ * nur den einen Eintrag enthaelt.
  */
 import type { WohnungstypId } from '@offert/core';
 import { beschaffe } from '../../../../../server/eingang.js';
@@ -29,8 +29,9 @@ async function leseReferenzobjektId(anfrage: Request): Promise<string | undefine
 
 export async function POST(anfrage: Request, kontext: Kontext): Promise<Response> {
   const referenzobjektId = await leseReferenzobjektId(anfrage);
-  // Henne-Ei: siehe Berechnungsroute. Zwei Aufrufe, der Datei-Zwischenspeicher des
-  // Laders traegt die Kosten des zweiten.
+  // Henne-Ei: Die Firmenlaufzeit liefert nur den Ablageort, das Projekt-Delta erst aus
+  // dem geladenen Projekt — daher zwei Aufrufe. Der Datei-Zwischenspeicher des Laders
+  // traegt die Kosten des zweiten.
   const vorlaufzeit = holeLaufzeit();
   if (!vorlaufzeit.ok) {
     return Response.json({ fehler: { text: vorlaufzeit.meldungen.join(' ') } }, { status: 500 });
@@ -66,7 +67,7 @@ export async function POST(anfrage: Request, kontext: Kontext): Promise<Response
 
   // Reiner Bewertungsabruf braucht keine Anpassungen; ohne die Option versuchte
   // `projiziere` unnoetig, in Franken erfasste Positionen ueber leere Basispreise
-  // umzurechnen und schluege dabei fehl (siehe Berechnungsroute).
+  // umzurechnen und schluege dabei fehl.
   const projiziert = projiziere(
     { ...projekt, referenzobjekte: zuBeschaffen }, {}, { ohneAnpassungen: true });
   if (!projiziert.ok) {

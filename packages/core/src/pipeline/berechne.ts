@@ -1,7 +1,7 @@
 // Keine eigene Formel; verkettet eq:flaeche, eq:qm_preis, eq:wohnungspreis,
 // eq:verkaufssumme, eq:normalisierung, eq:aufwandindikator und eq:honorar_mapping.
-// Reihenfolge 1 -> 2 -> 4.2a -> 3 -> 4 -> 5; sie ist seit E-06 sachlich erzwungen und
-// nicht mehr nur aus Determinismusgruenden fixiert (Richtigstellung zu Spec 03 §4.6).
+// Reihenfolge 1 -> 2 -> 4.2a -> 3 -> 4 -> 5; sie ist sachlich erzwungen (E-06), nicht
+// nur aus Determinismusgruenden fixiert.
 import type { WohnungstypId } from '../domain/ids.js';
 import { fehlschlag, ok, type Result } from '../domain/result.js';
 import type { StufenFehler } from '../fehler/stufenfehler.js';

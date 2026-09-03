@@ -105,7 +105,7 @@ export interface BauOptionen {
    */
   readonly anpassungMitVorlage?: string | undefined;
   /** Haengt der ersten Anpassung der ersten Einheit eine Regelspur samt Uebersteuerung
-   *  an (Task 6, A-13) — fuer den Nachweis, dass baueOfferte sie durchreicht. */
+   *  an (A-13) — fuer den Nachweis, dass baueOfferte sie durchreicht. */
   readonly anpassungMitRegelspur?: boolean;
 }
 

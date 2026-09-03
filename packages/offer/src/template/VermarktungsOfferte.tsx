@@ -1,5 +1,5 @@
 /**
- * Keine Formel. Reine Funktion Offer -> kundengerichtetes HTML (Spec 2026-08-27 §4).
+ * Keine Formel. Reine Funktion Offer -> kundengerichtetes HTML.
  *
  * Gerendert wird ausschliesslich das AUFGELÖSTE Dokument aus dem Artefakt — nicht die
  * Vorlage und nicht der Rechenweg: Die Offerte geht an den Eigentümer, der Rechenweg
@@ -42,7 +42,7 @@ function BlockKnoten({ knoten }: { knoten: AufgeloesterBlock }) {
         <ul>
           {knoten.content.map((li, i) => (
             <li key={i}>
-              {/* M-8: In <p> gewickelt — das Schema laesst mehrere Absaetze je
+              {/* In <p> gewickelt — das Schema laesst mehrere Absaetze je
                   Listenpunkt zu (z.array(paragraph).min(1)); ohne umschliessendes
                   Element verschmolzen zwei Absaetze zu einem zusammenhaengenden
                   Textlauf. */}

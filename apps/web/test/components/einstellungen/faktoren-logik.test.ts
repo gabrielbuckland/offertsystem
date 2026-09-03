@@ -1,6 +1,3 @@
-/**
- * Reine Funktionen des Aufwandfaktoren-Editors (Task 16) — ohne React testbar.
- */
 import { describe, expect, it } from 'vitest';
 import { neuerManuellerFaktor, renormalisiereGewichte } from '../../../src/components/einstellungen/faktoren-logik.js';
 

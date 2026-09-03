@@ -105,9 +105,9 @@ export function ProjektAnsicht(
   const [offerteLaeuft, setOfferteLaeuft] = useState(false);
   const [offerteFehler, setOfferteFehler] = useState<string | undefined>(undefined);
   const [rechenwegOffen, setRechenwegOffen] = useState(false);
-  // Honorareingabe VOR dem Erzeugen (Spec 2026-08-29): Die Offerte nennt dem Eigentuemer
-  // einen einzigen Betrag, nie die Range — der Klick auf «Offerte generieren» oeffnet
-  // deshalb erst dieses Modal, statt sofort zu erzeugen.
+  // Honorareingabe VOR dem Erzeugen: Die Offerte nennt dem Eigentuemer einen einzigen
+  // Betrag, nie die Range — der Klick auf «Offerte generieren» oeffnet deshalb erst
+  // dieses Modal, statt sofort zu erzeugen.
   const [honorarModalOffen, setHonorarModalOffen] = useState(false);
 
   async function rufeAb(referenzobjektId: string) {

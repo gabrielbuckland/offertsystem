@@ -1,6 +1,6 @@
 /**
  * Keine Formel. Formatpruefung des vom Vermarkter gewaehlten Honorarbetrags
- * (`aggregates.gewaehltesHonorar`, Spec 2026-08-29).
+ * (`aggregates.gewaehltesHonorar`).
  *
  * Geprueft wird die Form (R3: Ganzzahl in Rappen, wie `feeRange.min/max`) UND die
  * Positivitaet. Eine Abweichung von der Honorarrange ist KEINE Formverletzung, sondern
@@ -34,7 +34,7 @@ export function validiereGewaehltesHonorar(wert: unknown): HonorarPruefung {
 
 /**
  * Honorar als Anteil (nicht Prozentzahl, also 0.032 statt 3.2) der Verkaufssumme, fuer
- * `formatiereHonorarProzent` (Spec 2026-08-29). `null` statt `NaN`/`Infinity`, wenn die
+ * `formatiereHonorarProzent`. `null` statt `NaN`/`Infinity`, wenn die
  * Verkaufssumme keine sinnvolle Bezugsgroesse ist (<= 0) — die Anzeige entscheidet dann
  * selbst ueber einen Platzhaltertext, statt eine kaputte Zahl zu erhalten.
  */

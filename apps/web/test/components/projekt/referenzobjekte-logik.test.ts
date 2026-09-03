@@ -104,8 +104,7 @@ describe('anzahlWohnungenAusEntwurf', () => {
 
 /**
  * Die eigentliche Verkettung "neu angelegtes Referenzobjekt + Anzahl Wohnungen ergeben
- * genau so viele neue Einheiten dieses Typs" — reine Funktionen, deshalb hier statt im
- * Komponententest (`Referenzobjekte.test.tsx`) pruefbar.
+ * genau so viele neue Einheiten dieses Typs" — reine Funktionen, deshalb hier pruefbar.
  */
 describe('neuesReferenzobjekt + erzeugeEinheiten (Anlegen-Dialog mit Anzahl)', () => {
   it('erzeugt genau so viele Einheiten des neuen Typs wie im Dialog angegeben', () => {

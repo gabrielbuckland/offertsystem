@@ -1,4 +1,4 @@
-// Keine Formel. Zahlendarstellung und Rundung nach Brief §5.3, Spec 03 §5, E-09, E-10.
+// Keine Formel. Zahlendarstellung und Rundung (E-09, E-10).
 // Die Preiskette laeuft in ganzzahligen Rappen als number; die Score-/Gewichtskette
 // gleitkommabasiert. Die Marken verhindern zur Uebersetzungszeit, dass ein Frankenbetrag
 // mit einem Score verrechnet wird (I-28).

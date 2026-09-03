@@ -5,7 +5,7 @@
  * ausschliesslich ueber w_umfang; jede Renormalisierung durch Aufnahme eines weiteren
  * Faktors senkt w_umfang und schwaecht damit den Pfad, der der Degression entgegenwirkt —
  * die Marge WAECHST also. Kehrt sich die Richtung um, meldet das Werkzeug es als Befund
- * statt es zu uebergehen (Spec 02 §7.3).
+ * statt es zu uebergehen.
  *
  * Instrument ist `extension-scenario`, nicht `eval/extension-scenario` — der
  * Artefaktschreiber setzt `artifacts/eval/` davor.
@@ -76,7 +76,7 @@ export function hauptlauf(wurzel: string = repoWurzel()): string {
       renormalisierung_automatisch: false,
       begruendung_nicht_automatisch:
         'Eine automatische Normierung erfuellte die Summenbedingung trivial und beraubte '
-        + 'die dritte Pruefebene ihres Zwecks (Spec 02 §7.1).',
+        + 'die dritte Pruefebene ihres Zwecks.',
     },
     validierung_erweitert: { ok: erweitert.ok, fehler: erweitert.ok ? [] : erweitert.fehler },
     validierung_verletzend: {

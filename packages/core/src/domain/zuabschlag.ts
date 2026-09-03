@@ -23,7 +23,7 @@ export interface ZuAbschlag {
   readonly vorlageId?: string;
   /** Regel und Uebersteuerung sind unabhaengig optional: Eine Uebersteuerung kann ohne
    *  Regelnachweis auftreten, wenn das Merkmal der Regel an dieser Einheit keinen Wert
-   *  hat (siehe apps/web/src/server/wirksamer-wert.ts). */
+   *  hat. */
   readonly regel?: Regelspur;
   readonly uebersteuert?: true;
 }

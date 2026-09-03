@@ -1,5 +1,5 @@
 /**
- * Keine Modellformel. Erzeugt die LaTeX-Fragmente des Anhangs A5 (Spec 06 §8.2).
+ * Keine Modellformel. Erzeugt die LaTeX-Fragmente des Anhangs A5.
  *
  * Der Generator liest AUSSCHLIESSLICH Artefakte. Handarbeit bleibt allein fuer die
  * einordnenden Saetze; kein Zahlenwert gelangt von Hand in den Bericht.
@@ -46,8 +46,7 @@ export type CoverageArtefakt = Readonly<Record<string, CoverageEintrag>>;
 /**
  * Zeilengewichtete Paketabdeckung: sum(covered) / sum(total) ueber alle Dateien des
  * Praefixes. Ein ungewichtetes Mittel der Datei-Prozentsaetze wuerde kleine Dateien
- * ueberrepraesentieren und hat im Kern 2,25 Prozentpunkte zu viel ausgewiesen
- * (Befund F-060 des Gutachtens vom 2026-08-28).
+ * ueberrepraesentieren und hat im Kern 2,25 Prozentpunkte zu viel ausgewiesen (F-060).
  */
 export function gewichteteAbdeckung(
   coverage: CoverageArtefakt,

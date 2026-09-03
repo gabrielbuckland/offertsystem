@@ -1,9 +1,7 @@
 /**
- * Keine eigene Formel. Bildet den Projektstand auf die bestehende `Erfassung` ab.
- *
- * Diese Abbildung ist die einzige neue Fachlogik des Umbaus. Sie existiert, damit Kern,
- * Adapter und Offert-Paket unveraendert bleiben: Die Oberflaeche fuehrt Zu-/Abschlaege in
- * Spalten, das Rechenmodell kennt nur eine flache Liste von Faktoren.
+ * Keine eigene Formel. Bildet den Projektstand auf die bestehende `Erfassung` ab: Die
+ * Oberflaeche fuehrt Zu-/Abschlaege in Spalten, das Rechenmodell kennt nur eine flache
+ * Liste von Faktoren.
  *
  * Die Spalten landen in ihrer konfigurierten Reihenfolge im Anpassungsarray. Ohne feste
  * Reihenfolge waere die Serialisierung des Eingangs nicht deterministisch, und der

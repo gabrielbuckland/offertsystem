@@ -1,5 +1,5 @@
 /**
- * Analytische Aufloesung von eq:netto_degression nach je einem Parameter (Spec 06 §7.2).
+ * Analytische Aufloesung von eq:netto_degression nach je einem Parameter.
  *
  * Gesucht ist jeweils der Wert, bei dem M = 1 gilt, also L = R — mit den uebrigen
  * Parametern fest. Ein nicht positiver Nenner bedeutet: Die Verletzung ist ueber diesen

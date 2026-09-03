@@ -1,4 +1,3 @@
-// Duenner Adapter (Brief §5.1): laden, drucken, ausliefern.
 import { druckeOfferte } from '@offert/offer/druck';
 import { verzeichnisAusLaufzeit } from '../../../../../server/laufzeit.js';
 import { ladeOfferte } from '../../../../../server/offerten-ablage.js';

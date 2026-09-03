@@ -1,4 +1,4 @@
-// Keine Formel. Definierte Iterationsreihenfolge (Spec 03 §9.3): aufsteigend nach FaktorId
+// Keine Formel. Definierte Iterationsreihenfolge: aufsteigend nach FaktorId
 // in Codepoint-Ordnung, ausdruecklich nicht localeCompare.
 import type { FaktorId } from '../domain/ids.js';
 
