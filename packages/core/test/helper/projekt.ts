@@ -57,13 +57,13 @@ export function parametrisierungFixture(): RepraesentativeParametrisierung {
     flaecheInnen: quadratmeter(92.5),
     flaecheAussen: quadratmeterAbNull(0),
     stockwerk: 1,
-    energielabel: 'B',
+    energielabel: 'minergie_p' as const,
     zustandsbewertungen: BEWERTUNGEN_STANDARD.zustandsbewertungen,
     qualitaetsbewertungen: BEWERTUNGEN_STANDARD.qualitaetsbewertungen,
     anzahlBadezimmer: 1,
     lift: true,
     baujahr: 2025,
-    heizungsart: 'heat_pump',
+    heizungsart: 'heat_pump_air' as const,
   };
 }
 

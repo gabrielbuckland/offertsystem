@@ -12,7 +12,7 @@ const parametrisierung: RepraesentativeParametrisierung = {
   flaecheInnen: 82 as RepraesentativeParametrisierung['flaecheInnen'],
   flaecheAussen: 12 as RepraesentativeParametrisierung['flaecheAussen'],
   stockwerk: 2,
-  energielabel: 'minergie',
+  energielabel: 'minergie' as const,
   zustandsbewertungen: {
     bathrooms: 'new_or_recently_renovated', kitchen: 'new_or_recently_renovated',
     flooring: 'new_or_recently_renovated', windows: 'new_or_recently_renovated',
@@ -24,7 +24,7 @@ const parametrisierung: RepraesentativeParametrisierung = {
   anzahlBadezimmer: 1,
   lift: true,
   baujahr: 2026,
-  heizungsart: 'heat_pump_air',
+  heizungsart: 'heat_pump_air' as const,
 };
 
 const antwort = ValuationResponseSchema.parse(

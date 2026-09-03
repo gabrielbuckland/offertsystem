@@ -11,6 +11,7 @@ import {
   validiereLiegenschaftEingabe, type EingabeFehler,
 } from '../eingabe/validiere.js';
 import { normalisiereBereiche } from '../modell/bereichsregel.js';
+import { STRATEGIE_BEZEICHNER } from '../normalization/bezeichner.js';
 import type {
   FaktorParameter, Konfiguration, Stuetzstelle,
 } from '../config/typen.js';
@@ -80,7 +81,7 @@ const KonfigurationsKopieSchema = z.object({
   })).default([]),
   faktoren: z.array(z.tuple([z.string(), z.object({
     grenzeMin: z.number(), grenzeMax: z.number(), gewicht: z.number(),
-    strategie: z.enum(['min-max', 'z-score']),
+    strategie: z.enum(STRATEGIE_BEZEICHNER),
     quelle: z.enum(['lagescore', 'manuell', 'abgeleitet']),
     quellSchluessel: z.string(), bezeichnung: z.string(),
     referenzverteilung: z.object({

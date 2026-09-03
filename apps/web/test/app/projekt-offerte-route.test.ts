@@ -41,9 +41,9 @@ async function vorbereitetesProjekt(projekte: string, auftraggeber?: string) {
     referenzobjekte: [{
       id: 'R-1', zimmerzahl: 3.5,
       parametrisierung: {
-        flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'B',
+        flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'minergie_p' as const,
         ...BEWERTUNGEN_STANDARD,
-        anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
+        anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump_air' as const,
       },
     }],
     anpassungsSpalten: [],

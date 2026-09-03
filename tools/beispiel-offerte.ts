@@ -34,9 +34,9 @@ const BEWERTUNGEN_STANDARD = {
 } as const;
 
 const parametrisierung = {
-  flaecheInnen: 92.5, flaecheAussen: 0, stockwerk: 2, energielabel: 'C',
+  flaecheInnen: 92.5, flaecheAussen: 0, stockwerk: 2, energielabel: 'minergie_eco',
   ...BEWERTUNGEN_STANDARD,
-  anzahlBadezimmer: 1, lift: false, baujahr: 2025, heizungsart: 'Waermepumpe',
+  anzahlBadezimmer: 1, lift: false, baujahr: 2025, heizungsart: 'heat_pump_air',
 };
 
 const erfassung = {

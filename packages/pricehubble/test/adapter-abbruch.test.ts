@@ -83,9 +83,17 @@ describe('Abbruch mitten im Typen-Durchlauf (Spec 04 §3.3, US-15, NFA-10)', () 
 
   it('bricht bei fehlgeschlagener PATCH-Verifikation ab', async () => {
     mswServer.use(
-      http.patch(`${BASIS}/api/v1/dossiers/${TEST_DOSSIER_ID}`, () =>
-        HttpResponse.json({ property: { livingArea: 1 } }),
-      ),
+      // Das Fremdsystem quittiert das PATCH, uebernimmt den gesendeten Wert aber
+      // stillschweigend nicht. Sichtbar wird das erst beim Zurueckleseabruf.
+      http.get(`${BASIS}/api/v1/dossiers/${TEST_DOSSIER_ID}`, () => {
+        const basis = ladeFixture<{ property: Record<string, unknown> }>(
+          'synthetic/dossier/get-dossier.success.json',
+        );
+        return HttpResponse.json({
+          ...basis,
+          property: { ...basis.property, livingArea: 1 },
+        });
+      }),
     );
     const { adapter } = baueAdapter();
     const ergebnis = await adapter.bewerteWohnungstypen([anfrage(1)]);

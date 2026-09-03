@@ -58,7 +58,7 @@ export function anfrage(nummer: number): BewertungsAnfrage {
       flaecheInnen: (60 + nummer * 10) as BewertungsAnfrage['parametrisierung']['flaecheInnen'],
       flaecheAussen: 10 as BewertungsAnfrage['parametrisierung']['flaecheAussen'],
       stockwerk: nummer,
-      energielabel: 'minergie',
+      energielabel: 'minergie' as const,
       zustandsbewertungen: {
         bathrooms: 'well_maintained', kitchen: 'well_maintained',
         flooring: 'well_maintained', windows: 'well_maintained',
@@ -69,7 +69,7 @@ export function anfrage(nummer: number): BewertungsAnfrage {
       anzahlBadezimmer: 1,
       lift: true,
       baujahr: 2026,
-      heizungsart: 'heat_pump_air',
+      heizungsart: 'heat_pump_air' as const,
     },
   };
 }

@@ -30,7 +30,7 @@ export function aufLagescores(
   const meta = new Map<LagescoreName, { originalScore: Score; isOverridden: boolean }>();
 
   for (const name of LAGESCORE_NAMEN) {
-    const eintrag = antwort[name];
+    const eintrag = antwort.scores[name];
     const schluessel = name as unknown as LagescoreName;
     werte.set(schluessel, eintrag.score as Score);
     meta.set(schluessel, {

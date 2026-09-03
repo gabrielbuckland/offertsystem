@@ -10,6 +10,7 @@
  */
 import { z } from 'zod';
 import {
+  BADEZIMMER_MAX, BADEZIMMER_MIN, EnergielabelSchema, HeizungsartSchema,
   normalisiereBereiche, pruefeBereiche, QualitaetsbewertungenSchema, ZustandsbewertungenSchema,
 } from '@offert/core';
 import { offertDokumentSchema } from '@offert/offer';
@@ -20,13 +21,13 @@ const parametrisierungSchema = z.object({
   flaecheInnen: z.number().positive(),
   flaecheAussen: z.number().nonnegative(),
   stockwerk: z.number().int(),
-  energielabel: z.string(),
+  energielabel: EnergielabelSchema,
   zustandsbewertungen: ZustandsbewertungenSchema,
   qualitaetsbewertungen: QualitaetsbewertungenSchema,
-  anzahlBadezimmer: z.number().int().nonnegative(),
+  anzahlBadezimmer: z.number().int().min(BADEZIMMER_MIN).max(BADEZIMMER_MAX),
   lift: z.boolean(),
   baujahr: z.number().int(),
-  heizungsart: z.string(),
+  heizungsart: HeizungsartSchema,
 }).strict();
 
 const referenzobjektSchema = z.object({

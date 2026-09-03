@@ -39,9 +39,9 @@ function beispielErfassung(): Record<string, unknown> {
     wohnungstypen: [{
       id: 'T-3.5', zimmerzahl: 3.5,
       parametrisierung: {
-        flaecheInnen: 82, flaecheAussen: 12, stockwerk: 2, energielabel: 'A',
+        flaecheInnen: 82, flaecheAussen: 12, stockwerk: 2, energielabel: 'minergie_a' as const,
         ...BEWERTUNGEN_STANDARD,
-        anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'Waermepumpe',
+        anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump_air' as const,
       },
     }],
     einheiten: Array.from({ length: 6 }, (_, i) => ({

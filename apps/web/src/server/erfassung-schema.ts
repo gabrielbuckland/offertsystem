@@ -5,7 +5,10 @@
  * Typ je Zimmerzahl) stehen in `superRefine` auf Aggregatebene, nicht je Feld.
  */
 import type { Konfiguration } from '@offert/core';
-import { QualitaetsbewertungenSchema, ZustandsbewertungenSchema } from '@offert/core';
+import {
+  BADEZIMMER_MAX, BADEZIMMER_MIN, EnergielabelSchema, HeizungsartSchema,
+  QualitaetsbewertungenSchema, ZustandsbewertungenSchema,
+} from '@offert/core';
 import { z } from 'zod';
 
 /** Verbindliche Feldliste der Dossier-Parametrisierung (E-28); zehn Felder, nicht mehr. */
@@ -13,13 +16,13 @@ const dossierParameterSchema = z.object({
   flaecheInnen: z.number().positive(),
   flaecheAussen: z.number().nonnegative(),
   stockwerk: z.number().int(),
-  energielabel: z.string(),
+  energielabel: EnergielabelSchema,
   zustandsbewertungen: ZustandsbewertungenSchema,
   qualitaetsbewertungen: QualitaetsbewertungenSchema,
-  anzahlBadezimmer: z.number().int().nonnegative(),
+  anzahlBadezimmer: z.number().int().min(BADEZIMMER_MIN).max(BADEZIMMER_MAX),
   lift: z.boolean(),
   baujahr: z.number().int(),
-  heizungsart: z.string(),
+  heizungsart: HeizungsartSchema,
 }).strict();
 
 export function erfassungsSchema(k: Konfiguration) {

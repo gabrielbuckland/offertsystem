@@ -8,6 +8,9 @@
  * Keine Faktorbezeichner: Die Faktorliste ist datengetrieben (I-13) — ein neuer
  * Aufwandfaktor aendert die Konfiguration, nicht dieses Schema.
  */
+import {
+  BADEZIMMER_MAX, BADEZIMMER_MIN, EnergielabelSchema, HeizungsartSchema,
+} from '@offert/core';
 import { z } from 'zod';
 import { provenancedSchema } from './provenance.js';
 import { aufgeloestesDokumentSchema } from '../vorlage/dokument-schema.js';
@@ -70,13 +73,13 @@ export const apartmentTypeDerivationSchema = z.object({
     flaecheInnen: quadratmeter,
     flaecheAussen: z.number().finite().nonnegative(),
     stockwerk: z.number().int(),
-    energielabel: z.string(),
+    energielabel: EnergielabelSchema,
     zustandsbewertungen: z.record(z.string()),
     qualitaetsbewertungen: z.record(z.string()),
-    anzahlBadezimmer: z.number().int().nonnegative(),
+    anzahlBadezimmer: z.number().int().min(BADEZIMMER_MIN).max(BADEZIMMER_MAX),
     lift: z.boolean(),
     baujahr: z.number().int(),
-    heizungsart: z.string(),
+    heizungsart: HeizungsartSchema,
   }).strict(),
   referenceValuation: provenancedSchema(
     z.object({

@@ -6,7 +6,12 @@ import { z } from 'zod';
  * `nuisance` NICHT um — die Umpolung geschieht ausschliesslich ueber vertauschte
  * Normalisierungsgrenzen in der Konfiguration (I-13, Spec 04 §4.2).
  *
- * UNVERIFIZIERT (G-2, OFFEN-2): Fuer E5 existiert keine aufgezeichnete Antwort.
+ * Die neun Score-Objekte stehen unter `scores`. Dieselben neun Namen erscheinen
+ * zusaetzlich flach auf oberster Ebene als blosse Zahlen; sie werden verworfen, weil
+ * ihnen `originalScore` und `isOverridden` fehlen und der Kern die Uebersteuerung
+ * fuehren muss. Tolerant nach oben, streng nach unten.
+ *
+ * Gegen eine echte Antwort verifiziert (loest G-2/OFFEN-2 ab).
  */
 export const LAGESCORE_NAMEN = [
   'location',
@@ -26,11 +31,13 @@ const EinzelscoreSchema = z.object({
   isOverridden: z.boolean().optional(),
 });
 
-export const LocationScoresResponseSchema = z.object(
-  Object.fromEntries(LAGESCORE_NAMEN.map((name) => [name, EinzelscoreSchema])) as Record<
-    (typeof LAGESCORE_NAMEN)[number],
-    typeof EinzelscoreSchema
-  >,
-);
+export const LocationScoresResponseSchema = z.object({
+  scores: z.object(
+    Object.fromEntries(LAGESCORE_NAMEN.map((name) => [name, EinzelscoreSchema])) as Record<
+      (typeof LAGESCORE_NAMEN)[number],
+      typeof EinzelscoreSchema
+    >,
+  ),
+});
 
 export type LocationScoresResponse = z.infer<typeof LocationScoresResponseSchema>;

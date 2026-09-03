@@ -146,7 +146,17 @@ export class PriceHubbleAdapter implements ValuationProvider {
     if (!patch.ok) {
       return { ok: false, fehler: patch.fehler };
     }
-    const abweichungen = verifiziereGesendetePatchFelder(gesendet, patch.wert.rumpf);
+
+    // E3 antwortet mit leerem Rumpf (`{}`, live belegt 2026-09-01) und gibt die
+    // gesetzten Felder NICHT zurueck. Der Rueckvergleich nach Spec 04 §5.4 liest den
+    // Stand deshalb mit einem eigenen GET nach. Das kostet einen zusaetzlichen Request
+    // je Wohnungstyp, erhaelt aber die Schutzabsicht: ein stillschweigend ignorierter
+    // oder gerundeter Parameter darf nicht durchrutschen.
+    const zurueckgelesen = await this.liesDossierRoh();
+    if (!zurueckgelesen.ok) {
+      return { ok: false, fehler: zurueckgelesen.fehler };
+    }
+    const abweichungen = verifiziereGesendetePatchFelder(gesendet, zurueckgelesen.wert.rumpf);
     if (abweichungen.length > 0) {
       this.abh.protokoll.vertragsbruch({
         ts: new Date(this.abh.uhr.jetztMs()).toISOString(),
@@ -161,8 +171,8 @@ export class PriceHubbleAdapter implements ValuationProvider {
           endpunkt: 'dossierUpdate',
           versuche: 1,
           dauerMs: 0,
-          httpStatus: patch.wert.httpStatus,
-          phRequestId: patch.wert.phRequestId,
+          httpStatus: zurueckgelesen.wert.httpStatus,
+          phRequestId: zurueckgelesen.wert.phRequestId,
           detail: `PATCH-Verifikation fehlgeschlagen: ${abweichungen.join(', ')}`,
         },
       };
@@ -198,6 +208,22 @@ export class PriceHubbleAdapter implements ValuationProvider {
         grundcode: 'stale_valuation',
       },
     };
+  }
+
+  /** GET ohne Schemapruefung: liefert den Rumpf fuer den Rueckvergleich aus §5.4. */
+  private async liesDossierRoh(): Promise<Zwischenergebnis<RohAntwort>> {
+    const { konfiguration, dossierId } = this.abh;
+    const antwort = await this.abh.tokenVerwaltung.mitToken((token) => ({
+      endpunkt: 'dossierGet' as EndpunktName,
+      methode: 'GET' as const,
+      url: this.url(konfiguration.endpunkte.dossierGet, dossierId),
+      timeoutMs: konfiguration.timeoutMs,
+      token,
+    }));
+    if (!antwort.ok) {
+      return { ok: false, fehler: antwort.fehler };
+    }
+    return { ok: true, wert: antwort.wert };
   }
 
   private async holeDossier(): Promise<Zwischenergebnis<unknown>> {

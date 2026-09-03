@@ -61,9 +61,9 @@ import { Referenzobjekte } from '../../../src/components/projekt/Referenzobjekte
 const R: Referenzobjekt = {
   id: 'R1', zimmerzahl: 3.5,
   parametrisierung: {
-    flaecheInnen: 86, flaecheAussen: 19, stockwerk: 0, energielabel: 'B',
+    flaecheInnen: 86, flaecheAussen: 19, stockwerk: 0, energielabel: 'minergie_p' as const,
     ...BEWERTUNGEN_STANDARD,
-    anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
+    anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump_air' as const,
   },
 };
 

@@ -74,13 +74,20 @@ export function dossierBody(p: RepraesentativeParametrisierung): DossierBody {
       livingArea: p.flaecheInnen,
       balconyArea: p.flaecheAussen,
       floorNumber: p.stockwerk,
-      energyLabel: p.energielabel,
       condition: p.zustandsbewertungen,
       quality: p.qualitaetsbewertungen,
       numberOfBathrooms: p.anzahlBadezimmer,
       hasLift: p.lift,
       buildingYear: p.baujahr,
-      heatingGenerationType: p.heizungsart,
+      // `energyLabel` und `heatingGenerationType` sind serverseitig geschlossene
+      // Aufzaehlungen OHNE Leerwert (live belegt 2026-09-01: energyLabel nur
+      // minergie*, heatingGenerationType nur electric|wood|gas|oil|district|
+      // heat_pump_air|heat_pump_geothermal|solar). Ein leeres Feld wird deshalb
+      // weggelassen statt als '' gesendet — sonst lehnt die API das ganze PATCH
+      // mit 400 ab, und eine Liegenschaft ohne Minergie-Label waere ueberhaupt
+      // nicht bewertbar.
+      ...(p.energielabel === '' ? {} : { energyLabel: p.energielabel }),
+      ...(p.heizungsart === '' ? {} : { heatingGenerationType: p.heizungsart }),
     },
   };
 }

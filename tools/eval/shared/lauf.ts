@@ -65,12 +65,12 @@ function parametrisierung(typ: SzenarioTyp): RepraesentativeParametrisierung {
     flaecheInnen: quadratmeter(typ.A_ref_innen),
     flaecheAussen: typ.A_ref_aussen as RepraesentativeParametrisierung['flaecheAussen'],
     stockwerk: 1,
-    energielabel: 'C',
+    energielabel: 'minergie_eco',
     ...BEWERTUNGEN_STANDARD,
     anzahlBadezimmer: 1,
     lift: false,
     baujahr: 2025,
-    heizungsart: 'Waermepumpe',
+    heizungsart: 'heat_pump_air',
   };
 }
 

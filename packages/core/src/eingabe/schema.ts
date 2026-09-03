@@ -1,7 +1,10 @@
 // Keine Formel. Typfamilie *Eingabe: permissiv, ohne Marken, aus dem Zod-Schema
 // abgeleitet. Einzige Stelle mit Plausibilitaetsgrenzen (Spec 03 §2.1, I-02).
 import { z } from 'zod';
-import { QualitaetsbewertungenSchema, ZustandsbewertungenSchema } from '../config/bewertungen.js';
+import {
+  BADEZIMMER_MAX, BADEZIMMER_MIN, EnergielabelSchema, HeizungsartSchema,
+  QualitaetsbewertungenSchema, ZustandsbewertungenSchema,
+} from '../config/bewertungen.js';
 
 export const adresseEingabeSchema = z.object({
   strasse: z.string().min(1),
@@ -22,13 +25,13 @@ export const parametrisierungEingabeSchema = z.object({
   flaecheInnen: z.number().finite().positive(),
   flaecheAussen: z.number().finite().nonnegative(),
   stockwerk: z.number().int(),
-  energielabel: z.string(),
+  energielabel: EnergielabelSchema,
   zustandsbewertungen: ZustandsbewertungenSchema,
   qualitaetsbewertungen: QualitaetsbewertungenSchema,
-  anzahlBadezimmer: z.number().int().nonnegative(),
+  anzahlBadezimmer: z.number().int().min(BADEZIMMER_MIN).max(BADEZIMMER_MAX),
   lift: z.boolean(),
   baujahr: z.number().int(),
-  heizungsart: z.string(),
+  heizungsart: HeizungsartSchema,
 });
 
 export const wohnungstypEingabeSchema = z.object({

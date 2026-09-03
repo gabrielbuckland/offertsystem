@@ -72,12 +72,12 @@ function parametrisierung(
     flaecheInnen: flaecheInnen as Quadratmeter,
     flaecheAussen: flaecheAussen as Quadratmeter,
     stockwerk,
-    energielabel: 'A',
+    energielabel: 'minergie_a' as const,
     ...BEWERTUNGEN_STANDARD,
     anzahlBadezimmer: 1,
     lift: true,
     baujahr: 2027,
-    heizungsart: 'Waermepumpe',
+    heizungsart: 'heat_pump_air' as const,
   };
 }
 

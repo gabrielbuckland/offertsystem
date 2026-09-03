@@ -17,7 +17,9 @@ export const DossierResponseSchema = z.object({
     livingArea: z.number().positive(),
     balconyArea: z.number().nonnegative().optional(),
     numberOfRooms: z.number().positive(),
-    floorNumber: z.number(),
+    // Optional wie `balconyArea`: Ein reales Dossier fuehrt das Feld nicht zwingend.
+    // Der Adapter SETZT es beim PATCH, liest es aber nie zurueck.
+    floorNumber: z.number().optional(),
     location: z.object({ address: AdresseSchema }),
   }),
   valuationSale: ValuationSaleSchema,
