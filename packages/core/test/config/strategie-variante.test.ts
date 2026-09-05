@@ -1,5 +1,4 @@
-// Sonderfall-Messung des Erweiterungsszenarios (docs/testdoku/erweiterung-risikoindex.md):
-// laedt die Konfigurationsvariante config/company-defaults.strategie.json (preissegment
+// Sonderfall der Konfigurationserweiterung (Strategiewechsel): laedt die Konfigurationsvariante config/company-defaults.strategie.json (preissegment
 // auf wurzel-min-max, gleiche Grenzen) und rechnet einen vollstaendigen Pipeline-Lauf.
 // Die ausgelieferte company-defaults.json bleibt unveraendert auf min-max — beide
 // Fassungen werden hier gegeneinander gehalten.
@@ -27,7 +26,7 @@ function ladeKern(dateiname: string): Konfiguration {
 const ERWARTET_LINEAR = 0.26576576576576577;
 const ERWARTET_WURZEL = 0.32450017855222796;
 
-describe('Konfigurationsvariante wurzel-min-max (Sonderfall-Messung)', () => {
+describe('Konfigurationsvariante wurzel-min-max (Sonderfall der Erweiterung)', () => {
   const variante = ladeKern('company-defaults.strategie.json');
   const basis = ladeKern('company-defaults.json');
 

@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   a5Coverage,
-  a5Fehlerprotokoll,
-  a5Protokolle,
-  a5Testfaelle,
+  a5Uebersicht,
   type CoverageArtefakt,
   type TestArtefakt,
 } from './a5.ts';
@@ -23,53 +21,6 @@ const tests: TestArtefakt = {
       erwartung: null, invariante: null, anforderung: null, fehlermeldung: null },
   ],
 };
-
-describe('a5Testfaelle', () => {
-  const tex = a5Testfaelle(tests);
-
-  it('fuehrt Vorbedingung, Schritte und Erwartungswert je Testfall', () => {
-    expect(tex).toContain('Standardkonfiguration');
-    expect(tex).toContain('Referenzwert');
-    expect(tex).toContain('A-04');
-  });
-
-  it('macht fehlende Metadaten teilweise dokumentierter Faelle sichtbar', () => {
-    expect(tex).toContain('nur Vorbedingung');
-    expect(tex).toContain('METADATEN FEHLEN');
-  });
-
-  it('laesst undokumentierte Faelle weg und weist die Auswahl in der Beschriftung aus', () => {
-    expect(tex).not.toContain('ohne Metadaten');
-    expect(tex).toContain('2 dokumentierte von 3');
-  });
-
-  it('bricht ab, wenn kein Fall Metadaten traegt', () => {
-    const ohne = {
-      ...tests,
-      faelle: tests.faelle.map((f) => ({
-        ...f, vorbedingung: null, schritte: null, erwartung: null,
-      })),
-    };
-    expect(() => a5Testfaelle(ohne)).toThrow(/Metadaten/u);
-  });
-
-  it('traegt den Hinweis auf die automatische Erzeugung', () => {
-    expect(tex.startsWith('% AUTOMATISCH ERZEUGT')).toBe(true);
-  });
-});
-
-describe('a5Protokolle', () => {
-  it('fuehrt Datum, Ergebnis, Kommentar und den Seed im Protokollkopf', () => {
-    const tex = a5Protokolle(tests);
-    expect(tex).toContain('424242');
-    expect(tex).toContain('2026-08-16');
-    expect(tex).toContain('abc123');
-  });
-
-  it('bricht ab, wenn der Seed fehlt', () => {
-    expect(() => a5Protokolle({ ...tests, seed: null })).toThrow(/seed/i);
-  });
-});
 
 describe('a5Coverage', () => {
   const coverage: CoverageArtefakt = {
@@ -107,19 +58,18 @@ describe('a5Coverage', () => {
   });
 });
 
-describe('a5Fehlerprotokoll', () => {
-  it('fuehrt fehlgeschlagene Laeufe mit Gegenbeispiel und Seed', () => {
-    const tex = a5Fehlerprotokoll(
-      { ...tests, faelle: [{ ...tests.faelle[0]!, zustand: 'fail',
-                             fehlermeldung: 'erwartet 1, war 2' }] },
-      { seed: 424242, properties: [{ id: 'I-18', pass: false, gegenbeispiel: '{ m1: 4, m2: 36 }' }] },
-    );
-    expect(tex).toContain('erwartet 1, war 2');
-    expect(tex).toContain('I-18');
-    expect(tex).toContain('424242');
+describe('a5Uebersicht', () => {
+  it('zählt Tests je Kategorie und weist Contract Tests separat aus', () => {
+    const tex = a5Uebersicht(tests, 16);
+    expect(tex).toContain('Unit-Tests des Berechnungskerns & 3 &');
+    expect(tex).toContain('Contract Tests & 16 &');
+    expect(tex).toContain('\\textbf{Total} & 19 &');
+    expect(tex).toContain('tab:a5_uebersicht');
   });
 
-  it('sagt ausdruecklich, wenn nichts fehlgeschlagen ist', () => {
-    expect(a5Fehlerprotokoll(tests, null)).toContain('kein Testfall fehlgeschlagen');
+  it('weist fehlende Contract-Zahlen als Lücke aus statt zu raten', () => {
+    const tex = a5Uebersicht(tests, null);
+    expect(tex).toContain('Contract Tests & -- &');
+    expect(tex).toContain('\\textbf{Total} & 3 &');
   });
 });

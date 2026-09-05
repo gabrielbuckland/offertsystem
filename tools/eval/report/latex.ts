@@ -76,6 +76,44 @@ export function longtable(t: {
   ].join('\n');
 }
 
+/**
+ * Nicht umbrechende Tabelle als Float: fuer kurze Ergebnistabellen, die nie ueber
+ * einen Seitenumbruch laufen duerfen (Benutzervorgabe 2026-09-03). Gleiche Signatur
+ * wie longtable(); fuer seitenfuellende Volltabellen weiterhin longtable() nutzen.
+ */
+export function tabelle(t: {
+  readonly spalten: readonly string[];
+  readonly kopf: readonly string[];
+  readonly zeilen: readonly (readonly string[])[];
+  readonly beschriftung: string;
+  readonly label: string;
+  /** true: \\midrule zwischen den Datenzeilen (Benutzervorgabe fuer E.1). */
+  readonly zeilentrenner?: boolean;
+}): string {
+  const kopfzeile = t.kopf.map((k) => `\\textbf{${k}}`).join(' & ');
+  const rumpf = t.zeilen.map((z) => `${z.join(' & ')} \\\\`)
+    .join(t.zeilentrenner === true ? '\n\\midrule\n' : '\n');
+  // Eine X-Spalte macht die Tabelle zur tabularx ueber die volle Textbreite.
+  const spec = t.spalten.join('');
+  const voll = spec.includes('X');
+  return [
+    '\\begin{table}[!htb]',
+    '\\centering',
+    '\\small',
+    voll ? `\\begin{tabularx}{\\textwidth}{${spec}}` : `\\begin{tabular}{${spec}}`,
+    '\\toprule',
+    `${kopfzeile} \\\\`,
+    '\\midrule',
+    rumpf,
+    '\\bottomrule',
+    voll ? '\\end{tabularx}' : '\\end{tabular}',
+    `\\caption{${t.beschriftung}}`,
+    `\\label{${t.label}}`,
+    '\\end{table}',
+    '',
+  ].join('\n');
+}
+
 export function hinweiskopf(quelle: string): string {
   return [
     '% AUTOMATISCH ERZEUGT — nicht von Hand bearbeiten.',

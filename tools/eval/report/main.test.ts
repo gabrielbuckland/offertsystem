@@ -28,9 +28,10 @@ describe('Abnahmetest G1 bis G3 (Spec 06 §8)', () => {
       total: { lines: { pct: 90 }, branches: { pct: 80 } },
     }), 'utf8');
     const geschrieben = hauptlauf({ main, ohneOfferte: true, coveragePfad });
-    expect(geschrieben.some((p) => p.endsWith('a5-protokolle.tex'))).toBe(true);
-    expect(geschrieben.some((p) => p.endsWith('p7-sensitivitaet.tex'))).toBe(true);
-    expect(geschrieben.some((p) => p.endsWith('tornado-Hmax.pdf'))).toBe(true);
+    expect(geschrieben.some((p) => p.endsWith('a5-uebersicht.tex'))).toBe(true);
+    expect(geschrieben.some((p) => p.endsWith('a5-coverage.tex'))).toBe(true);
+    expect(geschrieben.some((p) => p.endsWith('p2-stufen.tex'))).toBe(true);
+    expect(geschrieben.some((p) => p.endsWith('tornado-Hmin.pdf'))).toBe(true);
     for (const pfad of geschrieben.filter((p) => p.endsWith('.tex'))) {
       expect(readFileSync(pfad, 'utf8').startsWith('% AUTOMATISCH ERZEUGT'), pfad).toBe(true);
     }

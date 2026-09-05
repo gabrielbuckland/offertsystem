@@ -27,8 +27,6 @@
     "eval:config": "npm run typecheck && node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/config-validation.ts",
     "eval:oat": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/oat/main.ts",
     "eval:degression-margin": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/degression-margin/main.ts",
-    "eval:extension-metrics": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/extension-metrics/main.ts",
-    "eval:extension-scenario": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/extension-scenario/main.ts",
     "eval:tornado": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/tornado/main.ts",
     "eval:honorarkurve": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/honorarkurve/main.ts",
     "eval:report": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/report/main.ts",

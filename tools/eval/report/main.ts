@@ -8,18 +8,15 @@
  * Ohne vollstaendigen Artefaktsatz entsteht kein Anhang: Ein fehlendes Artefakt ist ein
  * Reihenfolgefehler, und ein halb erzeugter Anhang saehe vollstaendig aus.
  */
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { leseLatest, repoWurzel } from '../shared/artefakt.ts';
 import {
-  a5Coverage, a5Fehlerprotokoll, a5Protokolle, a5Testfaelle, a5Testplan, a5Toleranzen,
-  type CoverageArtefakt, type Invariante, type TestArtefakt,
+  a5Coverage, a5Uebersicht, type CoverageArtefakt, type TestArtefakt,
 } from './a5.ts';
 import {
-  p2Invarianten, p2Konfigpruefung, p2Stufen,
-  p4Erweiterung, p5Integration, p6Entkopplung, p7Marge, p7Sensitivitaet, p8Pruefpunkte,
-  type ExtensionArtefakt, type KonfigArtefakt, type LaufArtefakt, type ManuellArtefakt,
-  type MargenArtefakt, type OatZeile, type PropertyArtefakt,
+  p2Stufen,
+  type KonfigArtefakt,
 } from './kapitel6.ts';
 import { pruefeBeispielOfferte } from './offerte.ts';
 import { meldeFehlend, pruefeSeed, sammle } from './sammler.ts';
@@ -66,31 +63,13 @@ export function hauptlauf(opt: Laufoptionen = {}): readonly string[] {
     throw new Error('artifacts/coverage/coverage-summary.json fehlt — erzeugt von P1');
   }
   const coverage = JSON.parse(readFileSync(coveragePfad, 'utf8')) as CoverageArtefakt;
-  const invarianten = JSON.parse(readFileSync(
-    join(wurzel, 'packages', 'core', 'test', 'property', 'invariants.json'), 'utf8'),
-  ) as readonly Invariante[];
 
   const anhang: Record<string, string> = {
-    'a5-testplan.tex': a5Testplan(tests),
-    'a5-testfaelle.tex': a5Testfaelle(tests),
-    'a5-protokolle.tex': a5Protokolle(tests),
+    'a5-uebersicht.tex': a5Uebersicht(tests, zaehleContractTests(wurzel)),
     'a5-coverage.tex': a5Coverage(coverage),
-    'a5-fehlerprotokoll.tex': a5Fehlerprotokoll(tests, i['property'] as PropertyArtefakt),
-    'a5-toleranzen.tex': a5Toleranzen(invarianten),
   };
   const kapitel: Record<string, string> = {
     'p2-stufen.tex': p2Stufen(tests, coverage),
-    'p2-invarianten.tex': p2Invarianten(i['property'] as PropertyArtefakt),
-    'p2-konfigpruefung.tex': p2Konfigpruefung(konfig),
-    'p4-erweiterung.tex': p4Erweiterung(i['eval/extension'] as ExtensionArtefakt),
-    'p5-integration.tex': p5Integration(i['integration'] as LaufArtefakt),
-    'p6-entkopplung.tex': p6Entkopplung(
-      i['integration'] as LaufArtefakt, i['contract'] as LaufArtefakt),
-    'p7-sensitivitaet.tex': p7Sensitivitaet(
-      i['eval/oat'] as { zeilen: readonly OatZeile[] }),
-    'p7-marge.tex': p7Marge(i['eval/degression'] as MargenArtefakt),
-    // manual ist kein Pflichtartefakt; fehlt es, erscheint der Hinweis im Fragment.
-    'p8-pruefpunkte.tex': p8Pruefpunkte((i['manual'] as ManuellArtefakt | undefined) ?? null),
   };
 
   const geschrieben: string[] = [];
@@ -109,11 +88,39 @@ export function hauptlauf(opt: Laufoptionen = {}): readonly string[] {
   const bilder = join(main, 'images');
   mkdirSync(bilder, { recursive: true });
   const tornado = leseLatest(wurzel, 'eval/tornado');
-  for (const name of ['tornado-V.pdf', 'tornado-Hmin.pdf', 'tornado-Hmax.pdf']) {
+  for (const name of ['tornado-Hmin.pdf']) {
     copyFileSync(join(tornado, name), join(bilder, name));
     geschrieben.push(join(bilder, name));
   }
   return geschrieben;
+}
+
+/**
+ * Zaehlt die Contract Tests aus dem juengsten Testartefakt, dessen Faelle vollstaendig
+ * im Contract-Projekt liegen. Der Contract-Lauf traegt den latest-Zeiger bewusst nicht
+ * (F-077); sein Zeitstempelverzeichnis bleibt aber stehen und ist die Zaehlquelle.
+ */
+function zaehleContractTests(wurzel: string): number | null {
+  const ablage = join(wurzel, 'artifacts', 'tests');
+  if (!existsSync(ablage)) return null;
+  let neuester: number | null = null;
+  for (const eintrag of readdirSync(ablage).sort()) {
+    const pfad = join(ablage, eintrag, 'tests.json');
+    if (!existsSync(pfad)) continue;
+    try {
+      const inhalt = JSON.parse(readFileSync(pfad, 'utf8')) as {
+        faelle?: readonly { datei: string }[];
+      };
+      const faelle = inhalt.faelle ?? [];
+      if (faelle.length > 0
+          && faelle.every((f) => f.datei.startsWith('packages/pricehubble/test/contract/'))) {
+        neuester = faelle.length;
+      }
+    } catch {
+      // Unlesbares Altartefakt: ueberspringen statt den Lauf abzubrechen.
+    }
+  }
+  return neuester;
 }
 
 if (import.meta.filename === process.argv[1]) {
