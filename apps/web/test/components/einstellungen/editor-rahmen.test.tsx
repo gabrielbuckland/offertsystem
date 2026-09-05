@@ -94,8 +94,8 @@ describe('rahmenBefunde (Naht Rahmen <-> Feld-Editor)', () => {
   });
 
   it('haelt den leeren Pfad bei mehreren Praefixen trotzdem nur einmal', () => {
-    // «Preisanpassung» deckt drei Wurzeln ab; der frueher noetige Doppel-Filter entfaellt,
-    // weil ueber die Befundliste statt ueber die Praefixe iteriert wird.
+    // «Preisanpassung» deckt drei Wurzeln ab; iteriert wird aber ueber die Befundliste
+    // statt ueber die Praefixe, darum erscheint der ortlose Befund nur einmal.
     expect(rahmenBefunde([ortlos], ['flaeche', 'preisanpassung', 'anpassungsVorlagen']))
       .toEqual([ortlos]);
   });

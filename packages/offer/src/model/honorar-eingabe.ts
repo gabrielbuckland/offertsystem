@@ -10,7 +10,7 @@
  * lehnt nur ein falsches FORMAT (inkl. Nicht-Positivitaet) ab, nie eine Abweichung von
  * der Range.
  *
- * Die Positivpruefung (Review-Befund 2026-08-29) traegt NICHT `feeRange` (die ist ein
+ * Die Positivpruefung traegt NICHT `feeRange` (die ist ein
  * berechneter Wert, der nie negativ wird): `gewaehltesHonorar` ist eine Benutzereingabe
  * und damit eine eigene Vertrauensgrenze — ohne diese Pruefung liesse sich ein
  * Honorar von z. B. -50'000 CHF erfassen und unveraendert ins Kundendokument drucken.
