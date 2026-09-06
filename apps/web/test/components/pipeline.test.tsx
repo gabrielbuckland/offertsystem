@@ -34,6 +34,19 @@ function zeile(stufe: PipelineStufe, beschriftung: string): PipelineZeile {
   return treffer;
 }
 
+/** Stufe 1 fuehrt je Bewertungsobjekt einen eigenen Abschnitt; dieselbe Feldbeschriftung
+ *  kommt darin zweimal vor und muss ueber den Abschnittstitel angesprochen werden. */
+function zeileImAbschnitt(
+  stufe: PipelineStufe, abschnittstitel: string, beschriftung: string,
+): PipelineZeile {
+  const abschnitt = stufe.abschnitte.find((a) => a.titel === abschnittstitel);
+  const treffer = abschnitt?.zeilen?.find((z) => z.beschriftung === beschriftung);
+  if (treffer === undefined) {
+    throw new Error(`Zeile «${abschnittstitel} / ${beschriftung}» fehlt in Stufe ${String(stufe.nr)}`);
+  }
+  return treffer;
+}
+
 /**
  * Projekt-Delta, das in jeder projektbezogen uebersteuerbaren Wurzel eingreift, die der
  * Rechenweg anzeigt: eine Dossier-Voreinstellung, ein Flaechenparameter, ein
@@ -107,10 +120,11 @@ describe('bauePipelineDaten', () => {
     const eingabe = stufen.find((s) => s.nr === 1)!;
 
     // `dossierDefaults.zustandsbewertungen.kitchen` steht im Protokoll — die Zeile muss es zeigen.
-    expect(zeile(eingabe, 'zustandsbewertungen').herkunft).toBe('projekt');
+    expect(zeileImAbschnitt(eingabe, 'Zustandsbewertungen', 'Küche').herkunft).toBe('projekt');
     // Gegenprobe: nicht uebersteuerte Felder bleiben firmenweit, die Anzeige faerbt
     // nicht pauschal ein, sobald irgendein Delta vorliegt.
-    expect(zeile(eingabe, 'qualitaetsbewertungen').herkunft).toBe('firmenweit');
+    expect(zeileImAbschnitt(eingabe, 'Zustandsbewertungen', 'Badezimmer').herkunft).toBe('firmenweit');
+    expect(zeileImAbschnitt(eingabe, 'Qualitätsbewertungen', 'Küche').herkunft).toBe('firmenweit');
   });
 
   it('weist die uebersteuerten Parameter der Stufen 2 und 5 als projektbezogen aus', () => {
