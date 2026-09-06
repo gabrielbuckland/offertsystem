@@ -44,6 +44,14 @@ describe('druckeOfferte', () => {
     expect(f.browser.close).toHaveBeenCalled();
   });
 
+  it('haelt die Seitenzahl in der Fusszeile als eine Gruppe zusammen', async () => {
+    const f = fabrikAttrappe();
+    await druckeOfferte({ basisUrl: 'http://x', offertId: 'a' }, f.starte);
+    const optionen = f.seite.pdf.mock.calls[0]![0] as { footerTemplate: string };
+    expect(optionen.footerTemplate).toContain(
+      '<span><span class="pageNumber"></span> / <span class="totalPages"></span></span>');
+  });
+
   it('escaped eine Adresse mit HTML-Sonderzeichen in der Fusszeile statt sie als Markup zu uebernehmen', async () => {
     const f = fabrikAttrappe();
     await druckeOfferte({

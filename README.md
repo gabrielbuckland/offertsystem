@@ -50,7 +50,10 @@ die Werte in `apps/web/.env.local` eintragen:
   aus `fixtures/pricehubble/recorded/` — ohne Netz und ohne PH-Zugang. Weil die
   Antworten byte-identisch ausgeliefert werden, besteht der PATCH-Rückvergleich
   nur für eine Parametrisierung, die dem aufgezeichneten Dossierstand
-  entspricht (siehe `tools/beispiel-offerte.ts`).
+  entspricht. Bei leerer Projektablage seedet `npm run dev` in dieser
+  Betriebsart darum ein zur Aufzeichnung passendes Projekt («Musterstrasse 1,
+  6000 Luzern»). In diesem Projekt funktioniert «Bewertung beziehen» direkt
+  über die UI. Den API-Weg zeigt `tools/beispiel-offerte.ts`.
 - `VALUATION_PROVIDER=pricehubble` nutzt die echte API. Braucht `PH_BASE_URL`,
   `PH_DOSSIER_ID` und entweder `PH_USERNAME`/`PH_PASSWORD` oder einen von Hand
   besorgten `PH_ACCESS_TOKEN`.
@@ -60,10 +63,13 @@ die Werte in `apps/web/.env.local` eintragen:
 ## Prüfkette
 
 ```bash
-npm run verify   # lint + check:deps + typecheck + test:unit + test:contract
+npm run verify   # lint + check:deps + typecheck + test:contract + eval:config + test:unit
 ```
 
-`verify` ist das Merge-Gate und muss grün sein. Die Teile einzeln:
+`verify` ist das Merge-Gate und muss grün sein, auch auf einem frischen
+Checkout. Darum laufen `test:contract` und `eval:config` vor `test:unit`, denn
+der Abnahmetest des Berichtsgenerators (`tools/eval/report`) setzt deren
+Artefakte als Pflichtbestand voraus. Die Teile einzeln:
 
 - `npm run lint` führt ESLint inkl. Architektur-Grenzregeln aus (R1–R4, u. a.
   kein Adapter-Import im Kern, keine Deep Imports in Workspace-Pakete).

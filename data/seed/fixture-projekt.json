@@ -1,0 +1,646 @@
+{
+  "schemaVersion": 1,
+  "id": "22222222-2222-4222-8222-222222222222",
+  "adresse": {
+    "strasse": "Musterstrasse",
+    "hausnummer": "1",
+    "plz": "6000",
+    "ort": "Luzern"
+  },
+  "baujahr": 1934,
+  "referenzobjekte": [
+    {
+      "id": "R1",
+      "zimmerzahl": 3.5,
+      "parametrisierung": {
+        "flaecheInnen": 82,
+        "flaecheAussen": 0,
+        "stockwerk": 2,
+        "energielabel": "",
+        "zustandsbewertungen": {
+          "bathrooms": "new_or_recently_renovated",
+          "kitchen": "new_or_recently_renovated",
+          "flooring": "new_or_recently_renovated",
+          "windows": "new_or_recently_renovated"
+        },
+        "qualitaetsbewertungen": {
+          "bathrooms": "high_quality",
+          "kitchen": "high_quality",
+          "flooring": "high_quality",
+          "windows": "high_quality"
+        },
+        "anzahlBadezimmer": 1,
+        "lift": false,
+        "baujahr": 1934,
+        "heizungsart": ""
+      }
+    }
+  ],
+  "anpassungsSpalten": [],
+  "merkmale": [],
+  "einheiten": [
+    {
+      "id": "E-1",
+      "wohnungsnummer": "W-001",
+      "referenzobjektId": "R1",
+      "flaecheInnen": 82,
+      "flaecheAussen": 0,
+      "spaltenwerte": {},
+      "merkmalswerte": {}
+    },
+    {
+      "id": "E-2",
+      "wohnungsnummer": "W-002",
+      "referenzobjektId": "R1",
+      "flaecheInnen": 82,
+      "flaecheAussen": 0,
+      "spaltenwerte": {},
+      "merkmalswerte": {}
+    },
+    {
+      "id": "E-3",
+      "wohnungsnummer": "W-003",
+      "referenzobjektId": "R1",
+      "flaecheInnen": 82,
+      "flaecheAussen": 0,
+      "spaltenwerte": {},
+      "merkmalswerte": {}
+    },
+    {
+      "id": "E-4",
+      "wohnungsnummer": "W-004",
+      "referenzobjektId": "R1",
+      "flaecheInnen": 82,
+      "flaecheAussen": 0,
+      "spaltenwerte": {},
+      "merkmalswerte": {}
+    },
+    {
+      "id": "E-5",
+      "wohnungsnummer": "W-005",
+      "referenzobjektId": "R1",
+      "flaecheInnen": 82,
+      "flaecheAussen": 0,
+      "spaltenwerte": {},
+      "merkmalswerte": {}
+    },
+    {
+      "id": "E-6",
+      "wohnungsnummer": "W-006",
+      "referenzobjektId": "R1",
+      "flaecheInnen": 82,
+      "flaecheAussen": 0,
+      "spaltenwerte": {},
+      "merkmalswerte": {}
+    },
+    {
+      "id": "E-7",
+      "wohnungsnummer": "W-007",
+      "referenzobjektId": "R1",
+      "flaecheInnen": 82,
+      "flaecheAussen": 0,
+      "spaltenwerte": {},
+      "merkmalswerte": {}
+    },
+    {
+      "id": "E-8",
+      "wohnungsnummer": "W-008",
+      "referenzobjektId": "R1",
+      "flaecheInnen": 82,
+      "flaecheAussen": 0,
+      "spaltenwerte": {},
+      "merkmalswerte": {}
+    }
+  ],
+  "aufwandfaktoren": {},
+  "auftraggeber": "Muster Immobilien AG",
+  "offertText": {
+    "type": "doc",
+    "content": [
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 1
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Ausgangslage"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Die Primus Property AG wurde von "
+          },
+          {
+            "type": "platzhalter",
+            "attrs": {
+              "id": "auftraggeber"
+            }
+          },
+          {
+            "type": "text",
+            "text": " betreffend das Vermarktungsmandat für das Neubauprojekt an der "
+          },
+          {
+            "type": "platzhalter",
+            "attrs": {
+              "id": "adresse"
+            }
+          },
+          {
+            "type": "text",
+            "text": " angefragt."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Beim Vermarktungsobjekt handelt es sich um einen Neubau mit "
+          },
+          {
+            "type": "platzhalter",
+            "attrs": {
+              "id": "anzahlEinheiten"
+            }
+          },
+          {
+            "type": "text",
+            "text": " Eigentumswohnungen in "
+          },
+          {
+            "type": "platzhalter",
+            "attrs": {
+              "id": "anzahlWohnungstypen"
+            }
+          },
+          {
+            "type": "text",
+            "text": " Wohnungstypen. Ziel ist der vollständige Verkauf der Wohnungen im Stockwerkeigentum, mit einer möglichst hohen Vorverkaufsquote bereits ab Plan."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 1
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Konzeptioneller Ansatz"
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Phase I: Vermarktung ab Plan"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "In einer ersten Phase werden die Wohnungen ab Plan vermarktet. Entscheidend sind vollständige, professionell aufbereitete Verkaufsunterlagen, damit Kaufinteressenten ohne Besichtigung eine fundierte Kaufentscheidung treffen können:"
+          }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Objektbeschrieb und Baubeschrieb"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Grundrisspläne mit präzisen Flächenangaben (HNF/NNF/AF)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Visualisierungen der Wohnungen und der Umgebung"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Preisliste und Verfügbarkeitsübersicht"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Beschrieb des Ausbau- und Sonderwunschprozesses"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Entwurf der Stockwerkeigentümerreglemente mit Aufteilungsplänen"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Finanzierungsvorschlag einer regional ansässigen Bank"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Phase II: Restvermarktung nach Fertigstellung"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Nach Bezugsbereitschaft werden die verbleibenden Wohnungen mit Besichtigungen vor Ort vermarktet. Die Verkaufsunterlagen werden um Objektfotografie ergänzt; Lagequalität und Marktumfeld von "
+          },
+          {
+            "type": "platzhalter",
+            "attrs": {
+              "id": "ort"
+            }
+          },
+          {
+            "type": "text",
+            "text": " werden in der Vermarktung aktiv herausgestellt."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Reporting"
+          }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Monatliches, schriftliches Reporting über Vermarktungsstand und Interessenten"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Überwachung der eingesetzten Marktbearbeitungsinstrumente inkl. Budget"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Jour fixe mit der Auftraggeberschaft, wenn gewünscht"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 1
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Pricing"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Die Wohnungspreise stützen sich auf eine Referenzbewertung je Wohnungstyp und werden je Wohnung über begründete Zu- und Abschläge differenziert. Es resultieren die folgenden Angebotspreise:"
+          }
+        ]
+      },
+      {
+        "type": "platzhalterTabelle"
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Die Verkaufssumme über alle Wohnungen beträgt "
+          },
+          {
+            "type": "platzhalter",
+            "attrs": {
+              "id": "verkaufssumme"
+            }
+          },
+          {
+            "type": "text",
+            "text": "."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 1
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Dienstleistungs- und Honorarangebot"
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Leistungen"
+          }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Kickoff-Meeting mit der Auftraggeberschaft und Festlegung der Angebotspreise"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Aufbereitung der vollständigen Verkaufsunterlagen je Wohnung"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Publikation auf einschlägigen Plattformen und Interessentenbetreuung"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Beratungsgespräche, Preisverhandlungen und Reservationsvereinbarungen"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Unterstützung der Käuferschaft bei der Finanzierung"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Briefing des Notars und Koordination der öffentlichen Beurkundungen"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Honorar"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Gestützt auf den ermittelten Vermarktungsaufwand offerieren wir unsere Dienstleistungen mit einem Honorar von "
+          },
+          {
+            "type": "platzhalter",
+            "attrs": {
+              "id": "honorar"
+            }
+          },
+          {
+            "type": "text",
+            "text": " der Verkaufssumme ("
+          },
+          {
+            "type": "platzhalter",
+            "attrs": {
+              "id": "honorarBetrag"
+            }
+          },
+          {
+            "type": "text",
+            "text": "). Sämtliche Angaben verstehen sich exklusive MwSt.; Drittkosten für Werbemassnahmen und Publikationen werden nach Aufwand und vorgängiger Freigabe verrechnet."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Sehr gerne würden wir die offerierten Dienstleistungen für Sie ausführen. Wir sichern Ihnen eine kompetente, innovative und engagierte Vermarktungstätigkeit zu."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Freundliche Grüsse"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "PRIMUS PROPERTY AG"
+          }
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "erstelltAm": "2026-09-06T00:00:00.000Z",
+    "geaendertAm": "2026-09-06T00:00:00.000Z"
+  }
+}

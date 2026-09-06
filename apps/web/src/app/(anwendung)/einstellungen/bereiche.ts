@@ -9,15 +9,15 @@ import type { BereichsEditor } from '../../../components/einstellungen/verwende-
 export const BEREICHE = {
   dossier: {
     titel: 'Dossier-Voreinstellungen',
-    zweck: 'Firmenweite Zustands- und Qualitaetsvorgabe fuer die PriceHubble-Anfrage; '
+    zweck: 'Firmenweite Zustands- und Qualitätsvorgabe für die PriceHubble-Anfrage; '
       + 'alle Felder sind Pflicht.',
     praefix: 'dossierDefaults',
     Editor: DossierEditor,
   },
   preisanpassung: {
     titel: 'Preisanpassung & Vorlagen',
-    zweck: 'Gewicht der Aussenflaeche, Grenzen der Zu-/Abschlaege und die '
-      + 'Vorlagenliste fuer deren Begruendung.',
+    zweck: 'Gewicht der Aussenfläche, Grenzen der Zu-/Abschläge und die '
+      + 'Vorlagenliste für deren Begründung.',
     praefix: ['flaeche', 'preisanpassung', 'anpassungsVorlagen', 'merkmale'],
     Editor: PreisanpassungEditor,
   },
@@ -30,7 +30,7 @@ export const BEREICHE = {
   },
   honorar: {
     titel: 'Honorar',
-    zweck: 'Stuetzstellen der Honorarstaffel und die Skalierungsfunktion g(D).',
+    zweck: 'Stützstellen der Honorarstaffel und die Skalierungsfunktion g(D).',
     praefix: 'honorar',
     Editor: HonorarEditor,
   },

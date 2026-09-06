@@ -19,7 +19,7 @@
     "test:contract": "vitest run --project contract",
     "test:coverage": "vitest run --coverage && node --experimental-strip-types tools/coverage-zeiger.ts",
     "test": "npm run lint && npm run typecheck && npm run test:unit",
-    "verify": "npm run lint && npm run check:deps && npm run typecheck && npm run test:unit && npm run test:contract",
+    "verify": "npm run lint && npm run check:deps && npm run typecheck && npm run test:contract && npm run eval:config && npm run test:unit",
     "test:record": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/record-fixtures.ts",
     "build": "npm run build --workspace @offert/web",
     "predev": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/seed-playground.ts",

@@ -8,6 +8,7 @@ import type { AggregateValues, PriceDerivation } from '@offert/offer';
 import type { Projekt } from '../../server/projekt-schema.js';
 import type { Faktorformular } from '../../server/faktorformular.js';
 import type { Anpassungsvorlage } from '../../server/anpassungsvorlagen.js';
+import { abrufWarnungstext } from './bewertungsabruf-logik.js';
 import { verwendeProjekt } from './verwende-projekt.js';
 import { verwendeBerechnung } from './verwende-berechnung.js';
 import { nurRechenirrelevanteFelderGeaendert } from './projekt-rechenrelevanz.js';
@@ -114,8 +115,7 @@ export function ProjektAnsicht(
     // Ohne diese Meldung haelt der Vermarkter den Teilerfolg faelschlich fuer vollstaendig.
     if (!rumpf.vollstaendig) {
       setAbrufMeldung({
-        text: `Für den Referenzobjekttyp ${rumpf.fehlgeschlagenerTyp ?? '—'} liegt keine `
-          + 'Bewertung vor. Die übrigen Bewertungen wurden übernommen.',
+        text: abrufWarnungstext(rumpf.fehlgeschlagenerTyp, rumpf.projekt.referenzobjekte),
         art: 'warnung',
       });
     }
