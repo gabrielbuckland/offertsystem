@@ -30,7 +30,7 @@ export function p2Stufen(
     kopf: ['Pipeline-Stufe', 'Testfälle', 'Zeilenabdeckung \\%', 'Ergebnis'],
     zeilen,
     beschriftung: 'Testergebnisse je Pipeline-Stufe mit Zeilenabdeckung. Die Zuordnung '
-      + 'erfolgt über den Dateinamen der Testdatei; Fälle ohne Stufenbezug erscheinen '
+      + 'erfolgt über den Dateinamen der Testdatei. Fälle ohne Stufenbezug erscheinen '
       + 'nicht in dieser Tabelle.',
     label: 'tab:p2_stufen',
   });

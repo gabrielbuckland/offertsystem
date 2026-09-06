@@ -84,8 +84,8 @@ export function a5Coverage(coverage: CoverageArtefakt): string {
     kopf: ['Bereich', 'Zeilen', 'Zeilen \\%', 'Branches \\%', 'Ziel Zeilen', 'Ziel Branches'],
     zeilen,
     beschriftung: 'Umfang und Testabdeckung je Paket, zeilengewichtet aggregiert '
-      + '(abgedeckte durch gesamte Zeilen bzw. Zweige aller Dateien des Pakets); Spalte '
-      + 'Zeilen zaehlt die instrumentierten Quellcodezeilen. Die Zielwerte sind eine '
+      + '(abgedeckte durch gesamte Zeilen bzw. Zweige aller Dateien des Pakets). Die '
+      + 'Spalte Zeilen zaehlt die instrumentierten Quellcodezeilen. Die Zielwerte sind eine '
       + 'eigene Festlegung der Umsetzung. Die Abdeckung ist ein notwendiges, kein '
       + 'hinreichendes Kriterium.',
     label: 'tab:a5_coverage',
@@ -110,7 +110,7 @@ const KATEGORIEN: readonly (readonly [string, string, string])[] = [
   ['packages/core/test/property/', 'Property-Tests',
    'Modellinvarianten über zufällig erzeugten Eingaben'],
   ['packages/core/test/config/', 'Konfigurationsprüfung',
-   'Schema, Wertebereiche und fachliche Invarianten beim Laden; Negativ- und Variantenkonfigurationen'],
+   'Schema, Wertebereiche und fachliche Invarianten beim Laden, Negativ- und Variantenkonfigurationen'],
   ['packages/core/test/arch/', 'Architekturtests',
    'Abhängigkeitsrichtung und Determinismus-Verbote des Kerns'],
   ['packages/pricehubble/', 'Adapter- und Integrationstests',
