@@ -22,7 +22,7 @@ samt Prüf- und Auswertungswerkzeugen.
 | `apps/web` | Next.js-Anwendung (App Router unter `src/app/`): Projektübersicht und -detailseite (`/projekte`), Einstellungen mit Firmen- und Projektebene (`/einstellungen`), Offert-Ansicht und Druckseite (`/offerte/[id]`), API-Routen unter `src/app/api/` (u. a. `projekt`, `offerte`, `einstellungen`, `vorlage`) |
 | `tools/` | Werkzeuge ausserhalb der Anwendung: `check-deps.ts` (Deklarationsdisziplin), `record-fixtures.ts` (API-Aufzeichnung), `beispiel-offerte.ts`, `eval/` (Auswertungen, siehe unten) |
 | `config/` | Fachliche Laufzeitkonfiguration `company-defaults.json` plus Varianten (`*.erweitert.json`, `*.strategie.json`). Beträge durchgängig in Rappen, Herleitung aller Zahlenwerte in `config/README.md` |
-| `fixtures/pricehubble` | API-Antworten für MSW- und Contract-Tests: `synthetic/` von Hand gebaut, `recorded/` per `test:record` gegen die echte API aufgezeichnet und anonymisiert (samt Aufzeichnungsprotokoll) |
+| `fixtures/pricehubble` | API-Antworten für MSW- und Contract-Tests: `synthetic/` von Hand gebaut, `recorded/` per `test:record` gegen die echte API aufgezeichnet und anonymisiert (das Aufzeichnungsprotokoll entsteht lokal und ist nicht versioniert) |
 | `data/` | Lokale Ablagen (gitignored): `offerten/` append-only, `projekte/` veränderliche Arbeitsstände. `seed/` (getrackt) enthält das Playground-Projekt für den ersten Start |
 | `artifacts/` | Nachweisartefakte der Test- und Auswertungsläufe (gitignored, siehe «Artefakte lesen») |
 
@@ -45,12 +45,12 @@ unangetastet.
 Für andere Betriebsarten `.env.example` (Repo-Wurzel) als Vorlage nehmen und
 die Werte in `apps/web/.env.local` eintragen:
 
-- `VALUATION_PROVIDER=fixture` ist reserviert für den Betrieb gegen
-  aufgezeichnete Antworten. **Bekannte Einschränkung:** Im Dev-Betrieb derzeit
-  baugleich mit `pricehubble` (echter Adapter, echtes `fetch`), weil der
-  MSW-Ersatz nur in der Testumgebung greift. Diese Betriebsart braucht also
-  ebenfalls PH-Zugang. Die Contract-Tests nutzen die Fixtures dagegen ohne
-  Zugang.
+- `VALUATION_PROVIDER=fixture` betreibt den echten Adapter (Token-Verwaltung,
+  Schemavalidierung, PATCH-Rückvergleich) gegen die aufgezeichneten Antworten
+  aus `fixtures/pricehubble/recorded/` — ohne Netz und ohne PH-Zugang. Weil die
+  Antworten byte-identisch ausgeliefert werden, besteht der PATCH-Rückvergleich
+  nur für eine Parametrisierung, die dem aufgezeichneten Dossierstand
+  entspricht (siehe `tools/beispiel-offerte.ts`).
 - `VALUATION_PROVIDER=pricehubble` nutzt die echte API. Braucht `PH_BASE_URL`,
   `PH_DOSSIER_ID` und entweder `PH_USERNAME`/`PH_PASSWORD` oder einen von Hand
   besorgten `PH_ACCESS_TOKEN`.
