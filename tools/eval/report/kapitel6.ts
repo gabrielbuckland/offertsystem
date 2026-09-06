@@ -19,18 +19,19 @@ export function p2Stufen(
   tests: { readonly faelle: readonly Testfall[] },
   coverage: CoverageArtefakt,
 ): string {
+  // Trennzeichen am Ende, sonst zaehlt 'stufe2' auch stufe2a mit:
+  // Testdateien heissen '<stufe>.test.ts', Quelldateien '<stufe>-<name>.ts'.
   const stufen = [
-    ['Stufe 1 — Eingabe', 'stufe1'],
-    ['Stufe 2 — Verkaufssumme', 'stufe2'],
-    ['Stufe 2a — abgeleitete Faktoren', 'stufe2a'],
-    ['Stufe 3 — Normalisierung', 'stufe3'],
-    ['Stufe 4 — Gewichtung', 'stufe4'],
-    ['Stufe 5 — Honorar', 'stufe5'],
+    ['Stufe 1 — Eingabe', 'stufe1.', 'stufe1-'],
+    ['Stufe 2 — Verkaufssumme', 'stufe2.', 'stufe2-'],
+    ['Stufe 2a — abgeleitete Faktoren', 'stufe2a.', 'stufe2a-'],
+    ['Stufe 3 — Normalisierung', 'stufe3.', 'stufe3-'],
+    ['Stufe 4 — Gewichtung', 'stufe4.', 'stufe4-'],
+    ['Stufe 5 — Honorar', 'stufe5.', 'stufe5-'],
   ] as const;
-  const zeilen = stufen.map(([anzeige, muster]) => {
-    const passend = tests.faelle.filter(
-      (f) => f.datei.includes(muster) || (f.suite ?? '').toLowerCase().includes(muster));
-    const abdeckung = gewichteteAbdeckung(coverage, muster, 'lines');
+  const zeilen = stufen.map(([anzeige, testMuster, quellMuster]) => {
+    const passend = tests.faelle.filter((f) => f.datei.includes(testMuster));
+    const abdeckung = gewichteteAbdeckung(coverage, quellMuster, 'lines');
     return [
       latexEscape(anzeige),
       `${passend.length}`,
