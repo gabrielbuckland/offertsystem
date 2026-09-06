@@ -1,11 +1,7 @@
-/**
- * Anpassungs-Vorlagen aus den Company Defaults (E-25, US-04 AK 5). Vorlagen werden
- * VORGESCHLAGEN, nicht vorbelegt — eine automatisch gesetzte Anpassung waere ein
- * Herkunftsfehler und die Musterform des Automation Bias. Bei einer Vorlage MIT
- * Bereichsregel wird Erfassungsform und Regel automatisch uebernommen, das ist trotzdem
- * kein Automation Bias: kein Zu-/Abschlagswert wird gesetzt, die Regel wird erst wirksam,
- * wenn der Vermarkter das Merkmal erfasst.
- */
+// E-25, US-04 AK 5: Vorlagen werden VORGESCHLAGEN, nicht vorbelegt — eine automatisch
+// gesetzte Anpassung waere Automation Bias. Bei einer Vorlage MIT Bereichsregel werden
+// Erfassungsform und Regel dennoch automatisch uebernommen: kein Wert wird gesetzt, die
+// Regel wirkt erst, wenn der Vermarkter das Merkmal erfasst.
 import type { Konfiguration, KernAnpassungsVorlage } from '@offert/core';
 
 export type Anpassungsvorlage = KernAnpassungsVorlage;
@@ -21,14 +17,9 @@ export interface UebernommeneAnpassung {
   readonly vorlageId: string;
 }
 
-/**
- * Die Uebernahme ist eine Entscheidung des Vermarkters, nicht der Konfiguration. Deshalb
- * entsteht eine gewoehnliche Anpassung: im Datenobjekt spaeter
- * Provenanced<Adjustment, 'marketer-adjustment'>, ohne eigene Herkunftsklasse «Vorlage»,
- * die die Verantwortung verwischen wuerde. `vorlageId` bleibt rein dokumentarisch.
- *
- * Die Konfiguration wird gelesen, nie beschrieben: Das zurueckgegebene Objekt ist neu.
- */
+// Uebernahme ist Entscheidung des Vermarkters, nicht der Konfiguration: entsteht als
+// gewoehnliche Anpassung (spaeter Provenanced<Adjustment, 'marketer-adjustment'>), ohne
+// eigene Herkunftsklasse «Vorlage». `vorlageId` bleibt rein dokumentarisch.
 export function uebernehmeVorlage(v: Anpassungsvorlage): UebernommeneAnpassung {
   return {
     faktor: v.vorgabefaktor,

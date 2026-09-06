@@ -1,10 +1,5 @@
-/**
- * Fixture-Aufbau ohne Zufall (I-14).
- *
- * Alle Werte sind feste Literale — kein `Date.now()`, kein `Math.random()`, keine
- * Ableitung aus der Umgebung; sonst waere der Determinismusnachweis (I-14) von der
- * Ausfuehrungszeit abhaengig.
- */
+// I-14: Fixture-Aufbau ohne Zufall — alle Werte sind feste Literale, sonst waere der
+// Determinismusnachweis von der Ausfuehrungszeit abhaengig.
 import type { Adresse } from '../../src/domain/adresse.js';
 import { gewicht, quadratmeter, quadratmeterAbNull, rappen, score } from '../../src/domain/geld.js';
 import { einheitId, faktorId, lagescoreName, liegenschaftId, wohnungsnummer, wohnungstypId } from '../../src/domain/ids.js';
@@ -91,9 +86,8 @@ export function lagescoresFixture(
 ): Lagescores {
   const werte = new Map<LagescoreName, Score>();
   const meta = new Map<LagescoreName, LagescoreMeta>();
-  // Einfuegen in Codepoint-Ordnung, nicht in der Reihenfolge der Anbieterdokumentation:
-  // Die Serialisierung (PE-08) sortiert so, und nur wenn das Fixture dieselbe Ordnung
-  // fuehrt, ist der Rundlauf reihenfolgegleich pruefbar (I-14).
+  // PE-08/I-14: Einfuegen in Codepoint-Ordnung, wie die Serialisierung sortiert — nur so
+  // ist der Rundlauf reihenfolgegleich pruefbar.
   for (const name of [...LAGESCORE_FIXTURE_NAMEN].sort()) {
     const schluessel = lagescoreName(name);
     const wert = ueberschreibungen.get(schluessel) ?? score(0.5);
@@ -103,15 +97,9 @@ export function lagescoresFixture(
   return { werte, meta, abrufdatum: '2026-08-16', anbieter: 'PriceHubble' };
 }
 
-/**
- * Kernseitige Standardkonfiguration der Tests.
- *
- * Bewusst ein eigenes Literal und keine Ableitung aus `config/company-defaults.json`:
- * Der Kern darf das Dateisystem nicht lesen (R1). Die ordinale Skala des Innenausbaus
- * fuehrt hier fuenf Stufen statt der sechs der ausgelieferten Standardkonfiguration;
- * sie ist rein deskriptiv (PE-05) und geht in keine Formel ein, die Abweichung
- * beruehrt kein Rechenergebnis.
- */
+// R1: Eigenes Literal statt Ableitung aus company-defaults.json, da der Kern das
+// Dateisystem nicht lesen darf. Die ordinale Skala fuehrt hier fuenf statt sechs
+// Stufen; sie ist rein deskriptiv (PE-05) und beruehrt kein Rechenergebnis.
 export function standardKonfiguration(): Konfiguration {
   const faktoren = new Map<FaktorId, FaktorParameter>();
   faktoren.set(faktorId('lage_gesamt'), {
@@ -199,20 +187,14 @@ export function standardKonfiguration(): Konfiguration {
       ],
       skalierung: { form: 'linear', gMin: 0.85, gMax: 1.15 },
     },
-    /**
-     * Feste Testpruefsumme. Im Betrieb setzt der Lader in `apps/web` dieses Feld
-     * (E-26, PE-04); der Kern bildet sie nicht. Hier steht ein Literal, damit der
-     * Determinismusnachweis (I-14) nicht von einer Hashberechnung abhaengt.
-     */
+    // E-26/PE-04: Im Betrieb setzt der Lader dieses Feld; hier ein Literal, damit
+    // I-14 nicht von einer Hashberechnung abhaengt.
     konfigPruefsumme: '0'.repeat(63) + '1',
   };
 }
 
-/**
- * Liegenschaft mit einem Wohnungstyp (3.5 Zimmer) und vier Einheiten A-01..A-04.
- * Alle Einheiten tragen die Referenzflaechen und keine Anpassungen — damit ist die
- * Referenztreue I-05 an diesem Fixture unmittelbar pruefbar.
- */
+// I-05: Alle Einheiten tragen die Referenzflaechen und keine Anpassungen, damit die
+// Referenztreue an diesem Fixture unmittelbar pruefbar ist.
 export interface LiegenschaftFixtureOptionen {
   /** Anpassungen der ERSTEN Einheit (A-01); alle uebrigen bleiben ohne. */
   readonly anpassungenErsteEinheit?: readonly ZuAbschlag[];
@@ -274,13 +256,9 @@ export function eingangsArgumente(
 ): EingangsArgumente {
   const liegenschaft = optionen.liegenschaft ?? liegenschaftFixture(optionen);
   const bewertungen = optionen.bewertungen ?? [referenzbewertungFixture('T1')];
-  /**
-   * Ohne ausdrueckliche Angabe wird die Vollstaendigkeit aus den Daten abgeleitet,
-   * nicht auf `true` gesetzt: Ein Buendel, dem eine Bewertung fehlt, IST
-   * unvollstaendig. Eine feste Vorgabe `true` liesse ein Fixture behaupten, der
-   * Abruf sei vollstaendig gewesen, waehrend ihm Bewertungen fehlen — genau die
-   * Aussage, die US-15 und I-24 unterbinden sollen.
-   */
+  // US-15/I-24: Ohne Angabe wird Vollstaendigkeit aus den Daten abgeleitet, nicht auf
+  // `true` gesetzt — sonst koennte ein Fixture einen vollstaendigen Abruf behaupten,
+  // dem tatsaechlich Bewertungen fehlen.
   const abgedeckt = new Set(bewertungen.map((b) => b.wohnungstypId as string));
   return {
     liegenschaft,
@@ -300,23 +278,16 @@ export function eingangsArgumente(
   };
 }
 
-/** Stufe-1-Ergebnis des Standardfixtures; Eingang der Stufen 2 und folgende. */
 export function pipelineEingang(optionen: EingangsFixtureOptionen = {}): PipelineEingang {
   const r = bereiteEingabeAuf(eingangsArgumente(optionen));
   if (!r.ok) throw new Error(`Stufe 1 des Fixtures schlug fehl: ${r.fehler.code}`);
   return r.wert;
 }
 
-/**
- * Stufe 2 des Standardfixtures.
- *
- * Zwei Aufrufformen, weil die Stufen 2a und 5 Verschiedenes brauchen: Mit
- * Fixture-Optionen entsteht das echte Stufe-2-Ergebnis samt Positionen; mit einer
- * blossen Verkaufssumme entsteht ein Traeger, der nur `V` fuehrt. Stufe 5 liest
- * ausschliesslich `verkaufssumme` — ein echtes Projekt zu konstruieren, das eine
- * bestimmte Verkaufssumme trifft, waere Umweg ohne Erkenntnisgewinn und wuerde die
- * Stufe-5-Erwartungen von der Preisableitung abhaengig machen.
- */
+// Zwei Aufrufformen, weil die Stufen 2a und 5 Verschiedenes brauchen: Mit
+// Fixture-Optionen entsteht das echte Stufe-2-Ergebnis; mit einer blossen Verkaufssumme
+// ein Traeger, der nur `V` fuehrt — ein echtes Projekt dafuer zu konstruieren, machte
+// die Stufe-5-Erwartungen unnoetig von der Preisableitung abhaengig.
 export function verkaufssummeErgebnis(
   eingabe: EingangsFixtureOptionen | Rappen = {},
 ): VerkaufssummeErgebnis {
@@ -334,12 +305,11 @@ export function verkaufssummeErgebnis(
   return r.wert;
 }
 
-/** Gewichtungsergebnis mit unmittelbar gesetztem Aufwandindikator D. */
 export function gewichtungErgebnis(d: number): GewichtungErgebnis {
   return { beitraege: [], gewichtssumme: 1, aufwandindikator: d };
 }
 
-/** Eingang nach dem Zwischenschritt 4.2a; einzige zulaessige Eingabe von Stufe 3. */
+// Einzige zulaessige Eingabe von Stufe 3.
 export function geschlossenerEingang(
   optionen: EingangsFixtureOptionen = {},
 ): GeschlossenerEingang {
@@ -351,14 +321,9 @@ export function geschlossenerEingang(
   return r.wert;
 }
 
-/**
- * Normalisierungsergebnis mit frei gesetzten normierten Werten.
- *
- * Die Werte werden direkt gesetzt statt ueber Stufe 3 erzeugt: Die Stufe-4-Tests pruefen
- * die Gewichtung, und ein Umweg ueber die Normalisierung machte ihre Erwartungswerte von
- * den Faktorgrenzen abhaengig — ein Fehler in Stufe 3 wuerde dann als Fehler in Stufe 4
- * erscheinen.
- */
+// Werte direkt gesetzt statt ueber Stufe 3 erzeugt: Die Stufe-4-Tests pruefen die
+// Gewichtung, ein Umweg ueber die Normalisierung machte ihre Erwartungswerte von den
+// Faktorgrenzen abhaengig — ein Fehler in Stufe 3 erschiene dann als Fehler in Stufe 4.
 export function normalisierungErgebnis(
   normierte: Readonly<Record<string, number>>,
 ): NormalisierungErgebnis {
@@ -376,7 +341,6 @@ export function normalisierungErgebnis(
   return { faktoren };
 }
 
-/** Struktur der Szenario-Fixtures aus `test/fixtures/scenarios/`. */
 export interface SzenarioFixture {
   readonly szenario_id: string;
   readonly bezeichnung: string;
@@ -396,13 +360,9 @@ export interface SzenarioFixture {
   readonly zeitstempel: string;
 }
 
-/**
- * Bildet ein Szenario-Fixture auf die Berechnungseingabe ab.
- *
- * Ein Wohnungstyp ohne `P_ref_rappen` erhaelt bewusst KEINE Referenzbewertung: Genau so
- * sieht ein Abruf aus, der fuer diesen Typ nichts geliefert hat (S5). Ein Ersatzwert
- * waere hier die naheliegende und nach I-24 verbotene Abkuerzung.
- */
+// S5/I-24: Ein Wohnungstyp ohne `P_ref_rappen` erhaelt bewusst KEINE Referenzbewertung
+// — genau so sieht ein Abruf aus, der fuer diesen Typ nichts geliefert hat. Ein
+// Ersatzwert waere die naheliegende, aber verbotene Abkuerzung.
 export function szenarioZuEingangsArgumenten(fixture: SzenarioFixture): EingangsArgumente {
   const teile = fixture.lage.adresse.split(' ');
   const hausnummer = teile.length > 1 ? teile[teile.length - 1]! : '1';

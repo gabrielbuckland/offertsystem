@@ -1,12 +1,4 @@
-/**
- * Keine Modellformel. Erzeugt die LaTeX-Fragmente des Anhangs A5.
- *
- * Der Generator liest AUSSCHLIESSLICH Artefakte. Handarbeit bleibt allein fuer die
- * einordnenden Saetze; kein Zahlenwert gelangt von Hand in den Bericht.
- *
- * Fehlende Testmetadaten erscheinen sichtbar als «METADATEN FEHLEN» — ein leeres Feld
- * saehe aus wie eine Angabe und waere schlimmer als eine sichtbare Luecke.
- */
+// Generator liest ausschliesslich Artefakte; kein Zahlenwert von Hand im Bericht.
 import { hinweiskopf, latexEscape, tabelle, zahlDeCh } from './latex.ts';
 import type { Testfall } from './vitest-reporter.ts';
 
@@ -33,11 +25,8 @@ export interface CoverageEintrag {
 
 export type CoverageArtefakt = Readonly<Record<string, CoverageEintrag>>;
 
-/**
- * Zeilengewichtete Paketabdeckung: sum(covered) / sum(total) ueber alle Dateien des
- * Praefixes. Ein ungewichtetes Mittel der Datei-Prozentsaetze wuerde kleine Dateien
- * ueberrepraesentieren und hat im Kern 2,25 Prozentpunkte zu viel ausgewiesen (F-060).
- */
+// Zeilengewichtet (sum(covered)/sum(total)): ungewichtetes Mittel ueberrepraesentiert
+// kleine Dateien, hat im Kern 2,25 Prozentpunkte zu viel ausgewiesen (F-060).
 export function gewichteteAbdeckung(
   coverage: CoverageArtefakt,
   praefix: string,

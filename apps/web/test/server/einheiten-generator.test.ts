@@ -38,8 +38,6 @@ describe('erzeugeEinheiten', () => {
 
   it('vergibt eindeutige Ids, auch wenn eine Einheit geloescht und eine andere '
     + 'umbenannt wurde', () => {
-    // Die erste Einheit wird geloescht, die verbleibende zweite umbenannt: ihre Kennung
-    // bleibt unveraendert, ihre Nummer wird frei fuer die naechste Generierung.
     const erste = erzeugeEinheiten([{ referenzobjektId: 'R-1', anzahl: 2 }], REFS, [], OHNE_SPALTEN);
     const uebrig = [{ ...erste[1]!, wohnungsnummer: 'PH' }];
     const weitere = erzeugeEinheiten([{ referenzobjektId: 'R-1', anzahl: 1 }], REFS, uebrig, OHNE_SPALTEN);
@@ -61,7 +59,6 @@ describe('erzeugeEinheiten — Vorgabewerte der Spalten', () => {
   });
 
   it('traegt einen neutralen Vorgabewert gar nicht erst ein', () => {
-    // Eine Null im Artefakt saehe aus wie eine erfasste Entscheidung, ist aber keine.
     const neue = erzeugeEinheiten(
       [{ referenzobjektId: 'R-1', anzahl: 1 }], REFS, [],
       [spalte('S-1', 0), spalte('S-2', -0.08)]);
@@ -69,7 +66,7 @@ describe('erzeugeEinheiten — Vorgabewerte der Spalten', () => {
   });
 
   it('gibt jeder Einheit ein eigenes Spaltenwerte-Objekt', () => {
-    // Ein geteiltes Objekt liesse eine Zelleingabe auf alle Einheiten durchschlagen.
+    // Shared object would propagate cell input to all units.
     const neue = erzeugeEinheiten(
       [{ referenzobjektId: 'R-1', anzahl: 2 }], REFS, [], [spalte('S-1', 0.05)]);
     expect(neue[0]!.spaltenwerte).not.toBe(neue[1]!.spaltenwerte);
@@ -77,6 +74,7 @@ describe('erzeugeEinheiten — Vorgabewerte der Spalten', () => {
 
   it('belegt eine Spalte mit Regel NICHT vor — sonst truege jede Einheit sofort eine '
     + 'Uebersteuerung', () => {
+    // Rules not prefilled; would mark every unit as override-active.
     const spalten: readonly AnpassungsSpalte[] = [{
       id: 'S-1', bezeichnung: 'Zuschlag Stockwerk', erfassungsform: 'absolut',
       regel: { merkmal: 'stockwerk', bereiche: [{ unter: 1, wert: 0 }, { wert: 1000000 }] },

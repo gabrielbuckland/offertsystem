@@ -1,18 +1,13 @@
-/**
- * Keine eigene Modellformel; der OAT-Lauf ruft ausschliesslich den Kern.
- *
- * Gemessen wird GETRENNT auf Verkaufssumme und Honorarrange, weil nur das zeigt, ueber
- * welchen Pfad ein Parameter wirkt (subsec:sensitivitaet_design). Das Werkzeug markiert
- * den Pfad und wertet ihn nicht; die Einordnung gehoert in den Fliesstext.
- *
- * D2: `auch_ueber_D` ist der ERWARTETE Befund, kein Verstoss gegen I-28 — alpha geht ueber
- * den abgeleiteten Faktor (flaechengewichteter mittlerer Quadratmeterpreis) in D ein. I-28
- * verbietet, Frankenbetraege mit Scores zu VERRECHNEN; die Normalisierung tilgt die
- * Einheit, und erst ihr dimensionsloses Ergebnis geht in die gewichtete Summe ein.
- *
- * `bildeKopf` erhaelt das Instrument `oat`, nicht `eval/oat` — der Artefaktschreiber
- * setzt `artifacts/eval/` bereits selbst davor.
- */
+// Keine eigene Modellformel; der OAT-Lauf ruft ausschliesslich den Kern. Gemessen wird
+// GETRENNT auf Verkaufssumme und Honorarrange, weil nur das zeigt, ueber welchen Pfad
+// ein Parameter wirkt (subsec:sensitivitaet_design); das Werkzeug markiert den Pfad und
+// wertet ihn nicht.
+// D2: `auch_ueber_D` ist der ERWARTETE Befund, kein Verstoss gegen I-28 — alpha geht
+// ueber den abgeleiteten Faktor (flaechengewichteter mittlerer Quadratmeterpreis) in D
+// ein. I-28 verbietet, Frankenbetraege mit Scores zu VERRECHNEN; die Normalisierung
+// tilgt die Einheit, und erst ihr dimensionsloses Ergebnis geht in die Summe ein.
+// `bildeKopf` erhaelt das Instrument `oat`, nicht `eval/oat` — der Artefaktschreiber
+// setzt `artifacts/eval/` bereits selbst davor.
 import { alsCsv, bildeKopf, repoWurzel, schreibeArtefakt } from '../shared/artefakt.ts';
 import { BASIS_KONFIG_DATEI, ladeBasis, ladeBasisRoh, validiere } from '../shared/konfig.ts';
 import { fuehreAus, type LaufErgebnis } from '../shared/lauf.ts';

@@ -1,13 +1,7 @@
 /**
- * Erzeugt die Beispiel-Offerte, die Anhang A5 referenziert.
- *
- * Sie entsteht ueber DENSELBEN Route Handler wie im Betrieb (POST /api/offerte) — nicht
- * ueber einen eigenen Zusammenbau. Eine zweite Erzeugungsstrecke koennte abweichen, und
- * die Beispiel-Offerte belegte dann nicht mehr, was das System tut.
- *
- * Der Provider ist der Mock; ein realer Abruf ist an einen spaeteren Ausbauschritt
- * gebunden (E-31).
- *
+ * Erzeugt die Beispiel-Offerte fuer Anhang A5 ueber denselben Route Handler wie im Betrieb
+ * (POST /api/offerte) — eine eigene Erzeugungsstrecke koennte abweichen und die Offerte
+ * belegte dann nicht mehr, was das System tut. Provider: Mock, echter Abruf folgt (E-31).
  * Laufzeit: node --experimental-strip-types --import ./tools/ts-aufloeser.mjs (PE-09).
  */
 import { readdirSync } from 'node:fs';
@@ -22,8 +16,7 @@ process.env['VALUATION_PROVIDER'] ??= 'mock';
 process.env['COMPANY_DEFAULTS_PATH'] ??= join(WURZEL, 'config', 'company-defaults.json');
 process.env['OFFERTEN_VERZEICHNIS'] ??= ABLAGE;
 
-// Lokal statt aus apps/web/test importiert: tools/ steht ausserhalb der Abhaengigkeitsmatrix,
-// soll aber nicht in den Testbaum einer App greifen.
+// Lokal dupliziert statt aus apps/web/test importiert: tools/ steht ausserhalb der Abhaengigkeitsmatrix.
 const BEWERTUNGEN_STANDARD = {
   zustandsbewertungen: {
     bathrooms: 'well_maintained', kitchen: 'well_maintained',
@@ -41,8 +34,7 @@ const parametrisierung = {
 };
 
 const erfassung = {
-  // Feste UUID statt einer erfundenen Referenznummer: `erfassungsSchema` verlangt eine
-  // echte UUID; fest statt erzeugt, damit das Beispiel reproduzierbar bleibt (US-13).
+  // Feste UUID (erfassungsSchema verlangt echte UUID), damit das Beispiel reproduzierbar bleibt (US-13).
   projekt: { projektId: '00000000-0000-4000-8000-00000000a5a5' },
   liegenschaft: {
     adresse: { strasse: 'Dorfstrasse', hausnummer: '4', plz: '6015', ort: 'Reussbuehl' },

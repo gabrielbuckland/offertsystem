@@ -8,14 +8,12 @@ import {
   EinstellungsEditor, rahmenBefunde,
 } from '../../../src/components/einstellungen/EinstellungsEditor.js';
 
-/** Steuerbares Promise, um eine spaet eintreffende Antwort zu erzwingen. */
 function steuerbar<T>() {
   let aufloesen!: (wert: T) => void;
   const versprechen = new Promise<T>((r) => { aufloesen = r; });
   return { versprechen, aufloesen };
 }
 
-/** Laesst bereits angestossene Promise-Ketten (then/finally) abarbeiten. */
 async function leeren(): Promise<void> {
   for (let i = 0; i < 5; i += 1) await Promise.resolve();
 }
@@ -30,9 +28,7 @@ describe('befundeFuerPfad', () => {
   });
 
   it('laesst einen unanhaengigen Befund (leerer Pfad) unabhaengig vom Praefix durch', () => {
-    // pfad: '' ist der Netz-/500-Fallback aus verwendeEinstellungen — er hat keinen
-    // genaueren Ort im Formular und muss deshalb bei JEDEM Bereich auftauchen koennen,
-    // dessen Editor gerade den gescheiterten Speicherversuch ausgeloest hat.
+    // pfad='' ist Netz-/500-Fallback; hat keinen Ort und muss bei JEDEM Bereich auftauchen.
     const befunde = [{ pfad: '', text: 'Die Einstellungen konnten nicht gespeichert werden.' }];
     expect(befundeFuerPfad(befunde, 'honorar')).toEqual(befunde);
   });
@@ -56,21 +52,14 @@ describe('EinstellungsEditor', () => {
   });
 
   it('fuehrt die gesperrten Wurzeln nicht in den JSON-Reiter (W-1)', () => {
-    /**
-     * Der JSON-Reiter liegt hinter einem Umschalter im Client-Zustand und ist ohne
-     * Hook-Testbibliothek nicht zu oeffnen; geprueft wird deshalb quelltextnah. Die Aussage
-     * selbst ist scharf: `zustand.entwurf` ist die VOLLE Rohkonfiguration; ging sie
-     * ungefiltert an den schreibbaren Reiter, war `api` ueber jede der vier Karten
-     * editier- und speicherbar — die Rollentrennung aus US-08 haette danach nur noch im
-     * Formularreiter existiert.
-     */
+    // W-1: Quelltextnahe Prüfung; ungefiltertes entwurf würde api über jede Karte
+    // editierbar machen — die Rollentrennung aus US-08 bliebe nur im Formularreiter.
     const quelle = readFileSync(new URL(
       '../../../src/components/einstellungen/EinstellungsEditor.tsx', import.meta.url,
     ), 'utf8');
     expect(quelle).toContain('wert={ohneWurzeln(zustand.entwurf, GESPERRTE_PFADE)}');
     expect(quelle).toContain('mitWurzeln(naechster, zustand.entwurf, GESPERRTE_PFADE)');
     expect(quelle).not.toContain('wert={zustand.entwurf}');
-    // Die Sperrliste wird bezogen, nicht nachgebaut — keine zweite Wahrheit.
     expect(quelle).toContain("import { GESPERRTE_PFADE } from '@offert/core'");
   });
 });
@@ -82,9 +71,7 @@ describe('rahmenBefunde (Naht Rahmen <-> Feld-Editor)', () => {
   const alle = [zeile, wurzel, ortlos];
 
   it('zeigt einen zeilenverankerten Befund GENAU EINMAL — beim Editor, nicht im Rahmen', () => {
-    // `befundeFuerPfad` trifft per Praefix. Sammelte der Rahmen weiterhin alles unter
-    // seinem Bereich ein, stuende dieser Befund an der Stuetzstellenzeile UND in der
-    // Rahmenliste: zwei Meldungen fuer ein Problem.
+    // befundeFuerPfad trifft per Praefix; verhindert Doppelzeige.
     expect(befundeFuerPfad(alle, 'honorar.stuetzstellen[1]')).toContain(zeile);
     expect(rahmenBefunde(alle, ['honorar'])).not.toContain(zeile);
   });
@@ -94,20 +81,14 @@ describe('rahmenBefunde (Naht Rahmen <-> Feld-Editor)', () => {
   });
 
   it('haelt den leeren Pfad bei mehreren Praefixen trotzdem nur einmal', () => {
-    // «Preisanpassung» deckt drei Wurzeln ab; iteriert wird aber ueber die Befundliste
-    // statt ueber die Praefixe, darum erscheint der ortlose Befund nur einmal.
+    // Iteriert über Befunde, nicht Präfixe; verhindert Duplikate.
     expect(rahmenBefunde([ortlos], ['flaeche', 'preisanpassung', 'anpassungsVorlagen']))
       .toEqual([ortlos]);
   });
 
   it('zeigt einen Befund auf der Merkmale-Wurzel, seit `merkmale` zu den Praefixen von '
     + '«Preisanpassung» gehoert (Task 7)', () => {
-    // Regression: `BEREICHE.preisanpassung.praefix` bekam `'merkmale'`
-    // zusaetzlich zu `flaeche`/`preisanpassung`/`anpassungsVorlagen`. Ohne diesen Eintrag
-    // waere ein Befund GENAU auf der Merkmale-Wurzel (z. B. ein Schemafehler auf dem
-    // Schluessel selbst, kein zeilenverankerter `anpassungsVorlagen[i].regel.merkmal`-
-    // Befund) in KEINER Bereichs-Karte sichtbar — der Nutzer saehe nur ein gescheitertes
-    // Speichern ohne jeden Hinweis, woran es lag.
+    // Merkmale in preisanpassung-Präfixen sonst unsichtbar.
     const merkmaleWurzel = { pfad: 'merkmale', text: 'Die Merkmalliste ist ungueltig.' };
     expect(rahmenBefunde([merkmaleWurzel], ['flaeche', 'preisanpassung', 'anpassungsVorlagen', 'merkmale']))
       .toEqual([merkmaleWurzel]);
@@ -133,12 +114,12 @@ describe('baueSpeicherSteuerung', () => {
     const steuerung = baueSpeicherSteuerung(sende, { aufSpeichertWechsel, aufErgebnis });
 
     steuerung.starte({ a: 1 });
-    steuerung.vermerkeAenderung(); // Nutzer bearbeitet weiter, waehrend die Anfrage laeuft
+    steuerung.vermerkeAenderung();
     antwort.aufloesen({ ok: true, pruefsumme: 'ALT' });
     await leeren();
 
     expect(aufErgebnis).not.toHaveBeenCalled();
-    // Der Ladezustand endet trotzdem — es ist ja nichts mehr unterwegs.
+    // Ladezustand endet trotzdem.
     expect(aufSpeichertWechsel).toHaveBeenLastCalledWith(false);
   });
 
@@ -152,7 +133,7 @@ describe('baueSpeicherSteuerung', () => {
     const steuerung = baueSpeicherSteuerung(sende, { aufSpeichertWechsel, aufErgebnis });
 
     steuerung.starte({ a: 1 });
-    steuerung.starte({ a: 2 }); // zweiter Speicherversuch, bevor der erste beantwortet ist
+    steuerung.starte({ a: 2 });
     erste.aufloesen({ ok: true, pruefsumme: 'ALT' });
     await leeren();
 

@@ -1,13 +1,6 @@
-/**
- * Keine Formel. Neubau-Standardvorlage des Offerttexts.
- *
- * Inhaltlich abgeleitet aus der realen Primus-Vermarktungsofferte
- * (bachelorarbeit/assets/Offerte Beispiel.docx), umgebaut von Umnutzung/Mieterverkauf
- * auf Erstvermarktung Neubau: Phase I Vermarktung ab Plan, Phase II Restvermarktung
- * nach Fertigstellung; Verkaufsunterlagen neubau-spezifisch. Die Vorlage ist
- * Ausgangspunkt, kein Fixum — der Vermarkter passt sie global (Einstellungen) oder je
- * Projekt an.
- */
+// Keine Formel. Neubau-Standardvorlage des Offerttexts, inhaltlich abgeleitet aus der
+// realen Primus-Vermarktungsofferte. Ausgangspunkt, kein Fixum — der Vermarkter passt
+// sie global oder je Projekt an.
 import type { OffertDokument } from './dokument-schema.js';
 
 export const VORLAGE_VERSION = '1';
@@ -82,11 +75,8 @@ export function standardVorlage(): OffertDokument {
         'Briefing des Notars und Koordination der öffentlichen Beurkundungen',
       ),
       h2('Honorar'),
-      // Prozentsatz UND Frankenbetrag nebeneinander: Der
-      // gerundete Prozentsatz allein liesse sich vom Eigentuemer nicht verlustfrei auf
-      // den massgebenden Betrag zurueckrechnen. Klammerform statt Nebensatz, damit der
-      // Satz auch dann aufgeht, wenn `honorar` mangels Verkaufssumme «–» ist — der
-      // Frankenbetrag steht unabhaengig davon als konkrete Zahl daneben.
+      // Klammerform statt Nebensatz, damit der Satz auch aufgeht, wenn honorar
+      // mangels Verkaufssumme «–» ist — honorarBetrag steht unabhaengig davon daneben.
       p(t('Gestützt auf den ermittelten Vermarktungsaufwand offerieren wir unsere '
         + 'Dienstleistungen mit einem Honorar von '), ph('honorar'),
         t(' der Verkaufssumme ('), ph('honorarBetrag'),

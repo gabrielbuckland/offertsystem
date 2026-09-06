@@ -1,10 +1,7 @@
 'use client';
 
-// Editor fuer den Teilbaum `honorar` (Stuetzstellen der Honorarstaffel + Skalierung g(D)).
-// Kennt nur die Form des Teilbaums, keine Konfigurationsbezeichner — der Server prueft die
-// eigentliche Wahrheit (Luecklosigkeit, Degression) beim Speichern; ein Verstoss kommt als
-// Befund mit Pfad `honorar.stuetzstellen[i].<feld>` zurueck und wird hier an dieser Zeile
-// verankert (`befundeFuerPfad`).
+// Server prueft Luecklosigkeit/Degression beim Speichern; ein Verstoss kommt als Befund
+// mit Pfad `honorar.stuetzstellen[i].<feld>` zurueck (`befundeFuerPfad`).
 import { Trash2 } from 'lucide-react';
 import { Fragment, type ReactElement } from 'react';
 import { frankenZuRappen, rappenZuFranken } from '../projekt/zellen-logik.js';
@@ -37,8 +34,7 @@ export function HonorarEditor({ einstellungen }: BereichsEditorProps): ReactElem
     einstellungen.aendere({ ...einstellungen.entwurf, honorar: naechste });
   }
 
-  // Betraege liegen in `entwurf` als Rappen vor (E-09) — jedes Feld rechnet an dieser
-  // einen Stelle in Franken um (Anzeige) bzw. zurueck in Rappen (Ablage).
+  // E-09: Betraege liegen in `entwurf` als Rappen vor.
   function aendereStuetzstelle(index: number, feld: Feld, wertFranken: number): void {
     const stuetzstellen = honorar.stuetzstellen.map((stuetzstelle, i) => (
       i === index ? { ...stuetzstelle, [feld]: frankenZuRappen(wertFranken) } : stuetzstelle
@@ -53,8 +49,6 @@ export function HonorarEditor({ einstellungen }: BereichsEditorProps): ReactElem
     });
   }
 
-  // Neue Zeile uebernimmt die letzten Werte als Ausgangspunkt — der Auftraggeber passt
-  // sie an; Luecklosigkeit/Degression erzwingt erst die Validierung beim Speichern.
   function fuegeStuetzstelleHinzu(): void {
     const letzte = honorar.stuetzstellen[honorar.stuetzstellen.length - 1];
     const neue: Stuetzstelle = letzte !== undefined ? { ...letzte } : { v: 0, hMin: 0, hMax: 0 };
@@ -80,8 +74,6 @@ export function HonorarEditor({ einstellungen }: BereichsEditorProps): ReactElem
           {honorar.stuetzstellen.map((stuetzstelle, index) => {
             const zeilenBefunde = befundeFuerPfad(einstellungen.befunde, `honorar.stuetzstellen[${index}]`);
             return (
-              // Fragment statt zweier freistehender <tr>: die Befundzeile gehoert
-              // sichtbar zur Stuetzstelle darueber, nicht zu einer Sammelstelle.
               <Fragment key={index}>
                 <TableRow>
                   <TableCell>

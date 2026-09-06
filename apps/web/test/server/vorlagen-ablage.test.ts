@@ -30,8 +30,7 @@ describe('vorlagen-ablage', () => {
     expect(gelesen.ok).toBe(true);
     if (gelesen.ok) expect(gelesen.wert.inhalt).toEqual(GUELTIG.inhalt);
     const aufDatei = JSON.parse(await readFile(pfad, 'utf8')) as { version: string };
-    // I-5: Die abgelegte Version ist die inhaltliche Pruefsumme, NICHT der vom Client
-    // gesendete Wert ('1') — schreibeVorlage ignoriert `roh.version`.
+    // I-5: Version ist inhaltliche Pruefsumme, nicht Client-Wert.
     expect(aufDatei.version).toBe(bildePruefsumme(GUELTIG.inhalt));
   });
 
@@ -44,7 +43,6 @@ describe('vorlagen-ablage', () => {
     const b = await ladeVorlage(pfadB);
     expect(a.ok && b.ok).toBe(true);
     if (a.ok && b.ok) {
-      // Gleicher Inhalt -> gleiche abgeleitete Version, unabhaengig vom Client-Wert.
       expect(a.wert.version).toBe(b.wert.version);
       expect(a.wert.version).not.toBe('1');
       expect(a.wert.version).not.toBe('99999');
@@ -76,10 +74,7 @@ describe('vorlagen-ablage', () => {
   });
 
   it('weist einen inline-Platzhalter mit id «preistabelle» zurück (M-1)', async () => {
-    // Katalog und Auflösung sind sich sonst uneinig: `preistabelle` waere als
-    // Text-Platzhalter (statt als Blockknoten `platzhalterTabelle`) in der
-    // Speicherpruefung faelschlich zulaessig, aber bei jedem Finalisieren
-    // «Unbekannter Platzhalter» — genau das soll die Speicherpruefung verhindern.
+    // M-1: preistabelle inline vs. Block (Katalog-Auflösungs-Konflikt verhindert).
     const pfad = join(await mkdtemp(join(tmpdir(), 'vorlage-')), 'offert-vorlage.json');
     const inlinePreistabelle = {
       version: '1',

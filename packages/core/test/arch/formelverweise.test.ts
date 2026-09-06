@@ -3,14 +3,10 @@ import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { kurz, lies, quelldateien } from './quelltext.js';
 
-/**
- * Die Formellabels stehen im Berichtsrepository, nicht hier. Der Pfad kommt aus
- * `BA_MAIN` — derselben Variablen, die `.env.example` fuer die Auswertungswerkzeuge
- * fuehrt (PE-24). Ohne sie wird der Standardort neben diesem Repository versucht;
- * ist auch der nicht da, MELDET die Pruefung das und laeuft nicht stillschweigend
- * gruen durch: Eine Zusicherung ueber Formelverweise, die mangels Bericht niemand
- * pruefen kann, waere ein leeres Versprechen.
- */
+// Formellabels stehen im Berichtsrepository (BA_MAIN wie in .env.example, PE-24; sonst
+// Standardort daneben).
+// Fehlt es, MELDET die Pruefung das (fail statt skip) — sonst waere eine
+// Zusicherung ueber Formelverweise, die niemand pruefen kann, ein leeres Versprechen.
 function berichtsverzeichnis(): string | undefined {
   const kandidaten = [
     process.env['BA_MAIN'],

@@ -60,10 +60,7 @@ describe('Standardkonfiguration', () => {
     expect(faktor?.quelle).toBe('abgeleitet');
   });
 
-  // Die Firmen-Defaults fuehren keinen manuellen Faktor: D leitet sich vollautomatisch aus
-  // Lagescore und abgeleiteten Groessen her; die Vermarkter-Einschaetzung laeuft ueber die
-  // D-Uebersteuerung im Projekt. Ein wieder auftauchender manueller Faktor braeuchte auch
-  // wieder eine Erfassungsstelle (Aufwandfaktoren-Block).
+  // D vollautomatisch aus Lagescore + abgeleiteten Groessen; D-Übersteuerung im Projekt.
   it('fuehrt keinen manuellen Faktor — D ist vollstaendig ableitbar', () => {
     const ergebnis = validiereKonfiguration(roh);
     expect(ergebnis.ok).toBe(true);

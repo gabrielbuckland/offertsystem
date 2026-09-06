@@ -1,15 +1,9 @@
 /**
- * Erzeugt die Negativfixtures der Konfigurationsvalidierung aus der
- * ausgelieferten Standardkonfiguration. Jede Variante traegt genau eine
- * Mutation, damit der Unterschied zwischen gueltig und ungueltig im Diff
- * ablesbar bleibt.
- *
+ * Erzeugt Negativfixtures der Konfigurationsvalidierung aus der Standardkonfiguration;
+ * jede Variante traegt genau eine Mutation, damit gueltig/ungueltig im Diff ablesbar bleibt.
  * Aufruf: node --experimental-strip-types tools/gen-config-invalid.ts
- *
- * Der Typ der Mutation wird REIN TYPSEITIG aus dem Kern bezogen. Ein
- * `import type` wird vom Type-Stripping restlos entfernt und loest zur Laufzeit
- * keine Modulaufloesung aus; die Kette der NodeNext-`.js`-Spezifizierer im Kern
- * ist damit hier ohne Belang.
+ * Der Mutationstyp kommt rein typseitig aus dem Kern: `import type` wird vom Type-Stripping
+ * entfernt und loest zur Laufzeit keine Modulaufloesung aus (NodeNext-.js-Kette hier ohne Belang).
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -21,11 +15,8 @@ const ZIEL = 'packages/core/test/fixtures/config-invalid';
 
 export interface NegativEintrag {
   readonly datei: string;
-  /**
-   * Als `CfgFehlerCode` getypt, nicht als `string`: Ein Tippfehler im erwarteten
-   * Code waere sonst erst im Auswertungslauf als Fehlschlag sichtbar — und dort
-   * nicht von einem echten Validierungsmangel zu unterscheiden.
-   */
+  // Als CfgFehlerCode getypt, nicht als string: ein Tippfehler waere sonst erst im
+  // Auswertungslauf sichtbar und nicht von einem echten Validierungsmangel zu unterscheiden.
   readonly code: CfgFehlerCode;
   readonly verletzung: string;
   readonly mutation: (konfiguration: RohKonfiguration) => void;
@@ -118,9 +109,8 @@ export const KONSTRUKTIV_AUSGESCHLOSSEN: readonly AusschlussEintrag[] = [
   },
 ];
 
-// Direkter Aufruf vs. Import: ueber fileURLToPath verglichen, weil der
-// Repository-Pfad Leerzeichen enthalten kann und import.meta.url diese
-// prozentkodiert — ein naiver Zeichenkettenvergleich schlaege dann fehl.
+// Ueber fileURLToPath verglichen: der Repository-Pfad kann Leerzeichen enthalten, die
+// import.meta.url prozentkodiert — ein naiver Zeichenkettenvergleich schlaege dann fehl.
 if (process.argv[1] !== undefined && fileURLToPath(import.meta.url) === process.argv[1]) {
   const basis = JSON.parse(readFileSync(QUELLE, 'utf8')) as RohKonfiguration;
   mkdirSync(ZIEL, { recursive: true });

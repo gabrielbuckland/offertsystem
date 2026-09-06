@@ -1,21 +1,13 @@
 /**
  * Keine Formel. Auswahl ueber Dependency Injection und Konfiguration (US-14, E-12).
+ * mock (Vorgabe) laeuft ohne Zugangsdaten; fixture ist derzeit baugleich mit
+ * pricehubble (echter Adapter, echtes fetch), da noch keine Aufzeichnungen existieren
+ * und der MSW-Ersatz nur in der Testumgebung laeuft. Unbekannter Wert = KonfigurationsFehler,
+ * kein stiller Rueckfall (AK-17).
  *
- *   mock (Vorgabe) — Interface-Ebene; ein frisch geklontes Repository laeuft ohne
- *                    Zugangsdaten gruen durch
- *   fixture        — reserviert fuer den Betrieb gegen aufgezeichnete Antworten;
- *                    derzeit baugleich mit `pricehubble` (echter Adapter, echtes
- *                    fetch), da noch keine Aufzeichnungen existieren und der
- *                    MSW-Ersatz nur in der Testumgebung laeuft
- *   pricehubble    — echter Adapter gegen die reale API
- *
- * Ein unbekannter Wert ist ein KonfigurationsFehler, kein stiller Rueckfall.
- * Der Wechsel zwischen den drei Werten erfordert null geaenderte Codedateien (AK-17).
- *
- * `konfiguration` wird UEBERGEBEN, nicht geladen (PE-17): Der `api`-Block gehoert nicht
- * zum Kerntyp `Konfiguration`. `apps/web/src/server` entnimmt ihn der von
- * `parseKonfiguration` mitgegebenen Rohkonfiguration und reicht ihn hier hinein. Damit
- * kennt weder der Kern den `api`-Block noch dieses Paket den Dateizugriff.
+ * `konfiguration` wird UEBERGEBEN, nicht geladen (PE-17): der `api`-Block gehoert nicht
+ * zum Kerntyp `Konfiguration`, damit kennt weder der Kern den Block noch dieses Paket
+ * den Dateizugriff.
  */
 import type { ValuationProvider } from '@offert/core';
 import {

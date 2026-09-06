@@ -1,10 +1,8 @@
 'use client';
 
-// Seitenfuellender Dialog fuer den Rechenweg. Natives `<dialog>` mit `showModal()`:
-// Fokusfalle, Esc und Backdrop kommen vom Browser. Zustand lebt beim Aufrufer; `onClose`
-// haelt ihn synchron, wenn der Dialog sich selbst schliesst (Esc). Inhalt wird nur im
-// offenen Zustand gerendert, damit die Seite nicht bei jedem Projekt-Update auch den
-// ganzen Rechenweg neu aufbaut.
+// Natives <dialog>/showModal(): Fokusfalle, Esc, Backdrop kommen vom Browser.
+// Zustand lebt beim Aufrufer, onClose haelt ihn bei Esc-Schliessen synchron.
+// Inhalt wird nur im offenen Zustand gerendert (kein Rechenweg-Rebuild bei jedem Update).
 import { useEffect, useRef } from 'react';
 import { Button } from '../ui/button.js';
 import { PipelineAnsicht } from './PipelineAnsicht.js';

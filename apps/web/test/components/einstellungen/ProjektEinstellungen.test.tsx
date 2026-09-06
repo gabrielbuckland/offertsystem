@@ -8,28 +8,15 @@ import {
   BefundAuffang, ProjektEinstellungen,
 } from '../../../src/components/einstellungen/ProjektEinstellungen.js';
 
-/**
- * Firmenwerte sind die ECHTE `config/company-defaults.json` statt eines Minimal-Objekts:
- * Die vier Bereichs-Editoren lesen ihre Teilbaeume ungeprueft (`entwurf['honorar'] as
- * HonorarRoh` usw.), ein zurechtgeschnittenes Fixture liefe deshalb an einer fehlenden
- * Wurzel auf.
- */
+// Echte company-defaults.json: Editoren lesen Teilbäume ungeprueft, Fixture würde fehlen.
 const FIRMA = JSON.parse(readFileSync(
   resolve(import.meta.dirname, '../../../../../config/company-defaults.json'), 'utf8',
 )) as Readonly<Record<string, unknown>>;
 
-/**
- * Beschriftung des Zuruecksetzen-Knopfs. Als eigene Konstante, weil die Negativpruefung
- * sonst am Einleitungshinweis haengen bliebe: Dort steht «Abweichungen von den
- * Firmenwerten», ein blosses `not.toContain('Firmenwert')` waere immer rot.
- */
+// Konstante für not.toContain, um Falsch-Positive im Hinweis zu vermeiden.
 const ZURUECKSETZEN = 'Auf Firmenwert zurücksetzen';
 
-/**
- * Der Hinweistext des Faktor-Entfernen-Knopfs. Eindeutiger als das Wort «entfernen», das
- * im selben Markup auch an den Zeilen der Stuetzstellen, Vorlagen und Merkmale steht —
- * dort ist Entfernen korrekt, weil Arrays im Merge vollstaendig ersetzt werden.
- */
+// Eindeutige Konstante; "entfernen" steht mehrfach im Markup.
 const FAKTOR_ENTFERNEN_TITEL = 'Projekte, die diesen Faktor erfasst haben';
 
 function baueMarkup(delta: Readonly<Record<string, unknown>>): string {
@@ -47,9 +34,7 @@ describe('ProjektEinstellungen', () => {
   });
 
   it('kennzeichnet bei einem Bereich mit mehreren Wurzeln nur die uebersteuerte', () => {
-    // «Preisanpassung» deckt vier Konfigurationswurzeln ab. Ein Abzeichen je Wurzel statt
-    // eines je Karte: Sonst faerbte eine einzige Uebersteuerung den ganzen Bereich als
-    // projektbezogen ein, obwohl drei Wurzeln den Firmenwerten folgen.
+    // Abzeichen je Wurzel: eine Uebersteuerung faerbt nicht den ganzen Bereich.
     const html = baueMarkup({ flaeche: { alpha: 0.6 } });
     const projektbezogen = html.match(/projektbezogen/g) ?? [];
     const firmenweit = html.match(/firmenweit/g) ?? [];
@@ -58,9 +43,7 @@ describe('ProjektEinstellungen', () => {
   });
 
   it('bindet den Auffangblock fuer nicht verankerbare Befunde ein (K-1)', () => {
-    // Quelltextnahe Verdrahtungspruefung: Befunde entstehen erst nach einem gescheiterten
-    // Speicherversuch und damit im Zustand, der ohne Hook-Testbibliothek nicht
-    // herstellbar ist. Die Anzeige selbst prueft `BefundAuffang` unten direkt.
+    // Quelltextnahe Verdrahtungsprüfung; Befundzustand ohne Hook-Testbibliothek nicht herstellbar.
     const quelle = readFileSync(resolve(
       import.meta.dirname,
       '../../../src/components/einstellungen/ProjektEinstellungen.tsx',
@@ -69,17 +52,13 @@ describe('ProjektEinstellungen', () => {
   });
 
   it('meldet eine wirkungslose leere Delta-Wurzel nicht als Uebersteuerung', () => {
-    // `{ honorar: {} }` legt keinen Wert ein; `bildeDelta` raeumt die Wurzel ab, das
-    // Abzeichen darf sie deshalb nicht als abweichend melden.
+    // bildeDelta raeumt leere Wurzeln ab.
     const html = baueMarkup({ honorar: {} });
     expect(html).not.toContain('projektbezogen');
   });
 
   it('zeigt die EFFEKTIVE Konfiguration, nicht nur das Delta', () => {
-    // Der tragende Punkt: Auch die nicht uebersteuerten Bereiche stehen im Formular.
-    // Waere das Delta die Anzeigegrundlage, saehe der Vermarkter drei leere Karten und
-    // wuesste nicht, womit gerechnet wird. Das Honorar ist hier NICHT uebersteuert, sein
-    // Firmenwert muss trotzdem im Markup stehen.
+    // Vermarkter muss alle Bereiche sehen, auch nicht-überstetuerte.
     const honorar = FIRMA['honorar'] as { readonly skalierung: { readonly gMin: number } };
     const html = baueMarkup({ flaeche: { alpha: 0.6 } });
     expect(html).toContain(String(honorar.skalierung.gMin));
@@ -102,10 +81,7 @@ describe('JSON-Reiter der Projektebene (W-2)', () => {
   });
 
   it('verdrahtet das Delta schreibbar und die effektive Konfiguration nur lesend', () => {
-    // Der Umschalter liegt im Client-Zustand, daher quelltextnahe Verdrahtungspruefung.
-    // Die Richtung ist die tragende Aussage: Bearbeitet wird das Delta — waere die
-    // effektive Konfiguration schreibbar, machte jedes Speichern aus dem Projekt eine
-    // Vollkopie.
+    // Quelltextnahe Verdrahtungsprüfung: schreibbar=Delta verhindert Vollkopie.
     const quelle = readFileSync(resolve(
       import.meta.dirname,
       '../../../src/components/einstellungen/ProjektEinstellungen.tsx',
@@ -116,13 +92,7 @@ describe('JSON-Reiter der Projektebene (W-2)', () => {
 });
 
 describe('Entfernen auf Projektebene (K-3)', () => {
-  /**
-   * `bildeDelta` iteriert ueber die Schluessel des Entwurfs; ein im Entwurf GELOESCHTER
-   * Firmenschluessel erzeugt deshalb keinen Delta-Eintrag. Das ist eine bewusste,
-   * dokumentierte und getestete Modellgrenze — also darf die Oberflaeche die Aktion auf
-   * dieser Ebene nicht anbieten. Sie war ein stiller No-Op: Karte weg, Delta unveraendert,
-   * «Speichern» ausgegraut, beim naechsten Laden ist der Faktor wieder da.
-   */
+  // K-3: bildeDelta iteriert Entwurf-Schlüssel; gelöschter Firmenschlüssel = kein Delta-Eintrag.
   it('bietet auf Projektebene kein Entfernen eines Aufwandfaktors an', () => {
     const html = baueMarkup({});
     expect(html).not.toContain(FAKTOR_ENTFERNEN_TITEL);
@@ -131,8 +101,7 @@ describe('Entfernen auf Projektebene (K-3)', () => {
   });
 
   it('behaelt das Entfernen auf der Firmenebene', () => {
-    // Gegenprobe: Firmenweit wird die vollstaendige Konfiguration geschrieben, ein
-    // geloeschter Schluessel ist dort ausdrueckbar und bleibt erlaubt.
+    // Gegenprobe: firmenweit ist gelöschter Schlüssel ausdrückbar und erlaubt.
     const html = renderToStaticMarkup(
       <EinstellungsEditor
         titel="Aufwandfaktoren"
@@ -150,9 +119,7 @@ describe('BefundAuffang (K-1)', () => {
   const WURZELN = ['dossierDefaults', 'flaeche', 'aufwandfaktoren', 'honorar'];
 
   it('zeigt einen Befund, den keine Bereichskarte verankern kann', () => {
-    // `api` ist bewusst kein Bereich der Oberflaeche — ein Befund darauf war zuvor
-    // nirgends sichtbar, und ein abgelehntes Delta wirkte wie ein erfolgreiches
-    // Speichern.
+    // api ist nicht im Formular; Befund darauf war zuvor unsichtbar.
     const html = renderToStaticMarkup(
       <BefundAuffang
         befunde={[{ pfad: 'api', text: 'projektbezogen nicht überschreibbar' }]}
@@ -174,8 +141,7 @@ describe('BefundAuffang (K-1)', () => {
   });
 
   it('ueberlaesst den unanhaengigen Befund (leerer Pfad) den Bereichskarten', () => {
-    // `pfad: ''` ist der Netz-/500-Fallback; `rahmenBefunde` zeigt ihn in jeder Karte.
-    // Der Auffangblock darf ihn nicht ein zweites Mal bringen.
+    // pfad='' ist Netz-/500-Fallback; rahmenBefunde zeigt ihn bereits.
     const html = renderToStaticMarkup(
       <BefundAuffang
         befunde={[{ pfad: '', text: 'Nicht gespeichert.' }]}

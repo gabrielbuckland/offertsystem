@@ -1,15 +1,7 @@
-/**
- * Testdokumentation fuer Anhang E.
- *
- * Der Testartefakt-Reporter (tools/eval/report/vitest-reporter.ts) liest je
- * Test `task.meta` und schreibt die Felder nach `tests.json`; der Anhang-
- * generator druckt daraus die Testdokumentation. Fehlt ein Feld, erscheint im
- * Anhang sichtbar «METADATEN FEHLEN». Die Dokumentation steht deshalb direkt
- * im Test und nicht in einer getrennten Liste, die veralten koennte.
- *
- * `anforderung` muss eine ID aus tools/eval/report/anforderungen.json sein —
- * der Reporter wirft bei unbekannten IDs.
- */
+// Testdokumentation fuer Anhang E: Der Reporter (tools/eval/report/vitest-reporter.ts)
+// liest je Test `task.meta` und schreibt sie nach `tests.json`. Fehlt ein Feld, erscheint
+// im Anhang sichtbar «METADATEN FEHLEN» — deshalb steht die Dokumentation direkt im Test.
+// `anforderung` muss eine ID aus tools/eval/report/anforderungen.json sein, sonst wirft der Reporter.
 import type { Task } from 'vitest';
 
 declare module 'vitest' {

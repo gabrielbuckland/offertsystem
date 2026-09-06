@@ -44,8 +44,7 @@ describe('Next.js-Geruest (PE-19, PE-13)', () => {
   });
 
   it('haelt Tailwind aus den Offert-Routen heraus (US-10, Spec §7)', () => {
-    // Quellbasierte Pruefung, kein Rendering: sie pinnt die Strukturentscheidung
-    // (Wurzellayout ohne, Gruppenlayout mit globals.css), nicht das gerenderte Ergebnis.
+    // Source-based: pins structure decision (root without, group with globals.css), not render output.
     const wurzel = readFileSync(new URL('../src/app/layout.tsx', import.meta.url), 'utf8');
     expect(wurzel).not.toContain('globals.css');
 

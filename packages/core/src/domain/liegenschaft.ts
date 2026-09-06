@@ -16,7 +16,7 @@ export interface LiegenschaftEntwurf {
   readonly einheiten: readonly Einheit[];
 }
 
-/** Nur `erzeugeLiegenschaft` vergibt die Gueltigkeitsmarke. */
+// Nur erzeugeLiegenschaft vergibt die Gueltigkeitsmarke.
 export type Liegenschaft = LiegenschaftEntwurf & { readonly [gueltig]: true };
 
 export type AggregatFehlerCode =

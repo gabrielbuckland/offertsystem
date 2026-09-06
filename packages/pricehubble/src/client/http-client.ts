@@ -16,7 +16,6 @@ export interface AnfrageBeschreibung {
   readonly methode: 'GET' | 'POST' | 'PATCH';
   readonly url: string;
   readonly body?: unknown;
-  /** aus `config.api.timeoutMs` bzw. `config.api.timeoutValuationMs` (E-13) */
   readonly timeoutMs: number;
   readonly token?: string | undefined;
 }
@@ -39,7 +38,6 @@ export interface HttpClientAbhaengigkeiten {
   readonly fetchImpl: typeof fetch;
 }
 
-/** HTTP-Statuscodes mit eigener Behandlung; keine Zeit- oder Backoff-Groessen. */
 const STATUS = {
   erfolgVon: 200,
   erfolgBis: 300,
@@ -53,9 +51,8 @@ const STATUS = {
 export class HttpClient {
   private readonly abh: HttpClientAbhaengigkeiten;
 
-  // Feldzuweisung statt Parametereigenschaft: `node --experimental-strip-types`
-  // (PE-09) uebersetzt nicht, es entfernt nur Typen — Parametereigenschaften
-  // haetten eine Codeerzeugung verlangt und sind dort nicht zulaessig.
+  // PE-09: Feldzuweisung statt Parametereigenschaft, da `node --experimental-strip-types`
+  // nur Typen entfernt statt Code zu erzeugen.
   public constructor(abh: HttpClientAbhaengigkeiten) {
     this.abh = abh;
   }
@@ -74,9 +71,7 @@ export class HttpClient {
       let transport: 'timeout' | 'netzwerk' | undefined;
 
       try {
-        // `body` wird nur gesetzt, wenn es einen gibt: Unter
-        // `exactOptionalPropertyTypes` ist `body: undefined` kein zulaessiges
-        // `RequestInit` — weggelassen und explizit leer sind verschiedene Dinge.
+        // exactOptionalPropertyTypes: `body: undefined` ist kein zulaessiges RequestInit.
         antwort = await fetchImpl(anfrage.url, {
           method: anfrage.methode,
           headers: this.kopfzeilen(anfrage),

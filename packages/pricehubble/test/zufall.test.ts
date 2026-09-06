@@ -38,13 +38,8 @@ describe('deterministische Zufallsquelle (E-27, G-5)', () => {
   });
 });
 
-/**
- * Entfernt Zeilen- und Blockkommentare.
- *
- * Ohne diesen Schritt schluege die Pruefung an `zufall.ts` an — dessen Kopfkommentar
- * sagt ausdruecklich, dass der Generator `Math.random` ERSETZT. Eine Pruefung auf dem
- * Rohtext bestrafte damit die Begruendung und setzte einen Anreiz, sie zu loeschen.
- */
+// Entfernt Kommentare vor der Textsuche: `zufall.ts` nennt `Math.random` in seiner
+// eigenen Kopfdokumentation (der Generator ersetzt es) — sonst schluege das hier an.
 function ohneKommentare(inhalt: string): string {
   return inhalt
     .replace(/\/\*[\s\S]*?\*\//g, '')

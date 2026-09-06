@@ -3,16 +3,10 @@ import { defineWorkspace } from 'vitest/config';
 
 const wurzel = fileURLToPath(new URL('.', import.meta.url));
 
-/**
- * Reihenfolge zaehlt: Die Unterpfad-Regeln stehen VOR den Paketnamen, sonst griffe die
- * exakte Namensregel zuerst und ein Import wie `@offert/offer/src/pdf/drucke-offerte.js`
- * bliebe unaufgeloest. Die generische `src/*`-Regel bleibt fuer Modulpfad-Importe stehen,
- * greift aber im Regelfall nicht mehr: apps/web importiert seit der Paketgrenzen-
- * Bereinigung ueber die Einstiegspunkte `@offert/offer`, `@offert/offer/druck` und
- * `@offert/offer/template` (eigens aliasiert, weil `druckeOfferte` bzw. die
- * Vorlagenkomponenten bewusst nicht im Paketindex stehen — Playwright im Browser-Bundle
- * bzw. React/JSX im jsx-freien Nachweislauf, siehe packages/offer/src/index.ts).
- */
+// Reihenfolge zaehlt: Unterpfad-Regeln muessen VOR den Paketnamen stehen, sonst griffe die
+// exakte Namensregel zuerst und z. B. `@offert/offer/src/pdf/drucke-offerte.js` bliebe
+// unaufgeloest. druck/template sind eigens aliasiert, weil sie bewusst nicht im
+// Paketindex stehen (Playwright-Bundle bzw. jsx-freier Nachweislauf).
 const alias = [
   { find: /^@offert\/core\/(.*)\.js$/, replacement: `${wurzel}packages/core/$1.ts` },
   { find: /^@offert\/pricehubble\/(.*)\.js$/, replacement: `${wurzel}packages/pricehubble/$1.ts` },
@@ -24,11 +18,8 @@ const alias = [
   { find: '@offert/offer', replacement: `${wurzel}packages/offer/src/index.ts` },
 ];
 
-/**
- * Alle Projekte lesen `test/**` und erfassen `.ts` UND `.tsx` (PE-12). Ein reines
- * `.ts`-Muster liesse Komponententests zusammen mit passWithNoTests lautlos
- * ausfallen — `verify` waere gruen ohne Nachweis.
- */
+// PE-12: .ts UND .tsx erfassen — ein reines .ts-Muster liesse Komponententests
+// zusammen mit passWithNoTests lautlos ausfallen, verify waere gruen ohne Nachweis.
 const MUSTER = 'test/**/*.test.{ts,tsx}';
 
 // Zentral, damit MSW mit onUnhandledRequest: 'error' fuer beide netzberuehrenden Projekte greift.

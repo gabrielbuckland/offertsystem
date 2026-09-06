@@ -1,22 +1,16 @@
 'use client';
 
-/**
- * Spaltenkonfiguration der Zu-/Abschlaege (US-04 AK 5, E-25): Spalten sind vorbelegt, nicht
- * vorgegeben, und lassen sich ergaenzen, umbenennen und entfernen.
- *
- * Wird eine Spalte entfernt, muessen die zugehoerigen `spaltenwerte` aus allen Einheiten
- * verschwinden — sonst leben sie bei Wiederverwendung derselben Spalten-ID unbeabsichtigt
- * wieder auf. `entferneSpalte` ist deshalb ein eigener Pflicht-Rueckruf statt eines
- * optionalen zweiten Arguments von `aendere`: TypeScript ist in der Parameterzahl
- * kontravariant und wuerde ein fehlendes optionales Argument sonst typkorrekt verschlucken.
- *
- * Die Detailzeile bleibt IMMER gemountet und wird nur per CSS (`hidden`) ausgeblendet,
- * nicht per bedingtem Rendering (`isOffen && …`): Die Testsuite faengt Handler ab, die
- * waehrend eines einzigen `renderToStaticMarkup`-Durchlaufs entstehen (kein DOM, keine
- * simulierten Klicks, siehe `AnpassungsSpalten.test.tsx`); ein bedingt weggelassener
- * Teilbaum waere fuer sie unerreichbar. Sichtbar/unsichtbar ist fuer den Vermarkter
- * dasselbe Ergebnis wie gemountet/nicht gemountet.
- */
+// US-04 AK 5, E-25.
+// Wird eine Spalte entfernt, muessen die zugehoerigen spaltenwerte aus allen Einheiten
+// verschwinden — sonst leben sie bei Wiederverwendung derselben Spalten-ID unbeabsichtigt
+// wieder auf. entferneSpalte ist deshalb ein eigener Pflicht-Rueckruf statt eines
+// optionalen zweiten Arguments von aendere: TypeScript ist in der Parameterzahl
+// kontravariant und wuerde ein fehlendes optionales Argument sonst typkorrekt verschlucken.
+//
+// Die Detailzeile bleibt IMMER gemountet und wird nur per CSS (hidden) ausgeblendet, nicht
+// per bedingtem Rendering: Die Testsuite (AnpassungsSpalten.test.tsx) faengt Handler ab,
+// die waehrend eines einzigen renderToStaticMarkup-Durchlaufs entstehen (kein DOM, keine
+// simulierten Klicks); ein bedingt weggelassener Teilbaum waere fuer sie unerreichbar.
 import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { formatiereAggregat } from '@offert/offer';
@@ -36,24 +30,16 @@ import {
 
 export interface AnpassungsSpaltenProps {
   readonly spalten: readonly AnpassungsSpalte[];
-  /** Nur gelesen, um die Staffel einer Regelspalte mit der Merkmalsbezeichnung statt der
-   *  rohen Kennung auszuweisen. */
   readonly merkmale: readonly Merkmal[];
   readonly aendere: (spalten: readonly AnpassungsSpalte[]) => void;
   readonly entferneSpalte: (id: string) => void;
-  /** Uebertraegt den Vorgabewert der Spalte in alle Einheiten ohne eigenen Wert
-   *  (verdrahtet in ProjektAnsicht.tsx). */
   readonly uebernehmeAufEinheiten: (spalteId: string) => void;
-  /** Firmenweite Vorlagen, aus denen sich eine Spalte uebernehmen laesst. */
   readonly vorlagen: readonly Anpassungsvorlage[];
 }
 
-/**
- * Zaehler wird einmal pro Komponenteninstanz erzeugt und danach nur inkrementiert, nie aus
- * der aktuellen Spaltenliste neu abgeleitet — sonst wuerde eine waehrend der Sitzung
- * entfernte ID sofort wiederverwendet und eine neue Spalte erbte die `spaltenwerte` der
- * entfernten (siehe Kommentar oben).
- */
+// Zaehler wird einmal pro Komponenteninstanz erzeugt und danach nur inkrementiert, nie aus
+// der aktuellen Spaltenliste neu abgeleitet — sonst wuerde eine waehrend der Sitzung
+// entfernte ID sofort wiederverwendet und eine neue Spalte erbte deren spaltenwerte.
 export function erzeugeSpaltenIdFolge(vorhandene: readonly AnpassungsSpalte[]): () => string {
   let hoechste = vorhandene.reduce((max, s) => {
     const treffer = /^S-(\d+)$/.exec(s.id);
@@ -65,12 +51,6 @@ export function erzeugeSpaltenIdFolge(vorhandene: readonly AnpassungsSpalte[]): 
   };
 }
 
-/**
- * Beschreibt die Staffel einer Regelspalte lesbar («Stockwerk: unter 1 CHF 8’600 · sonst
- * CHF 17’200»). Reine Funktion, damit sie ohne DOM testbar bleibt (Muster
- * `zellen-logik.ts`). Formatiert in der Skala der Spalte (Rappen bei 'absolut', Faktor bei
- * 'relativ'), wie `EinheitenTabelle`.
- */
 export function beschreibeStaffel(
   spalte: AnpassungsSpalte, merkmale: readonly Merkmal[],
 ): string {
@@ -86,15 +66,11 @@ export function beschreibeStaffel(
   return `${merkmal}: ${teile.join(' · ')}`;
 }
 
-/**
- * Umbau einer Spalte auf eine Merkmals-Staffel bzw. zurueck auf einen festen Vorgabewert.
- * Das Schema schliesst `regel` und `vorgabewert` gegenseitig aus (REGEL_UND_VORGABEWERT):
- * der jeweils andere Schluessel muss beim Umbau ENTFERNT werden, nicht auf `undefined`
- * gesetzt — sonst scheiterte jedes PUT des Projekts.
- */
+// Schema schliesst regel und vorgabewert gegenseitig aus (REGEL_UND_VORGABEWERT): der
+// jeweils andere Schluessel muss beim Umbau ENTFERNT werden, nicht auf undefined gesetzt
+// — sonst scheiterte jedes PUT des Projekts.
 export function spalteMitRegel(s: AnpassungsSpalte, merkmalId: string): AnpassungsSpalte {
   const { vorgabewert: _vorgabewert, ...rest } = s;
-  // Startbereich traegt nur den Restfall: die Staffel ist damit sofort total und gueltig.
   return { ...rest, regel: { merkmal: merkmalId, bereiche: [{ wert: 0 }] } };
 }
 
@@ -103,7 +79,6 @@ export function spalteOhneRegel(s: AnpassungsSpalte): AnpassungsSpalte {
   return { ...rest, vorgabewert: 0 };
 }
 
-/** Bringt die im Editor geaenderte Kern-Regel auf die Schemaform des Projekts. */
 export function spalteMitGeaenderterRegel(
   s: AnpassungsSpalte, regel: KernBereichsregel,
 ): AnpassungsSpalte {
@@ -135,8 +110,8 @@ export function AnpassungsSpalten(
   function fuegeHinzu() {
     aendere([...spalten, {
       id: naechsteId.current!(),
-      // Nicht leer: `anpassungsSpalteSchema` verlangt `min(1)`, eine namenlose Spalte
-      // liesse jedes PUT mit 422 scheitern, bis ein Name getippt ist.
+      // anpassungsSpalteSchema verlangt min(1); eine namenlose Spalte liesse jedes PUT
+      // mit 422 scheitern, bis ein Name getippt ist.
       bezeichnung: 'Neue Spalte',
       erfassungsform: 'relativ',
       vorgabewert: 0,
@@ -144,12 +119,9 @@ export function AnpassungsSpalten(
   }
 
   const [gewaehlteVorlage, setzeGewaehlteVorlage] = useState('');
-  // Spiegelt den State (einziger Schreiber: `waehleVorlage`); im Browser sind beide
-  // immer gleich, und `uebernimmAusVorlage` koennte dort direkt `gewaehlteVorlage`
-  // lesen. Gebraucht wird der Ref allein von der Testumgebung: Sie treibt die Handler
-  // EINES `renderToStaticMarkup`-Durchlaufs (kein DOM, siehe Dateikommentar), ein
-  // State-Setter ist dort nach dem Rendern wirkungslos, ein zweites Rendern findet nicht
-  // statt — die abgefangene Klick-Closure saehe sonst immer die leere Auswahl.
+  // Ref noetig fuer die Testumgebung: sie treibt Handler EINES renderToStaticMarkup-
+  // Durchlaufs (kein DOM), wo ein State-Setter nach dem Rendern wirkungslos ist — die
+  // abgefangene Klick-Closure saehe sonst immer die leere Auswahl.
   const gewaehlteVorlageRef = useRef('');
 
   function waehleVorlage(id: string) {
@@ -160,8 +132,6 @@ export function AnpassungsSpalten(
   function uebernimmAusVorlage() {
     const vorlage = vorlagen.find((v) => v.id === gewaehlteVorlageRef.current);
     if (vorlage === undefined) return;
-    // ID aus dem laufenden Zaehler: aus dem Index gebildet erbte eine neue Spalte die
-    // `spaltenwerte` einer waehrend der Sitzung entfernten Spalte gleicher ID.
     aendere([...spalten, spalteAusVorlage(vorlage, naechsteId.current!())]);
   }
 
@@ -245,11 +215,9 @@ export function AnpassungsSpalten(
                   <Trash2 className="size-4" />
                 </Button>
               </div>
-              {/* Bezeichnung/Erfassungsform/Vorgabewert bleiben IMMER gemountet (siehe
-                  Kopfkommentar) — nur `hidden` blendet sie aus. Die Regel-Konfiguration
-                  eine Ebene tiefer bleibt dagegen echt bedingt gemountet: sie zieht mit
-                  `BereichsregelEditor` ihre eigenen `ZellenEingabe`-Instanzen nach, die
-                  sonst faelschlich als (nicht vorhandenes) Vorgabewert-Feld durchgingen. */}
+              {/* Regel-Konfiguration unten bleibt echt bedingt gemountet (anders als
+                  hier): BereichsregelEditor zieht eigene ZellenEingabe-Instanzen nach,
+                  die sonst faelschlich als Vorgabewert-Feld durchgingen. */}
               <div className={`border-t border-border/50 p-6 pt-2 ${isOffen ? '' : 'hidden'}`}>
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-wrap items-end gap-6">
@@ -303,7 +271,6 @@ export function AnpassungsSpalten(
                     )}
                   </div>
 
-                  {/* Echt bedingt gemountet, siehe Kommentar oben. */}
                   {isOffen && (
                   <div className="rounded-md border border-border/50 bg-muted/10 p-4">
                     {s.regel === undefined ? (

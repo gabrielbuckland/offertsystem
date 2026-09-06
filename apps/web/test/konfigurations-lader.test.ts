@@ -34,7 +34,7 @@ describe('ladeKonfiguration', () => {
     const ergebnis = ladeKonfiguration({ pfad: STANDARD });
     expect(ergebnis.ok).toBe(true);
     if (!ergebnis.ok) return;
-    // Kerntyp aus parseKonfiguration (P2): Faktoren als Map, nicht als Record.
+    // P2: Core type has Factors as Map, not Record.
     expect(ergebnis.kern.faktoren.has('projektumfang' as never)).toBe(true);
     expect(ergebnis.kern.faktoren.get('projektumfang' as never)?.strategie).toBe('min-max');
     // PE-17: Der api-Block geht unveraendert an die Zugriffsschicht.
@@ -138,7 +138,6 @@ describe('ladeKonfiguration', () => {
     });
     expect(ergebnis.ok).toBe(true);
     if (!ergebnis.ok) return;
-    // Der Kerntyp stammt aus der ZUSAMMENGEFUEHRTEN Basis, nicht aus der Datei.
     expect(ergebnis.kern.honorar.skalierung.gMax).toBe(1.2);
     expect(ergebnis.fingerabdruck.ueberschreibungen).toEqual([
       { pfad: 'honorar.skalierung.gMax', defaultwert: 1.15, projektwert: 1.2 },
@@ -155,8 +154,7 @@ describe('ladeKonfiguration', () => {
     expect(ergebnis.fehler[0]?.code).toBe('CFG_MERGE_LOCKED_PATH');
   });
 
-  // US-08: Eine projektbezogene Anpassung, die eine Invariante verletzt, wird
-  // zurueckgewiesen statt gerechnet.
+  // US-08: Reject invariant-violating override instead of computing.
   it('weist eine invariantenverletzende Uebersteuerung zurueck statt zu rechnen', () => {
     const ergebnis = ladeKonfiguration({
       pfad: STANDARD,
@@ -169,9 +167,7 @@ describe('ladeKonfiguration', () => {
     expect(Object.hasOwn(ergebnis, 'konfiguration')).toBe(false);
   });
 
-  // Ueberschreibungen ersetzen Arrays vollstaendig statt sie elementweise
-  // zusammenzufuehren, deshalb braucht der Nachweis die volle Stuetzstellenreihe der
-  // Standardkonfiguration mit einer einzelnen gekippten Randkurve.
+  // Overrides replace arrays wholly, not element-wise; needs full support point series with one flipped edge.
   it('weist eine degressionsverletzende Stuetzstellenreihe zurueck', () => {
     const ergebnis = ladeKonfiguration({
       pfad: STANDARD,
@@ -179,8 +175,7 @@ describe('ladeKonfiguration', () => {
         honorar: {
           stuetzstellen: [
             { v: 0, hMin: 3000000, hMax: 4000000 },
-            // hMax faellt hier auf 5000000 statt zu steigen: Der Grenzsatz der
-            // naechsten Stufe unterschreitet den eigenen Durchschnittssatz nicht mehr.
+            // hMax drops to 5000000 instead of rising: next tier's max falls below own average.
             { v: 500000000, hMin: 11250000, hMax: 5000000 },
             { v: 1000000000, hMin: 19500000, hMax: 26000000 },
             { v: 2500000000, hMin: 37500000, hMax: 50000000 },
@@ -197,8 +192,7 @@ describe('ladeKonfiguration', () => {
   });
 
   it('weist ein null auf einen ganzen Teilbaum in der Nachvalidierung zurueck (W-7)', () => {
-    // Der Merge laesst ein null auf einen Teilbaum durch (Skalare ersetzen den Teilbaum
-    // als Ganzes); erst die erneute Pruefung der zusammengefuehrten Basis faengt es ab.
+    // Merge allows null on subtree (scalars replace whole); re-check catches it.
     const ergebnis = ladeKonfiguration({ pfad: STANDARD, ueberschreibungen: { honorar: null } });
     expect(ergebnis.ok).toBe(false);
     if (ergebnis.ok) return;
@@ -207,8 +201,6 @@ describe('ladeKonfiguration', () => {
   });
 
   it('legt projektbezogene Dossier-Voreinstellungen unter die Dossier-Parameter (W-3)', () => {
-    // Die Projektebene setzt `zustandsbewertungen.kitchen`, fuehrt daneben aber eigene
-    // `dossierParameter` fuer einen Wohnungstyp (ein anderes Feld, `qualitaetsbewertungen`).
     const ergebnis = ladeKonfiguration({
       pfad: STANDARD,
       ueberschreibungen: {

@@ -1,11 +1,7 @@
 'use client';
 
-// Projektspezifischer Offerttext: Kopie der globalen Vorlage entsteht beim ersten Oeffnen
-// und wird sofort in den Projektstand geschrieben, nicht erst beim ersten Tastendruck.
-// Editor-`key` bleibt im Normalfall stabil; nur der explizite
-// «Zuruecksetzen»-Klick erhoeht `zuruecksetzenZaehler` und erzwingt damit gezielt einen
-// Remount (TipTaps `useEditor` uebernimmt eine geaenderte `inhalt`-Prop sonst nicht
-// automatisch).
+// zuruecksetzenZaehler erzwingt per Editor-key gezielt einen Remount: TipTaps useEditor
+// uebernimmt eine geaenderte inhalt-Prop sonst nicht automatisch.
 import { useEffect, useState } from 'react';
 import type { OffertDokument } from '@offert/offer';
 import type { Projekt } from '../../server/projekt-schema.js';
@@ -27,7 +23,7 @@ export function OffertTextSchritt({ projekt, aendere }: OffertTextSchrittProps) 
     setzeLadeFehler(false);
     void fetch('/api/vorlage')
       .then((a) => {
-        // I-4: `a.ok` ungeprueft liesse eine 500-Fehlerseite unbemerkt durchfallen.
+        // I-4: a.ok ungeprueft liesse eine 500-Fehlerseite unbemerkt durchfallen.
         if (!a.ok) throw new Error('vorlage-ladefehler');
         return a.json() as Promise<{ readonly inhalt: OffertDokument }>;
       })
@@ -36,8 +32,8 @@ export function OffertTextSchritt({ projekt, aendere }: OffertTextSchrittProps) 
         aendere({ ...projekt, offertText: v.inhalt });
       })
       .catch(() => setzeLadeFehler(true));
-    // `projekt`/`aendere` bewusst nicht in den Abhaengigkeiten: soll nur laufen, wenn
-    // `offertText` auf `undefined` wechselt, nicht bei jeder Aenderung an einem anderen Feld.
+    // projekt/aendere bewusst nicht in den Abhaengigkeiten: soll nur laufen, wenn
+    // offertText auf undefined wechselt.
   }, [projekt.offertText]);
 
   const inhalt = projekt.offertText ?? vorlage;

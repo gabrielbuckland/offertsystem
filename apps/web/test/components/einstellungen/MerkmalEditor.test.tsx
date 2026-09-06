@@ -1,6 +1,4 @@
-// `renderToStaticMarkup` haengt keine Handler an, deshalb werden `Button`/`Input`
-// gemockt, um die waehrend des Renderdurchlaufs erzeugten Closures abzufangen und
-// direkt aufzurufen, statt Klicks zu simulieren.
+// Button/Input gemockt, um Closures abzufangen (renderToStaticMarkup haengt keine Handler an).
 import { renderToStaticMarkup } from 'react-dom/server';
 import {
   describe, expect, it, vi,
@@ -118,14 +116,12 @@ describe('ableiteMerkmalId', () => {
   });
 
   it('ersetzt Umlaute durch ihre Digraph-Schreibweise statt sie zu verschlucken', () => {
-    // `BEZEICHNER_MUSTER` (Kern) laesst nur [a-zA-Z0-9_] zu — ein blosses Entfernen des
-    // Umlauts liesse aus "Grösse" das irrefuehrende "grsse" werden.
+    // BEZEICHNER_MUSTER erlaubt nur [a-zA-Z0-9_]; Umlaute weglassen würde "Grösse" → "grsse".
     expect(ableiteMerkmalId('Grösse')).toBe('groesse');
   });
 
   it('stellt bei einer mit Ziffer beginnenden Bezeichnung ein "m_" voran', () => {
-    // `BEZEICHNER_MUSTER` verlangt `^[a-z]` am Anfang — eine mit Ziffer beginnende
-    // Kennung waere sonst serverseitig ungueltig und faellt erst beim Speichern auf.
+    // BEZEICHNER_MUSTER verlangt ^[a-z]; mit Ziffer würde Server ablehnen.
     expect(ableiteMerkmalId('2 Zimmer')).toBe('m_2_zimmer');
   });
 });

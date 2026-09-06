@@ -1,8 +1,4 @@
-/**
- * Rechenweg-Ansicht (US-09/A-10): die fuenf Berechnungsstufen untereinander. Skelett ist
- * fix, jeder Inhalt kommt aus `bauePipelineDaten`; gerechnet wird hier nichts (I-24).
- * Rein darstellend: kein State, kein `'use client'`.
- */
+// US-09/A-10: rein darstellend, gerechnet wird hier nichts (I-24).
 import type { Route } from 'next';
 import Link from 'next/link';
 import type { PipelineAbschnitt, PipelineStufe, PipelineZeile } from './pipeline-daten.js';
@@ -100,8 +96,7 @@ function Abschnitt({ abschnitt }: { readonly abschnitt: PipelineAbschnitt }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
-              {/* Reihenfolge und Anzahl der Zeilen sind durch die Herleitung fixiert,
-                  der Index ist ein stabiler Schluessel. */}
+              {/* Index als Schluessel ok: Reihenfolge/Anzahl sind durch die Herleitung fixiert. */}
               {abschnitt.tabelle.zeilen.map((zeile, zi) => (
                 <tr key={zi} className="align-top">
                   {zeile.map((zelle, si) => (

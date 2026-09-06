@@ -11,7 +11,7 @@ export default async function OffertSeite({ params }: { params: Promise<{ id: st
     const offerte = await ladeOfferte(id, verzeichnisAusLaufzeit());
     return <ErgebnisDarstellung offerte={offerte} />;
   } catch {
-    // Kein Fehlerzustand der Anwendung, sondern eine Auskunft (A-12).
+    // A-12: kein Fehlerzustand der Anwendung, sondern eine Auskunft.
     return <NichtGefunden id={id} />;
   }
 }

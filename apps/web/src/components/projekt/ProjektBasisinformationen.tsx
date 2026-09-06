@@ -1,17 +1,8 @@
 'use client';
 
-/**
- * Merkmale fuer das GANZE Neubau-Projekt statt je Referenzobjekt: Baujahr, Auftraggeber,
- * Aufwandindikator D. Eine Aenderung des Baujahrs schreibt denselben Wert in JEDES
- * vorhandene Referenzobjekt (`parametrisierung.baujahr`), da `RepraesentativeParametrisierung`
- * (packages/core) es je Wohnungstyp an PriceHubble sendet; dies ist nur die eine
- * Erfassungsstelle dafuer. Neue Referenzobjekte uebernehmen `baujahr` ebenso.
- *
- * D-Feld zeigt den aus PriceHubble-Lagescores/Projektgroessen hergeleiteten Wert als
- * Vorschlag, Vermarkter kann uebersteuern — ANWESENHEIT der Uebersteuerung entscheidet
- * (wie bei Zu-/Abschlagsspalten, `wirksamer-wert.ts`), ein geleertes Feld kehrt zur
- * Ableitung zurueck statt eine Zahl zu erfinden.
- */
+// Aenderung des Baujahrs schreibt denselben Wert in JEDES Referenzobjekt
+// (parametrisierung.baujahr), da RepraesentativeParametrisierung (packages/core) es je
+// Wohnungstyp an PriceHubble sendet; dies ist die einzige Erfassungsstelle dafuer.
 import { useEffect, useState } from 'react';
 import { formatiereScore } from '@offert/offer';
 import { entscheideZellenwert } from './zellen-logik.js';
@@ -25,12 +16,10 @@ export interface ProjektBasisinformationenProps {
   readonly aendere: (baujahr: number) => void;
   readonly auftraggeber: string | undefined;
   readonly aendereAuftraggeber: (wert: string | undefined) => void;
-  /** Uebersteuerter Aufwandindikator D des Projekts (`aufwandindikatorUebersteuerung`). */
   readonly aufwandindikator: number | undefined;
-  /** Aus den Faktoren (Lagescore, abgeleitete Groessen) hergeleiteter D-Wert — fehlt,
-   *  solange noch keine Berechnung gelaufen ist. */
+  // Fehlt, solange noch keine Berechnung gelaufen ist.
   readonly aufwandindikatorVorschlag: number | undefined;
-  /** `undefined` loescht die Uebersteuerung; danach gilt wieder die Ableitung. */
+  // undefined loescht die Uebersteuerung; danach gilt wieder die Ableitung.
   readonly aendereAufwandindikator: (wert: number | undefined) => void;
 }
 
@@ -39,10 +28,8 @@ export type AufwandindikatorEntscheid =
   | { readonly art: 'loeschen' }
   | { readonly art: 'verwerfen' };
 
-/**
- * Ein geleertes Feld LOESCHT die Uebersteuerung (Rueckkehr zur Ableitung) — anders als
- * bei den Zahlfeldern ist Leeren hier eine gueltige Absicht, kein Tippzwischenstand.
- */
+// Geleertes Feld LOESCHT die Uebersteuerung (Rueckkehr zur Ableitung) — anders als bei
+// den Zahlfeldern ist Leeren hier eine gueltige Absicht, kein Tippzwischenstand.
 export function entscheideAufwandindikator(entwurf: string): AufwandindikatorEntscheid {
   if (entwurf.trim() === '') return { art: 'loeschen' };
   const entscheid = entscheideZellenwert(entwurf);
@@ -58,8 +45,8 @@ export function ProjektBasisinformationen(
   }: ProjektBasisinformationenProps,
 ) {
   const [entwurf, setzeEntwurf] = useState(baujahr === undefined ? '' : String(baujahr));
-  // Wie `ZellenEingabe`: von aussen kommende Aenderungen muessen nachgezogen werden,
-  // sonst zeigt das Feld nach einem Blur einen veralteten Entwurf.
+  // Wie ZellenEingabe: von aussen kommende Aenderungen nachziehen, sonst zeigt das Feld
+  // nach einem Blur einen veralteten Entwurf.
   useEffect(() => { setzeEntwurf(baujahr === undefined ? '' : String(baujahr)); }, [baujahr]);
 
   const [auftraggeberEntwurf, setzeAuftraggeberEntwurf] = useState(auftraggeber ?? '');
@@ -71,8 +58,7 @@ export function ProjektBasisinformationen(
     setzeDEntwurf(aufwandindikator === undefined ? '' : String(aufwandindikator));
   }, [aufwandindikator]);
   const [dVerworfen, setzeDVerworfen] = useState(false);
-  // Skala zeigt den WIRKSAMEN Wert (Uebersteuerung, sonst Ableitung) — derselbe
-  // Vorrang wie in `wirksamer-wert.ts` bzw. der Aggregatleiste.
+  // Vorrang wie in wirksamer-wert.ts / Aggregatleiste: Uebersteuerung vor Ableitung.
   const effektiverAufwandindikator = aufwandindikator ?? aufwandindikatorVorschlag;
 
   return (
@@ -88,8 +74,6 @@ export function ProjektBasisinformationen(
             onChange={(e) => setzeEntwurf(e.target.value)}
             onBlur={() => {
               const entscheid = entscheideZellenwert(entwurf);
-              // Geleertes/nicht parsierbares Feld verwirft statt eine 0 zu erfinden — 0
-              // waere hier zudem kein plausibles Baujahr.
               if (entscheid.art === 'verwerfen') {
                 setzeEntwurf(baujahr === undefined ? '' : String(baujahr));
                 return;

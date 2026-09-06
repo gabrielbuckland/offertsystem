@@ -1,7 +1,6 @@
-// Sonderfall der Konfigurationserweiterung (Strategiewechsel): laedt die Konfigurationsvariante config/company-defaults.strategie.json (preissegment
-// auf wurzel-min-max, gleiche Grenzen) und rechnet einen vollstaendigen Pipeline-Lauf.
-// Die ausgelieferte company-defaults.json bleibt unveraendert auf min-max — beide
-// Fassungen werden hier gegeneinander gehalten.
+// Sonderfall der Konfigurationserweiterung (Strategiewechsel): laedt die Variante
+// company-defaults.strategie.json (preissegment auf wurzel-min-max, gleiche Grenzen)
+// und haelt sie gegen die ausgelieferte Basis, die unveraendert auf min-max bleibt.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -21,8 +20,8 @@ function ladeKern(dateiname: string): Konfiguration {
   return ergebnis.wert.kern;
 }
 
-// S1: q-quer = 85_000_000 / 92.5 Rappen/m^2; Grenzen 600_000..1_800_000. Erwartungen
-// von Hand: linear (q-600000)/1200000, Wurzel (sqrt q - sqrt 600000)/(sqrt 1800000 - sqrt 600000).
+// S1, Grenzen 600_000..1_800_000: linear (q-600000)/1200000, Wurzel
+// (sqrt q - sqrt 600000)/(sqrt 1800000 - sqrt 600000).
 const ERWARTET_LINEAR = 0.26576576576576577;
 const ERWARTET_WURZEL = 0.32450017855222796;
 

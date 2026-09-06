@@ -1,8 +1,4 @@
-/**
- * `renderToStaticMarkup` liefert keine anfassbaren Handler, darum werden `Button`/`Input`
- * gemockt, um die waehrend eines echten Renderdurchlaufs erzeugten Closures abzufangen
- * und danach direkt aufzurufen, statt Klicks zu simulieren.
- */
+// renderToStaticMarkup braucht Mocks um Handler abzufangen
 import { renderToStaticMarkup } from 'react-dom/server';
 import {
   describe, expect, it, vi,
@@ -144,18 +140,14 @@ describe('AnpassungsSpalten — freigewordene Kennungen werden nicht wiederverwe
     hinzufuegenButton.onClick();
     const zweiteNeueId = (aendere.mock.calls[1]![0] as readonly AnpassungsSpalte[]).at(-1)!.id;
 
-    // Eine aus der jeweils AKTUELLEN Liste neu abgeleitete Kennung haette hier zweimal
-    // 'S-3' geliefert, weil beide Klicks von derselben ungeaenderten `spalten`-Prop
-    // ausgehen.
+    // Würde sonst zweimal S-3 liefern (beide aus `spalten`-Prop, ungeändert).
     expect(ersteNeueId).not.toBe('S-2');
     expect(zweiteNeueId).not.toBe('S-2');
     expect(zweiteNeueId).not.toBe(ersteNeueId);
   });
 
   it('erzeugeSpaltenIdFolge leitet die naechste Kennung nie aus einer aktuellen Liste neu ab', () => {
-    // Direkter Test der Fabrik selbst: sie kennt nach der Erzeugung nur noch ihren
-    // eigenen Zaehler, keine Spaltenliste mehr. Eine gedachte Entfernung von 'S-2' aus
-    // der urspruenglichen Liste kann den Zaehler darum nicht auf 'S-2' zuruecksetzen.
+    // Fabrik kennt nach Erzeugung nur noch Zähler, keine Spaltenliste — kann nicht zurücksetzen.
     const naechste = erzeugeSpaltenIdFolge([spalte('S-1', 'Erste'), spalte('S-2', 'Zweite')]);
     const ersteZugeteilte = naechste();
     const zweiteZugeteilte = naechste();
@@ -209,11 +201,7 @@ describe('AnpassungsSpalten — Vorgabewert in der Einheit des Menschen', () => 
   });
 });
 
-/**
- * `regel` und `vorgabewert` schliessen sich im Schema aus (`REGEL_UND_VORGABEWERT`).
- * Erreichbar im normalen Betrieb, weil `config/company-defaults.json` die regelbehaftete
- * Vorlage `stockwerklage` mitbringt.
- */
+// Schema: regel und vorgabewert schliessen sich aus (REGEL_UND_VORGABEWERT)
 describe('AnpassungsSpalten — Vorgabewert entfaellt bei einer Spalte mit Regel', () => {
   const spalteMitRegel: AnpassungsSpalte = {
     id: 'S-1',
@@ -273,9 +261,7 @@ describe('AnpassungsSpalten — eine neue Spalte ist sofort speicherbar', () => 
     erfasst.buttons.find((b) => b.children === 'Spalte hinzufügen')!.onClick();
 
     const neu = (aendere.mock.calls[0]![0] as readonly AnpassungsSpalte[]).at(-1)!;
-    // `anpassungsSpalteSchema` verlangt `min(1)`: Eine leere Bezeichnung liess jedes PUT
-    // mit 422 scheitern und meldete dem Vermarkter nach JEDEM Hinzufuegen, die Aenderung
-    // habe nicht gespeichert werden koennen.
+    // Schema verlangt min(1); leere Bezeichnung macht PUT=422 nach jedem Hinzufügen.
     expect(neu.bezeichnung.trim().length).toBeGreaterThan(0);
   });
 });
@@ -292,7 +278,6 @@ describe('beschreibeStaffel — weist Segmente und Betraege lesbar aus', () => {
     expect(text).toContain('Stockwerk');
     expect(text).toContain('unter 1');
     expect(text).toContain('sonst');
-    // formatiereAggregat formatiert Rappen als Franken (860000 Rp -> CHF 8'600).
     expect(text).toMatch(/8.600/);
     expect(text).toMatch(/17.200/);
   });
@@ -312,11 +297,7 @@ describe('beschreibeStaffel — weist Segmente und Betraege lesbar aus', () => {
   });
 });
 
-/**
- * Der Umbau Vorgabewert <-> Staffel muss den jeweils anderen Schluessel ENTFERNEN —
- * das Schema schliesst `regel` und `vorgabewert` gegenseitig aus (REGEL_UND_VORGABEWERT),
- * ein zurueckbleibender Schluessel machte jedes PUT des Projekts unspeicherbar.
- */
+// Umbau: jeweils anderer Schlüssel muss entfernt werden (Schema-Ausschluss).
 describe('AnpassungsSpalten — Uebernahme einer firmenweiten Vorlage', () => {
   it('bietet die firmenweiten Vorlagen zur Uebernahme an', () => {
     erfasst.buttons.length = 0;
@@ -341,8 +322,6 @@ describe('AnpassungsSpalten — Uebernahme einer firmenweiten Vorlage', () => {
     expect(erfasst.buttons.some((b) => b.children === 'Aus Vorlage')).toBe(true);
     const vorlagenSelect = erfasst.selects.find((s) => s['aria-label'] === 'Vorlage');
     expect(vorlagenSelect).toBeDefined();
-    // Button/Select rendern `null` (siehe Mocks oben) — die Optionen selbst sind ungemockt
-    // und lassen sich darum separat rendern, um ihren Text zu pruefen.
     const optionenMarkup = renderToStaticMarkup(<>{vorlagenSelect!.children}</>);
     expect(optionenMarkup).toContain('Seesicht');
   });
@@ -371,12 +350,10 @@ describe('AnpassungsSpalten — Uebernahme einer firmenweiten Vorlage', () => {
     const vorlagenSelect = erfasst.selects.find((s) => s['aria-label'] === 'Vorlage')!;
     const uebernehmenButton = erfasst.buttons.find((b) => b.children === 'Aus Vorlage')!;
 
-    // Ohne Auswahl: der Klick darf nichts aendern (Guard in uebernimmAusVorlage).
     uebernehmenButton.onClick();
     expect(aendere).not.toHaveBeenCalled();
 
-    // Wirkt in diesem Harness nur, weil die Komponente die Auswahl zusaetzlich in einem
-    // Ref fuehrt (Begruendung dort): Ein State-Setter braeuchte ein zweites Rendern.
+    // Harness funktioniert weil Komponente Auswahl in Ref führt (sonst zweiter Render nötig).
     vorlagenSelect.onChange({ target: { value: 'seesicht' } });
     uebernehmenButton.onClick();
 
@@ -384,7 +361,7 @@ describe('AnpassungsSpalten — Uebernahme einer firmenweiten Vorlage', () => {
     const neueSpalten = aendere.mock.calls[0]![0] as readonly AnpassungsSpalte[];
     expect(neueSpalten).toHaveLength(2);
     const neu = neueSpalten[1]!;
-    // ID aus dem laufenden Zaehler (S-2 vorhanden), nie aus Index oder Vorlagen-ID.
+    // ID aus Zähler, nicht aus Index oder Vorlagen-ID.
     expect(neu.id).toBe('S-3');
     expect(neu.bezeichnung).toBe('Seesicht');
     expect(neu.erfassungsform).toBe('relativ');

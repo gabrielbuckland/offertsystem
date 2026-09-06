@@ -1,20 +1,9 @@
-/**
- * Keine Formel. Formatpruefung des vom Vermarkter gewaehlten Honorarbetrags
- * (`aggregates.gewaehltesHonorar`).
- *
- * Geprueft wird die Form (R3: Ganzzahl in Rappen, wie `feeRange.min/max`) UND die
- * Positivitaet. Eine Abweichung von der Honorarrange ist KEINE Formverletzung, sondern
- * ein fachlich zulaessiger Fall: Die Range ist eine Empfehlung an den Vermarkter, keine
- * Schranke. `honorarAbweichung` meldet die Abweichung gesondert, fuer die Anzeige im
- * Eingabemodal (`apps/web/src/components/ui/honorar-eingabe-dialog.tsx`); die API-Route
- * lehnt nur ein falsches FORMAT (inkl. Nicht-Positivitaet) ab, nie eine Abweichung von
- * der Range.
- *
- * Die Positivpruefung traegt NICHT `feeRange` (die ist ein berechneter Wert, der nie
- * negativ wird): `gewaehltesHonorar` ist eine Benutzereingabe und damit eine eigene
- * Vertrauensgrenze — ohne diese Pruefung liesse sich ein Honorar von z. B. -50'000 CHF
- * erfassen und unveraendert ins Kundendokument drucken.
- */
+// Keine Formel. Formatpruefung des vom Vermarkter gewaehlten Honorarbetrags. Eine
+// Abweichung von der Range ist keine Formverletzung, sondern fachlich zulaessig (die
+// Range ist eine Empfehlung, keine Schranke) — honorarAbweichung meldet sie gesondert
+// fuer die Anzeige; die API-Route lehnt nur ein falsches Format ab. Die Positivpruefung
+// ist noetig, weil gewaehltesHonorar eine Benutzereingabe (eigene Vertrauensgrenze) ist,
+// anders als feeRange, das nie negativ wird.
 export type HonorarPruefung =
   | { readonly ok: true; readonly wert: number }
   | { readonly ok: false; readonly text: string };
@@ -32,12 +21,8 @@ export function validiereGewaehltesHonorar(wert: unknown): HonorarPruefung {
   return { ok: true, wert };
 }
 
-/**
- * Honorar als Anteil (nicht Prozentzahl, also 0.032 statt 3.2) der Verkaufssumme, fuer
- * `formatiereHonorarProzent`. `null` statt `NaN`/`Infinity`, wenn die
- * Verkaufssumme keine sinnvolle Bezugsgroesse ist (<= 0) — die Anzeige entscheidet dann
- * selbst ueber einen Platzhaltertext, statt eine kaputte Zahl zu erhalten.
- */
+// Anteil (0.032 statt 3.2) fuer formatiereHonorarProzent. null statt NaN/Infinity,
+// wenn die Verkaufssumme keine sinnvolle Bezugsgroesse ist (<= 0).
 export function berechneHonorarProzent(
   honorarRappen: number, verkaufssummeRappen: number,
 ): number | null {
@@ -47,7 +32,7 @@ export function berechneHonorarProzent(
 
 export type HonorarAbweichung = 'unter-range' | 'im-bereich' | 'ueber-range';
 
-/** Reine Einordnung, keine Ablehnung: siehe Dateikopf. */
+// Reine Einordnung, keine Ablehnung.
 export function honorarAbweichung(
   betrag: number, range: { readonly min: number; readonly max: number },
 ): HonorarAbweichung {

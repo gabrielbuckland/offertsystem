@@ -1,8 +1,5 @@
-/**
- * Ergebnisdarstellung: dasselbe Offert-Objekt, dieselbe Vorlage, nur um Bedienelemente
- * erweitert. Es gibt keine separate «Detailansicht» mit eigener Datenzusammenstellung —
- * zwei Aufbereitungen koennten auseinanderlaufen, ohne dass ein Test es saehe.
- */
+// Keine separate "Detailansicht" mit eigener Datenzusammenstellung: zwei Aufbereitungen
+// koennten auseinanderlaufen, ohne dass ein Test es saehe.
 import type { Offer } from '@offert/offer';
 import { OfferteDokument, VermarktungsOfferte } from '@offert/offer/template';
 import { buttonVariants } from './ui/button.js';
@@ -36,7 +33,6 @@ export function ErgebnisDarstellung({ offerte }: { offerte: Offer }) {
       ) : (
         <>
           <VermarktungsOfferte offerte={offerte} />
-          {/* Rechenweg nur im Tool, nicht im Dokument. */}
           <details className="bedienelement">
             <summary>Rechenweg (intern)</summary>
             <OfferteDokument offerte={offerte} />

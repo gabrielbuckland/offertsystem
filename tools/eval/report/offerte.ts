@@ -1,13 +1,7 @@
-/**
- * Keine Modellformel. Prueft den Konfigurationsbezug der Beispiel-Offerte (PE-04).
- *
- * `konfig_sha256` des Laufkopfs (SHA-256 ueber den DATEIINHALT von
- * company-defaults.json) und `konfigPruefsumme` der Offerte (SHA-256 ueber die
- * KANONISCH SERIALISIERTE EFFEKTIVE Konfiguration inkl. projektbezogener
- * Ueberschreibungen, E-26) koennen nie gleich sein — ein direkter Vergleich waere immer
- * rot. Geprueft wird stattdessen ueber die Konfigurationsversion (in beiden Groessen
- * vorhanden und vergleichbar) und das Vorhandensein der eingebetteten Kopie.
- */
+// PE-04: prueft den Konfigurationsbezug der Beispiel-Offerte. konfig_sha256 des Laufkopfs
+// (Hash ueber die Datei) und konfigPruefsumme der Offerte (Hash ueber die effektive,
+// serialisierte Konfiguration inkl. Ueberschreibungen, E-26) koennen nie gleich sein —
+// verglichen wird deshalb ueber die Konfigurationsversion plus Vorhandensein der Kopie.
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 

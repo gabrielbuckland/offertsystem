@@ -9,9 +9,7 @@ describe('leseRumpf', () => {
   });
 
   it('zerbricht nicht an einer HTML-Fehlerseite, sondern liefert einen leeren Rumpf', async () => {
-    // Genau die Antwort, die Next bei einem unbehandelten Routenfehler sendet. Ein
-    // blosses `await antwort.json()` lehnte hier ab; die Ablehnung entkaeme aus dem
-    // `void`-Aufruf des Klickhandlers und die Schaltflaeche bliebe wirkungslos.
+    // Next-Fehlerantwort: antwort.json() würde ablehnen, Button bliebe wirkungslos.
     const antwort = new Response('<!DOCTYPE html><html><body>500</body></html>', {
       status: 500, headers: { 'content-type': 'text/html' },
     });

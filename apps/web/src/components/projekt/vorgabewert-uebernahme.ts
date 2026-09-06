@@ -1,10 +1,6 @@
-/** Reine Uebernahme-Funktion fuer `spaltenwerte`, direkt testbar. */
 import type { AnpassungsSpalte, ProjektEinheit } from '../../server/projekt-schema.js';
 
-/** Traegt den Vorgabewert der Spalte in alle Einheiten ein, die fuer diese Spalte noch
- *  KEINEN Wert fuehren (fehlender Schluessel in `spaltenwerte`). Bestehende Werte —
- *  auch 0 — bleiben unangetastet: 0 ist ein erfasster Wert, kein fehlender (I-24). Fehlt
- *  der Vorgabewert selbst (Spalte mit Regel), gibt es nichts zu uebernehmen. */
+// I-24: 0 gilt als erfasster Wert, nicht als fehlend — bestehende Werte bleiben unangetastet.
 export function uebernehmeVorgabewert(
   einheiten: readonly ProjektEinheit[], spalte: AnpassungsSpalte,
 ): readonly ProjektEinheit[] {

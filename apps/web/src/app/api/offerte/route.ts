@@ -1,14 +1,8 @@
-/**
- * Duenner Adapter: validieren, beschaffen, rechnen lassen, uebersetzen, ablegen. Er
- * rechnet nicht und formatiert nicht.
- *
- * Die Reihenfolge ist bindend: Vollstaendigkeitspruefung vor Metadaten, Metadaten vor
- * Berechnung (der Zeitstempel geht in den Eingang, E-29), Ablage zuletzt. Im Fehlerfall
- * entsteht kein Artefakt (I-24).
- */
+// Duenner Adapter: validieren, beschaffen, rechnen lassen, uebersetzen, ablegen.
+// Reihenfolge bindend: Vollstaendigkeitspruefung vor Metadaten vor Berechnung (E-29:
+// Zeitstempel geht in den Eingang), Ablage zuletzt. Fehlerfall erzeugt kein Artefakt (I-24).
 import { berechne, serialisiereEingang } from '@offert/core';
-// Modulpfad statt Paketindex: Der Index re-exportiert auch React-Komponenten (.tsx), fuer
-// die Node kein Type-Stripping leistet (PE-09).
+// PE-09: Modulpfad statt Paketindex, der Index re-exportiert .tsx ohne Type-Stripping.
 import { baueOfferte } from '@offert/offer';
 import { beschaffe, zuEingangsArgumenten } from '../../../server/eingang.js';
 import { erfassungsSchema } from '../../../server/erfassung-schema.js';

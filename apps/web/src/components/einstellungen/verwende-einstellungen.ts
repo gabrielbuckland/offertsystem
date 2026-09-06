@@ -1,19 +1,8 @@
 'use client';
 
-/**
- * Zustand eines Einstellungs-Editors (US-08).
- *
- * BEWUSST ohne Autosave — anders als die Projektseite (`verwendeProjekt`, die jede
- * Aenderung entprellt automatisch per PUT schreibt): Ein Schreibvorgang hier trifft
- * NICHT nur das gerade offene Projekt, sondern die firmenweite Konfiguration und damit
- * ALLE Projekte. Ein automatisches Speichern liesse den Auftraggeber eine firmenweite
- * Wirkung ausloesen, ohne dass er das je bewusst entschieden haette; ein Tippfehler in
- * einem Zahlenfeld wuerde sofort auf jede kuenftige Offerte durchschlagen. Eine
- * Projektaenderung ist dagegen jederzeit billig rueckgaengig zu machen (Feld erneut
- * bearbeiten). Diese Asymmetrie in der Wirkung rechtfertigt die Asymmetrie im
- * Speicherverhalten: Aenderungen sammeln sich hier nur im Entwurf, bis ein expliziter
- * Klick auf «Speichern» sie freigibt.
- */
+// US-08: bewusst ohne Autosave (anders als `verwendeProjekt`) — ein Schreibvorgang hier
+// trifft die firmenweite Konfiguration und damit ALLE Projekte, ein Tippfehler duerfte
+// nicht automatisch auf jede kuenftige Offerte durchschlagen.
 import { useCallback, useRef, useState, type ReactElement } from 'react';
 import { rufeApi } from '../rufe-api.js';
 
@@ -22,39 +11,18 @@ export interface EinstellungsBefund {
   readonly text: string;
 }
 
-/**
- * Bearbeitungsebene des Editors. Sie steuert AUSSCHLIESSLICH Aktionen, die das
- * Delta-Modell der Projektebene nicht ausdruecken kann.
- *
- * Das ist heute genau eine: das ENTFERNEN eines Firmenschluessels aus
- * `aufwandfaktoren.<id>`. `FaktorenEditor` ist damit der einzige Verbraucher dieses Typs
- * — seit `dossierDefaults` die feste PriceHubble-Feldmenge fuehrt, bietet kein anderer
- * Editor mehr ein Entfernen an. `bildeDelta` iteriert ueber die Schluessel des Entwurfs,
- * ein dort fehlender Schluessel erzeugt deshalb keinen Delta-Eintrag — dieselbe Grenze
- * wie im Kern-Merge, der Werte nur ueberlagert und keine Form fuer «dieser Schluessel
- * soll hier fehlen» kennt. Firmenweit wird dagegen die vollstaendige Konfiguration
- * geschrieben; dort ist das Entfernen ausdrueckbar und bleibt erlaubt.
- *
- * Der Knopf wird deshalb auf der Projektebene GESPERRT, nicht stillschweigend wirkungslos
- * gelassen: Knopf da, Wirkung weg ist die schlechteste der drei Varianten.
- */
+// Steuert ausschliesslich das Entfernen eines Firmenschluessels aus `aufwandfaktoren.<id>`
+// (einzige Aktion, die das Delta-Modell der Projektebene nicht ausdruecken kann, da
+// `bildeDelta` einen fehlenden Schluessel als unveraendert liest). Der Knopf wird deshalb
+// auf Projektebene gesperrt, nicht stillschweigend wirkungslos gelassen.
 export type Bearbeitungsebene = 'firma' | 'projekt';
 
-/** Props, die jeder konkrete Bereichs-Editor (HonorarEditor, FaktorenEditor, ...)
- *  entgegennimmt. */
 export interface BereichsEditorProps {
   readonly einstellungen: VerwendeEinstellungenErgebnis;
   /** Fehlt auf der firmenweiten Seite; dort gilt `'firma'` als Vorgabe. */
   readonly ebene?: Bearbeitungsebene | undefined;
 }
 
-/**
- * Signatur eines konkreten Bereichs-Editors. `EinstellungsEditor` (der Rahmen) nimmt
- * eine Komponente MIT dieser Signatur als `Editor`-Prop entgegen und ruft sie selbst mit
- * dem lebenden Zustand auf (`<Editor einstellungen={zustand} />`) — der Vertrag steht
- * damit an EINER Stelle, typgeprueft, statt implizit ueber eine in Kinder injizierte
- * Prop.
- */
 export type BereichsEditor = (props: BereichsEditorProps) => ReactElement;
 
 interface SpeicherAntwort {
@@ -70,8 +38,6 @@ export interface VerwendeEinstellungenErgebnis {
   readonly entwurf: Readonly<Record<string, unknown>>;
   readonly geaendert: boolean;
   readonly speichert: boolean;
-  /** Nur nach erfolgreichem Speichern gesetzt; ein neuer Entwurfsschritt loescht sie
-   *  wieder (sie bezoege sich sonst auf einen ueberholten Stand). */
   readonly pruefsumme: string | undefined;
   readonly befunde: readonly EinstellungsBefund[];
   readonly aendere: (naechster: Readonly<Record<string, unknown>>) => void;
@@ -79,7 +45,6 @@ export interface VerwendeEinstellungenErgebnis {
   readonly verwerfe: () => void;
 }
 
-/** Einziger Netzwerkkontakt dieses Hooks. */
 async function schreibeEinstellungen(
   entwurf: Readonly<Record<string, unknown>>,
 ): Promise<SpeicherErgebnis> {
@@ -92,10 +57,8 @@ async function schreibeEinstellungen(
   if (antwort.status === 422 && antwort.rumpf.befunde !== undefined) {
     return { ok: false, befunde: antwort.rumpf.befunde };
   }
-  // Netzausfall (rufeApi wirft nie, liefert dann status 0) und Serverfehler (500, dessen
-  // Rumpf keine `befunde`-Form traegt — Route antwortet dort mit `{ fehler: { text } }`)
-  // landen gemeinsam hier: Es gibt keinen Feldanker, dem sich «der Server ist nicht
-  // erreichbar» sinnvoll zuordnen liesse (I-24), also genau EIN unanhaengiger Befund.
+  // I-24: Netzausfall (status 0) und Serverfehler ohne `befunde`-Form landen hier
+  // gemeinsam, da kein Feldanker existiert -> ein unabhaengiger Befund.
   return {
     ok: false,
     befunde: [{ pfad: '', text: 'Die Einstellungen konnten nicht gespeichert werden.' }],
@@ -107,24 +70,11 @@ interface SpeicherBeobachter {
   readonly aufErgebnis: (ergebnis: SpeicherErgebnis) => void;
 }
 
-/**
- * Reine Zustandsmaschine ohne React (testbar ohne Hook-Testbibliothek — gleiches
- * Vorgehen wie `baueSpeicherwarteschlange` in `verwende-projekt.ts`), die Speicher-
- * versuche gegen ueberholte Antworten absichert.
- *
- * `vermerkeAenderung` (Bearbeitung ODER Verwerfen) und `starte` (ein Speicherversuch)
- * zaehlen eine gemeinsame Generation hoch. Trifft eine Antwort ein, deren Generation
- * nicht mehr die aktuelle ist, wurde inzwischen weiterbearbeitet oder erneut
- * gespeichert — sie wird verworfen, statt einen neueren, noch gar nicht gesendeten
- * Entwurf mit einem Erfolg zu ueberschreiben, der ihm nicht zusteht.
- *
- * `speichert` wird NUR von der jeweils zuletzt GESENDETEN Anfrage zurueckgesetzt
- * (`laufendeGeneration`, getrennt von der allgemeinen Generation): Ein blosses
- * `vermerkeAenderung()` nach dem Absenden darf `speichert` weiterhin auf false ziehen
- * (nichts ist mehr unterwegs), ein ZWEITER `starte()`-Aufruf davor jedoch nicht — sonst
- * risse die spaet eintreffende erste Antwort den Ladezustand herunter, waehrend die
- * zweite Anfrage noch laeuft.
- */
+// Generationszaehler sichert Speicherversuche gegen ueberholte Antworten ab:
+// `vermerkeAenderung`/`starte` zaehlen hoch, eine Antwort mit veralteter Generation wird
+// verworfen. `speichert` wird separat ueber `laufendeGeneration` nur von der zuletzt
+// GESENDETEN Anfrage zurueckgesetzt, damit eine spaet eintreffende erste Antwort nicht
+// den Ladezustand einer noch laufenden zweiten Anfrage herunterreisst.
 export function baueSpeicherSteuerung(
   sende: (entwurf: Readonly<Record<string, unknown>>) => Promise<SpeicherErgebnis>,
   beobachter: SpeicherBeobachter,
@@ -152,14 +102,8 @@ export function baueSpeicherSteuerung(
   };
 }
 
-/**
- * Strukturvergleich statt Referenzvergleich: `aendere` liefert bei jedem Ruecksetzen auf
- * den Ausgangswert eine NEUE Referenz, obwohl der Baum inhaltlich unveraendert ist. `entwurf`
- * ist exakt die JSON-Form, die auch an `POST /api/einstellungen` geht — ein
- * `JSON.stringify`-Vergleich ist deshalb sowohl ausreichend als auch ehrlich, und die
- * Firmenweite-Wirkung-Schranke («Speichern» nur bei echter Aenderung aktiv) bleibt damit
- * belastbar statt nur kosmetisch erfuellt.
- */
+// Strukturvergleich statt Referenzvergleich: `aendere` liefert bei jedem Ruecksetzen auf
+// den Ausgangswert eine neue Referenz, obwohl der Baum inhaltlich unveraendert ist.
 export function entwurfGeaendert(
   entwurf: Readonly<Record<string, unknown>>, anfang: Readonly<Record<string, unknown>>,
 ): boolean {
@@ -174,8 +118,6 @@ export function verwendeEinstellungen(
   const [pruefsumme, setzePruefsumme] = useState<string | undefined>(undefined);
   const [befunde, setzeBefunde] = useState<readonly EinstellungsBefund[]>([]);
 
-  // Entsteht genau einmal und schliesst damit ueber den ERSTEN Rendervorgang (gleicher
-  // Ref-Umweg wie `verwendeProjekt`).
   const steuerung = useRef<ReturnType<typeof baueSpeicherSteuerung> | undefined>(undefined);
   if (steuerung.current === undefined) {
     steuerung.current = baueSpeicherSteuerung(schreibeEinstellungen, {
@@ -197,8 +139,6 @@ export function verwendeEinstellungen(
   const aendere = useCallback((naechster: Readonly<Record<string, unknown>>) => {
     steuerung.current?.vermerkeAenderung();
     setzeEntwurf(naechster);
-    // Ein neuer Bearbeitungsschritt entwertet die letzte Rueckmeldung (Erfolg oder
-    // Befunde) — sie galt einem Entwurf, der jetzt ueberholt ist.
     setzePruefsumme(undefined);
     setzeBefunde([]);
   }, []);
@@ -217,15 +157,9 @@ export function verwendeEinstellungen(
   return { entwurf, geaendert, speichert, pruefsumme, befunde, aendere, speichere, verwerfe };
 }
 
-/**
- * Reine Filterfunktion (testbar ohne React): Ein Befund gehoert zu `praefix`, wenn sein
- * Pfad exakt dem Praefix entspricht oder darunter liegt (Punkt- oder Klammerzugriff).
- *
- * Ein LEERER Pfad ist der Netz-/500-Fallback aus `schreibeEinstellungen` — ein Befund
- * ganz ohne Feldanker. Er gehoert zu KEINEM Teilbaum genauer als zu jedem anderen und
- * muss deshalb bei jedem Bereich sichtbar werden, dessen `speichere()` ihn ausgeloest
- * hat — sonst verschwaende ein gescheiterter Speicherversuch spurlos.
- */
+// Ein leerer Pfad ist der Netz-/500-Fallback aus `schreibeEinstellungen` (kein Feldanker)
+// und muss deshalb bei jedem Bereich sichtbar werden, sonst verschwaende ein
+// gescheiterter Speicherversuch spurlos.
 export function befundeFuerPfad(
   befunde: readonly EinstellungsBefund[], praefix: string,
 ): readonly EinstellungsBefund[] {

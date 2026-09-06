@@ -65,9 +65,7 @@ describe('margeUeberGitter', () => {
   });
 
   it('kein L des Gitters ueberschreitet die scharfe Obergrenze', () => {
-    // Haelt die Herleitung fest: Der unguenstigste Fall ist ohne Suche bestimmbar, und
-    // das Gitter kann ihn nicht ueberschreiten. Laeuft das rot, ist die Herleitung
-    // falsch — nicht die Schranke zu lockern.
+    // Schlaegt das fehl, ist die Herleitung falsch — nicht die Schranke zu lockern.
     const befund = margeUeberGitter(ladeBasis());
     expect(befund.argmin!.l).toBeLessThanOrEqual(befund.l_obergrenze_scharf + 1e-12);
     expect(befund.l_obergrenze_scharf).toBeLessThanOrEqual(befund.l_obergrenze_grob + 1e-12);

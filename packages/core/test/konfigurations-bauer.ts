@@ -1,10 +1,6 @@
-/**
- * Objektbauer fuer Konfigurationstests. Liegt bewusst unter test/ und nicht
- * unter src/, damit eine Anpassung im Erweiterungsszenario nicht in den
- * Codefilter der Erweiterbarkeitsmessung faellt.
- *
- * Betraege in Rappen, Preissegment-Grenzen in Rappen je Quadratmeter (E-07).
- */
+// Liegt bewusst unter test/ und nicht unter src/, damit eine Anpassung im
+// Erweiterungsszenario nicht in den Codefilter der Erweiterbarkeitsmessung faellt.
+// E-07: Betraege in Rappen, Preissegment-Grenzen in Rappen je Quadratmeter.
 import type { RohKonfiguration } from '../src/config/schema.js';
 
 export const BASIS_KONFIGURATION: RohKonfiguration = {

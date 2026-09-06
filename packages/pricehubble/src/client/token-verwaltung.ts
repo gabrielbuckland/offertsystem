@@ -14,7 +14,6 @@ import type { AdapterFehler } from './fehler.js';
 import type { AnfrageBeschreibung, HttpClient, HttpErgebnis } from './http-client.js';
 import type { Uhr } from './uhr.js';
 
-/** Einheitenumrechnung Minuten -> Millisekunden; kein Verhaltensparameter. */
 const MS_JE_MINUTE = 60_000;
 
 export interface Zugangsdaten {
@@ -44,19 +43,15 @@ export type TokenErgebnis =
   | { readonly ok: false; readonly fehler: AdapterFehler };
 
 export class TokenVerwaltung {
-  // `| undefined` steht ausdruecklich: Unter `exactOptionalPropertyTypes` darf einem
-  // rein optionalen Feld nicht `undefined` ZUGEWIESEN werden. Beide Felder werden
-  // aber genau so zurueckgesetzt — der Token beim 401-Fall, der laufende Login nach
-  // Abschluss.
+  // exactOptionalPropertyTypes verbietet Zuweisung von undefined an optionale Felder;
+  // beide werden aber so zurueckgesetzt (Token bei 401, laufender Login nach Abschluss).
   private token: string | undefined;
   private gueltigBisMs = 0;
   private laufenderLogin: Promise<TokenErgebnis> | undefined;
 
   private readonly abh: TokenVerwaltungAbhaengigkeiten;
 
-  // Feldzuweisung statt Parametereigenschaft: `node --experimental-strip-types`
-  // (PE-09) uebersetzt nicht, es entfernt nur Typen — Parametereigenschaften
-  // haetten eine Codeerzeugung verlangt und sind dort nicht zulaessig.
+  // PE-09: Feldzuweisung statt Parametereigenschaft, siehe http-client.ts.
   public constructor(abh: TokenVerwaltungAbhaengigkeiten) {
     this.abh = abh;
   }

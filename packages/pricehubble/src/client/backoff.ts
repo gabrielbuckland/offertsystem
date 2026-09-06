@@ -6,7 +6,6 @@
 import type { RetryKonfiguration } from '../config/api-konfiguration.js';
 import type { Zufallsquelle } from './zufall.js';
 
-/** @param versuchNr Nummer des soeben fehlgeschlagenen Versuchs, beginnend bei 1. */
 export function backoffWartezeitMs(
   versuchNr: number,
   retry: RetryKonfiguration,

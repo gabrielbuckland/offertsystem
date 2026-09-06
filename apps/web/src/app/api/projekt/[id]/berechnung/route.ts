@@ -1,10 +1,4 @@
-/**
- * Duenner Adapter: Laufzeit holen, `fuehreProjektlauf` fragen, das Ergebnis in eine
- * Antwort uebersetzen. Er rechnet nicht und formatiert nicht.
- *
- * Der zweistufige Rechenweg (PE-21) steht in `server/projekt-lauf.ts` und ist mit der
- * Offert-Route geteilt; diese Route erzeugt nur kein Artefakt, sondern antwortet.
- */
+// PE-21: Duenner Adapter, Rechenweg liegt in server/projekt-lauf.ts (geteilt mit Offert-Route).
 import { uebersetzeStufenFehler } from '../../../../../server/fehlertexte.js';
 import { holeLaufzeit, holeProjektLaufzeit } from '../../../../../server/laufzeit.js';
 import { ladeProjekt } from '../../../../../server/projekt-ablage.js';
@@ -13,9 +7,7 @@ import { fuehreProjektlauf } from '../../../../../server/projekt-lauf.js';
 interface Kontext { readonly params: Promise<{ readonly id: string }> }
 
 export async function POST(_anfrage: Request, kontext: Kontext): Promise<Response> {
-  // Henne-Ei: Das Projektverzeichnis kommt erst aus der firmenweiten Laufzeit, das
-  // Projekt-Delta fuer die Berechnung erst aus dem geladenen Projekt — daher zwei
-  // Aufrufe (`holeLaufzeit`/`holeProjektLaufzeit`) statt einem.
+  // Henne-Ei: Projektverzeichnis aus firmenweiter Laufzeit, Delta erst aus geladenem Projekt.
   const vorlaufzeit = holeLaufzeit();
   if (!vorlaufzeit.ok) {
     return Response.json({ fehler: { text: vorlaufzeit.meldungen.join(' ') } }, { status: 500 });
@@ -26,9 +18,7 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
   if (projekt === null) {
     return Response.json({ fehler: { text: `Projekt ${id} nicht gefunden.` } }, { status: 404 });
   }
-  // Laufzeit erst NACH dem Projekt: Die effektive Konfiguration haengt am Delta des
-  // Projekts (Ebene 2). Ein invariantenverletzendes Delta faellt hier als 500 mit
-  // Codeliste auf, bevor gerechnet wird (I-21).
+  // I-21: Laufzeit erst NACH dem Projekt, da effektive Konfiguration am Delta haengt.
   const laufzeit = holeProjektLaufzeit(projekt);
   if (!laufzeit.ok) {
     return Response.json({ fehler: { text: laufzeit.meldungen.join(' ') } }, { status: 500 });
@@ -46,9 +36,7 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
         },
       }, { status: 422 });
     case 'honorarAbbruch':
-      // Status 200: Eine Konfigurationsluecke oberhalb der obersten Stuetzstelle ist kein
-      // Eingabefehler. Wohnungspreise und Aufwandindikator bleiben gueltig (E-04); nur an
-      // der Stelle der Honorarrange steht eine Meldung statt einer Zahl.
+      // E-04: Status 200, da nur die Honorarrange fehlt, Wohnungspreise/Aufwandindikator bleiben gueltig.
       return Response.json({
         honorarAbbruch: {
           ...lauf.teilergebnis,
@@ -56,9 +44,7 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
         },
       }, { status: 200 });
     case 'fehler':
-      // Unveraendert durchgereicht: Ein Stufenfehler traegt neben dem Text auch
-      // `adressat` (Vermarkter oder Auftraggeber) und ggf. `feldpfad`. Beides gehoert
-      // zur Antwort — die Anzeige richtet sich danach.
+      // Unveraendert durchgereicht: traegt auch `adressat` und ggf. `feldpfad`.
       return Response.json({ fehler: lauf.fehler }, { status: lauf.status });
     case 'offerte': {
       const o = lauf.offerte;
@@ -73,8 +59,7 @@ export async function POST(_anfrage: Request, kontext: Kontext): Promise<Respons
         honorarMin: o.aggregates.feeRange.value.min,
         honorarMax: o.aggregates.feeRange.value.max,
         herleitung: { derivation: o.derivation, aggregates: o.aggregates },
-        // Weist den PROJEKTBEZOGENEN Konfigurationsstand aus (Ebene 2), nicht den
-        // Firmenstand — massgeblich fuer den Nachvollzug, mit welchem Delta gerechnet wurde.
+        // Projektbezogener Konfigurationsstand (Ebene 2), nicht Firmenstand.
         metadaten: { konfigPruefsumme: o.metadata.konfigPruefsumme },
       }, { status: 200 });
     }

@@ -1,9 +1,4 @@
-/**
- * Duenner Adapter: Laufzeit holen, `fuehreProjektlauf` fragen, das Ergebnis ablegen (PE-21).
- *
- * Die Ablage geschieht nur im Erfolgsfall: Weder eine Bewertungsluecke noch ein
- * abgebrochenes Honorar erzeugt ein Artefakt (I-24).
- */
+// PE-21/I-24: Duenner Adapter; Ablage nur im Erfolgsfall, Luecke/Abbruch erzeugen kein Artefakt.
 import {
   validiereGewaehltesHonorar, herkunft, PlatzhalterFehler, loeseDokumentAuf, platzhalterWerte,
 } from '@offert/offer';
@@ -17,8 +12,7 @@ import { ladeVorlage } from '../../../../../server/vorlagen-ablage.js';
 interface Kontext { readonly params: Promise<{ readonly id: string }> }
 
 export async function POST(anfrage: Request, kontext: Kontext): Promise<Response> {
-  // Henne-Ei: Die Firmenlaufzeit liefert nur den Ablageort, das Projekt-Delta erst aus
-  // dem geladenen Projekt — daher zwei Aufrufe.
+  // Henne-Ei: Firmenlaufzeit liefert nur den Ablageort, Delta erst aus geladenem Projekt.
   const vorlaufzeit = holeLaufzeit();
   if (!vorlaufzeit.ok) {
     return Response.json({ fehler: { text: vorlaufzeit.meldungen.join(' ') } }, { status: 500 });
@@ -30,9 +24,7 @@ export async function POST(anfrage: Request, kontext: Kontext): Promise<Response
   if (vorabProjekt === null) {
     return Response.json({ fehler: { text: `Projekt ${id} nicht gefunden.` } }, { status: 404 });
   }
-  // Laufzeit erst NACH dem Projekt: Die effektive Konfiguration haengt am Delta des
-  // Projekts (Ebene 2). Ein invariantenverletzendes Delta faellt hier als 500 mit
-  // Codeliste auf, bevor gerechnet wird (I-21).
+  // I-21: Laufzeit erst NACH dem Projekt, da effektive Konfiguration am Delta haengt.
   const laufzeit = holeProjektLaufzeit(vorabProjekt);
   if (!laufzeit.ok) {
     return Response.json({ fehler: { text: laufzeit.meldungen.join(' ') } }, { status: 500 });
@@ -51,17 +43,14 @@ export async function POST(anfrage: Request, kontext: Kontext): Promise<Response
         },
       }, { status: 422 });
     case 'honorarAbbruch':
-      // Ohne Honorarrange gibt es nichts zu offerieren, also entsteht kein Artefakt (I-24).
+      // I-24: ohne Honorarrange kein Artefakt.
       return Response.json(
         { fehler: uebersetzeStufenFehler(lauf.fehler) }, { status: 422 });
     case 'fehler':
-      // Unveraendert durchgereicht, samt `adressat` und ggf. `feldpfad`.
       return Response.json({ fehler: lauf.fehler }, { status: lauf.status });
     case 'offerte': {
-      // Honorarbetrag zuerst: Ein falsches Format erzeugt KEIN Artefakt (I-24), analog
-      // den Platzhalterfehlern unten. Geprueft wird nur die Form (Ganzzahl in Rappen);
-      // eine Abweichung von der Honorarrange ist erlaubt — sie ist eine Empfehlung, keine
-      // Schranke. Ohne gueltiges JSON gilt der Betrag als fehlend, nicht als Serverfehler.
+      // I-24: falsches Format erzeugt kein Artefakt. Nur Form (Ganzzahl in Rappen) wird
+      // geprueft; Abweichung von der Honorarrange ist erlaubt (Empfehlung, keine Schranke).
       const koerper: unknown = await anfrage.json().catch(() => undefined);
       const honorarPruefung = validiereGewaehltesHonorar(
         (koerper as { readonly gewaehltesHonorar?: unknown } | undefined)?.gewaehltesHonorar,
@@ -77,11 +66,8 @@ export async function POST(anfrage: Request, kontext: Kontext): Promise<Response
         },
       };
 
-      // Platzhalter-Auflösung beim Finalisieren: ein unauflösbarer Platzhalter erzeugt
-      // KEIN Artefakt (I-24), sondern eine benannte Meldung an den Vermarkter.
-      //
-      // I-4: `ladeProjekt` und `ladeVorlage` koennen beide fehlschlagen; ohne diesen Fang
-      // traege das eine unbehandelte 500 statt einer benannten Meldung.
+      // I-24: unauflösbarer Platzhalter erzeugt kein Artefakt, sondern eine Meldung.
+      // I-4: ladeProjekt/ladeVorlage koennen fehlschlagen, sonst unbehandelte 500.
       let projekt;
       try {
         projekt = await ladeProjekt(id, laufzeit.wert.projekteVerzeichnis);

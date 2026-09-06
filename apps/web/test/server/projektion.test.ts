@@ -81,11 +81,7 @@ describe('projiziere', () => {
   });
 
   it('delegiert die Regel-/Uebersteuerungsauswertung an ermittleWirksamenWert (Smoke-Test)', () => {
-    // Die Feinlogik (Regel vs. Uebersteuerung, fehlender Merkmalswert, 0-Werte als
-    // gueltiges Ergebnis) liegt bei ermittleWirksamenWert, an das projiziere() nur
-    // delegiert. Hier genuegt der Nachweis, dass die Uebersteuerung samt Regelspur
-    // unveraendert durchgereicht wird und dass ein wirksamer Wert von 0 — egal ob aus
-    // Regel oder Zelle — projektionsseitig zu keiner Position fuehrt.
+    // Feinlogik bei ermittleWirksamenWert; hier nur Nachweis, dass Uebersteuerung + Regel durchgereicht werden.
     const uebersteuert = projiziere(projektMitRegel({ stockwerk: 1 }, { 'S-1': 500000 }), { 'E-1': 100_000_00 });
     expect(uebersteuert.ok).toBe(true);
     if (!uebersteuert.ok) return;
@@ -105,9 +101,7 @@ describe('projiziere', () => {
   });
 
   it('wertet einen Merkmalswert von 0 korrekt aus, statt ihn als fehlend zu behandeln', () => {
-    // Gegenprobe zum vorigen Test: hier ist der MERKMALSWERT 0, der Treffer aber
-    // ungleich 0. Eine Regression, die 0 mit "fehlend" verwechselt, wuerde hier
-    // faelschlich keine Position erzeugen.
+    // Gegenprobe: Merkmalswert 0 ≠ fehlend (Regression-Risk).
     const p = projektMitBereichen({ stockwerk: 0 }, {}, [{ unter: 1, wert: 500000 }, { wert: 999 }]);
     const ergebnis = projiziere(p, { 'E-1': 100_000_00 });
     expect(ergebnis.ok).toBe(true);
@@ -178,9 +172,7 @@ function projektMitRegel(
   };
 }
 
-/** Wie `projektMitRegel`, aber mit frei waehlbarer Staffel — fuer Faelle, in denen die
- * konkreten Bereichswerte den Unterschied zwischen "0 als Ergebnis" und "fehlend" tragen
- * muessen (siehe Tests zum Merkmalswert 0). */
+// Wie projektMitRegel, aber mit freier Staffel (fuer 0-vs-fehlend Faelle).
 function projektMitBereichen(
   merkmalswerte: Record<string, number>,
   spaltenwerte: Record<string, number>,

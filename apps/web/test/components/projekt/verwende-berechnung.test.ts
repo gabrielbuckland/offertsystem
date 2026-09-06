@@ -4,18 +4,14 @@ import {
 } from '../../../src/components/projekt/verwende-berechnung.js';
 import type { ApiErgebnis } from '../../../src/components/rufe-api.js';
 
-/**
- * Reine Verarbeitung getrennt vom Hook getestet (kein jsdom in diesem Repo) —
- * Testdaten sind Literale, ohne fetch.
- */
+// Reine Verarbeitung ohne Hook (kein jsdom), Testdaten sind Literale.
 function ergebnis(
   teil: Partial<ApiErgebnis<BerechnungsAntwort>>,
 ): ApiErgebnis<BerechnungsAntwort> {
   return { ok: true, status: 200, rumpf: {}, ...teil };
 }
 
-/** Projektstand, gegen den die Antwort gelesen wird: Die Route liefert das
- *  E-04-Teilergebnis nach Wohnungsnummer, die Tabelle greift nach Einheitenkennung zu. */
+// Route liefert Teilergebnis nach Wohnungsnummer, Tabelle greift nach Einheitenkennung zu.
 const EINHEITEN = [
   { id: 'e1', wohnungsnummer: 'A1' },
   { id: 'e2', wohnungsnummer: 'A2' },
@@ -87,10 +83,7 @@ describe('verarbeiteBerechnungsAntwort', () => {
   });
 
   it('behaelt bei einem Honorarabbruch (E-04) die Einheitenpreise sichtbar (Spec §5)', () => {
-    // Regression: Die Route liefert die Wohnungspreise sehr wohl mit — sie stehen in
-    // `honorarAbbruch.positionen`, nach Wohnungsnummer statt nach Kennung. Wurden sie
-    // hier verworfen, zeigte die Einheitentabelle neben einer gueltigen Verkaufssumme
-    // und einem gueltigen D fuer JEDE Einheit «—».
+    // Regression: Preise in honorarAbbruch.positionen (nach Wohnungsnummer), dürfen nicht verworfen.
     const antwort = ergebnis({
       rumpf: {
         honorarAbbruch: {
@@ -108,7 +101,6 @@ describe('verarbeiteBerechnungsAntwort', () => {
     const { stand } = verarbeiteBerechnungsAntwort(antwort, EINHEITEN);
 
     expect(stand.preise).toEqual({ e1: { preis: 520_000 }, e2: { preis: 410_000 } });
-    // Kein erfundener Basispreis: Das Teilergebnis fuehrt keinen.
     expect(stand.preise['e1']?.basispreis).toBeUndefined();
   });
 

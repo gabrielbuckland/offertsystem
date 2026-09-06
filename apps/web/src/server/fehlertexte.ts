@@ -1,16 +1,12 @@
-/**
- * Uebersetzungsschicht Fehlercode -> Anzeigetext (E-03). Der Kern kennt keine
- * Anzeigesprache, nur Sachverhalte; Texte liegen hier als Vorlagen und duerfen nur
- * Platzhalter verwenden, die der Kern auch uebergibt.
- *
- * `KERN_VORLAGEN` ist als `Record<BerechnungsFehlerCode, Vorlage>` typisiert: Ein neuer
- * Code bricht die Uebersetzung beim Kompilieren, nicht erst zur Laufzeit.
- */
+// E-03: Uebersetzungsschicht Fehlercode -> Anzeigetext. Der Kern kennt keine
+// Anzeigesprache, nur Sachverhalte; Texte duerfen nur Platzhalter verwenden, die der Kern
+// auch uebergibt. `KERN_VORLAGEN` ist als `Record<BerechnungsFehlerCode, Vorlage>`
+// typisiert, damit ein neuer Code beim Kompilieren bricht statt erst zur Laufzeit.
 import type {
   AggregatFehler, AggregatFehlerCode, BerechnungsFehlerCode, ProviderFehler, StufenFehler,
 } from '@offert/core';
-// Modulpfad statt Paketindex: Der Index re-exportiert React-Komponenten (.tsx), fuer die
-// Node kein Type-Stripping leistet (PE-09).
+// PE-09: Modulpfad statt Paketindex — der Index re-exportiert .tsx, fuer die Node kein
+// Type-Stripping leistet.
 import { formatiereAggregat, formatiereProzent, formatiereScore } from '@offert/offer';
 
 export interface AngezeigterFehler {

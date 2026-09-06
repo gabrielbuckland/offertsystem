@@ -6,13 +6,8 @@ import type { FehlerDiagnose, ProviderFehler } from '@offert/core';
 import type { AdapterFehler, AdapterFehlerArt } from '../client/fehler.js';
 import { MELDUNGEN } from './meldungen.js';
 
-/**
- * Verbindliche und VOLLSTAENDIGE Abbildung: Aufrufer duerfen davon ausgehen, dass
- * eine unbehandelte `ProviderFehler`-Variante immer ein Uebersetzungsfehler ist.
- *
- * `KonfigurationsFehler` erscheint nicht: Er tritt bei der Initialisierung auf,
- * nie bei einem Abruf.
- */
+// Vollstaendige Abbildung; `KonfigurationsFehler` fehlt bewusst, da er nur bei der
+// Initialisierung auftritt, nie bei einem Abruf.
 export const FEHLER_ABBILDUNG: Readonly<Record<AdapterFehlerArt, ProviderFehler['art']>> = {
   AuthError: 'authentifizierung',
   NetworkError: 'nicht_erreichbar',
@@ -35,13 +30,8 @@ function diagnoseVon(fehler: AdapterFehler): FehlerDiagnose {
   };
 }
 
-/**
- * Der ACL gibt ausschliesslich `ProviderFehler` nach aussen; ein roher fetch-Fehler,
- * ein Zod-Fehler oder ein HTTP-Statuscode erreicht die aufrufende Schicht nie (NFA-11).
- *
- * Die Fallunterscheidung ist erschoepfend und ohne `default`: Eine neue Variante
- * bricht die Uebersetzung zur Uebersetzungszeit, nicht zur Laufzeit (AK-13).
- */
+// NFA-11: ausschliesslich `ProviderFehler` nach aussen. AK-13: erschoepfende
+// Fallunterscheidung ohne `default` faellt zur Uebersetzungszeit auf, nicht zur Laufzeit.
 export function uebersetzeFehler(fehler: AdapterFehler): ProviderFehler {
   const diagnose = diagnoseVon(fehler);
   switch (fehler.art) {
@@ -60,10 +50,7 @@ export function uebersetzeFehler(fehler: AdapterFehler): ProviderFehler {
         diagnose,
       };
     case 'ClientError':
-      // `exactOptionalPropertyTypes: true` unterscheidet «Eigenschaft fehlt» von
-      // «Eigenschaft ist undefined». Bei `feld?: string` waere `feld: fehler.feld`
-      // deshalb ein Typfehler, sobald `fehler.feld` undefined sein kann. Die
-      // Eigenschaft wird daher bedingt aufgebaut statt mit undefined belegt.
+      // exactOptionalPropertyTypes: bedingter Aufbau statt Zuweisung von undefined.
       return {
         art: 'anfrage_abgelehnt',
         detail: MELDUNGEN.ClientError,
@@ -77,8 +64,7 @@ export function uebersetzeFehler(fehler: AdapterFehler): ProviderFehler {
     case 'ContractViolation':
       return { art: 'antwort_ungueltig', detail: MELDUNGEN.ContractViolation, diagnose };
     case 'StaleValuationError':
-      // Eigener Grundcode innerhalb derselben Zielvariante: Die Zusicherung
-      // `isValuationStale === false` nach E4 ist Teil des Antwortvertrags.
+      // E4: eigener Grundcode, gleiche Zielvariante wie ContractViolation.
       return { art: 'antwort_ungueltig', detail: MELDUNGEN.StaleValuationError, diagnose };
     default: {
       const erschoepfend: never = fehler.art;

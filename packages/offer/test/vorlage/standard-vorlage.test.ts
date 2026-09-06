@@ -23,13 +23,11 @@ describe('standardVorlage', () => {
       'Dienstleistungs- und Honorarangebot']) {
       expect(text).toContain(titel);
     }
-    // Kernplatzhalter der Neubau-Vermarktung sind eingebunden.
     const vorkommen = sammlePlatzhalterIds(standardVorlage());
     for (const id of ['ort', 'anzahlEinheiten', 'verkaufssumme',
       'honorar', 'honorarBetrag', 'preistabelle', 'auftraggeber']) {
       expect(vorkommen.some((v) => v.id === id)).toBe(true);
     }
-    // Kein Mieter-/Umnutzungsrest aus dem Beispiel.
     expect(text).not.toContain('Mieter');
     expect(text).not.toContain('Umnutzung');
   });

@@ -1,8 +1,6 @@
-/**
- * Wird eine Anpassungsspalte entfernt, muss ihr Wert aus JEDER Einheit verschwinden —
- * sonst lebt er bei einer spaeter wiederverwendeten Spalten-ID unbeabsichtigt wieder
- * auf. Einziger Ort, der diese Kaskade ausfuehrt.
- */
+// Wird eine Anpassungsspalte entfernt, muss ihr Wert aus JEDER Einheit verschwinden —
+// sonst lebt er bei wiederverwendeter Spalten-ID unbeabsichtigt wieder auf. Einziger Ort,
+// der diese Kaskade ausfuehrt.
 import type { ProjektEinheit } from '../../server/projekt-schema.js';
 
 export function entferneSpaltenwert(

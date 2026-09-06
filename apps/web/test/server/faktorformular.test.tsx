@@ -82,7 +82,7 @@ describe('Feldeigenschaften stammen aus der Konfiguration', () => {
     const [feld] = baueFaktorformular(konfig).felder;
     expect(feld!.untergrenze).toBe(1);
     expect(feld!.obergrenze).toBe(5);
-    // Die Konfiguration selbst bleibt umgepolt — sonst kippte die Normalisierungsrichtung.
+    // Config stays inverted or normalization direction flips.
     expect(konfig.faktoren.get('f' as FaktorId)?.grenzeMin).toBe(5);
   });
 });

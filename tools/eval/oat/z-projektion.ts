@@ -1,18 +1,10 @@
-/**
- * Keine Modellformel; eine Operation des WERKZEUGS, nicht der Pipeline.
- *
- * zMin/zMax wirken nicht kappend, sondern zurueckweisend (I-07): eine
- * Einheit mit z_j ausserhalb der Grenzen laesst Stufe 1 fehlschlagen. Eine blosse
- * Verengung des Korridors erzeugte beim tragenden Szenario fuer D3 deshalb keinen
- * Messwert, sondern einen Eingabefehler.
- *
- * Das Werkzeug projiziert deshalb: z_j' = min(zMax, max(zMin, z_j)), als PROPORTIONALE
- * Skalierung der Einzelanpassungen, damit die Einzelausweisung mit Begruendung (I-09)
- * erhalten bleibt. Anzahl betroffener Positionen wird im Artefakt ausgewiesen.
- *
- * I-06 ist per Konstruktion gewahrt: Die Projektion bildet stets auf [zMin, zMax] ab, und
- * zMin > -1 erzwingt bereits die Konfigurationsvalidierung (CFG_ADJUSTMENT_BOUNDS).
- */
+// Keine Modellformel; eine Operation des WERKZEUGS, nicht der Pipeline. zMin/zMax
+// wirken nicht kappend, sondern zurueckweisend (I-07): eine Einheit mit z_j ausserhalb
+// der Grenzen liesse Stufe 1 fehlschlagen statt einen Messwert zu liefern. Das Werkzeug
+// projiziert deshalb z_j' = min(zMax, max(zMin, z_j)) als PROPORTIONALE Skalierung der
+// Einzelanpassungen, damit die Einzelausweisung mit Begruendung (I-09) erhalten bleibt.
+// I-06 ist per Konstruktion gewahrt (Projektion bildet stets auf [zMin, zMax] ab; zMin
+// > -1 erzwingt bereits CFG_ADJUSTMENT_BOUNDS).
 import type { SzenarioEinheit } from '../shared/szenario.ts';
 
 export interface ProjektionErgebnis {

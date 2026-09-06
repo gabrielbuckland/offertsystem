@@ -1,10 +1,6 @@
-/**
- * Keine Modellformel. Lader der Szenario-Fixtures.
- *
- * S4a und S4b liegen als zwei eigenstaendige Dateien vor (`S4a.json`, `S4b.json`), nicht
- * als eine Datei mit einem Feld `varianten`. Ein Zweig dafuer waere toter Code, der eine
- * Struktur behauptet, die es nicht gibt. Geladen wird deshalb je Datei ein Szenario.
- */
+// Keine Modellformel. S4a/S4b liegen als zwei eigenstaendige Dateien vor, nicht als eine
+// mit Feld `varianten` — ein Zweig dafuer waere toter Code fuer eine Struktur, die es
+// nicht gibt. Geladen wird deshalb je Datei ein Szenario.
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoWurzel } from './artefakt.ts';

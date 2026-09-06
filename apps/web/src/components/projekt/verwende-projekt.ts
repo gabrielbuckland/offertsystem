@@ -14,17 +14,16 @@ export interface Speicherwarteschlange {
 export interface WarteschlangenBeobachter {
   readonly aufStatusWechsel: (speichernLaeuft: boolean) => void;
   readonly aufFehler: (fehlgeschlagen: boolean) => void;
-  // Nur bei ERFOLGREICHEM Sendevorgang: Ist das PUT fehlgeschlagen, traegt die Platte nicht
-  // den Stand, den der Bildschirm zeigt — eine Berechnung darauf waere falsch.
+  // Nur bei ERFOLGREICHEM Sendevorgang: bei fehlgeschlagenem PUT traegt die Platte nicht
+  // den Stand, den der Bildschirm zeigt.
   readonly aufErfolg?: (projekt: Projekt) => void;
 }
 
-// Sorgt dafuer, dass hoechstens ein Speicherversuch gleichzeitig unterwegs ist. Trifft
-// waehrend eines laufenden Versuchs ein neuerer Stand ein, wird nur der NEUESTE vorgemerkt
-// und nach Abschluss gesendet. Noetig, weil der Server den zuletzt ANKOMMENDEN
-// Schreibvorgang gewinnen laesst, nicht den zuletzt GESENDETEN — ein `AbortController`
-// loest das nicht, da der Server ein bereits empfangenes aelteres PUT trotzdem zu Ende
-// schreibt.
+// Hoechstens ein Speicherversuch gleichzeitig; trifft waehrend eines laufenden Versuchs
+// ein neuerer Stand ein, wird nur der NEUESTE vorgemerkt und danach gesendet. Noetig, da
+// der Server den zuletzt ANKOMMENDEN Schreibvorgang gewinnen laesst, nicht den zuletzt
+// GESENDETEN — ein AbortController loest das nicht, da ein bereits empfangenes aelteres
+// PUT trotzdem zu Ende geschrieben wird.
 export function baueSpeicherwarteschlange(
   sende: Speicherfunktion,
   beobachter: WarteschlangenBeobachter,
@@ -64,8 +63,6 @@ export function baueSpeicherwarteschlange(
   };
 }
 
-// `ok` bleibt false bei HTTP-Fehlern UND bei geworfenen Ausnahmen (Netzausfall) — beides
-// ist fuer die Warteschlange ein Fehlschlag.
 async function schreibeUeberPut(projekt: Projekt): Promise<boolean> {
   const { ok } = await rufeApi<unknown>(`/api/projekt/${projekt.id}`, {
     method: 'PUT',
@@ -75,15 +72,13 @@ async function schreibeUeberPut(projekt: Projekt): Promise<boolean> {
   return ok;
 }
 
-// Haelt den Projektstand und speichert ihn entprellt (jede Zelleingabe loest sonst je
-// Zeichen einen Schreibvorgang aus). `speichernFehler` macht einen fehlgeschlagenen
-// Speicherversuch sichtbar.
+// Speichert entprellt: jede Zelleingabe loest sonst je Zeichen einen Schreibvorgang aus.
 export function verwendeProjekt(anfang: Projekt, aufGespeichert?: (projekt: Projekt) => void) {
   const [projekt, setzeProjekt] = useState(anfang);
   const [speichernLaeuft, setzeSpeichern] = useState(false);
   const [speichernFehler, setzeSpeichernFehler] = useState<string | undefined>(undefined);
   const zeitgeber = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  // Ref-Umweg haelt `aufGespeichert` aktuell, obwohl die Warteschlange nur einmal entsteht.
+  // Ref-Umweg haelt aufGespeichert aktuell, obwohl die Warteschlange nur einmal entsteht.
   const rueckruf = useRef(aufGespeichert);
   rueckruf.current = aufGespeichert;
   const warteschlange = useRef<Speicherwarteschlange | undefined>(undefined);

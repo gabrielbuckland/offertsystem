@@ -72,7 +72,6 @@ describe('Ein Renderpfad (AK-2.1)', () => {
       "grep -rl 'OfferteDokument' packages/offer/src apps/web/src || true",
       { encoding: 'utf8', cwd: WURZEL },
     ).trim().split('\n').filter(Boolean);
-    // Genau eine Definition; die uebrigen Treffer sind Verwendungen derselben Komponente.
     expect(treffer.filter((d) => d.endsWith('OfferteDokument.tsx'))).toHaveLength(1);
   });
 });

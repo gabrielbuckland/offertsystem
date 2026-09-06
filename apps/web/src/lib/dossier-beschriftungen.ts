@@ -1,7 +1,5 @@
-// Deutsche Beschriftungen der beiden PriceHubble-Objekte `condition` und `quality`.
-// Feldmenge und Aufzaehlungswerte kommen aus dem Kern; hier liegt ausschliesslich die
-// Ansprache der Oberflaeche — Editor und Rechenweg lesen sie aus derselben Quelle,
-// damit ein Wert nicht an einer Stelle beschriftet und an der anderen roh erscheint.
+// Editor und Rechenweg lesen diese Beschriftungen aus derselben Quelle, damit ein Wert
+// nicht an einer Stelle beschriftet und an der anderen roh erscheint.
 import { QUALITAETSWERTE, ZUSTANDSWERTE, type Bewertungsfeld } from '@offert/core';
 
 export const FELD_BESCHRIFTUNG: Readonly<Record<Bewertungsfeld, string>> = {
@@ -26,7 +24,6 @@ const QUALITAET_BESCHRIFTUNG: Readonly<Record<string, string>> = {
 
 export interface Bewertungsobjekt {
   readonly beschriftung: string;
-  /** Zulaessige Werte in Anzeigereihenfolge (Kern). */
   readonly werte: readonly string[];
   readonly wertBeschriftung: Readonly<Record<string, string>>;
 }
@@ -44,8 +41,7 @@ export const BEWERTUNGSOBJEKTE: Readonly<Record<string, Bewertungsobjekt>> = {
   },
 };
 
-/** Fallback auf den Rohschluessel: ein unbeschriftetes Feld bleibt sichtbar,
- *  statt die Anzeige zu leeren. */
+// Fallback auf den Rohschluessel: ein unbeschriftetes Feld bleibt sichtbar statt leer.
 export function beschrifteFeld(feld: string): string {
   return FELD_BESCHRIFTUNG[feld as Bewertungsfeld] ?? feld;
 }

@@ -139,9 +139,8 @@ describe('mergeKonfiguration', () => {
   });
 
   it('weist einen unbekannten Blattschluessel der Dossier-Parameter zurueck', () => {
-    // Verschriebener Name eines EXISTIERENDEN Schluessels: Genau so entsteht der Fehler
-    // im Betrieb, und nur so belegt der Test, dass die Schluesselmenge geprueft wird und
-    // nicht bloss ein laengst entfallenes Feld nicht mehr vorkommt.
+    // Verschriebener Name eines EXISTIERENDEN Schluessels — nur so belegt der Test,
+    // dass die Schluesselmenge geprueft wird, statt bloss ein entfallenes Feld zu pruefen.
     const ergebnis = mergeKonfiguration(basis, {
       dossierParameter: { typ_3_5: { zustandsbewertunge: basis.dossierDefaults.zustandsbewertungen } },
     });
@@ -152,10 +151,9 @@ describe('mergeKonfiguration', () => {
   });
 
   it('setzt Dossier-Parameter auf die ZUSAMMENGEFUEHRTEN Voreinstellungen auf (W-3)', () => {
-    // Solange `dossierDefaults` gesperrt war, war der Unterschied folgenlos. Seit die
-    // Wurzel uebersteuerbar ist, wuerde eine ungemergte Basis die projektbezogene
-    // Voreinstellung genau fuer die Wohnungstypen verschlucken, fuer die das Projekt
-    // zusaetzlich eigene Dossier-Parameter fuehrt — lautlos.
+    // Ohne Merge wuerde eine ungemergte Basis die projektbezogene Voreinstellung
+    // genau fuer die Wohnungstypen lautlos verschlucken, fuer die das Projekt
+    // zusaetzlich eigene Dossier-Parameter fuehrt.
     const projektweiteQualitaet = {
       bathrooms: 'luxury', kitchen: 'luxury', flooring: 'luxury', windows: 'luxury',
     };
@@ -174,9 +172,8 @@ describe('mergeKonfiguration', () => {
   });
 
   it('weist einen unbekannten Schluessel auch in der TIEFE zurueck (W-7)', () => {
-    // Der zweite Ast der Merge-Zusage: Ein Tippfehler verschwendet die Uebersteuerung
-    // nicht lautlos, sondern faellt mit vollqualifiziertem Pfad auf — auch unterhalb der
-    // Wurzel, wo eine eigene Pruefstelle in `verschmelzeTeilbaum` greift.
+    // Ein Tippfehler faellt auch unterhalb der Wurzel mit vollqualifiziertem Pfad auf,
+    // ueber die eigene Pruefstelle in `verschmelzeTeilbaum`.
     const ergebnis = mergeKonfiguration(basis, {
       honorar: { skalierung: { tippfehler: 1 } },
     });
@@ -187,10 +184,8 @@ describe('mergeKonfiguration', () => {
   });
 
   it('ersetzt einen Teilbaum durch null, statt den Schluessel zu uebergehen (W-7)', () => {
-    // `null` auf einen Teilbaum ist kein Objekt und wird deshalb als Ganzes eingesetzt
-    // und protokolliert. Der Merge laesst das durch — zurueckgewiesen wird es erst in der
-    // Nachvalidierung des Ladepfads (`konfigurations-lader.test.ts`), und genau diese
-    // Arbeitsteilung haelt der Test fest.
+    // `null` ist kein Objekt und wird als Ganzes eingesetzt; der Merge laesst das durch
+    // — zurueckgewiesen wird es erst in der Nachvalidierung des Ladepfads.
     const ergebnis = mergeKonfiguration(basis, { honorar: null });
     expect(ergebnis.ok).toBe(true);
     if (!ergebnis.ok) return;

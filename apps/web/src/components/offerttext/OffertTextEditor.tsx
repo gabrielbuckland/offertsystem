@@ -1,25 +1,19 @@
 'use client';
 
-// StarterKit ist auf die Teilmenge des Dokumentschemas eingeschraenkt.
-// C-1: Drei Netze gegen schemawidrigen Inhalt — `ListItem.content: 'paragraph'` (verhindert
-// verschachtelte Listen via Tab strukturell), die Preistabelle-Sperre in einem Listenpunkt,
-// und `istGueltigesOffertDokument`, das jede Aenderung vor `beiAenderung` (Autosave/PUT)
-// gegen dieselbe Zod-Teilmenge prueft — eine Zurueckweisung propagiert nichts.
+// C-1: drei Netze gegen schemawidrigen Inhalt — ListItem.content: 'paragraph',
+// Preistabelle-Sperre im Listenpunkt, istGueltigesOffertDokument vor beiAenderung.
 import { useEffect, useState } from 'react';
 import { Bold, Heading1, Heading2, Italic, List } from 'lucide-react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-// Direkter Import noetig, weil `StarterKit.configure({ listItem: {...} })` nur
-// `ListItemOptions` durchreicht, nicht `content` — das laesst sich nur ueber
-// `ListItem.extend(...)` setzen.
+// Direkter Import noetig: StarterKit.configure({ listItem }) reicht kein `content` durch.
 import { ListItem } from '@tiptap/extension-list-item';
 import { type OffertDokument, PLATZHALTER_KATALOG } from '@offert/offer';
 import { istGueltigesOffertDokument } from './dokument-pruefung.js';
 import { PlatzhalterKnoten, PlatzhalterTabelleKnoten } from './platzhalter-erweiterung.js';
 import { Hinweis } from '../ui/hinweis.js';
 
-// Enger als StarterKit-Standard (`'paragraph block*'`), passend zu `dokument-schema.ts`
-// (`listItem.content: z.array(paragraph).min(1)`) — siehe C-1 oben.
+// Enger als StarterKit-Standard, passend zu dokument-schema.ts (C-1).
 const EingeschraenkterListenPunkt = ListItem.extend({ content: 'paragraph' });
 
 export interface OffertTextEditorProps {
@@ -41,8 +35,7 @@ export function OffertTextEditor({ inhalt, beiAenderung }: OffertTextEditorProps
       EingeschraenkterListenPunkt,
       PlatzhalterKnoten, PlatzhalterTabelleKnoten,
     ],
-    // Cast ist die Annahme, dass StarterKit/PlatzhalterKnoten nur Knoten im Dokumentschema
-    // erzeugen; `istGueltigesOffertDokument` (C-1) prueft das bei jeder Aenderung nach.
+    // Cast: istGueltigesOffertDokument (C-1) prueft bei jeder Aenderung nach.
     content: inhalt as unknown as Record<string, unknown>,
     immediatelyRender: false,
     onUpdate: ({ editor: e }) => {
@@ -56,9 +49,8 @@ export function OffertTextEditor({ inhalt, beiAenderung }: OffertTextEditorProps
     },
   });
 
-  // TipTap loest bei Selektions-/Inhaltswechseln keinen React-Rerender aus, deshalb die
-  // eigene Abonnierung. `setzeAuswahlstand` erzwingt den Rerender fuer die Aktiv-Zustaende
-  // der Werkzeugleiste; `inListenPunkt` sperrt die Preistabelle-Option (C-1).
+  // TipTap loest keinen React-Rerender bei Selektions-/Inhaltswechseln aus, daher eigene
+  // Abonnierung; setzeAuswahlstand erzwingt den Rerender fuer die Werkzeugleiste.
   const [, setzeAuswahlstand] = useState(0);
   useEffect(() => {
     if (editor === null) return;
@@ -143,8 +135,7 @@ export function OffertTextEditor({ inhalt, beiAenderung }: OffertTextEditorProps
             const id = e.target.value;
             if (id === '') return;
             if (id === 'preistabelle') {
-              // Doppelte Absicherung zur `disabled`-Option (C-1), falls dennoch
-              // programmatisch ausgewaehlt.
+              // Doppelte Absicherung zur disabled-Option (C-1).
               if (inListenPunkt) return;
               editor.chain().focus().insertContent({ type: 'platzhalterTabelle' }).run();
             } else {

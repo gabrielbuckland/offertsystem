@@ -1,14 +1,7 @@
-/**
- * Keine Modellformel. Aggregation und Zeichenmodell des Tornado-Diagramms.
- *
- * `oat.json` fuehrt je Parameter, Stufe UND Szenario eine Zeile. Das Diagramm zeigt je
- * Parameter zwei Balken: die staerkste negative und die staerkste positive Aenderung.
- * Aggregiert wird ueber den Betragsmaximalwert desselben Vorzeichens; das Szenario, aus
- * dem der Wert stammt, wird mitgefuehrt, damit der Balken rueckverfolgbar bleibt.
- *
- * Zeilen mit `status !== 'ok'` gehen nicht ein — eine nicht gerechnete Variante als
- * Nullbalken zu zeigen, hiesse eine Messung zu behaupten, die es nicht gibt.
- */
+// Keine Modellformel. `oat.json` fuehrt je Parameter mehrere Zeilen (Stufe/Szenario);
+// aggregiert wird je Vorzeichen auf den Betragsmaximalwert, Szenario bleibt zur
+// Rueckverfolgbarkeit erhalten. Zeilen mit status !== 'ok' werden ausgelassen, sonst
+// wuerde eine nicht gerechnete Variante faelschlich als Nullbalken erscheinen.
 import type { Element, Farbe, Seite } from '../shared/pdf-writer.ts';
 
 export interface OatZeile {

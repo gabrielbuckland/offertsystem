@@ -46,9 +46,7 @@ describe('erzeugeLaufmetadaten (E-29)', () => {
 
 describe('Genau eine Pruefsummenbildung (PE-04)', () => {
   it('bildet keine zweite Pruefsumme neben dem Lader', () => {
-    // Schlaegt fehl, sobald irgendwo eine zweite Hash-Bildung entsteht. Gesucht wird im
-    // Produktivcode: `packages/core/test/helper/referenz.ts` sichert mit SHA-256 nur die
-    // Unversehrtheit der Referenz-CSV, kein zweiter Konfigurationspruefsummen-Pfad.
+    // Fails if second hash creation emerges; referenz.ts only hashes CSV integrity.
     const treffer = execSync('grep -rln "createHash" apps/web/src packages/*/src || true',
       { encoding: 'utf8', cwd: WURZEL }).trim().split('\n').filter((z) => z !== '');
     expect(treffer).toEqual(['apps/web/src/server/kanonisch.ts']);

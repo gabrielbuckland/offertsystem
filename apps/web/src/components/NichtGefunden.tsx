@@ -1,7 +1,4 @@
-/**
- * Eine geloeschte oder nie erzeugte Offerte fuehrt zu einer verstaendlichen Meldung, nicht
- * zu einem Fehlerzustand der Anwendung (A-12, NFA-11).
- */
+// A-12, NFA-11: verstaendliche Meldung statt Fehlerzustand der Anwendung.
 export function NichtGefunden({ id }: { id: string }) {
   return (
     <main role="alert">

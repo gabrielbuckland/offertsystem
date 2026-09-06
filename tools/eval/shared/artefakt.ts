@@ -1,13 +1,6 @@
-/**
- * Keine Modellformel. Laufkopf, Artefaktschreiber und Zeiger der Evaluationswerkzeuge.
- *
- * Jedes Artefakt traegt einen Laufkopf mit acht Pflichtfeldern: Er macht jede Zahl im
- * Bericht auf Commit, Konfigurationsdatei und Pruefsumme zurueckfuehrbar — sonst waere
- * ein Artefakt nur eine Behauptung.
- *
- * `latest.json` ist bewusst eine Datei und kein Symlink, damit die Laufauswahl nicht
- * implizit ueber Verzeichnissortierung geschieht.
- */
+// Laufkopf macht jede Zahl im Bericht auf Commit, Konfigurationsdatei und Pruefsumme
+// zurueckfuehrbar. latest.json ist bewusst eine Datei und kein Symlink, damit die
+// Laufauswahl nicht implizit ueber Verzeichnissortierung geschieht.
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -25,7 +18,6 @@ export interface Laufkopf {
   readonly werkzeug_version: number;
 }
 
-/** Repositoriumswurzel: drei Ebenen ueber dieser Datei (tools/eval/shared/x.ts). */
 export function repoWurzel(): string {
   return resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 }
@@ -72,7 +64,7 @@ export function schreibeArtefakt(
     : join(wurzel, 'artifacts', 'eval', kopf.instrument);
   const verzeichnis = join(ablage, kopf.zeitstempel);
   mkdirSync(verzeichnis, { recursive: true });
-  // Sortierte Reihenfolge: gleicher Inhalt erzeugt dieselbe Abfolge von Schreibvorgaengen (I-14).
+  // I-14: sortierte Reihenfolge, gleicher Inhalt erzeugt dieselbe Abfolge von Schreibvorgaengen.
   for (const name of Object.keys(dateien).sort()) {
     // PDF in latin1: Der PDF-Schreiber berechnet Byteversaetze der Kreuzreferenztabelle
     // in latin1; unter utf8 belegen Umlaute zwei Bytes und die Versaetze zeigen ins Leere.
@@ -89,19 +81,16 @@ export function schreibeArtefakt(
   return verzeichnis;
 }
 
-/**
- * Liest den latest-Zeiger einer Ablage. `ablage` ist der Pfad unterhalb von
- * artifacts/, also 'eval/oat' fuer eigene Artefakte und 'contract', 'integration',
- * 'property', 'scenarios', 'config' fuer die Artefakte aus P1, P2 und P3 (PE-18).
- */
+// PE-18: `ablage` ist der Pfad unterhalb von artifacts/, z.B. 'eval/oat' oder
+// 'contract'/'integration'/'property'/'scenarios'/'config' fuer P1-P3-Artefakte.
 export function leseLatest(wurzel: string, ablage: string): string {
   const pfad = join(wurzel, 'artifacts', ...ablage.split('/'), 'latest.json');
   const zeiger = JSON.parse(readFileSync(pfad, 'utf8')) as {
     verzeichnis?: string; pfad?: string;
   };
-  // Zeigerformen sind nicht einheitlich: `verzeichnis` teils repositoriumsrelativ, teils
-  // nur der Zeitstempel; teils `pfad` auf die Datei. Statt die Erzeuger zu vereinheitlichen,
-  // loest der Leser alle drei Formen auf (einzige Stelle, die den Zeiger liest).
+  // Zeigerformen uneinheitlich (verzeichnis repo-relativ oder nur Zeitstempel, teils
+  // pfad auf die Datei); statt die Erzeuger zu vereinheitlichen, loest der Leser alle
+  // drei Formen auf (einzige Stelle, die den Zeiger liest).
   const roh = zeiger.verzeichnis ?? (zeiger.pfad === undefined ? undefined : dirname(zeiger.pfad));
   if (roh === undefined) {
     throw new Error(`Zeiger ${pfad} nennt weder 'verzeichnis' noch 'pfad'.`);
@@ -112,18 +101,14 @@ export function leseLatest(wurzel: string, ablage: string): string {
   return join(wurzel, 'artifacts', ...ablage.split('/'), roh);
 }
 
-/** Stabile Iterationsreihenfolge fuer alle Werkzeuge. */
 export function sortiereNachSchluessel<T>(
   abbildung: Readonly<Record<string, T>>,
 ): readonly (readonly [string, T])[] {
   return Object.keys(abbildung).sort().map((k) => [k, abbildung[k] as T] as const);
 }
 
-/**
- * Trennzeichen ist das Semikolon, weil die Zahlen mit Punkt als Dezimaltrennzeichen
- * geschrieben werden und eine Tabellenkalkulation in der Schweizer Gebietseinstellung
- * sonst Spalten und Dezimalstellen verwechselt.
- */
+// Trennzeichen Semikolon: Zahlen nutzen Punkt als Dezimaltrenner, eine Tabellenkalkulation
+// in Schweizer Gebietseinstellung verwechselt sonst Spalten und Dezimalstellen.
 export function alsCsv(
   spalten: readonly string[],
   zeilen: readonly Readonly<Record<string, unknown>>[] | readonly object[],

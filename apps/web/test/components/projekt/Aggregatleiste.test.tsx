@@ -6,8 +6,7 @@ import {
   type AggregatleisteProps,
 } from '../../../src/components/projekt/Aggregatleiste.js';
 
-/** Gemeinsame Basis-Props: ein vollstaendiges, ruhendes Ergebnis. Tests ueberschreiben
- *  gezielt die Felder, die das jeweilige Verhalten ausloesen. */
+// Basis-Props: Tests überschreiben gezielt Felder für spezifische Verhaltensweisen.
 function basisProps(): AggregatleisteProps {
   return {
     verkaufssumme: 893_550_000,

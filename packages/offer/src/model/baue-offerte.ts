@@ -1,13 +1,6 @@
-/**
- * Keine Formel. Zusammenbau des Offert-Objekts (E-19, E-20).
- *
- * Hier wird nichts gerechnet: Jede Zahl stammt aus `BerechnungsErgebnis`. Eine zweite
- * Multiplikation an dieser Stelle waere genau die Rechenlogik, die die Boundary-Regel
- * ausschliesst — und sie koennte vom Kern abweichen, ohne dass ein Test das saehe.
- *
- * Der Zusammenbau liegt in `packages/offer` und nicht im Kern, weil die
- * Abhaengigkeitsrichtung core -> offer verboten ist (E-20).
- */
+// Keine Formel. E-19, E-20: Zusammenbau des Offert-Objekts, hier wird nichts gerechnet
+// (jede Zahl stammt aus BerechnungsErgebnis). Liegt in packages/offer statt im Kern,
+// weil die Abhaengigkeitsrichtung core -> offer verboten ist.
 import {
   serialisiereKonfiguration,
   type BerechnungsErgebnis,
@@ -17,22 +10,21 @@ import { offerSchema, type Offer } from './offer.js';
 import { herkunft } from './provenance.js';
 
 export interface OfferteEingang {
-  /** Einzige Quelle der Rechenwerte (E-19). */
+  // E-19: einzige Quelle der Rechenwerte.
   readonly ergebnis: BerechnungsErgebnis;
-  /** Stammt aus der Erfassungsschicht, nicht aus dem Kern (E-20). */
+  // E-20: stammt aus der Erfassungsschicht, nicht aus dem Kern.
   readonly liegenschaft: Liegenschaft;
-  /** Projektangaben aus der Erfassung; nur die Kennung des erzeugenden Projekts. */
   readonly projekt: {
     readonly projektId: string;
   };
-  /** Erzeugt in apps/web/src/server (E-26, E-29) — hier nur entgegengenommen. */
+  // Erzeugt in apps/web/src/server (E-26, E-29) — hier nur entgegengenommen.
   readonly meta: {
     readonly offertId: string;
     readonly erstelltAm: string;
     readonly konfigVersion: string;
-    /** Aus P1s KonfigurationsFingerabdruck, nicht hier gebildet (PE-04). */
+    // PE-04: aus KonfigurationsFingerabdruck, nicht hier gebildet.
     readonly konfigPruefsumme: string;
-    /** Ergebnis von serialisiereEingang(), nicht die Formulardaten (PE-08). */
+    // PE-08: Ergebnis von serialisiereEingang(), nicht die Formulardaten.
     readonly berechnungsEingabe: Readonly<Record<string, unknown>>;
   };
 }
@@ -42,7 +34,7 @@ function baueTypAbleitungen(e: OfferteEingang): unknown[] {
     const bewertung = e.ergebnis.bewertungen.get(t.wohnungstypId);
     const typ = e.liegenschaft.wohnungstypen.find((w) => w.id === t.wohnungstypId);
     if (bewertung === undefined || typ === undefined) {
-      // Defekt, kein Fachfehler: Stufe 1 hat die Vollstaendigkeit bereits geprueft (S-03).
+      // S-03: Defekt, kein Fachfehler — Stufe 1 hat Vollstaendigkeit bereits geprueft.
       throw new Error(`Referenzbewertung oder Wohnungstyp fehlt fuer ${t.wohnungstypId}`);
     }
     const anzeige = bewertung.anzeige;
@@ -56,9 +48,8 @@ function baueTypAbleitungen(e: OfferteEingang): unknown[] {
         anbieter: bewertung.anbieter,
         konfidenzbereich: anzeige.konfidenzbereich,
         konfidenzklasse: anzeige.konfidenzklasse,
-        // Nur setzen, wenn vorhanden: Unter exactOptionalPropertyTypes sind
-        // «weggelassen» und «ausdruecklich undefined» verschiedene Dinge, und
-        // `.strict()` wuerde ein Feld mit undefined nicht als fehlend lesen.
+        // exactOptionalPropertyTypes: weggelassen != explizit undefined; .strict()
+        // wuerde ein Feld mit undefined nicht als fehlend lesen.
         ...(anzeige.konfidenzwert === undefined ? {} : { konfidenzwert: anzeige.konfidenzwert }),
       }, 'pricehubble'),
       referenceArea: herkunft(t.referenzflaeche, 'local-derivation'),
@@ -86,12 +77,10 @@ function baueEinheiten(e: OfferteEingang): unknown[] {
         enteredAs: a.erfassungsform === 'absolut' ? 'amount' as const : 'factor' as const,
         ...(a.erfassterBetrag === undefined ? {} : { enteredAmount: a.erfassterBetrag }),
         justification: a.begruendung,
-        // Weglassen statt erfinden: Nur eine aus einer Vorlage uebernommene Anpassung
-        // traegt die Kennung; daran haengt die Unterscheidung «aus Vorlage / veraendert
-        // / frei erfasst» (PE-07, A-13).
+        // PE-07, A-13: vorlageId nur bei aus Vorlage uebernommenen Anpassungen — traegt
+        // die Unterscheidung aus Vorlage/veraendert/frei erfasst.
         ...(a.vorlageId === undefined ? {} : { vorlageId: a.vorlageId }),
-        // Regel/Uebersteuerung dokumentarisch (A-13); gerenderte Dokument nennt sie
-        // bewusst nicht (siehe adjustmentSchema).
+        // A-13: dokumentarisch, das gerenderte Dokument nennt Regel/Uebersteuerung nicht.
         ...(a.regel === undefined ? {} : { regel: a.regel }),
         ...(a.uebersteuert === undefined ? {} : { uebersteuert: a.uebersteuert }),
       }, 'marketer-adjustment')),
@@ -105,7 +94,7 @@ function baueFaktorspuren(e: OfferteEingang): unknown[] {
   const beitraege = new Map(
     e.ergebnis.gewichtung.beitraege.map((b) => [b.faktorId, b]),
   );
-  // Die Liste iteriert ueber die Konfiguration; kein Faktorbezeichner steht im Code (I-13).
+  // I-13: iteriert ueber die Konfiguration, kein Faktorbezeichner steht im Code.
   return e.ergebnis.normalisierung.faktoren.map((f) => {
     const parameter = e.ergebnis.konfigurationsAbdruck.faktoren.get(f.faktorId);
     const beitrag = beitraege.get(f.faktorId);
@@ -148,15 +137,14 @@ export function baueOfferte(e: OfferteEingang): Offer {
       effortFactors: baueFaktorspuren(e),
       gewichtssumme: e.ergebnis.gewichtung.gewichtssumme,
       effortIndicator: herkunft(e.ergebnis.gewichtung.aufwandindikator, 'local-calculation'),
-      // Aufgeloest uebernommen, nicht nachgeschlagen: Die Stufenwahl gehoert dem Kern.
+      // Aufgeloest uebernommen, nicht nachgeschlagen — Stufenwahl gehoert dem Kern.
       feeTier: herkunft({ k: h.stufenindex, ...h.stufe,
                           interpolationsAnteil: h.interpolationsanteil }, 'local-calculation'),
       scalingFactor: herkunft(h.skalierung, 'local-calculation'),
       feeBasis: herkunft({ min: h.basisMin, max: h.basisMax }, 'local-calculation'),
       feeRange: herkunft({ min: h.honorarMin, max: h.honorarMax }, 'local-calculation'),
-      // `gewaehltesHonorar` fehlt hier bewusst: Dieser Lauf kennt nur die berechnete
-      // Range, keinen Vermarkterentscheid. Die Offert-Route ergaenzt ihn erst nach
-      // Bestaetigung im Eingabemodal, analog `dokument` (siehe offer.ts).
+      // gewaehltesHonorar fehlt bewusst: dieser Lauf kennt nur die Range, keinen
+      // Vermarkterentscheid; die Offert-Route ergaenzt ihn nach Bestaetigung im Modal.
     },
     metadata: {
       offertId: e.meta.offertId,
@@ -167,8 +155,7 @@ export function baueOfferte(e: OfferteEingang): Offer {
         bewertungsdatum: b.bewertungsdatum,
         konfidenzklasse: b.anzeige.konfidenzklasse,
       })),
-      // Eingebettete KOPIE, kein Verweis (E-26): Ein Pfad auf die Konfigurationsdatei
-      // waere beim naechsten Konfigwechsel wertlos.
+      // E-26: eingebettete Kopie, kein Verweis — ein Pfad waere beim Konfigwechsel wertlos.
       konfigurationsAbdruck: serialisiereKonfiguration(e.ergebnis.konfigurationsAbdruck),
       konfigVersion: e.meta.konfigVersion,
       konfigPruefsumme: e.meta.konfigPruefsumme,

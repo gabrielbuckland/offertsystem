@@ -1,11 +1,6 @@
-/**
- * Keine Formel. Platzhalter-Auflösung beim Finalisieren.
- *
- * Reine Funktion Dokument+Werte -> Dokument, läuft genau EINMAL beim Finalisieren — das
- * abgelegte Artefakt enthält das Ergebnis, nie die Vorlage (US-13). Deshalb wird hier
- * geworfen statt markiert: Ein unaufgelöster Platzhalter wäre ein halbes Artefakt (I-24).
- * Das Ergebnis wird abschliessend gegen `aufgeloestesDokumentSchema` geprüft.
- */
+// Keine Formel. US-13: Platzhalter-Aufloesung laeuft genau einmal beim Finalisieren,
+// das Artefakt enthaelt das Ergebnis, nie die Vorlage. I-24: wirft statt markiert —
+// ein unaufgeloester Platzhalter waere ein halbes Artefakt.
 import {
   aufgeloestesDokumentSchema,
   type AufgeloestesDokument,

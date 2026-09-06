@@ -8,9 +8,8 @@ import {
 
 describe('CFG-Namensraum', () => {
   it('deckt alle 25 Ladezeitcodes aus Spec 02 §3.0 ab', () => {
-    // 24 + `CFG_MERKMAL_DUPLICATE` (Review-Finding 6, Ebene 3): Ebene 3 prueft seither auch
-    // die Merkmalsliste auf doppelte Kennungen, analog zur bestehenden Pruefung doppelter
-    // Vorlagenbezeichner in `pruefeAnpassungsVorlagen`.
+    // 24 + `CFG_MERKMAL_DUPLICATE`: Ebene 3 prueft die Merkmalsliste auf doppelte
+    // Kennungen, analog zur Pruefung doppelter Vorlagenbezeichner.
     expect(CFG_CODES).toHaveLength(25);
     expect(new Set(CFG_CODES).size).toBe(25);
     for (const code of CFG_CODES) expect(code.startsWith('CFG_')).toBe(true);

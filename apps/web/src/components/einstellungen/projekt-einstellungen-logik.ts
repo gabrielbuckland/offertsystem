@@ -1,8 +1,5 @@
-// Ebene 2 des Zwei-Ebenen-Modells: die beiden Richtungen zwischen Firmenwerten, Delta und
-// Formular. `effektiveKonfiguration` (Anzeige) legt das Delta in die Firmenwerte ein;
-// `bildeDelta` (Speichern) rechnet umgekehrt nur die Abweichung heraus. Beide sind
-// zueinander invers (`bildeDelta(effektiveKonfiguration(f, d), f) === d`) — das haelt der
-// Test als Rundlauf fest.
+// `effektiveKonfiguration` und `bildeDelta` sind zueinander invers
+// (`bildeDelta(effektiveKonfiguration(f, d), f) === d`).
 import { GESPERRTE_PFADE } from '@offert/core';
 
 type Baum = Readonly<Record<string, unknown>>;
@@ -24,7 +21,6 @@ export function effektiveKonfiguration(
   const ergebnis: Record<string, unknown> = { ...firmenwerte };
   for (const [schluessel, wert] of Object.entries(delta)) {
     const basis = firmenwerte[schluessel];
-    // Arrays und Skalare als Ganzes, nur Objekte rekursiv — wie im Kern-Merge.
     ergebnis[schluessel] = istObjekt(basis) && istObjekt(wert)
       ? effektiveKonfiguration(basis, wert)
       : wert;
@@ -32,40 +28,18 @@ export function effektiveKonfiguration(
   return ergebnis;
 }
 
-// Bildet aus einem bearbeiteten Entwurf das Delta gegen die Firmenwerte: nur Pfade, die
-// tatsaechlich abweichen. `meta`/`api` gehoeren nie ins Delta (projektbezogen gesperrt);
-// die gesperrten Wurzeln kommen aus `GESPERRTE_PFADE` (`@offert/core`), nicht als eigene
-// Literale, damit es nur eine Wahrheit dazu gibt.
-//
 // Ein im Entwurf fehlender Schluessel gilt als UNVERAENDERT, nicht als geloescht — ein
-// Merge, der nur ueberlagert, kann "soll hier fehlen" nicht ausdruecken, und ein versehentlich
-// weggeloeschter Block im JSON-Reiter soll nicht stillschweigend die Berechnungsbasis
-// beschneiden.
+// reiner Merge kann "soll hier fehlen" nicht ausdruecken.
 export function bildeDelta(
   entwurf: Baum,
   firmenwerte: Baum,
 ): Record<string, unknown> {
-  // Die Sperre greift nur auf der Wurzel; ein tiefer liegendes Feld, das zufaellig `meta`
-  // heisst, bleibt uebersteuerbar.
   return baueDelta(entwurf, firmenwerte, true);
 }
 
-/**
- * Befunde, die KEINE Bereichskarte zeigen kann — der Auffangblock der Projektebene.
- *
- * Die Karten decken zwei Anzeigeregeln ab: der Rahmen zeigt den unanhaengigen Befund
- * (`pfad === ''`) und einen Befund genau auf einer Bereichswurzel (`rahmenBefunde`), die
- * Feld-Editoren zeigen alles darunter (`befundeFuerPfad`). Was ausserhalb JEDER
- * Bereichswurzel liegt, faellt durch beide Regeln: ein gesperrter Pfad (`api`, `meta`),
- * ein Rumpf-Befund (`(rumpf)`) oder ein unbekannter Schluessel auf der Wurzel. Ohne
- * Auffangblock quittierte die Oberflaeche ein gescheitertes Speichern kommentarlos — der
- * Benutzer klickte «Speichern», nichts geschah sichtbar, und er hielt den Vorgang fuer
- * erfolgreich.
- *
- * Die Bereichswurzeln kommen als Parameter herein und stehen NICHT als Literale hier:
- * Dieser Ordner wird vom Architekturtest auf fest verdrahtete Konfigurationsbezeichner
- * gescannt, und die Zuordnung lebt ohnehin in `bereiche.ts`.
- */
+// Befunde, die keiner Bereichskarte zugeordnet werden koennen (gesperrter Pfad, Rumpf-
+// Befund, unbekannter Wurzelschluessel) — Auffangblock, damit ein gescheitertes Speichern
+// nicht spurlos bleibt. Wurzeln kommen als Parameter, nicht als Literal (Architekturtest).
 export function unverankerteBefunde<T extends { readonly pfad: string }>(
   befunde: readonly T[], wurzeln: readonly string[],
 ): readonly T[] {
@@ -84,8 +58,7 @@ function baueDelta(entwurf: Baum, firmenwerte: Baum, wurzel: boolean): Record<st
 
     if (istObjekt(basis) && istObjekt(wert)) {
       const teilDelta = baueDelta(wert, basis, false);
-      // Leerer Teilbaum kommt nicht ins Delta, sonst meldete die Herkunftsanzeige
-      // faelschlich «uebersteuert».
+      // Leerer Teilbaum nicht ins Delta, sonst meldet die Herkunftsanzeige faelschlich "uebersteuert".
       if (Object.keys(teilDelta).length > 0) delta[schluessel] = teilDelta;
       continue;
     }

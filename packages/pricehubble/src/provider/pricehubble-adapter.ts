@@ -60,9 +60,7 @@ const BEWERTUNGSVERSUCHE = 2;
 export class PriceHubbleAdapter implements ValuationProvider {
   private readonly abh: AdapterAbhaengigkeiten;
 
-  // Feldzuweisung statt Parametereigenschaft: `node --experimental-strip-types`
-  // (PE-09) uebersetzt nicht, es entfernt nur Typen — Parametereigenschaften
-  // haetten eine Codeerzeugung verlangt und sind dort nicht zulaessig.
+  // PE-09: Feldzuweisung statt Parametereigenschaft, siehe http-client.ts.
   public constructor(abh: AdapterAbhaengigkeiten) {
     this.abh = abh;
   }
@@ -147,11 +145,8 @@ export class PriceHubbleAdapter implements ValuationProvider {
       return { ok: false, fehler: patch.fehler };
     }
 
-    // E3 antwortet mit leerem Rumpf (`{}`, live belegt 2026-09-01) und gibt die
-    // gesetzten Felder NICHT zurueck. Der Rueckvergleich liest den
-    // Stand deshalb mit einem eigenen GET nach. Das kostet einen zusaetzlichen Request
-    // je Wohnungstyp, erhaelt aber die Schutzabsicht: ein stillschweigend ignorierter
-    // oder gerundeter Parameter darf nicht durchrutschen.
+    // E3 antwortet mit leerem Rumpf (live belegt 2026-09-01) und gibt die gesetzten
+    // Felder nicht zurueck; der Rueckvergleich liest den Stand deshalb per eigenem GET nach.
     const zurueckgelesen = await this.liesDossierRoh();
     if (!zurueckgelesen.ok) {
       return { ok: false, fehler: zurueckgelesen.fehler };

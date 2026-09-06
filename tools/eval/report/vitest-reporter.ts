@@ -1,13 +1,6 @@
-/**
- * Keine Modellformel. Vitest-Reporter: schreibt genau ein Testartefakt je Lauf.
- *
- * Er ist im Wurzelblock der Vitest-Konfiguration eingetragen. Damit faellt aus JEDEM
- * Testlauf ein Artefakt; es gibt keinen Pfad, auf dem ein Testergebnis in den Anhang
- * gelangt, ohne durch `tests.json` gelaufen zu sein.
- *
- * Fehlt eines der fuenf Metadatenfelder, traegt es `null` — der Anhanggenerator setzt
- * dafuer sichtbar «METADATEN FEHLEN», statt still zu schweigen.
- */
+// Schreibt nach artifacts/; im Wurzelblock der Vitest-Konfiguration eingetragen, damit
+// jeder Testlauf ein Artefakt erzeugt. Parallele Vollläufe (mehrere vitest-Prozesse
+// gleichzeitig) überschreiben sich dabei gegenseitig — siehe .claude/rules/code.md.
 import { existsSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { bildeKopf, leseLatest, repoWurzel, schreibeArtefakt } from '../shared/artefakt.ts';
@@ -85,12 +78,8 @@ export function faelleAus(dateien: readonly RohDatei[], wurzel: string): readonl
   return faelle;
 }
 
-/**
- * Nur ein Lauf mit annotierter Kernalgorithmik darf den latest-Zeiger tragen: Ein
- * Teil-Lauf (Contract-only, Einzeldateien) wuerde ihn sonst mit einer Basis ohne
- * dokumentierte Faelle ueberschreiben und den naechsten `verify`-Lauf grundlos
- * scheitern lassen (F-077).
- */
+// Nur ein Lauf mit annotierter Kernalgorithmik darf den latest-Zeiger tragen, sonst
+// ueberschreibt ein Teil-Lauf (Contract-only) ihn und laesst `verify` grundlos scheitern (F-077).
 export function traegtDokumentierteFaelle(faelle: readonly Testfall[]): boolean {
   return faelle.some(
     (f) => f.vorbedingung !== null || f.schritte !== null || f.erwartung !== null,

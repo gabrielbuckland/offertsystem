@@ -4,11 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 
-/**
- * `node:fs/promises` ist ein Modulnamensraum; seine Exporte sind nicht neu belegbar,
- * `vi.spyOn` scheitert daran. Statt dessen wird das Modul ersetzt und `rename` ueber
- * eine Schalterfunktion einmalig zum Scheitern gebracht.
- */
+// fs/promises: Modul ersetzen, rename via Schalterfunktion zum Scheitern bringen (vi.spyOn unmöglich).
 const renameBricht = { einmal: false };
 vi.mock('node:fs/promises', async () => {
   const echt = await vi.importActual<typeof import('node:fs/promises')>('node:fs/promises');

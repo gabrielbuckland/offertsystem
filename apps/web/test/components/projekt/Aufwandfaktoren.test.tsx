@@ -1,13 +1,4 @@
-/**
- * `Number('')` ist 0 — ein geleertes Faktorfeld meldete deshalb eine erfundene Null, die
- * der Kern anschliessend gewichtet. `ZahlFeld` folgt deshalb dem Muster: lokaler Entwurf,
- * Meldung erst bei `onBlur`.
- *
- * Handler werden ueber gemockte Primitive abgefangen und direkt aufgerufen — das Repo
- * fuehrt kein jsdom. Ein simulierter Tastendruck aendert dabei die eingefangene Closure
- * nicht (kein echter Re-Render), darum wird der Entwurfszustand ueber die initiale
- * `werte`-Prop gesetzt, siehe Kommentar unten.
- */
+// Number('')=0: leeres Faktorfeld würde Null erfinden. ZahlFeld: lokaler Entwurf, Meldung bei onBlur.
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import type { Faktorformular } from '../../../src/server/faktorformular.js';
@@ -58,12 +49,7 @@ function zeichne(werte: Readonly<Record<string, number>>, aendere: (w: Readonly<
   renderToStaticMarkup(<Aufwandfaktoren formular={FORMULAR} werte={werte} aendere={aendere} />);
 }
 
-/*
- * `entscheideZahlfeldCommit` ist die aus `ZahlFeld` herausgeloeste Commit-Entscheidung:
- * Anders als die Handler-Tests unten kann diese Suite die eigentliche onChange->onBlur-
- * Verknuepfung direkt beweisen — ein getippter Wert wird beim Verlassen genau der Wert,
- * der committet wird —, weil sie keinen React-Render braucht.
- */
+// entscheideZahlfeldCommit: Commit-Entscheidung direkt testbar ohne React-Render.
 describe('entscheideZahlfeldCommit', () => {
   it('committet einen getippten, gueltigen Wert', () => {
     expect(entscheideZahlfeldCommit('7', 5)).toEqual({ art: 'uebernehmen', wert: 7 });
@@ -79,22 +65,13 @@ describe('entscheideZahlfeldCommit', () => {
   });
 
   it('committet einen Wert ausserhalb der Feldgrenzen unveraendert — Bereichspruefung ist Sache von pruefeFaktorwerte', () => {
-    // Grenzen (untergrenze/obergrenze) sind bewusst kein Parameter der Funktion: das
-    // bestehende Verhalten committet einen ausserhalb liegenden, aber parsierbaren Wert
-    // unveraendert; erst `pruefeFaktorwerte` markiert ihn danach ueber den `Hinweis`.
+    // Grenzen nicht Parameter: pruefeFaktorwerte markiert außerhalb-Wert danach via Hinweis.
     expect(entscheideZahlfeldCommit('999', 5)).toEqual({ art: 'uebernehmen', wert: 999 });
   });
 });
 
 describe('Aufwandfaktoren — ein geleertes Feld erfindet keine Null', () => {
-  /*
-   * Diese Suite prueft nur noch die React-Verdrahtung (onChange haelt lokal, onBlur
-   * committet) — die eigentliche Commit-ENTSCHEIDUNG ist oben direkt getestet.
-   * `renderToStaticMarkup` rendert einmalig ohne jsdom; ein simulierter Tastendruck
-   * aendert die eingefangene Closure nicht (kein echter Re-Render, siehe Dateikopf) —
-   * darum wird der Entwurfszustand hier ueber die initiale `werte`-Prop gesetzt statt
-   * ueber einen simulierten Tastendruck.
-   */
+  // Suite prüft React-Verdrahtung (onChange lokal, onBlur committet); Commit-Logik oben direkt getestet.
   it('meldet ein fehlendes Zahlfeld beim Verlassen gar nicht, statt eine 0 zu melden', () => {
     const aendere = vi.fn();
     zeichne({}, aendere);

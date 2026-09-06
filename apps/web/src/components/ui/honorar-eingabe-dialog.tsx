@@ -1,13 +1,8 @@
 'use client';
 
-/**
- * Eingabemodal fuer den gewaehlten Honorarsatz vor dem Erzeugen der Offerte: Der
- * Vermarkter entscheidet in Prozent der Verkaufssumme, weil die Empfehlungsrange in
- * derselben Groesse gefuehrt wird; abgelegt wird der daraus abgeleitete Betrag. Die
- * Honorarrange ist ein INTERNES Instrument, der Eigentuemer sieht in der Offerte einen
- * einzigen Betrag. Natives `<dialog>` mit `showModal()` — keine Dialog-Primitive/Radix
- * im Projekt.
- */
+// Die Honorarrange ist ein internes Instrument; der Eigentuemer sieht in der Offerte
+// einen einzigen Betrag. Natives `<dialog>` mit `showModal()` — keine Dialog-Primitive/
+// Radix im Projekt.
 import { useEffect, useRef, useState } from 'react';
 import { formatiereBetrag } from '@offert/offer';
 import { Button } from './button.js';
@@ -22,9 +17,8 @@ export interface HonorarEingabeDialogProps {
   readonly offen: boolean;
   readonly honorarMin: number;
   readonly honorarMax: number;
-  /** Bezugsgroesse der Prozenteingabe. `undefined`, solange die Berechnung (noch) keine
-   *  Verkaufssumme liefert — dann laesst sich kein Prozentsatz in einen Betrag
-   *  umrechnen und das Bestaetigen bleibt gesperrt. */
+  // `undefined` solange die Berechnung keine Verkaufssumme liefert — dann bleibt
+  // das Bestaetigen gesperrt.
   readonly verkaufssumme: number | undefined;
   readonly schliesse: () => void;
   readonly bestaetige: (gewaehltesHonorar: number) => void;
@@ -40,17 +34,14 @@ export function HonorarEingabeDialog(
     const dialog = dialogRef.current;
     if (dialog === null) return;
     if (offen && !dialog.open) {
-      // Feld startet LEER: keine Vorbelegung mit dem Range-Mittelwert — ein automatisch
-      // gesetzter Wert liefe als Entscheidung des Vermarkters durch, obwohl ihn das
-      // System gesetzt hat (Automation Bias).
+      // Feld startet leer: eine Vorbelegung liefe als Entscheidung des Vermarkters
+      // durch, obwohl sie das System gesetzt haette (Automation Bias).
       setzeEingabe('');
       dialog.showModal();
     }
     if (!offen && dialog.open) dialog.close();
   }, [offen]);
 
-  // Abweichung wird weiterhin am Rappenbetrag gegen `honorarMin`/`honorarMax` geprueft:
-  // erst umrechnen, dann einordnen.
   const betrag = prozentEingabeZuRappen(eingabe, verkaufssumme);
   const abweichung = betrag === undefined
     ? undefined

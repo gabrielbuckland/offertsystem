@@ -2,24 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { standardKonfiguration } from '../helper/projekt.js';
 import { kurz, lies, ohneKommentare, quelldateien } from './quelltext.js';
 
-/**
- * GELTUNGSBEREICH DIESER PRUEFUNG.
- *
- * I-13 verlangt, dass die BERECHNUNG keinen Faktor privilegiert: keine
- * faktorspezifische Fallunterscheidung, kein Bezeichner als Literal. Geprueft wird
- * deshalb `src/pipeline/**`, `src/modell/**` und `src/normalization/**`. Zusaetzlich werden die
- * UI-Komponenten in `apps/web/src/components/einstellungen/**` und
- * `apps/web/src/components/pipeline/**` geprueft: Diese muessen ebenfalls alle
- * Faktoren iterativ aus der Konfiguration beziehen, nicht fest verdrahten.
- *
- * `src/config/**` ist ausgenommen, und zwar aus einem inhaltlichen Grund: Die
- * Konfigurationsvalidierung MUSS die neun Lagescore-Namen des Anbieters kennen, um
- * einen unaufloesbaren `quellSchluessel` mit `CFG_SOURCE_UNRESOLVED` zurueckzuweisen
- * (Ebene 3). Diese Liste ist Validierungswissen ueber ein fremdes Datenformat, keine
- * Bevorzugung eines Faktors in der Rechnung. Verboete man sie, bliebe nur die
- * Alternative, jeden Tippfehler im Quellschluessel bis in die Berechnung durchzulassen
- * — das Gegenteil dessen, was I-13 erreichen will.
- */
+// I-13: `src/config/**` ist von der Literal-Pruefung ausgenommen, weil die
+// Konfigurationsvalidierung die neun Lagescore-Namen kennen MUSS, um einen
+// unaufloesbaren `quellSchluessel` mit CFG_SOURCE_UNRESOLVED zurueckzuweisen
+// (Ebene 3) — Validierungswissen ueber ein fremdes Format, keine Faktorbevorzugung.
 const RECHENPFADE = [
   'pipeline',
   'modell',
@@ -53,7 +39,7 @@ describe('I-13 — kein Faktorbezeichner als Literal in der Berechnung', () => {
   });
 
   it('die Ausnahme fuer die Konfigurationspruefung ist eng: nur schema.ts fuehrt die Namen', () => {
-    // Gegenprobe zur Begruendung oben — waechst die Ausnahme, faellt es hier auf.
+    // Gegenprobe: waechst die Ausnahme fuer config ueber schema.ts hinaus, faellt es hier auf.
     const treffer = quelldateien('config')
       .filter((d) => ohneKommentare(lies(d)).includes("'location'"))
       .map(kurz);

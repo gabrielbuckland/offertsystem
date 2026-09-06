@@ -1,14 +1,6 @@
-/**
- * Keine Formel. Reine Funktion Offer -> HTML.
- *
- * Ohne Zustand, ohne Datenabruf, ohne Effekte: Dieselbe Komponente traegt die
- * Bildschirmdarstellung UND den PDF-Druck (AK-2.1). Ein zweiter Renderpfad koennte
- * abweichen, ohne dass ein Test es saehe — und die Zusage «PDF und HTML zeigen
- * dieselben Zahlen» waere dann nicht belegbar, sondern nur behauptet.
- *
- * Kein einzelner Faktorbezeichner steht im Markup: Die Faktortabelle iteriert ueber
- * `aggregates.effortFactors` (I-13).
- */
+// Keine Formel. AK-2.1: reine Funktion Offer -> HTML, ohne Zustand/Effekte — dieselbe
+// Komponente traegt Bildschirmdarstellung und PDF-Druck. I-13: kein Faktorbezeichner im
+// Markup, die Tabelle iteriert ueber aggregates.effortFactors.
 import {
   formatiereAggregat,
   formatiereBetrag,
@@ -47,11 +39,8 @@ function DossierParameterTabelle(
   );
 }
 
-/**
- * Gibt die Stufenwahl vollstaendig aus: k, die Stufengrenzen, die vier Stuetzwerte, den
- * Interpolationsanteil und die ungerundeten Basen. Damit ist die Interpolation allein
- * aus der Darstellung nachrechenbar (AK-1.9, US-12).
- */
+// AK-1.9, US-12: gibt die Stufenwahl vollstaendig aus, damit die Interpolation allein
+// aus der Darstellung nachrechenbar ist.
 function StufenHerleitung(
   { tier, basis }: { tier: TierTrace; basis: { min: number; max: number } },
 ) {
@@ -78,7 +67,7 @@ function StufenHerleitung(
   );
 }
 
-/** Flacher Pfadaufbau der eingebetteten Konfigurationskopie (E-26). */
+// E-26: flacher Pfadaufbau der eingebetteten Konfigurationskopie.
 function flacheEintraege(wert: unknown, praefix = ''): readonly (readonly [string, string])[] {
   if (Array.isArray(wert)) {
     return wert.flatMap((eintrag, i) => flacheEintraege(eintrag, `${praefix}[${i}]`));
@@ -209,13 +198,8 @@ export function OfferteDokument({ offerte }: { offerte: Offer }) {
         <HerkunftsWert wert={a.feeRange}
                        beschriftung="Honorarrange (eq:honorar_mapping, intern)"
                        formatiere={(r) => `${formatiereAggregat(r.min)} – ${formatiereAggregat(r.max)}`} />
-        {/* Der Eigentuemer sieht EINEN Betrag, nie die Range: Die
-            Range oben bleibt Teil der Herleitung fuer den Vermarkter, `gewaehltesHonorar`
-            ist die dem Kunden genannte Zahl. Fehlt sie (Altartefakt ohne gewaehlten
-            Betrag), zeigt die Stelle einen Bindestrich statt der verworfenen Range.
-            Der Rechenweg bleibt bewusst frankenbasiert (eq:honorar_mapping erzeugt
-            Betraege) — der Prozentsatz kommt hier nur ZUSAETZLICH dazu, ersetzt den
-            Frankenbetrag nicht. */}
+        {/* Eigentuemer sieht EINEN Betrag, nie die Range; fehlt gewaehltesHonorar
+            (Altartefakt), Bindestrich statt verworfener Range. */}
         {a.gewaehltesHonorar === undefined ? (
           <p className="honorar-fehlt">Honorarbetrag: —</p>
         ) : (

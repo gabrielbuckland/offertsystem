@@ -1,18 +1,12 @@
-/**
- * Keine Formel. PDF-Export durch Druck DERSELBEN gerenderten Seite (I-25).
- *
- * Playwright druckt die Vorlage, erzeugt das Dokument nicht neu — «PDF und HTML zeigen
- * dieselben Zahlen» ist damit konstruktiv gesichert statt nachtraeglich geprueft.
- *
- * Die Browserfabrik ist injizierbar, damit der Druckablauf ohne echten Browser pruefbar
- * ist: Ein Test, der Chromium startet, prueft Playwright, nicht diesen Code.
- */
+// Keine Formel. I-25: PDF-Export durch Druck derselben gerenderten Seite — Playwright
+// druckt die Vorlage, erzeugt das Dokument nicht neu ("PDF und HTML zeigen dieselben
+// Zahlen" ist damit konstruktiv gesichert). Browserfabrik injizierbar, damit der
+// Druckablauf ohne echten Browser testbar bleibt.
 import { chromium } from 'playwright';
 
 export interface DruckOptionen {
   readonly basisUrl: string;
   readonly offertId: string;
-  /** Fusszeile: Adresse und Erstelldatum identifizieren das Projekt. */
   readonly adresse?: string;
   readonly erstelltAm?: string;
 }
@@ -29,12 +23,8 @@ export type BrowserFabrik = () => Promise<{
 
 const standardFabrik: BrowserFabrik = () => chromium.launch() as ReturnType<BrowserFabrik>;
 
-/**
- * Chromium rendert `footerTemplate` als HTML, nicht als Text. Adresse und Erstelldatum
- * sind Freitext aus dem Erfassungsschema (nur `plz` ist ziffernbeschraenkt) — ohne
- * Escaping koennte ein `<` oder `&` in einer Strassenbezeichnung die Fusszeile
- * verstuemmeln oder Markup einschleusen.
- */
+// Chromium rendert footerTemplate als HTML, nicht als Text. Adresse/Erstelldatum sind
+// Freitext (nur plz ziffernbeschraenkt) — ohne Escaping koennte Markup eingeschleust werden.
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, '&amp;')

@@ -1,11 +1,6 @@
-/**
- * Analytische Aufloesung von eq:netto_degression nach je einem Parameter.
- *
- * Gesucht ist jeweils der Wert, bei dem M = 1 gilt, also L = R — mit den uebrigen
- * Parametern fest. Ein nicht positiver Nenner bedeutet: Die Verletzung ist ueber diesen
- * Parameter UNERREICHBAR. Das ist ein aussagekraeftiges Ergebnis und wird als solches
- * ausgegeben, nicht als fehlender Wert.
- */
+// Aufloesung von eq:netto_degression nach je einem Parameter (Ziel M = 1, also L = R).
+// Ein nicht positiver Nenner heisst: ueber diesen Parameter UNERREICHBAR — ein
+// aussagekraeftiges Ergebnis, kein fehlender Wert.
 export interface Aufloesung {
   readonly parameter: string;
   readonly istwert: number;
@@ -36,7 +31,6 @@ function fasse(
   };
 }
 
-/** (a) Spanne S = gMax - gMin, gMin fest. */
 export function loeseSpanne(e: {
   gMin: number; spanne: number; d1: number; d2: number; r: number;
 }): Aufloesung {
@@ -48,7 +42,6 @@ export function loeseSpanne(e: {
   return fasse('honorar.skalierung.spanne', e.spanne, (e.gMin * (e.r - 1)) / nenner, null);
 }
 
-/** (b) Gewicht des Aufwandfaktors Projektumfang, Spanne fest. */
 export function loeseUmfangsgewicht(e: {
   gMin: number; spanne: number; w: number; x1: number; x2: number; r: number;
 }): Aufloesung {
@@ -65,16 +58,10 @@ export function loeseUmfangsgewicht(e: {
   return fasse('aufwandfaktor.projektumfang.gewicht', e.w, ziel, null);
 }
 
-/**
- * (c) einparametrige Stuetzstellenfamilie H_theta(V) = H0 + (1+theta)(H(V) - H0).
- *
- * Der Istwert ist 1, weil u = 1 + theta und theta = 0 die unveraenderte Konfiguration
- * ist; `relative_variation` ist damit unmittelbar theta*.
- *
- * `unerreichbar` heisst hier NICHT «kein Einfluss der Stuetzstellen», sondern: Die
- * Degression wird in dieser Konfiguration nicht allein vom Grundhonorar getragen,
- * sondern auch von den fallenden Grenzsaetzen.
- */
+// Istwert 1, weil u = 1 + theta und theta = 0 die unveraenderte Konfiguration ist;
+// `relative_variation` ist damit unmittelbar theta*. `unerreichbar` heisst hier NICHT
+// «kein Einfluss der Stuetzstellen», sondern: Degression wird nicht allein vom
+// Grundhonorar getragen, sondern auch von den fallenden Grenzsaetzen.
 export function loeseStuetzstellen(e: {
   h0: number; a1: number; a2: number; lambda: number; l: number;
 }): Aufloesung {
@@ -91,7 +78,6 @@ export function loeseStuetzstellen(e: {
   return fasse('honorar.stuetzstellen.familie', 1, u, null);
 }
 
-/** Der betragsmaessig kleinste erreichbare Variationsbedarf. */
 export function kritischerParameter(aufloesungen: readonly Aufloesung[]): string | null {
   const erreichbare = aufloesungen.filter(
     (a) => a.erreichbar && a.relative_variation !== null);

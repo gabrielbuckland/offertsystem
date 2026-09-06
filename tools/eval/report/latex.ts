@@ -1,18 +1,8 @@
-/**
- * Keine Modellformel. LaTeX-Hilfen der Anhangerzeugung.
- *
- * Grundsatz: GENERIERT, NICHT GEPFLEGT. Von Hand gepflegte Testdokumente sind nach dem
- * zweiten Testlauf veraltet, und ihre Uebereinstimmung mit dem tatsaechlichen
- * Systemverhalten ist nicht pruefbar. Jedes Fragment traegt deshalb einen Hinweiskopf.
- *
- * Die Umrechnung Rappen -> Franken geschieht erst hier, an der Darstellungsgrenze.
- */
+// Grundsatz: generiert, nicht gepflegt — jedes Fragment traegt deshalb einen Hinweiskopf.
 
-/**
- * Platzhalter fuer den Rueckstrich waehrend der Maskierung. Er muss vor allen anderen
- * Ersetzungen gesetzt und zuletzt aufgeloest werden, sonst maskierte die Funktion die
- * Rueckstriche ihrer eigenen Ersatztexte gleich mit.
- */
+// Platzhalter fuer den Rueckstrich waehrend der Maskierung: muss zuerst gesetzt und
+// zuletzt aufgeloest werden, sonst maskiert die Funktion die Rueckstriche ihrer eigenen
+// Ersatztexte gleich mit.
 const PLATZHALTER = '\u0000';
 
 const ERSETZUNGEN: readonly (readonly [RegExp, string])[] = [
@@ -33,7 +23,6 @@ export function latexEscape(text: string): string {
   return ERSETZUNGEN.reduce((s, [muster, ersatz]) => s.replace(muster, ersatz), text);
 }
 
-/** Schweizer Notation mit Hochkomma als Tausendertrenner. */
 export function zahlDeCh(wert: number, stellen: number): string {
   const fest = Math.abs(wert).toFixed(stellen);
   const [ganz, bruch] = fest.split('.');
@@ -44,7 +33,7 @@ export function zahlDeCh(wert: number, stellen: number): string {
     : `${vorzeichen}${gruppiert}.${bruch}`;
 }
 
-/** Umrechnung Rappen zu Franken erst bei der Darstellung. */
+// Umrechnung Rappen -> Franken erst hier, an der Darstellungsgrenze.
 export function frankenAusRappen(rappen: number): string {
   return zahlDeCh(rappen / 100, 2);
 }
@@ -76,18 +65,15 @@ export function longtable(t: {
   ].join('\n');
 }
 
-/**
- * Nicht umbrechende Tabelle als Float: fuer kurze Ergebnistabellen, die nie ueber
- * einen Seitenumbruch laufen duerfen (Benutzervorgabe 2026-09-03). Gleiche Signatur
- * wie longtable(); fuer seitenfuellende Volltabellen weiterhin longtable() nutzen.
- */
+// Nicht umbrechende Tabelle als Float, fuer kurze Ergebnistabellen die nie ueber einen
+// Seitenumbruch laufen duerfen (Benutzervorgabe 2026-09-03); fuer seitenfuellende
+// Volltabellen weiterhin longtable() nutzen.
 export function tabelle(t: {
   readonly spalten: readonly string[];
   readonly kopf: readonly string[];
   readonly zeilen: readonly (readonly string[])[];
   readonly beschriftung: string;
   readonly label: string;
-  /** true: \\midrule vor der letzten Zeile (Totalzeile). */
   readonly totalzeile?: boolean;
 }): string {
   const kopfzeile = t.kopf.map((k) => `\\textbf{${k}}`).join(' & ');

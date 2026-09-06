@@ -1,8 +1,7 @@
 'use client';
 
-// Die Kennung wird aus der Bezeichnung abgeleitet und ist danach schreibgeschuetzt: sie ist
-// der Anker, ueber den eine Bereichsregel ihr Merkmal findet (`regel.merkmal`); eine
-// nachtraegliche Umbenennung liesse jede darauf verweisende Regel ins Leere laufen.
+// `id` ist nach Ableitung schreibgeschuetzt: sie ist der Anker, ueber den eine
+// Bereichsregel ihr Merkmal findet (`regel.merkmal`).
 import { Trash2 } from 'lucide-react';
 import type { Merkmal } from '@offert/core';
 import { Button } from '../ui/button.js';
@@ -24,9 +23,7 @@ export function ableiteMerkmalId(bezeichnung: string): string {
   return /^[a-z]/.test(roh) ? roh : `m_${roh}`;
 }
 
-// Kennung aus der hoechsten bereits vergebenen `merkmal_<n>`-Kennung, nicht aus der
-// Listenlaenge: `merkmale.length + 1` kollidiert, sobald zwischendurch ein Merkmal geloescht
-// wurde.
+// Aus hoechster vergebener `merkmal_<n>`-Kennung, nicht aus Listenlaenge (kollidiert nach Loeschung).
 export function naechsteMerkmalId(merkmale: readonly Merkmal[]): string {
   const hoechste = merkmale.reduce((max, m) => {
     const treffer = /^merkmal_(\d+)$/.exec(m.id);

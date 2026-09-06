@@ -1,14 +1,8 @@
-/**
- * Leser der unabhaengig gerechneten Erwartungswerte der Szenarien (T2).
- *
- * Prueft vor jedem Zugriff die SHA-256-Summe der CSV-Datei gegen `manifest.json`.
- * Ohne diese Pruefung koennte ein Erwartungswert unbemerkt an ein geaendertes
- * Rechenergebnis angepasst werden — der Vergleich verglichte dann die
- * Implementierung mit sich selbst und belegte nichts mehr.
- *
- * Der Zugriff auf `node:fs` ist hier zulaessig: Die Sperre aus R1 gilt fuer
- * `packages/core/src/**`, nicht fuer die Testseite.
- */
+// T2: Leser der unabhaengig gerechneten Erwartungswerte. Prueft vor jedem Zugriff die
+// SHA-256-Summe der CSV gegen `manifest.json` — sonst koennte ein Erwartungswert
+// unbemerkt an ein geaendertes Rechenergebnis angepasst werden und der Vergleich
+// verglaeche die Implementierung mit sich selbst. `node:fs` ist hier zulaessig: Die
+// Sperre aus R1 gilt fuer `packages/core/src/**`, nicht fuer die Testseite.
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';

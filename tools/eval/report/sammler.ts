@@ -1,10 +1,5 @@
-/**
- * Keine Modellformel. Sammelt die Artefakte aller Plaene ueber ihre latest-Zeiger.
- *
- * Die Herkunft steht ausdruecklich dabei, weil ein fehlendes Artefakt eine Abhaengigkeit
- * auf einen anderen Plan ist und nicht ein Fehler dieses Werkzeugs: Der Abbruch zeigt
- * einen Reihenfolgefehler an — ein Plan ist noch nicht gelaufen.
- */
+// Herkunft (ERZEUGER) steht dabei, da ein fehlendes Artefakt eine Abhaengigkeit auf
+// einen anderen, noch nicht gelaufenen Plan ist, kein Fehler dieses Werkzeugs.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { leseLatest, repoWurzel } from '../shared/artefakt.ts';
@@ -59,14 +54,13 @@ export function sammle(wurzel: string = repoWurzel()): Artefaktsatz {
   };
 }
 
-/** Abbruchmeldung mit Herkunft: das fehlende Artefakt stammt oft aus einem anderen Plan. */
 export function meldeFehlend(fehlend: readonly string[]): string {
   return fehlend
     .map((i) => `artifacts/${i}/${DATEINAME[i] ?? '?'} fehlt — erzeugt von ${ERZEUGER[i] ?? '?'}`)
     .join('\n');
 }
 
-/** sec:eval_design sagt zu, dass der Startwert je Testlauf im Protokoll erscheint. */
+// sec:eval_design verlangt den Seed-Ausweis je Testlauf im Protokoll.
 export function pruefeSeed(inhalte: Readonly<Record<string, unknown>>): void {
   const tests = inhalte['tests'] as { seed?: number | null } | undefined;
   const property = inhalte['property'] as { seed?: number | null } | undefined;

@@ -19,10 +19,9 @@ describe('report/main — Abbruchbedingungen', () => {
 describe('Abnahmetest G1 bis G3 (Spec 06 §8)', () => {
   it('erzeugt die Fragmente und die Tornado-Grafiken; jedes Fragment traegt den Hinweis', () => {
     const main = mkdtempSync(join(tmpdir(), 'main-'));
-    // Ohne Beispiel-Offerte: `data/offerten/` ist nicht eingecheckt und entsteht erst im
-    // Betrieb. Der Pruefpfad selbst ist in offerte.test.ts abgedeckt.
-    // Die Abdeckungsdatei entsteht erst am Ende DIESES Laufs; sie wird deshalb hier
-    // gestellt. Geprueft wird die Erzeugung der Fragmente, nicht die Abdeckungszahl.
+    // Ohne Beispiel-Offerte, da data/offerten/ nicht eingecheckt ist (Pruefpfad selbst
+    // in offerte.test.ts abgedeckt); Abdeckungsdatei wird gestellt, da sie erst am Ende
+    // DIESES Laufs entstuende.
     const coveragePfad = join(mkdtempSync(join(tmpdir(), 'cov-')), 'coverage-summary.json');
     writeFileSync(coveragePfad, JSON.stringify({
       total: { lines: { pct: 90 }, branches: { pct: 80 } },

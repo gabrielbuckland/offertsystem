@@ -18,11 +18,7 @@ export function haltePropertyFest(meldung: PropertyMeldung): void {
     `${JSON.stringify(meldung, null, 2)}\n`);
 }
 
-/**
- * Huelle um fc.assert: laeuft die Property durch, wird `pass: true` gemeldet, sonst
- * `pass: false` samt Gegenbeispiel — und der Fehler danach unveraendert weitergereicht,
- * damit der Testlauf rot bleibt.
- */
+// Fehler wird nach dem Melden unveraendert weitergereicht, damit der Testlauf rot bleibt.
 export function pruefeProperty(id: InvariantenId, runs: number, lauf: () => void): void {
   try {
     lauf();

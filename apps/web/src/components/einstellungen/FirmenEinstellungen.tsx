@@ -1,13 +1,7 @@
 'use client';
 
-/**
- * Firmenweite Einstellungen (Ebene 1) mit GENAU EINEM Entwurf fuer alle vier
- * Bereichskarten. Getrennte Entwuerfe je Karte liessen sich beim Speichern gegenseitig
- * ueberschreiben: Wer nacheinander zwei Karten speicherte, verlor die zuerst gespeicherte
- * Aenderung wieder. Mit EINEM `verwendeEinstellungen`-Aufruf hier oben, geteilt von allen
- * vier Karten, ist das strukturell ausgeschlossen: Es gibt nur noch einen Entwurf und
- * eine Fussleiste, die ihn schreibt.
- */
+// GENAU EIN `verwendeEinstellungen`-Aufruf fuer alle vier Bereichskarten: getrennte
+// Entwuerfe je Karte liessen sich beim Speichern gegenseitig ueberschreiben.
 import { Fragment, useState } from 'react';
 import { GESPERRTE_PFADE } from '@offert/core';
 import { Button } from '../ui/button.js';
@@ -20,13 +14,8 @@ import { mitWurzeln, ohneWurzeln } from './json-reiter-logik.js';
 import { verwendeEinstellungen } from './verwende-einstellungen.js';
 import { BEREICHE, wurzeln, type Bereich } from '../../app/(anwendung)/einstellungen/bereiche.js';
 
-/**
- * Reihenfolge der Pipeline-Stufen (US-09/A-10) fuer die Uebersicht: Stufe 3
- * (Normalisierung) und Stufe 4 (Gewichtung) teilen sich einen Bereich (`faktoren`) — ein
- * Faktor traegt Min/Max UND Gewicht in einem Editor. Zwei eingebettete Editoren fuer
- * denselben Bereich haetten zwei unabhaengige Entwuerfe zur Folge; deshalb genau EIN
- * Editor pro Bereich, mit dem Stufenlabel, das er inhaltlich abdeckt.
- */
+// US-09/A-10: Stufe 3 (Normalisierung) und Stufe 4 (Gewichtung) teilen sich den Bereich
+// `faktoren` (ein Faktor traegt Min/Max UND Gewicht) — deshalb ein Eintrag statt zwei.
 const PIPELINE_REIHENFOLGE: ReadonlyArray<{
   readonly stufenLabel: string; readonly bereich: Bereich;
 }> = [
@@ -78,9 +67,7 @@ export function FirmenEinstellungen(
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* `meta` und `api` bleiben aussen vor und werden beim Zurueckschreiben aus
-                dem unveraenderten Bestand wieder eingesetzt: Betriebsparameter der IT
-                (US-08), die das Formular bewusst nur lesend zeigt. */}
+            {/* US-08: `meta`/`api` sind Betriebsparameter der IT, nur lesend. */}
             <JsonReiter
               wert={ohneWurzeln(zustand.entwurf, GESPERRTE_PFADE)}
               aendere={(naechster) => zustand.aendere(

@@ -1,6 +1,5 @@
-// Verortet D zwischen seinen fachlichen Polen 0 (gering) und 1 (hoch), Zuordnung monoton
-// (I-15/I-16). Der Fuellstand wird nur fuers Zeichnen begrenzt: D kann ausserhalb [0, 1]
-// liegen (E-04), der angezeigte Zahlwert bleibt ehrlich.
+// I-15/I-16: monotone Zuordnung 0 (gering) bis 1 (hoch). E-04: D kann ausserhalb [0,1]
+// liegen — nur der Fuellstand wird fuers Zeichnen begrenzt, nicht der Zahlwert.
 export function AufwandindikatorSkala({ wert }: { readonly wert: number }) {
   const anteil = Math.min(1, Math.max(0, wert));
   return (

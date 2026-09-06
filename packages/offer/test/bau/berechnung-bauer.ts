@@ -1,19 +1,7 @@
-/**
- * Erzeugt ein ECHTES `BerechnungsErgebnis`, indem `berechne()` aus @offert/core mit
- * einer konstruierten Liegenschaft aufgerufen wird.
- *
- * Bewusst kein handgeschriebenes Ergebnisobjekt: Der Zusammenbau in `packages/offer`
- * soll gegen das pruefen, was der Kern tatsaechlich liefert. Ein von Hand gebautes
- * Ergebnis liefe beim naechsten Kernschritt auseinander, ohne dass ein Test das saehe —
- * und genau die Aussage «die Rechenwerte stammen ausschliesslich aus dem Kern» (E-19)
- * waere dann nicht mehr belegt.
- *
- * Die Konfiguration ist die firmenweite `config/company-defaults.json`, ueber
- * `parseKonfiguration` eingelesen. Auch hier keine Kopie: Ein zweiter
- * Konfigurationsstand im Testbaum liefe beim Nachziehen auseinander.
- *
- * Zeitstempel und Bezeichner sind literal fixiert (E-29, I-14).
- */
+// Bewusst kein handgeschriebenes Ergebnis: baut ueber echtes berechne() aus
+// @offert/core, sonst waere E-19 (Rechenwerte nur aus dem Kern) nicht belegt.
+// Konfiguration kommt aus config/company-defaults.json, keine Kopie im Testbaum.
+// Zeitstempel und Bezeichner sind literal fixiert (E-29, I-14).
 import { readFileSync } from 'node:fs';
 import {
   berechne,
@@ -37,9 +25,7 @@ import {
   type ZuAbschlag,
 } from '@offert/core';
 
-// Lokal statt aus einem fremden Testbaum importiert (weder apps/web/test noch
-// packages/core/test): Testhelfer bleiben je Paket eigenstaendig, ein Import in den
-// Testbaum eines anderen Pakets koppelte die Suiten aneinander.
+// Bewusst lokal statt aus fremdem Testbaum importiert: Testhelfer bleiben pro Paket eigenstaendig.
 const BEWERTUNGEN_STANDARD = {
   zustandsbewertungen: {
     bathrooms: 'well_maintained', kitchen: 'well_maintained',
@@ -99,13 +85,9 @@ function einheit(
 }
 
 export interface BauOptionen {
-  /**
-   * Vorlagenkennung der ersten Anpassung der ersten Einheit. `undefined` steht fuer
-   * eine frei erfasste Anpassung — dann traegt sie keine Kennung (PE-07).
-   */
+  // undefined = frei erfasste Anpassung ohne Vorlagenkennung (PE-07).
   readonly anpassungMitVorlage?: string | undefined;
-  /** Haengt der ersten Anpassung der ersten Einheit eine Regelspur samt Uebersteuerung
-   *  an (A-13) — fuer den Nachweis, dass baueOfferte sie durchreicht. */
+  // Regelspur samt Uebersteuerung an erster Anpassung (A-13).
   readonly anpassungMitRegelspur?: boolean;
 }
 

@@ -1,12 +1,5 @@
-/**
- * Oeffentlicher Einstiegspunkt des Offert-Pakets (I-25).
- * Additiv gefuehrt: Bestehende Exporte werden nicht umbenannt oder entfernt (PE-15).
- *
- * Bewusst OHNE `.tsx`/React: Dieser Index wird auch aus reinen Server-/Logikdateien
- * importiert, die ueber tools/-Werkzeuge im jsx-freien Nachweislauf
- * (`tsc -p tools/tsconfig.json`, PE-20) landen. Die HTML-Vorlagenkomponenten stehen
- * deshalb im eigenen Einstiegspunkt `@offert/offer/template` (Paketgrenzen-Bereinigung).
- */
+// I-25, PE-15, PE-20: Bewusst ohne .tsx/React, da auch aus dem jsx-freien Nachweislauf
+// importiert. Vorlagenkomponenten stehen deshalb separat in @offert/offer/template.
 export const PAKET_NAME = '@offert/offer';
 
 export {
@@ -60,8 +53,6 @@ export {
   formatiereZimmerzahl,
 } from './format/de-ch.js';
 
-// apps/web importiert diese Symbole ausschliesslich ueber den Paketindex, nicht ueber
-// Modulpfade — deshalb regulaer re-exportiert.
 export {
   offertDokumentSchema,
   sammlePlatzhalterIds,
@@ -84,7 +75,5 @@ export {
   PlatzhalterFehler,
 } from './vorlage/aufloesung.js';
 
-// `druckeOfferte` steht BEWUSST NICHT hier: Es zieht `playwright` in den
-// Abhaengigkeitsgraphen; ueber den Paketindex landete es im Browser-Bundle der
-// Erfassungsmaske und der Next-Build scheiterte. Import ausschliesslich ueber den
-// eigenen Einstiegspunkt: `import { druckeOfferte } from '@offert/offer/druck';`
+// druckeOfferte bewusst nicht hier (zieht playwright ins Browser-Bundle);
+// import stattdessen aus '@offert/offer/druck'.

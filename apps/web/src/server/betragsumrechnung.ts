@@ -1,14 +1,9 @@
-/**
- * Keine eigene Formel; Umkehrung von eq:wohnungspreis nach dem Faktor.
- *
- * PE-21: Absolut erfasste Zu-/Abschlaege werden bei der Erfassung in
- * Faktoren umgerechnet, nicht im Kern — der bleibt bei einer Darstellungsform (E-09,
- * I-06). Bezugsgroesse ist der ungerundete Basispreis aus Stufe 2, nicht der gerundete
- * Wohnungspreis mit bereits enthaltenen Anpassungen.
- */
+// Keine Formel; Umkehrung von eq:wohnungspreis nach dem Faktor.
+// PE-21: Umrechnung erfolgt bei der Erfassung, nicht im Kern (E-09, I-06). Bezugsgroesse
+// ist der ungerundete Basispreis aus Stufe 2, nicht der gerundete Wohnungspreis.
 import { bereiteEingabeAuf, berechneVerkaufssumme, type Konfiguration } from '@offert/core';
-// Modulpfad statt Paketindex: Der Index re-exportiert React-Komponenten (.tsx), fuer
-// die Node kein Type-Stripping leistet (PE-09).
+// PE-09: Modulpfad statt Paketindex — der Index re-exportiert .tsx, fuer die Node kein
+// Type-Stripping leistet.
 import { formatiereAggregat } from '@offert/offer';
 import { zuEingangsArgumenten, type Beschafft } from './eingang.js';
 import type { Erfassung } from './erfassung-schema.js';
@@ -42,11 +37,9 @@ export type Basispreise =
   | { readonly ok: true; readonly wert: ReadonlyMap<string, number> }
   | { readonly ok: false; readonly meldung: string };
 
-/**
- * Basispreis entsteht in Stufe 2 des Kerns (NFA-03: jede Stufe einzeln exportiert), hier
- * mit LEEREN Anpassungen aufgerufen, weil er die Groesse VOR den Anpassungen ist. Eine
- * eigene Multiplikation waere eine zweite Fassung von eq:qm_preis/eq:flaeche (I-23).
- */
+// NFA-03/I-23: Stufe 2 wird mit LEEREN Anpassungen aufgerufen, weil der Basispreis die
+// Groesse VOR den Anpassungen ist; eine eigene Multiplikation waere eine zweite Fassung
+// von eq:qm_preis/eq:flaeche.
 export function basispreiseFuerErfassung(
   erfassung: Erfassung,
   beschafft: Beschafft,

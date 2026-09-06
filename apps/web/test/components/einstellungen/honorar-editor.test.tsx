@@ -8,7 +8,7 @@ import type { VerwendeEinstellungenErgebnis } from '../../../src/components/eins
 const PFAD = resolve(import.meta.dirname, '../../../../../config/company-defaults.json');
 const STANDARD = JSON.parse(readFileSync(PFAD, 'utf8')) as Record<string, unknown>;
 
-/** Minimaler, unbenutzter Zustand — `HonorarEditor` liest hier nur `entwurf`/`befunde`. */
+// Minimaler Zustand; HonorarEditor nutzt nur entwurf/befunde.
 function baueZustand(
   entwurf: Record<string, unknown>,
   befunde: readonly { readonly pfad: string; readonly text: string }[] = [],
@@ -39,9 +39,7 @@ describe('HonorarEditor', () => {
     expect(html).toContain('role="alert"');
     expect(html).toContain('Degression verletzt.');
 
-    // Der Hinweis muss NACH dem letzten Feld der zweiten Zeile (Index 1) und VOR dem
-    // ersten Feld der dritten Zeile erscheinen — d.h. an der verursachenden Zeile,
-    // nicht gesammelt am Ende einer Liste.
+    // Alert muss an der verursachenden Zeile, nicht am Ende gesammelt.
     const alertIndex = html.indexOf('role="alert"');
     const endeZeile2 = html.indexOf(`value="${zeile2.hMax / 100}"`);
     expect(endeZeile2).toBeGreaterThan(-1);

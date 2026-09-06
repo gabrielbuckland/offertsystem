@@ -1,18 +1,12 @@
-/**
- * Der eigentliche resolve-Haken. Getrennte Datei, weil `register` das
- * Hakenmodul in einem eigenen Thread laedt.
- */
+// Der eigentliche resolve-Haken, getrennte Datei: register laedt das Hakenmodul in einem
+// eigenen Thread.
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const QUELLBEREICHE = ['/packages/', '/apps/'];
 
-/**
- * Workspace-Pakete auf ihre Quelle abbilden. Node leistet fuer node_modules kein
- * Type-Stripping (PE-09), und die Workspace-Pakete sind genau dorthin verknuepft. Ohne
- * diese Zuordnung ist kein Programm ausfuehrbar, das ueber `@offert/*` einbindet — etwa
- * der Route Handler beim Erzeugen der Beispiel-Offerte.
- */
+// Workspace-Pakete auf ihre Quelle abbilden: Node leistet fuer node_modules kein
+// Type-Stripping (PE-09), wohin die Workspace-Pakete verknuepft sind.
 const PAKETE = {
   '@offert/core': 'packages/core/src/index.ts',
   '@offert/pricehubble': 'packages/pricehubble/src/index.ts',
@@ -45,8 +39,7 @@ export async function resolve(spezifizierer, kontext, naechster) {
         return naechster(`${spezifizierer.slice(0, -3)}.ts`, kontext);
       }
     } catch {
-      // Faellt auf die Standardaufloesung zurueck; ein Fehler hier waere ein
-      // Aufloesungsfehler und kein Grund, den Lauf abzubrechen.
+      // Faellt auf die Standardaufloesung zurueck; kein Grund, den Lauf abzubrechen.
     }
   }
   return naechster(spezifizierer, kontext);

@@ -13,11 +13,7 @@ import { BEWERTUNGEN_STANDARD } from '../bau/bewertungen.js';
 
 const WURZEL = resolve(import.meta.dirname, '../../../..');
 
-/**
- * Eigenes, minimales Fixture statt Wiederverwendung von `eingang.test.ts`: Dort ist die
- * Erfassung an das `beschaffe()`-Verhalten (Provider-Attrappe) gekoppelt, hier genuegt ein
- * direkt konstruiertes `Beschafft` — `basispreiseFuerErfassung` ruft `beschaffe()` nicht auf.
- */
+// Minimal fixture; `basispreiseFuerErfassung` doesn't call `beschaffe()`.
 function erfassung(wohnungstypId: string): Erfassung {
   return {
     projekt: { projektId: 'A-2026-014' },
@@ -44,9 +40,7 @@ function erfassung(wohnungstypId: string): Erfassung {
 function beschafft(bewertungen: ReadonlyMap<WohnungstypId, Referenzbewertung>): Beschafft {
   const buendel: BewertungsBuendel = { vollstaendig: true, bewertungen };
   const lagescores: Lagescores = {
-    // 'location' ist der quellSchluessel des Faktors lage_gesamt (company-defaults.json)
-    // und muss vorliegen, sonst scheitert bereits Stufe 1 an FAKTOR_FEHLT statt an der in
-    // den jeweiligen Tests gezielt provozierten Fehlerursache.
+    // 'location' is lage_gesamt's sourceKey; required or stage 1 fails with FAKTOR_FEHLT.
     werte: new Map([['location' as LagescoreName, score(0.72)]]),
     meta: new Map(), abrufdatum: '2026-08-16', anbieter: 'PriceHubble',
   };
@@ -73,7 +67,6 @@ function bewertung(marktwert: number): Referenzbewertung {
 
 describe('Absoluter Betrag -> Faktor (PE-21, Spec 03 §1.4)', () => {
   it('bildet den Faktor aus Betrag und Basispreis der Einheit', () => {
-    // Basispreis b_j = 850'000.00 CHF = 85_000_000 Rappen
     const ergebnis = rechneBetragInFaktor(4_250_000, 85_000_000);
     expect(ergebnis.ok).toBe(true);
     if (!ergebnis.ok) return;
@@ -102,14 +95,13 @@ describe('Absoluter Betrag -> Faktor (PE-21, Spec 03 §1.4)', () => {
 describe('Die Basispreise stammen aus Stufe 2, nicht aus einer zweiten Formel (I-23)', () => {
   it('bildet weder Referenzflaeche noch Quadratmeterpreis selbst', () => {
     const quelle = readFileSync(`${WURZEL}/apps/web/src/server/betragsumrechnung.ts`, 'utf8');
-    // Die Bezeichner duerfen im Kommentar vorkommen; gesucht wird im Code.
+    // Identifiers allowed in comments; search code only.
     const code = quelle
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/(^|[^:])\/\/.*$/gm, '$1');
     for (const verboten of ['referenzflaeche', 'alpha', 'Math.pow', '**']) {
       expect(code, `betragsumrechnung.ts nennt ${verboten}`).not.toContain(verboten);
     }
-    // Stattdessen ruft sie die Kernstufen auf.
     expect(code).toContain('berechneVerkaufssumme');
     expect(code).toContain('bereiteEingabeAuf');
   });
@@ -125,13 +117,11 @@ describe('basispreiseFuerErfassung (PE-21)', () => {
     );
     expect(ergebnis.ok).toBe(true);
     if (!ergebnis.ok) return;
-    // A_t_ref = 82 + 0.5*12 = 88 = A_j der Einheit (identische Parametrisierung) — der
-    // Basispreis entspricht deshalb unveraendert dem Marktwert der Referenzbewertung.
+    // A_t_ref = 88 = A_j (same parametrization); base price = reference market value unchanged.
     expect(ergebnis.wert.get('A1.01')).toBe(85_000_000);
   });
 
   it('meldet einen unbekannten Wohnungstyp, statt eine ungueltige Liegenschaft zu bauen', () => {
-    // Die Einheit verweist auf einen nicht deklarierten Wohnungstyp.
     const ergebnis = basispreiseFuerErfassung(
       erfassung('T-UNBEKANNT'),
       beschafft(new Map([['T-3.5' as WohnungstypId, bewertung(85_000_000)]])),
@@ -144,7 +134,6 @@ describe('basispreiseFuerErfassung (PE-21)', () => {
   });
 
   it('meldet eine fehlende Referenzbewertung aus Stufe 1, statt mit einem Ersatzwert zu rechnen', () => {
-    // Fuer T-3.5 liegt keine Bewertung im Buendel.
     const ergebnis = basispreiseFuerErfassung(
       erfassung('T-3.5'),
       beschafft(new Map()),
@@ -157,8 +146,6 @@ describe('basispreiseFuerErfassung (PE-21)', () => {
   });
 
   it('meldet eine Referenzflaeche von 0 aus Stufe 2, statt durch 0 zu teilen', () => {
-    // Die repraesentative Parametrisierung ohne Innen- und Aussenflaeche ergibt keine
-    // gewichtete Referenzflaeche.
     const ohneFlaeche = erfassung('T-3.5');
     (ohneFlaeche.wohnungstypen[0]!.parametrisierung as { flaecheInnen: number }).flaecheInnen = 0;
     (ohneFlaeche.wohnungstypen[0]!.parametrisierung as { flaecheAussen: number }).flaecheAussen = 0;

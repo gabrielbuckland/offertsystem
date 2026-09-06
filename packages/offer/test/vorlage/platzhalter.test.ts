@@ -16,7 +16,7 @@ describe('platzhalterWerte', () => {
     expect(werte.texte.anzahlEinheiten).toBe(String(offerte.derivation.units.length));
     expect(werte.texte.anzahlWohnungstypen)
       .toBe(String(offerte.derivation.apartmentTypes.length));
-    // Formatiert wie überall: CHF-Aggregat mit fester Tausendertrennung (NFA-13).
+    // Formatiert wie ueberall: CHF-Aggregat mit fester Tausendertrennung (NFA-13).
     expect(werte.texte.verkaufssumme).toMatch(/^CHF/);
     expect(werte.texte.erstelltAm).toMatch(/\d{4}/);
   });

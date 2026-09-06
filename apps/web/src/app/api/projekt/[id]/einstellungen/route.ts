@@ -1,28 +1,13 @@
-/**
- * Schreibweg der PROJEKTBEZOGENEN Ebene (Ebene 2 des Zwei-Ebenen-Modells). Der Rumpf
- * ist das Delta — nur die uebersteuerten Pfade, nicht die ganze Konfiguration.
- *
- * Zurueckweisen statt melden (I-21): Geschrieben wird erst, NACHDEM das Delta mit den
- * Firmenwerten zusammengefuehrt und die zusammengefuehrte Konfiguration durch alle drei
- * Pruefebenen gelaufen ist. Es existiert kein Zeitfenster, in dem ein Projekt mit einer
- * invariantenverletzenden Konfiguration abgelegt waere.
- *
- * Antwortform `befunde` (Pfad + Text) wie bei der firmenweiten Route: Die Editoren
- * verankern ihre Meldung am Feld, nicht am Formular. Dafuer laeuft die Uebersetzung ueber
- * denselben `zuBefunden`-Weg wie firmenweit — ein eigener Weg verankert Befunde sonst
- * pauschal und keine Bereichskarte kann sie zeigen.
- */
+// I-21: Schreibweg der projektbezogenen Ebene (Delta). Geschrieben wird erst NACHDEM das
+// Delta mit den Firmenwerten zusammengefuehrt und durch alle Pruefebenen gelaufen ist —
+// kein Zeitfenster mit invariantenverletzender Konfiguration.
 import { zuBefunden, type EinstellungsBefund } from '../../../../../server/einstellungen-ablage.js';
 import {
   holeLaufzeit, holeProjektLaufzeit, type LaufzeitFehler,
 } from '../../../../../server/laufzeit.js';
 import { ladeProjekt, speichereProjekt } from '../../../../../server/projekt-ablage.js';
 
-/**
- * Ein Umgebungsfehler traegt keine `fehler`-Liste (siehe `LaufzeitFehler`). Er bekommt
- * deshalb den unanhaengigen Pfad `''` — dieselbe Form, die die Oberflaeche bereits fuer
- * Netz- und Serverfehler kennt und in jeder Bereichskarte zeigt.
- */
+// Umgebungsfehler tragen keine `fehler`-Liste, daher Pfad '' (wie bei Netz-/Serverfehlern).
 function befundeAus(fehlschlag: LaufzeitFehler): readonly EinstellungsBefund[] {
   if (fehlschlag.fehler !== undefined) return zuBefunden(fehlschlag.fehler);
   return fehlschlag.meldungen.map((text) => ({ pfad: '', text }));
@@ -56,8 +41,7 @@ export async function POST(anfrage: Request, kontext: Kontext): Promise<Response
     return Response.json({ fehler: { text: 'Projekt nicht gefunden.' } }, { status: 404 });
   }
 
-  // Probelauf VOR dem Schreiben: Genau hier faellt ein gesperrter Pfad, ein unbekannter
-  // Schluessel oder eine verletzte Invariante auf.
+  // Probelauf VOR dem Schreiben deckt gesperrte Pfade und Invariantenverletzungen auf.
   const geprueft = holeProjektLaufzeit({ einstellungen: roh as Record<string, unknown> });
   if (!geprueft.ok) {
     return Response.json({ befunde: befundeAus(geprueft) }, { status: 422 });

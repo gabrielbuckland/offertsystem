@@ -60,9 +60,7 @@ describe('Gegenprobe gegen die Standardkonfiguration und den Kern', () => {
   const echte = konfig.honorar.stuetzstellen as readonly Stuetzstelle[];
 
   it('stimmt mit Stufe 5 des Kerns ueberein (ungerundete Basis)', () => {
-    // Laeuft das auseinander, ist NICHT die Werkzeugfassung anzupassen: Zwei
-    // Implementierungen derselben Formel, die abweichen, sind ein Modell- oder
-    // Implementierungsfehler.
+    // Abweichung hier ist ein Modell-/Implementierungsfehler, nicht die Werkzeugfassung.
     let geprueft = 0;
     for (const s of ladeSzenarien()) {
       const eingang = baueEingang(s, konfig);

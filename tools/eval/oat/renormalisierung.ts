@@ -1,16 +1,8 @@
-/**
- * eq:aufwandindikator, Nebenbedingung Sigma w_d = 1.
- *
- * Ein strikt isoliertes Variieren eines Gewichts ist unter dieser Nebenbedingung nicht
- * moeglich. Die uebrigen Gewichte werden deshalb PROPORTIONAL zu ihrem bisherigen
- * Verhaeltnis renormalisiert:
- *
- *   w_i' = w_i * (1 + delta)
- *   w_j' = w_j * (1 - w_i') / (1 - w_i)   fuer alle j != i
- *
- * Damit ist die Messung eine Aussage ueber die RELATIVE Verschiebung eines Gewichts
- * gegenueber den uebrigen — nicht ueber eine isolierte Aenderung, die es nicht geben kann.
- */
+// eq:aufwandindikator, Nebenbedingung Sigma w_d = 1. Ein strikt isoliertes Variieren
+// eines Gewichts ist darunter nicht moeglich; die uebrigen Gewichte werden deshalb
+// PROPORTIONAL zu ihrem bisherigen Verhaeltnis renormalisiert (w_i' = w_i*(1+delta),
+// w_j' = w_j*(1-w_i')/(1-w_i) fuer j != i). Die Messung ist damit eine Aussage ueber die
+// RELATIVE Verschiebung eines Gewichts, nicht ueber eine isolierte Aenderung.
 import { sortiereNachSchluessel } from '../shared/artefakt.ts';
 
 export interface RenormErgebnis {

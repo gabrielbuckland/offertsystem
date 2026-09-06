@@ -1,12 +1,6 @@
-/**
- * Die Erwartungswerte folgen bewusst der tatsaechlichen ICU-Ausgabe der Laufzeit:
- * `de-CH` setzt als Tausendertrennung U+2019 (rechtes Anfuehrungszeichen) statt des
- * Apostrophs U+0027, ein festes Leerzeichen U+00A0 nach dem Waehrungskuerzel, kein
- * Leerzeichen vor dem Prozentzeichen und ein gewoehnliches Minus. Weicht das
- * Minuszeichen der Laufzeit ab, wird der Erwartungswert des Tests an die
- * Locale-Ausgabe angepasst, nicht die Ausgabe an den Test — eine eigene Ersetzung im
- * String waere genau der Weg, die Schweizer Notation an einer Stelle zu verlieren.
- */
+// Erwartungswerte folgen der echten ICU-Ausgabe (de-CH: U+2019 statt Apostroph,
+// U+00A0 nach Waehrungskuerzel). Bei Laufzeit-Abweichung den Testwert anpassen,
+// nie die Ausgabe per Ersetzung "korrigieren".
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -22,10 +16,8 @@ import {
   mitFesterTrennung,
 } from '../../src/format/de-ch.js';
 
-/** U+2019, die von `de-CH` verwendete Tausendertrennung. */
-const T = '’';
-/** U+00A0, das schmale feste Leerzeichen zwischen Waehrungskuerzel und Betrag. */
-const NBSP = ' ';
+const T = '’'; // U+2019, Tausendertrennung von de-CH
+const NBSP = ' '; // U+00A0
 
 describe('Betragsformatierung', () => {
   it('formatiert ein Aggregat ohne Nachkommastellen', () => {
@@ -38,24 +30,14 @@ describe('Betragsformatierung', () => {
   });
 
   it('macht keine Ersetzung im fertigen String', () => {
-    // Die Tausendertrennung wird auf Teile-Ebene gesetzt (`mitFesterTrennung`), nicht
-    // durch Suchen und Ersetzen im schon formatierten Text.
     const quelle = readFileSync(new URL('../../src/format/de-ch.ts', import.meta.url), 'utf8');
     expect(quelle).not.toMatch(/\.replace\(/);
   });
 });
 
-/**
- * ICU liefert fuer `de-CH` je nach Laufzeit ein anderes Tausenderzeichen: Node 22 setzt
- * U+2019, Chromium 151 den ASCII-Apostroph U+0027. Dieselben Formatierer laufen auf
- * beiden Seiten — serverseitig fuer Druck und erste Auslieferung, im Browser fuer die
- * Client-Komponenten. Ungebunden hiesse das eine Hydratationsabweichung bei jedem
- * Seitenaufbau und denselben Betrag mit verschiedenen Trennzeichen auf Bildschirm und im
- * PDF, waehrend NFA-13 einheitliche Schweizer Notation verlangt.
- *
- * Pruefbar ohne zweite Laufzeit, weil die Festlegung eine eigene Funktion ueber
- * `Intl.NumberFormatPart[]` ist: Der Test reicht die FREMDE Trennung herein.
- */
+// Node und Chromium liefern fuer de-CH unterschiedliche Tausenderzeichen (U+2019 vs.
+// ASCII-Apostroph); ungebunden gaebe das Hydratationsabweichungen (NFA-13). Test reicht
+// die fremde Trennung direkt als Intl.NumberFormatPart[] herein, ohne zweite Laufzeit.
 describe('Tausendertrennung ist laufzeitunabhaengig festgelegt', () => {
   it('ersetzt eine abweichende Trennung der Laufzeit durch die feste', () => {
     const teileWieChromium: Intl.NumberFormatPart[] = [
@@ -129,8 +111,7 @@ describe('Grenzen der Formatierungsschicht', () => {
   });
 
   it('haelt Intl aus packages/core heraus', () => {
-    // Die Grenze, die die Boundary-Regel nicht abdeckt: `Intl` ist eine Plattform-API
-    // und wuerde von keinem Importverbot erfasst.
+    // Intl ist Plattform-API, kein Import — vom Importverbot nicht erfasst.
     const wurzel = fileURLToPath(new URL('../../../..', import.meta.url));
     const treffer = execSync("grep -rl 'Intl\\.' packages/core/src || true", {
       encoding: 'utf8', cwd: wurzel,

@@ -7,7 +7,6 @@
 export interface Uhr {
   jetztMs(): number;
   warte(ms: number): Promise<void>;
-  /** Plant einen Rueckruf und liefert die Abbestellung. Traegt das Zeitlimit je Versuch. */
   plane(ms: number, rueckruf: () => void): () => void;
 }
 
