@@ -37,8 +37,10 @@ Ohne weitere Konfiguration läuft die Anwendung im **Mock-Betrieb**
 es ist kein API-Zugang nötig. Einstieg ist die Projektübersicht unter
 `/projekte`. Die Startseite leitet dorthin weiter. Ist die Projektablage noch
 leer, legt der erste `npm run dev` ein Playground-Projekt an («Muster
-Immobilien AG», sechs Einheiten). Es ist zum Ausprobieren gedacht, kann
-gefahrlos verändert oder gelöscht werden und kommt nicht von selbst zurück.
+Immobilien AG», sechs Einheiten). Es ist zum Ausprobieren gedacht und kann
+gefahrlos verändert oder gelöscht werden. Neu geseedet wird nur, wenn die
+Projektablage wieder ganz leer ist, bestehende Arbeitsstände bleiben
+unangetastet.
 
 Für andere Betriebsarten `.env.example` (Repo-Wurzel) als Vorlage nehmen und
 die Werte in `apps/web/.env.local` eintragen:
