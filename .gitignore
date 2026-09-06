@@ -19,3 +19,4 @@ test-results/
 playwright-report/
 .superpowers/
 .worktrees/
+fixtures/pricehubble/recorded/aufzeichnungsprotokoll.jsonl

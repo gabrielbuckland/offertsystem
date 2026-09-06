@@ -1,8 +1,8 @@
 /**
  * Keine Formel. Auswahl ueber Dependency Injection und Konfiguration (US-14, E-12).
- * mock (Vorgabe) laeuft ohne Zugangsdaten; fixture ist derzeit baugleich mit
- * pricehubble (echter Adapter, echtes fetch), da noch keine Aufzeichnungen existieren
- * und der MSW-Ersatz nur in der Testumgebung laeuft. Unbekannter Wert = KonfigurationsFehler,
+ * mock (Vorgabe) laeuft ohne Zugangsdaten; fixture nutzt den echten Adapter samt
+ * Schemavalidierung, ersetzt aber das fetch durch die aufgezeichneten Antworten der
+ * produktiven API (E-31, kein Netz). Unbekannter Wert = KonfigurationsFehler,
  * kein stiller Rueckfall (AK-17).
  *
  * `konfiguration` wird UEBERGEBEN, nicht geladen (PE-17): der `api`-Block gehoert nicht
@@ -22,6 +22,8 @@ import { TokenVerwaltung, type Zugang } from '../client/token-verwaltung.js';
 import { Warteschlange } from '../client/warteschlange.js';
 import { systemUhr } from '../client/uhr.js';
 import { jitterStromAusLaufSeed } from '../client/zufall.js';
+import { TEST_UUID } from '../acl/anonymisierung.js';
+import { erzeugeFixtureFetch, findeAufzeichnungsVerzeichnis } from './fixture-fetch.js';
 import { MockValuationProvider } from './mock-valuation-provider.js';
 import { PriceHubbleAdapter } from './pricehubble-adapter.js';
 
@@ -51,6 +53,34 @@ export function createValuationProvider(
   const schalter = pruefeUmgebung(env);
   if (schalter === 'mock') {
     return new MockValuationProvider();
+  }
+  if (schalter === 'fixture') {
+    const gepruefteKonfiguration = pruefeApiKonfiguration(konfiguration);
+    const client = new HttpClient({
+      konfiguration: gepruefteKonfiguration,
+      uhr: systemUhr,
+      zufall: jitterStromAusLaufSeed(optionen.laufSeed ?? 0),
+      protokoll: stdoutProtokoll,
+      fetchImpl: erzeugeFixtureFetch(
+        gepruefteKonfiguration.endpunkte,
+        findeAufzeichnungsVerzeichnis(),
+      ),
+    });
+    return new PriceHubbleAdapter({
+      konfiguration: gepruefteKonfiguration,
+      dossierId: env.PH_DOSSIER_ID ?? TEST_UUID,
+      client,
+      tokenVerwaltung: new TokenVerwaltung({
+        client,
+        konfiguration: gepruefteKonfiguration,
+        uhr: systemUhr,
+        // Der Login laeuft durch den Fixture-Transport und damit durchs LoginResponseSchema.
+        zugang: { art: 'zugangsdaten', benutzername: 'fixture', passwort: 'fixture' },
+      }),
+      uhr: systemUhr,
+      protokoll: stdoutProtokoll,
+      warteschlange: new Warteschlange(),
+    });
   }
   const geprueft = pruefeApiKonfiguration({
     ...konfiguration,

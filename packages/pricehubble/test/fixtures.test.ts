@@ -15,13 +15,14 @@ describe('Fixture-Ablage (E-14, AK-21)', () => {
     const verzeichnis = fileURLToPath(
       new URL('../../../fixtures/pricehubble/recorded/', import.meta.url),
     );
+    // aufzeichnungsprotokoll.jsonl fehlt bewusst: Es entsteht lokal beim test:record-Lauf
+    // und ist nicht versioniert (Zeitstempel/Request-IDs gehoeren nicht ins Repo).
     const erwartet = [
       'auth/login.success.json',
       'dossier/get-dossier.success.json',
       'dossier/update-dossier.success.json',
       'dossier/valuation.success.json',
       'location/location-scores.success.json',
-      'aufzeichnungsprotokoll.jsonl',
       'herkunft.json',
     ];
     for (const datei of erwartet) {
