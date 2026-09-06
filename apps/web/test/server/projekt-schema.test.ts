@@ -159,6 +159,18 @@ describe('projektSchema', () => {
     expect(JSON.stringify(ergebnis.error.issues)).toContain('MERKMAL_UNBEKANNT');
   });
 
+  it('nimmt eine Regel auf einem eingebauten Flaechenmerkmal ohne Deklaration an', () => {
+    const p = beispiel();
+    const ergebnis = projektSchema.safeParse({
+      ...p,
+      anpassungsSpalten: [{
+        id: 'S-1', bezeichnung: 'Zuschlag Flaeche', erfassungsform: 'relativ',
+        regel: { merkmal: 'flaecheInnen', bereiche: [{ unter: 100, wert: 0 }, { wert: 0.03 }] },
+      }],
+    });
+    expect(ergebnis.success).toBe(true);
+  });
+
   it('nimmt ein Einstellungs-Delta an', () => {
     const ergebnis = projektSchema.safeParse({
       ...beispiel(),

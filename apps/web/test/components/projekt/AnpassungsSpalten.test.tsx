@@ -243,6 +243,31 @@ describe('AnpassungsSpalten — Vorgabewert entfaellt bei einer Spalte mit Regel
   });
 });
 
+describe('AnpassungsSpalten — eingebaute Flaechenmerkmale sind als Staffelkriterium waehlbar', () => {
+  it('zeigt fuer eine Flaechenstaffel die eingebaute Bezeichnung statt der Kennung', () => {
+    const flaechenSpalte: AnpassungsSpalte = {
+      id: 'S-1',
+      bezeichnung: 'Zuschlag Flaeche',
+      erfassungsform: 'relativ',
+      regel: { merkmal: 'flaecheInnen', bereiche: [{ wert: 0 }] },
+    };
+    const markup = renderToStaticMarkup(
+      <AnpassungsSpalten
+        merkmale={[]}
+        spalten={[flaechenSpalte]}
+        aendere={vi.fn()}
+        entferneSpalte={vi.fn()}
+        uebernehmeAufEinheiten={vi.fn()}
+        vorlagen={[]}
+      />,
+    );
+
+    expect(markup).toContain('Fläche (m²)');
+    expect(markup).not.toContain('flaecheInnen');
+  });
+
+});
+
 describe('AnpassungsSpalten — eine neue Spalte ist sofort speicherbar', () => {
   it('gibt einer neuen Spalte eine Bezeichnung, statt sie leer zu lassen', () => {
     erfasst.buttons.length = 0;

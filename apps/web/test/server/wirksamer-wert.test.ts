@@ -49,6 +49,27 @@ describe('ermittleWirksamenWert', () => {
     expect(ergebnis?.uebersteuert).toBe(true);
   });
 
+  it('wertet eine Regel auf einem Flaechenmerkmal mit dem Einheitsfeld aus', () => {
+    const mitFlaechenregel = {
+      id: 'S-3', bezeichnung: 'Zuschlag Flaeche', erfassungsform: 'relativ' as const,
+      regel: { merkmal: 'flaecheInnen', bereiche: [{ unter: 100, wert: 0 }, { wert: 0.03 }] },
+    };
+    expect(ermittleWirksamenWert(mitFlaechenregel, einheit({}, {})))
+      .toEqual({ wert: 0, regel: { merkmal: 'flaecheInnen', merkmalswert: 86, bereich: 0, regelwert: 0 } });
+  });
+
+  it('laesst die Uebersteuerung auch eine Flaechenregel schlagen', () => {
+    const mitFlaechenregel = {
+      id: 'S-4', bezeichnung: 'Zuschlag Aussenflaeche', erfassungsform: 'relativ' as const,
+      regel: { merkmal: 'flaecheAussen', bereiche: [{ unter: 10, wert: 0 }, { wert: 0.02 }] },
+    };
+    expect(ermittleWirksamenWert(mitFlaechenregel, einheit({ 'S-4': 0.01 }, {})))
+      .toEqual({
+        wert: 0.01, uebersteuert: true,
+        regel: { merkmal: 'flaecheAussen', merkmalswert: 19, bereich: 1, regelwert: 0.02 },
+      });
+  });
+
   it('liest bei einer Spalte ohne Regel weiterhin den Spaltenwert', () => {
     expect(ermittleWirksamenWert(OHNE_REGEL, einheit({ 'S-2': 0.05 }, {}))).toEqual({ wert: 0.05 });
     expect(ermittleWirksamenWert(OHNE_REGEL, einheit({}, {}))).toBeUndefined();

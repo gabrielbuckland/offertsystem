@@ -14,6 +14,7 @@ import {
   normalisiereBereiche, pruefeBereiche, QualitaetsbewertungenSchema, ZustandsbewertungenSchema,
 } from '@offert/core';
 import { offertDokumentSchema } from '@offert/offer';
+import { EINGEBAUTE_MERKMALE } from './eingebaute-merkmale.js';
 
 export const SCHEMA_VERSION = 1;
 
@@ -187,7 +188,10 @@ export const projektSchema = z.object({
     }
   }
 
-  const bekannteMerkmale = new Set(p.merkmale.map((m) => m.id));
+  const bekannteMerkmale = new Set([
+    ...p.merkmale.map((m) => m.id),
+    ...EINGEBAUTE_MERKMALE.map((m) => m.id),
+  ]);
   p.anpassungsSpalten.forEach((s, i) => {
     if (s.regel !== undefined && !bekannteMerkmale.has(s.regel.merkmal)) {
       ctx.addIssue({

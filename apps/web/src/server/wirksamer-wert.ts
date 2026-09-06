@@ -9,6 +9,7 @@
  * `projekt-schema.ts`.
  */
 import { normalisiereBereiche, werteBereichsregelAus } from '@offert/core';
+import { leseMerkmalswert } from './eingebaute-merkmale.js';
 import type { AnpassungsSpalte, ProjektEinheit } from './projekt-schema.js';
 
 export interface Regelspur {
@@ -34,7 +35,7 @@ export function ermittleWirksamenWert(
     return uebersteuerung === undefined ? undefined : { wert: uebersteuerung };
   }
 
-  const merkmalswert = einheit.merkmalswerte[spalte.regel.merkmal];
+  const merkmalswert = leseMerkmalswert(einheit, spalte.regel.merkmal);
   if (merkmalswert === undefined) {
     // Fehlender Merkmalswert heisst nur: die Regel ist nicht auswertbar — das darf eine
     // bereits erfasste Uebersteuerung nicht schlucken (I-24). Ohne `regel`/`uebersteuert`:

@@ -18,6 +18,7 @@ import { normalisiereBereiche, type Bereichsregel as KernBereichsregel } from '@
 import type { AnpassungsSpalte, Merkmal } from '../../server/projekt-schema.js';
 import type { Anpassungsvorlage } from '../../server/anpassungsvorlagen.js';
 import { spalteAusVorlage } from '../../server/spalten-vorbelegung.js';
+import { waehlbareMerkmale } from '../../server/eingebaute-merkmale.js';
 import { BereichsregelEditor } from '../einstellungen/BereichsregelEditor.js';
 import { Button } from '../ui/button.js';
 import { Input } from '../ui/input.js';
@@ -93,6 +94,7 @@ export function AnpassungsSpalten(
     spalten, merkmale, aendere, entferneSpalte, uebernehmeAufEinheiten, vorlagen,
   }: AnpassungsSpaltenProps,
 ) {
+  const alleMerkmale = waehlbareMerkmale(merkmale);
   const [offene, setzeOffene] = useState<readonly string[]>([]);
   function schalte(id: string): void {
     setzeOffene((o) => (o.includes(id) ? o.filter((x) => x !== id) : [...o, id]));
@@ -199,7 +201,7 @@ export function AnpassungsSpalten(
                     <span className="text-sm text-muted-foreground truncate">
                       {s.regel === undefined
                         ? `${s.erfassungsform === 'relativ' ? faktorZuProzent(s.vorgabewert ?? 0) : formatiereAggregat(rappenZuFranken(s.vorgabewert ?? 0))} ${s.erfassungsform === 'relativ' ? '%' : ''}`
-                        : beschreibeStaffel(s, merkmale)}
+                        : beschreibeStaffel(s, alleMerkmale)}
                     </span>
                   )}
                 </div>
@@ -294,11 +296,8 @@ export function AnpassungsSpalten(
                             type="button"
                             variant="outline"
                             size="sm"
-                            disabled={merkmale.length === 0}
-                            title={merkmale.length === 0
-                              ? 'Es ist kein Merkmal konfiguriert.' : undefined}
                             onClick={() => aendere(spalten.map((x) => (
-                              x.id === s.id ? spalteMitRegel(x, merkmale[0]!.id) : x)))}
+                              x.id === s.id ? spalteMitRegel(x, alleMerkmale[0]!.id) : x)))}
                           >
                             Staffel nach Merkmal einführen
                           </Button>
@@ -329,7 +328,7 @@ export function AnpassungsSpalten(
                               merkmal: s.regel.merkmal,
                               bereiche: normalisiereBereiche(s.regel.bereiche),
                             }}
-                            merkmale={merkmale}
+                            merkmale={alleMerkmale}
                             erfassungsform={s.erfassungsform}
                             aendere={(regel) => aendere(spalten.map((x) => (
                               x.id === s.id ? spalteMitGeaenderterRegel(x, regel) : x)))}
