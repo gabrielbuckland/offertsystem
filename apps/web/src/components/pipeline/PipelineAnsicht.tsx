@@ -127,12 +127,14 @@ function Stufe({ stufe, letzte }: { readonly stufe: PipelineStufe; readonly letz
       <div className={`min-w-0 flex-1 ${letzte ? '' : 'pb-8'}`}>
         <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <h3 className="text-base font-semibold">{stufe.titel}</h3>
-          <Link
-            href={stufe.editorPfad as Route}
-            className="text-xs text-muted-foreground underline-offset-2 hover:underline"
-          >
-            Parameter in Einstellungen
-          </Link>
+          {stufe.editorPfad !== undefined && (
+            <Link
+              href={stufe.editorPfad as Route}
+              className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+            >
+              Parameter in Einstellungen
+            </Link>
+          )}
         </div>
         <p className="mb-3 max-w-prose text-sm text-muted-foreground">{stufe.zweck}</p>
         <div className="space-y-4 rounded-lg border border-border bg-card py-2">

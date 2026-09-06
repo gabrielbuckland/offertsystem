@@ -3,7 +3,7 @@
 // Natives <dialog>/showModal(): Fokusfalle, Esc, Backdrop kommen vom Browser.
 // Zustand lebt beim Aufrufer, onClose haelt ihn bei Esc-Schliessen synchron.
 // Inhalt wird nur im offenen Zustand gerendert (kein Rechenweg-Rebuild bei jedem Update).
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Button } from '../ui/button.js';
 import { PipelineAnsicht } from './PipelineAnsicht.js';
 import type { PipelineStufe } from './pipeline-daten.js';
@@ -12,9 +12,18 @@ export interface RechenwegDialogProps {
   readonly offen: boolean;
   readonly schliesse: () => void;
   readonly stufen: readonly PipelineStufe[];
+  readonly untertitel?: string;
+  readonly zusatz?: ReactNode;
 }
 
-export function RechenwegDialog({ offen, schliesse, stufen }: RechenwegDialogProps) {
+export function RechenwegDialog({
+  offen,
+  schliesse,
+  stufen,
+  untertitel = 'Alle fünf Stufen vom Referenzwert bis zur Honorarrange, mit den eingesetzten '
+    + 'Werten in der Reihenfolge der Rechnung.',
+  zusatz,
+}: RechenwegDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -37,10 +46,7 @@ export function RechenwegDialog({ offen, schliesse, stufen }: RechenwegDialogPro
           <header className="flex items-start justify-between gap-4 border-b border-border px-6 py-4">
             <div>
               <h2 className="text-lg font-semibold">Rechenweg</h2>
-              <p className="text-sm text-muted-foreground">
-                Alle fünf Stufen vom Referenzwert bis zur Honorarrange, mit den eingesetzten
-                Werten in der Reihenfolge der Rechnung.
-              </p>
+              <p className="text-sm text-muted-foreground">{untertitel}</p>
             </div>
             <Button type="button" variant="outline" onClick={schliesse}>
               Schliessen
@@ -48,6 +54,7 @@ export function RechenwegDialog({ offen, schliesse, stufen }: RechenwegDialogPro
           </header>
           <div className="flex-1 overflow-y-auto px-6 py-6">
             <PipelineAnsicht stufen={stufen} />
+            {zusatz}
           </div>
         </div>
       )}

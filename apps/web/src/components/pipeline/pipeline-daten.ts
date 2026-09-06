@@ -3,7 +3,7 @@
 // (firmenweit/projekt, A-13) kommt ausschliesslich aus dem Ueberschreibungsprotokoll,
 // nie aus einer festen Annahme.
 import { GESPERRTE_PFADE } from '@offert/core';
-import type { OffertKonfiguration, UeberschreibungsProtokoll } from '@offert/core';
+import type { UeberschreibungsProtokoll } from '@offert/core';
 import {
   type AggregateValues,
   type PriceDerivation,
@@ -15,6 +15,25 @@ import {
   formatiereZimmerzahl,
 } from '@offert/offer';
 import { beschrifteFeld, beschrifteObjekt, beschrifteWert } from '../../lib/dossier-beschriftungen.js';
+
+// Strukturelle Teilmenge der OffertKonfiguration, die der Aufbau tatsaechlich liest.
+// So dient auch die deserialisierte Konfigurationskopie einer abgelegten Offerte als
+// Basis (eingefrorener Rechenweg), ohne eine vollstaendige Konfiguration zu erfinden.
+export interface PipelineBasis {
+  readonly dossierDefaults: Readonly<Record<string, unknown>>;
+  readonly flaeche: { readonly alpha: number };
+  readonly preisanpassung: { readonly zMin: number; readonly zMax: number };
+  readonly aufwandfaktoren: Readonly<Record<string, {
+    readonly bezeichnung: string;
+    readonly min: number;
+    readonly max: number;
+    readonly gewicht: number;
+  }>>;
+  readonly honorar: {
+    readonly stuetzstellen: readonly { readonly v: number }[];
+    readonly skalierung: { readonly gMin: number; readonly gMax: number };
+  };
+}
 
 export interface PipelineZeile {
   readonly beschriftung: string;
@@ -43,7 +62,8 @@ export interface PipelineStufe {
   readonly titel: string;
   readonly zweck: string;
   readonly abschnitte: readonly PipelineAbschnitt[];
-  readonly editorPfad: '/einstellungen/dossier' | '/einstellungen/preisanpassung'
+  // Fehlt beim eingefrorenen Rechenweg einer Offerte: dort gibt es nichts zu editieren.
+  readonly editorPfad?: '/einstellungen/dossier' | '/einstellungen/preisanpassung'
     | '/einstellungen/faktoren' | '/einstellungen/honorar';
 }
 
@@ -100,7 +120,7 @@ function herkunft(
 // Kein Fehlfall noetig: eine leere/skalare Form haelt schon die Konfigurationspruefung
 // auf (DossierDefaultsSchema, strikt), hier kaeme sie nie an.
 function baueStufeEingabe(
-  basis: OffertKonfiguration,
+  basis: PipelineBasis,
   ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
 ): PipelineStufe {
   const defaults = basis.dossierDefaults as unknown as Record<string, Record<string, unknown>>;
@@ -145,7 +165,7 @@ function beschreibeAnpassung(a: {
 }
 
 function baueStufeVerkaufssumme(
-  basis: OffertKonfiguration,
+  basis: PipelineBasis,
   herleitung: Herleitung | undefined,
   ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
 ): PipelineStufe {
@@ -252,7 +272,7 @@ function stufeVerkaufssumme(abschnitte: readonly PipelineAbschnitt[]): PipelineS
   };
 }
 
-function sortierteFaktoren(basis: OffertKonfiguration) {
+function sortierteFaktoren(basis: PipelineBasis) {
   return Object.entries(basis.aufwandfaktoren).sort(([a], [b]) => a.localeCompare(b));
 }
 
@@ -267,7 +287,7 @@ function skalenpfade(faktorSchluessel: string): readonly string[] {
 }
 
 function baueStufeNormalisierung(
-  basis: OffertKonfiguration,
+  basis: PipelineBasis,
   herleitung: Herleitung | undefined,
   ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
 ): PipelineStufe {
@@ -300,7 +320,7 @@ function baueStufeNormalisierung(
 }
 
 function baueStufeGewichtung(
-  basis: OffertKonfiguration,
+  basis: PipelineBasis,
   herleitung: Herleitung | undefined,
   uebersteuert: boolean,
   ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
@@ -373,7 +393,7 @@ function baueStufeGewichtung(
 }
 
 function baueStufeHonorar(
-  basis: OffertKonfiguration,
+  basis: PipelineBasis,
   herleitung: Herleitung | undefined,
   ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
 ): PipelineStufe {
@@ -470,7 +490,7 @@ function stufeHonorar(abschnitte: readonly PipelineAbschnitt[]): PipelineStufe {
 }
 
 export function bauePipelineDaten(
-  basis: OffertKonfiguration,
+  basis: PipelineBasis,
   extras?: PipelineExtras,
 ): readonly PipelineStufe[] {
   const herleitung = extras?.herleitung;

@@ -1,11 +1,15 @@
-// Keine separate "Detailansicht" mit eigener Datenzusammenstellung: zwei Aufbereitungen
-// koennten auseinanderlaufen, ohne dass ein Test es saehe.
+// Der interne Rechenweg nutzt dieselbe Stufenaufbereitung wie die Projektansicht
+// (keine zweite Datenzusammenstellung), gespiesen aus dem eingefrorenen Artefakt.
 import type { Offer } from '@offert/offer';
 import { OfferteDokument, VermarktungsOfferte } from '@offert/offer/template';
 import { buttonVariants } from './ui/button.js';
 import { cn } from '../lib/utils.js';
+import { OffertRechenweg } from './offerte/OffertRechenweg.js';
+import { baueOffertRechenweg } from './offerte/rechenweg-offerte-logik.js';
 
 export function ErgebnisDarstellung({ offerte }: { offerte: Offer }) {
+  // null nur bei unlesbarer Konfigurationskopie — dann ohne interne Ansicht statt halb.
+  const rechenweg = offerte.dokument === undefined ? null : baueOffertRechenweg(offerte);
   return (
     <div className="ergebnis">
       <nav className="bedienelement">
@@ -25,19 +29,16 @@ export function ErgebnisDarstellung({ offerte }: { offerte: Offer }) {
           <a href="/projekte" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}>
             Übersicht
           </a>
+          {rechenweg !== null && (
+            <OffertRechenweg stufen={rechenweg.stufen} grundlagen={rechenweg.grundlagen} />
+          )}
         </div>
       </nav>
       {offerte.dokument === undefined ? (
         // Fehlt `dokument` (aeltere Artefakte ohne Dokumentblock): unveraendert darstellen (I-24).
         <OfferteDokument offerte={offerte} />
       ) : (
-        <>
-          <VermarktungsOfferte offerte={offerte} />
-          <details className="bedienelement">
-            <summary>Rechenweg (intern)</summary>
-            <OfferteDokument offerte={offerte} />
-          </details>
-        </>
+        <VermarktungsOfferte offerte={offerte} />
       )}
     </div>
   );

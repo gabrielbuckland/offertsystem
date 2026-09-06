@@ -1,3 +1,6 @@
+// Tailwind nur fuer die Bildschirmansicht (Bedienleiste, Rechenweg-Dialog); die
+// Druckroute darunter bleibt bewusst ohne Preflight, damit das PDF unberuehrt ist.
+import '../../globals.css';
 import { notFound } from 'next/navigation';
 import { ErgebnisDarstellung } from '../../../components/ErgebnisDarstellung.js';
 import { verzeichnisAusLaufzeit } from '../../../server/laufzeit.js';
