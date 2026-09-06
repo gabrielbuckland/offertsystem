@@ -219,7 +219,11 @@ export function ProjektAnsicht(
           {projekt.adresse.strasse} {projekt.adresse.hausnummer}, {projekt.adresse.plz}{' '}
           {projekt.adresse.ort}
         </h1>
-        {speichernLaeuft && <StatusZeile text="Speichert…" />}
+        {/* Fester Platzhalter: der Indikator darf beim Ein-/Ausblenden keinen
+            Layout-Shift ausloesen (die Seite spraenge sonst bei jedem Autosave). */}
+        <div className="h-5">
+          {speichernLaeuft && <StatusZeile text="Speichert…" />}
+        </div>
         {speichernFehler !== undefined && (
           <Hinweis art="fehler" className="mt-1">{speichernFehler}</Hinweis>
         )}
