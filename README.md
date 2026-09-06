@@ -4,7 +4,7 @@ Interaktives Offertsystem mit dynamischer Immobilienbewertung über die
 PriceHubble-API. Der Prototyp gehört zur Bachelorarbeit «Konzeption und
 Implementierung eines interaktiven Offertsystems mit dynamischer
 Immobilienbewertung mittels PriceHubble-API» (HSLU). Herleitung, Modell und
-Nachweise stehen im Bericht; dieses Repository enthält die Implementierung
+Nachweise stehen im Bericht. Dieses Repository enthält die Implementierung
 samt Prüf- und Auswertungswerkzeugen.
 
 ## Voraussetzungen
@@ -21,9 +21,9 @@ samt Prüf- und Auswertungswerkzeugen.
 | `packages/offer` | Offert-Datenobjekt (Zod-Schema), Herkunftsträger `Provenanced<T,P>`, Schweizer Zahlenformatierung, HTML-Vorlagen (Kundendokument `VermarktungsOfferte`, interne Rechenweg-Ansicht), Druck-Stylesheet für den PDF-Export |
 | `apps/web` | Next.js-Anwendung (App Router unter `src/app/`): Projektübersicht und -detailseite (`/projekte`), Einstellungen mit Firmen- und Projektebene (`/einstellungen`), Offert-Ansicht und Druckseite (`/offerte/[id]`), API-Routen unter `src/app/api/` (u. a. `projekt`, `offerte`, `einstellungen`, `vorlage`) |
 | `tools/` | Werkzeuge ausserhalb der Anwendung: `check-deps.ts` (Deklarationsdisziplin), `record-fixtures.ts` (API-Aufzeichnung), `beispiel-offerte.ts`, `eval/` (Auswertungen, siehe unten) |
-| `config/` | Fachliche Laufzeitkonfiguration `company-defaults.json` plus Varianten (`*.erweitert.json`, `*.strategie.json`). Beträge durchgängig in Rappen; Herleitung aller Zahlenwerte in `config/README.md` |
+| `config/` | Fachliche Laufzeitkonfiguration `company-defaults.json` plus Varianten (`*.erweitert.json`, `*.strategie.json`). Beträge durchgängig in Rappen, Herleitung aller Zahlenwerte in `config/README.md` |
 | `fixtures/pricehubble` | API-Antworten für MSW- und Contract-Tests: `synthetic/` von Hand gebaut, `recorded/` per `test:record` gegen die echte API aufgezeichnet und anonymisiert (samt Aufzeichnungsprotokoll) |
-| `data/` | Lokale Ablagen (gitignored): `offerten/` append-only, `projekte/` veränderliche Arbeitsstände |
+| `data/` | Lokale Ablagen (gitignored): `offerten/` append-only, `projekte/` veränderliche Arbeitsstände. `seed/` (getrackt) enthält das Playground-Projekt für den ersten Start |
 | `artifacts/` | Nachweisartefakte der Test- und Auswertungsläufe (gitignored, siehe «Artefakte lesen») |
 
 ## Anwendung starten
@@ -35,17 +35,21 @@ npm run dev      # http://localhost:3000
 Ohne weitere Konfiguration läuft die Anwendung im **Mock-Betrieb**
 (`VALUATION_PROVIDER=mock`): Bewertungen kommen aus einem Interface-Mock,
 es ist kein API-Zugang nötig. Einstieg ist die Projektübersicht unter
-`/projekte`; die Startseite leitet dorthin weiter.
+`/projekte`. Die Startseite leitet dorthin weiter. Ist die Projektablage noch
+leer, legt der erste `npm run dev` ein Playground-Projekt an («Muster
+Immobilien AG», sechs Einheiten). Es ist zum Ausprobieren gedacht, kann
+gefahrlos verändert oder gelöscht werden und kommt nicht von selbst zurück.
 
 Für andere Betriebsarten `.env.example` (Repo-Wurzel) als Vorlage nehmen und
 die Werte in `apps/web/.env.local` eintragen:
 
-- `VALUATION_PROVIDER=fixture` — reserviert für den Betrieb gegen
+- `VALUATION_PROVIDER=fixture` ist reserviert für den Betrieb gegen
   aufgezeichnete Antworten. **Bekannte Einschränkung:** Im Dev-Betrieb derzeit
   baugleich mit `pricehubble` (echter Adapter, echtes `fetch`), weil der
-  MSW-Ersatz nur in der Testumgebung greift — braucht also ebenfalls
-  PH-Zugang. Die Contract-Tests nutzen die Fixtures dagegen ohne Zugang.
-- `VALUATION_PROVIDER=pricehubble` — echte API. Braucht `PH_BASE_URL`,
+  MSW-Ersatz nur in der Testumgebung greift. Diese Betriebsart braucht also
+  ebenfalls PH-Zugang. Die Contract-Tests nutzen die Fixtures dagegen ohne
+  Zugang.
+- `VALUATION_PROVIDER=pricehubble` nutzt die echte API. Braucht `PH_BASE_URL`,
   `PH_DOSSIER_ID` und entweder `PH_USERNAME`/`PH_PASSWORD` oder einen von Hand
   besorgten `PH_ACCESS_TOKEN`.
 
@@ -59,34 +63,36 @@ npm run verify   # lint + check:deps + typecheck + test:unit + test:contract
 
 `verify` ist das Merge-Gate und muss grün sein. Die Teile einzeln:
 
-- `npm run lint` — ESLint inkl. Architektur-Grenzregeln (R1–R4: u. a. kein
-  Adapter-Import im Kern, keine Deep Imports in Workspace-Pakete).
-- `npm run check:deps` — jede Abhängigkeit ist im nutzenden Paket deklariert.
-- `npm run typecheck` — TypeScript-Projektreferenzen; läuft ohne vorherigen
-  Next-Build.
-- `npm run test:unit` — Vitest-Projekte `core`, `pricehubble`, `offer`, `web`,
-  `tools`.
-- `npm run test:contract` — Contract-Tests der Zod-Schemata gegen den
-  Fixture-Bestand, synthetisch wie aufgezeichnet.
-- `npm run test:coverage` — Abdeckung nach `artifacts/coverage/`.
+- `npm run lint` führt ESLint inkl. Architektur-Grenzregeln aus (R1–R4, u. a.
+  kein Adapter-Import im Kern, keine Deep Imports in Workspace-Pakete).
+- `npm run check:deps` prüft, dass jede Abhängigkeit im nutzenden Paket
+  deklariert ist.
+- `npm run typecheck` prüft die TypeScript-Projektreferenzen und läuft ohne
+  vorherigen Next-Build.
+- `npm run test:unit` führt die Vitest-Projekte `core`, `pricehubble`, `offer`,
+  `web` und `tools` aus.
+- `npm run test:contract` prüft die Zod-Schemata gegen den Fixture-Bestand,
+  synthetisch wie aufgezeichnet.
+- `npm run test:coverage` schreibt die Abdeckung nach `artifacts/coverage/`.
 
 Hinweise:
 
 - Jeder Vitest-Lauf schreibt über den Reporter ein Testartefakt nach
   `artifacts/tests/`. Parallel laufende Vollläufe überschreiben sich
-  gegenseitig; für Teilläufe darum `npx vitest run <pfad> --reporter=default`.
+  gegenseitig. Für Teilläufe darum `npx vitest run <pfad> --reporter=default`
+  verwenden.
 - `packages/core/test/arch/formelverweise.test.ts` prüft die Formelverweise
   der Kern-Quelldateien gegen die `eq:`-Labels des Berichts. Er findet das
-  Berichtsrepo über `BA_MAIN` oder als Nachbarverzeichnis `../bachelorarbeit`;
-  fehlt beides, schlägt er absichtlich fehl statt leer grün zu laufen.
+  Berichtsrepo über `BA_MAIN` oder als Nachbarverzeichnis `../bachelorarbeit`.
+  Fehlt beides, schlägt er absichtlich fehl, statt leer grün zu laufen.
 - Kennungen in Testnamen (`I-*`, `E-*`, `PE-*`, `AK-*`, `NFA-*`, `US-*`,
   `A-*`, `CFG_*`, `F-*`) sind die Traceability zu den Anforderungen der
-  Arbeit; Anhang A5 des Berichts wird aus ihnen generiert.
+  Arbeit. Anhang A5 des Berichts wird aus ihnen generiert.
 
 ## Auswertungswerkzeuge
 
 Die Läufe für Kapitel 6 und die Anhänge des Berichts. `eval:report` sammelt
-die jeweils jüngsten Artefakte und bricht ab, wenn eines fehlt — darum die
+die jeweils jüngsten Artefakte und bricht ab, wenn eines fehlt. Darum die
 Reihenfolge einhalten (oder `npm run eval:all` verwenden):
 
 | Befehl | Zweck | Artefakt |
@@ -96,7 +102,7 @@ Reihenfolge einhalten (oder `npm run eval:all` verwenden):
 | `npm run eval:degression-margin` | Netto-Degression der Honorarstaffel, analytisch ohne Pipeline-Lauf | `artifacts/eval/degression/` |
 | `npm run eval:tornado` | Tornado-Diagramme (Vektor-PDF) aus der OAT-Ausgabe | `artifacts/eval/tornado/` |
 | `npm run eval:report` | Erzeugt die LaTeX-Fragmente des Berichts (Anhang A5, Kapitel-6-Tabellen) aus den gesammelten Artefakten | `$BA_MAIN/appendix/generated/`, `$BA_MAIN/chapters/generated/` |
-| `npm run beispiel:offerte` | Beispiel-Offerte im Mock-Betrieb; wird von `eval:report` gegengeprüft | `data/offerten/` |
+| `npm run beispiel:offerte` | Beispiel-Offerte im Mock-Betrieb, wird von `eval:report` gegengeprüft | `data/offerten/` |
 | `npm run test:record` | Zeichnet echte API-Antworten als anonymisierte Fixtures auf (braucht PH-Zugang) | `fixtures/pricehubble/` |
 
 `eval:report` verlangt die Umgebungsvariable `BA_MAIN` (Pfad zum
@@ -112,21 +118,21 @@ BA_MAIN="../bachelorarbeit" npm run eval:report
   Zeiger `latest.json` auf den jüngsten Lauf. Der Sammler von `eval:report`
   liest ausschliesslich über diese Zeiger.
 - Die Test- und Eval-Läufe tragen einen Laufkopf (`run-meta.json` bzw.
-  Kopfteil der Artefaktdatei) mit Commit, Seed und Node-Version — das ist der
+  Kopfteil der Artefaktdatei) mit Commit, Seed und Node-Version. Das ist der
   Reproduzierbarkeitsnachweis: gleicher Stand + gleicher Seed = gleiche
   Zahlen. Ausnahme: `artifacts/config/` (`eval:config`) führt keinen Laufkopf.
-- Property-Tests laufen mit fixiertem Seed (`20260816`); Abweichungen zwischen
+- Property-Tests laufen mit fixiertem Seed (`20260816`). Abweichungen zwischen
   zwei Läufen auf demselben Stand sind darum ein Befund, kein Rauschen.
 
 ## Konventionen
 
 - Fachbegriffe (Typen, Funktionen, Felder) deutsch, technische Struktur
-  (Verzeichnisse, Schichtbegriffe) englisch; Dateinamen `kebab-case`,
-  React-Komponenten `PascalCase.tsx`, reine Logik neben einer Komponente als
-  `<name>-logik.ts`.
+  (Verzeichnisse, Schichtbegriffe) englisch. Dateinamen sind `kebab-case`,
+  React-Komponenten `PascalCase.tsx`, reine Logik neben einer Komponente liegt
+  als `<name>-logik.ts`.
 - Jede Nicht-Index-Quelldatei in `packages/core/src` trägt in den ersten
   20 Zeilen einen `eq:`-Formelverweis auf den Bericht oder den Vermerk
   «Keine Formel» (per Architekturtest erzwungen).
-- Beträge sind ganzzahlige Rappen, gerechnet wird ohne Gleitkomma-Franken;
-  der Rundungsmodus steht in `packages/core/src/domain/geld.ts`, die
+- Beträge sind ganzzahlige Rappen, gerechnet wird ohne Gleitkomma-Franken.
+  Der Rundungsmodus steht in `packages/core/src/domain/geld.ts`, die
   Skalierungslogik in `packages/core/src/modell/skalierung.ts`.
