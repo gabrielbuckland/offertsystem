@@ -22,6 +22,7 @@
     "verify": "npm run lint && npm run check:deps && npm run typecheck && npm run test:unit && npm run test:contract",
     "test:record": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/record-fixtures.ts",
     "build": "npm run build --workspace @offert/web",
+    "predev": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/seed-playground.ts",
     "dev": "npm run dev --workspace @offert/web",
     "pdf:smoke": "node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/pdf-smoke.ts",
     "eval:config": "npm run typecheck && node --experimental-strip-types --import ./tools/ts-aufloeser.mjs tools/eval/config-validation.ts",
