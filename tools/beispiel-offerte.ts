@@ -5,7 +5,8 @@
  * ueber einen eigenen Zusammenbau. Eine zweite Erzeugungsstrecke koennte abweichen, und
  * die Beispiel-Offerte belegte dann nicht mehr, was das System tut.
  *
- * Der Provider ist der Mock; ein realer Abruf ist an M-FIX gebunden (E-31).
+ * Der Provider ist der Mock; ein realer Abruf ist an einen spaeteren Ausbauschritt
+ * gebunden (E-31).
  *
  * Laufzeit: node --experimental-strip-types --import ./tools/ts-aufloeser.mjs (PE-09).
  */
@@ -34,15 +35,14 @@ const BEWERTUNGEN_STANDARD = {
 } as const;
 
 const parametrisierung = {
-  flaecheInnen: 92.5, flaecheAussen: 0, stockwerk: 2, energielabel: 'C',
+  flaecheInnen: 92.5, flaecheAussen: 0, stockwerk: 2, energielabel: 'minergie_eco',
   ...BEWERTUNGEN_STANDARD,
-  anzahlBadezimmer: 1, lift: false, baujahr: 2025, heizungsart: 'Waermepumpe',
+  anzahlBadezimmer: 1, lift: false, baujahr: 2025, heizungsart: 'heat_pump_air',
 };
 
 const erfassung = {
-  // Feste UUID statt einer erfundenen Referenznummer (Spec 05 §8): `erfassungsSchema`
-  // verlangt eine echte UUID; fest statt erzeugt, damit das Beispiel reproduzierbar
-  // bleibt (US-13).
+  // Feste UUID statt einer erfundenen Referenznummer: `erfassungsSchema` verlangt eine
+  // echte UUID; fest statt erzeugt, damit das Beispiel reproduzierbar bleibt (US-13).
   projekt: { projektId: '00000000-0000-4000-8000-00000000a5a5' },
   liegenschaft: {
     adresse: { strasse: 'Dorfstrasse', hausnummer: '4', plz: '6015', ort: 'Reussbuehl' },

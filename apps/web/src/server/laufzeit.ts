@@ -2,7 +2,7 @@
  * Die einzige Stelle, an der Umgebung, Konfigurationslader, Adapter und Ablageort
  * zusammenkommen (PE-24) — zwei Aufrufstellen bedeuteten zwei Konfigurationsstaende
  * innerhalb eines Laufs, die Pruefsumme belegte dann nicht mehr, womit gerechnet wurde
- * (E-26). Route Handler und Seiten rufen ausschliesslich diese Funktion auf.
+ * (E-26).
  */
 import { resolve } from 'node:path';
 import type { Konfiguration, KonfigurationsFehler } from '@offert/core';
@@ -36,9 +36,7 @@ export type LaufzeitFehler = {
    * Die UNUEBERSETZTEN Konfigurationsbefunde, sofern der Fehlschlag aus dem Ladepfad
    * stammt. `meldungen` bleibt die Maschinenform fuer Protokoll und Seitenkopf; wer dem
    * Benutzer eine am Feld verankerte Meldung zeigen will, braucht dagegen Code, Pfad und
-   * Parameter im Original — sonst muesste er sie aus dem Meldungstext zurueckparsen, und
-   * genau das waere die zweite Uebersetzungsquelle, die `zuBefunden`/`textFuer`
-   * (`einstellungen-ablage.ts`) vermeiden sollen.
+   * Parameter im Original — sonst muesste er sie aus dem Meldungstext zurueckparsen.
    *
    * Fehlt bei einem Umgebungsfehler (`leseUmgebung`): Dort gibt es keinen
    * Konfigurationspfad, an dem sich etwas verankern liesse.
@@ -78,10 +76,12 @@ export function holeLaufzeit(
       ...(umgebung.wert.phBaseUrl === undefined ? {} : { PH_BASE_URL: umgebung.wert.phBaseUrl }),
       ...(umgebung.wert.phUsername === undefined ? {} : { PH_USERNAME: umgebung.wert.phUsername }),
       ...(umgebung.wert.phPassword === undefined ? {} : { PH_PASSWORD: umgebung.wert.phPassword }),
+      ...(umgebung.wert.phAccessToken === undefined
+        ? {}
+        : { PH_ACCESS_TOKEN: umgebung.wert.phAccessToken }),
       ...(umgebung.wert.phDossierId === undefined ? {} : { PH_DOSSIER_ID: umgebung.wert.phDossierId }),
     },
-    // PE-17: Strukturgleichheit mit `ApiKonfiguration` prueft `pruefeApiKonfiguration`
-    // innerhalb der Fabrik.
+    // PE-17: Strukturgleichheit mit `ApiKonfiguration`.
     geladen.api as ApiKonfiguration,
   );
 

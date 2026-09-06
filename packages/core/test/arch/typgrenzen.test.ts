@@ -1,11 +1,10 @@
 /**
- * Typgrenzen (I-28, E-21, Brief §8).
+ * Typgrenzen (I-28, E-21).
  *
- * ABWEICHUNG VOM PLAN, bewusst: Der Plan sieht `typgrenzen.test-d.ts` mit
- * `expectTypeOf` und `vitest --typecheck` vor. Das brauchte einen ZWEITEN
- * Typpruefer neben `tsc --build` — mit eigener Konfiguration, eigenem Lauf und der
- * Moeglichkeit, dass beide auseinanderlaufen. Hier stehen dieselben Zusagen als
- * `@ts-expect-error`-Behauptungen in einer gewoehnlichen Datei: Sie liegen unter
+ * Bewusst kein zweiter Typpruefer (etwa `expectTypeOf` mit `vitest --typecheck`)
+ * neben `tsc --build` — das brachte die Moeglichkeit, dass beide auseinanderlaufen.
+ * Hier stehen dieselben Zusagen als `@ts-expect-error`-Behauptungen in einer
+ * gewoehnlichen Datei: Sie liegen unter
  * `test/**` und damit im `include` der Paketkonfiguration, laufen also in
  * `npm run typecheck` mit. Faellt eine Grenze, bricht die Uebersetzung — und zwar
  * in derselben Kette, die auch den Produktivcode prueft.
@@ -28,7 +27,7 @@ const scoreAusBetrag: Score = einBetrag;
 // @ts-expect-error I-28: Ein Score darf nicht als Rappenbetrag durchgehen.
 const betragAusScore: Rappen = einScore;
 
-// --- E-21 / Brief §8: die Anzeigeinformation erreicht den Pipeline-Eingang nicht --
+// --- E-21: die Anzeigeinformation erreicht den Pipeline-Eingang nicht -----------
 type EingangSchluessel = keyof PipelineEingang;
 type AnzeigeSchluessel = keyof BewertungsAnzeige;
 

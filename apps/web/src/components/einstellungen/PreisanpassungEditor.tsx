@@ -1,10 +1,5 @@
 'use client';
 
-// Editor fuer «Preisanpassung & Vorlagen» — deckt drei unabhaengige Konfigurationswurzeln
-// ab (`flaeche`, `preisanpassung`, `anpassungsVorlagen`). Kennt nur die Form dieser
-// Teilbaeume, keine Konfigurationsbezeichner — der Server prueft beim Speichern die
-// eigentliche Wahrheit. `begruendungPflicht` erscheint als gesperrte Zeile ohne
-// Eingabeelement: fachliche Vorgabe (Spec §6), kein einstellbarer Wert.
 import { Trash2 } from 'lucide-react';
 import { Fragment, type ReactElement } from 'react';
 import type { Bereichsregel, Merkmal } from '@offert/core';
@@ -45,7 +40,6 @@ interface VorlageRoh {
 
 const SPALTENANZAHL = 6;
 
-// Kleinbuchstaben, Nicht-Alphanumerisches zu `_` — wie bestehende Vorlagen-IDs.
 function ableiteVorlagenId(bezeichnung: string): string {
   return bezeichnung.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 }

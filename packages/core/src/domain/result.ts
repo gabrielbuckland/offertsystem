@@ -1,4 +1,4 @@
-// Keine Formel. Erwartbarer fachlicher Ausgang -> Result; Defekt -> Ausnahme (Spec 03 §3.5).
+// Keine Formel. Erwartbarer fachlicher Ausgang -> Result; Defekt -> Ausnahme.
 export type Result<T, E> =
   | { readonly ok: true; readonly wert: T }
   | { readonly ok: false; readonly fehler: E };

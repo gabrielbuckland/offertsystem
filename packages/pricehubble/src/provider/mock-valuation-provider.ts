@@ -1,11 +1,10 @@
 /**
- * Keine Formel. Mock-Ebene A (Brief §5.6): Der Port wird ersetzt.
+ * Keine Formel. Mock-Ebene: Der Port wird ersetzt.
  *
- * Damit laeuft die Pipeline OHNE Netzwerk und OHNE Zugangsdaten vollstaendig durch —
- * Entkopplungskriterium (a) aus 6.4.
+ * Damit laeuft die Pipeline OHNE Netzwerk und OHNE Zugangsdaten vollstaendig durch.
  *
  * Der Mock liegt oberhalb der Schemavalidierung und kann sie konstruktionsbedingt nicht
- * pruefen; Szenario 2 und 3 sind auf dieser Ebene NICHT nachweisbar (Spec 04 §7.3).
+ * pruefen; Vertragsverletzungen der echten API sind auf dieser Ebene NICHT nachweisbar.
  */
 import type {
   Adresse,

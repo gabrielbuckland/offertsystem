@@ -1,7 +1,7 @@
 /**
- * Keine Formel. HTTP-Client mit Zeitlimit je Versuch, Wiederholung und Gesamtbudget
- * (Spec 04 §6.3, §6.4). Saemtliche Parameter stammen aus `config.api.*`; im Code steht
- * keine Zahlenkonstante fuer Zeitlimit, Backoff oder Versuchszahl (E-13, G-4).
+ * Keine Formel. HTTP-Client mit Zeitlimit je Versuch, Wiederholung und Gesamtbudget.
+ * Saemtliche Parameter stammen aus `config.api.*`; im Code steht
+ * keine Zahlenkonstante fuer Zeitlimit, Backoff oder Versuchszahl (E-13).
  */
 import type { ApiKonfiguration } from '../config/api-konfiguration.js';
 import { backoffWartezeitMs } from './backoff.js';
@@ -39,7 +39,7 @@ export interface HttpClientAbhaengigkeiten {
   readonly fetchImpl: typeof fetch;
 }
 
-/** HTTP-Statuscodes mit eigener Behandlung; keine Zeit- oder Backoff-Groessen (G-4). */
+/** HTTP-Statuscodes mit eigener Behandlung; keine Zeit- oder Backoff-Groessen. */
 const STATUS = {
   erfolgVon: 200,
   erfolgBis: 300,
@@ -187,7 +187,7 @@ export class HttpClient {
         continue;
       }
 
-      // uebrige 4xx: deterministisch, kein Retry (Spec 04 §6.1)
+      // uebrige 4xx: deterministisch, kein Retry
       const feld = await this.beanstandetesFeld(antwort!);
       return {
         ok: false,

@@ -1,9 +1,9 @@
 /**
- * Keine Formel. Zwei-Ebenen-Merge (Spec 02 §2.2, §2.3).
+ * Keine Formel. Zwei-Ebenen-Merge.
  * Ebene 1 ist die firmenweite Berechnungsbasis, Ebene 2 ein Teilbaum des
- * Projektdatensatzes — keine zweite Konfigurationsdatei. Gesperrt sind seit
- * 2026-08-29 nur noch `meta` und `api` (siehe `GESPERRTE_PFADE`); alles
- * Uebrige ist projektbezogen ueberschreibbar.
+ * Projektdatensatzes — keine zweite Konfigurationsdatei. Gesperrt sind nur noch
+ * `meta` und `api` (siehe `GESPERRTE_PFADE`); alles Uebrige ist projektbezogen
+ * ueberschreibbar.
  *
  * Der Merge kann Ebene 3 dadurch nicht mehr konstruktionsbedingt ausschliessen.
  * Die Garantie traegt stattdessen die erneute Validierung im Ladepfad
@@ -48,19 +48,15 @@ export type MergeErgebnis =
   | { readonly ok: false; readonly fehler: readonly KonfigurationsFehler[] };
 
 /**
- * Nicht projektbezogen ueberschreibbar. Seit dem Entwurfsentscheid des Autors vom
- * 2026-08-29 (vom Auftraggeber zu bestaetigen) sind das nur noch zwei Pfade: `meta`
- * traegt Schema- und Konfigversion
- * (ein Projekt darf nicht behaupten, einer anderen Schemaversion zu folgen), `api`
- * traegt Betriebsparameter der Zugriffsschicht und gehoert der IT, nicht dem
- * Auftraggeber (Rollentrennung US-08).
+ * Nicht projektbezogen ueberschreibbar: nur zwei Pfade. `meta` traegt Schema- und
+ * Konfigversion (ein Projekt darf nicht behaupten, einer anderen Schemaversion zu
+ * folgen), `api` traegt Betriebsparameter der Zugriffsschicht und gehoert der IT,
+ * nicht dem Auftraggeber (Rollentrennung US-08).
  *
- * ALLES UEBRIGE IST UEBERSTEUERBAR. Damit faellt das fruehere Argument weg, eine
- * projektbezogene Anpassung koenne konstruktionsbedingt keine Invariante verletzen.
- * Die Garantie liegt jetzt bei der Nachvalidierung im Ladepfad
- * (`konfigurations-lader.ts`), die die zusammengefuehrte Basis erneut durch alle drei
- * Pruefebenen schickt und eine verletzende Projektkonfiguration ZURUECKWEIST. Diese
- * Nachvalidierung ist damit tragend und darf nicht uebersprungen werden.
+ * ALLES UEBRIGE IST UEBERSTEUERBAR. Die Garantie liegt bei der Nachvalidierung im
+ * Ladepfad (`konfigurations-lader.ts`), die die zusammengefuehrte Basis erneut durch
+ * alle drei Pruefebenen schickt und eine verletzende Projektkonfiguration ZURUECKWEIST.
+ * Diese Nachvalidierung ist damit tragend und darf nicht uebersprungen werden.
  */
 export const GESPERRTE_PFADE: readonly string[] = ['meta', 'api'];
 

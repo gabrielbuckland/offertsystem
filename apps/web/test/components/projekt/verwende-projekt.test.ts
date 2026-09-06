@@ -93,11 +93,10 @@ describe('baueSpeicherwarteschlange', () => {
 });
 
 /**
- * Der Fehler, den diese Suite festnagelt: Die Neuberechnung lief auf einem EIGENEN
- * Zeitgeber, der aus derselben Zustandsaenderung startete wie das Speichern.
- * `POST /berechnung` liest das Projekt von der Platte — die Berechnung rechnete also
- * gegen den Stand, den das gleichzeitige PUT gerade erst schrieb oder noch gar nicht
- * geschrieben hatte.
+ * `POST /berechnung` liest das Projekt von der Platte — eine Neuberechnung auf einem
+ * EIGENEN, parallel zum Speichern gestarteten Zeitgeber rechnete deshalb gegen einen
+ * Stand, den das gleichzeitige PUT gerade erst schrieb oder noch gar nicht geschrieben
+ * hatte. Die Berechnung muss daher an das Speichern gekettet sein.
  *
  * Nachgestellt wird die Verkettung so, wie `ProjektAnsicht` sie verdrahtet: Der Rueckruf
  * `aufErfolg` der Speicher-Warteschlange stellt in die Berechnungs-Warteschlange ein.
@@ -124,7 +123,6 @@ describe('Berechnung ist an das Speichern gekettet, nicht daneben gestartet', ()
     const { put, gesendet, berechnet, speichern } = verdrahtet();
 
     speichern.stelleEin({ id: 'p1', markierung: 'alt' } as never);
-    // Das Fenster, in dem der frueher parallel laufende Zeitgeber gefeuert haette.
     await leeren();
     expect(gesendet).toHaveLength(1);
     expect(berechnet).toEqual([]);

@@ -11,26 +11,22 @@ import { leseLatest, repoWurzel } from '../shared/artefakt.ts';
 
 export const PFLICHTARTEFAKTE = [
   'tests', 'scenarios', 'property', 'config', 'integration', 'contract',
-  'eval/oat', 'eval/degression', 'eval/tornado', 'eval/extension',
+  'eval/oat', 'eval/degression', 'eval/tornado',
 ] as const;
 
-/** Nicht abbruchrelevant: Die manuelle Erhebung entsteht ausserhalb der Werkzeugkette. */
-export const KUERARTEFAKTE = ['manual'] as const;
+export const KUERARTEFAKTE = [] as const;
 
 export const ERZEUGER: Readonly<Record<string, string>> = {
   tests: 'P5 Aufgabe 16', scenarios: 'P2', property: 'P2', config: 'P2',
   contract: 'P3', integration: 'P3', 'eval/oat': 'P5 Aufgabe 7',
   'eval/degression': 'P5 Aufgabe 10', 'eval/tornado': 'P5 Aufgabe 12',
-  'eval/extension': 'P5 Aufgabe 14', 'eval/extension-scenario': 'P5 Aufgabe 15',
-  manual: 'manuelle Erhebung nach docs/testdoku/manual/ui-testfaelle.md',
 };
 
 export const DATEINAME: Readonly<Record<string, string>> = {
   tests: 'tests.json', scenarios: 'szenarien.json', property: 'properties.json',
   config: 'config-validation.json', integration: 'integration.json',
   contract: 'contract.json', 'eval/oat': 'oat.json', 'eval/degression': 'margin.json',
-  'eval/tornado': 'tornado.json', 'eval/extension': 'extension.json',
-  'eval/extension-scenario': 'szenario.json', manual: 'ui.json',
+  'eval/tornado': 'tornado.json',
 };
 
 export interface Artefaktsatz {
@@ -44,7 +40,7 @@ export function sammle(wurzel: string = repoWurzel()): Artefaktsatz {
   const inhalte: Record<string, unknown> = {};
   const pfade: Record<string, string> = {};
   const fehlend: string[] = [];
-  for (const instrument of [...PFLICHTARTEFAKTE, ...KUERARTEFAKTE, 'eval/extension-scenario']) {
+  for (const instrument of [...PFLICHTARTEFAKTE, ...KUERARTEFAKTE]) {
     try {
       const verzeichnis = leseLatest(wurzel, instrument);
       const pfad = join(verzeichnis, DATEINAME[instrument] ?? '');

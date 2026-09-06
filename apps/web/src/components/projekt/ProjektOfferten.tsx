@@ -45,10 +45,10 @@ export function ProjektOfferten({ eintraege }: ProjektOffertenProps) {
             </TableCell>
             <TableCell>{formatiereDatum(e.erstelltAm)}</TableCell>
             <TableCell>
-              {/* Prozentsatz der Verkaufssumme statt Frankenbetrag (Spec 2026-08-29):
-                  der Offerte zugrundeliegender Betrag statt der internen Range, wenn
-                  vorhanden. Ein Altartefakt ohne gewaehlten Betrag zeigt ersatzweise die
-                  Range der Herleitung (`honorarProzentZelle`). */}
+              {/* Prozentsatz der Verkaufssumme statt Frankenbetrag: der Offerte
+                  zugrundeliegender Betrag statt der internen Range, wenn vorhanden. Ein
+                  Altartefakt ohne gewaehlten Betrag zeigt ersatzweise die Range der
+                  Herleitung (`honorarProzentZelle`). */}
               {honorarProzentZelle(e)}
             </TableCell>
             <TableCell className="font-mono text-xs text-muted-foreground">

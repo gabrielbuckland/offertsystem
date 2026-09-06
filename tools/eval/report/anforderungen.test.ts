@@ -27,11 +27,10 @@ describe('anforderungen.json', () => {
     expect(wortlaut('A-11')).toContain('PDF');
   });
 
-  it('fuehrt die drei Should und das eine Could korrekt', () => {
+  it('fuehrt die vier Should korrekt (A-12 vor der Umsetzung von Could angehoben)', () => {
     const prio = (id: string): string => liste.find((a) => a.id === id)!.prioritaet;
-    expect([prio('A-08'), prio('A-09'), prio('A-10')])
-      .toEqual(['Should', 'Should', 'Should']);
-    expect(prio('A-12')).toBe('Could');
+    expect([prio('A-08'), prio('A-09'), prio('A-10'), prio('A-12')])
+      .toEqual(['Should', 'Should', 'Should', 'Should']);
   });
 });
 

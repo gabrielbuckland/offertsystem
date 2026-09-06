@@ -1,8 +1,8 @@
 /**
  * Keine Modellformel. Erzeugt die drei Tornado-Diagramme aus dem OAT-Artefakt.
  *
- * ABWEICHUNG VOM PLAN: Instrument ist `tornado`, nicht `eval/tornado` — der
- * Artefaktschreiber setzt `artifacts/eval/` bereits selbst davor.
+ * Instrument ist `tornado`, nicht `eval/tornado` — der Artefaktschreiber setzt
+ * `artifacts/eval/` bereits selbst davor.
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';

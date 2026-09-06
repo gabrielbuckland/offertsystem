@@ -1,18 +1,17 @@
 /**
  * Keine Formel. Totale Abbildung der neun Abruf-Fehlertypen auf `ProviderFehler`
- * (Spec 04 §6.5.2, E-02).
+ * (E-02).
  */
 import type { FehlerDiagnose, ProviderFehler } from '@offert/core';
 import type { AdapterFehler, AdapterFehlerArt } from '../client/fehler.js';
 import { MELDUNGEN } from './meldungen.js';
 
 /**
- * Verbindliche und VOLLSTAENDIGE Abbildung. Sie ist die Bedingung dafuer, dass die
- * Zusage aus Spec 03 einloesbar ist, eine unbehandelte `ProviderFehler`-Variante sei
- * ein Uebersetzungsfehler.
+ * Verbindliche und VOLLSTAENDIGE Abbildung: Aufrufer duerfen davon ausgehen, dass
+ * eine unbehandelte `ProviderFehler`-Variante immer ein Uebersetzungsfehler ist.
  *
  * `KonfigurationsFehler` erscheint nicht: Er tritt bei der Initialisierung auf,
- * nie bei einem Abruf (§6.5.3).
+ * nie bei einem Abruf.
  */
 export const FEHLER_ABBILDUNG: Readonly<Record<AdapterFehlerArt, ProviderFehler['art']>> = {
   AuthError: 'authentifizierung',

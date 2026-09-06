@@ -3,10 +3,9 @@ import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * PE-14 verlangt die explizite `.js`-Endung bei relativen Importen. In `apps/web`
- * erzwang das bisher `tsc` ueber `moduleResolution: NodeNext`; die Umstellung auf
- * `Bundler` — noetig, damit `next/link` ueberhaupt aufloest — hat diese Durchsetzung
- * entfernt. Weder ESLint noch `check:deps` decken die Regel ab, deshalb steht sie hier.
+ * PE-14 verlangt die explizite `.js`-Endung bei relativen Importen. Weder `tsc`
+ * (moduleResolution `Bundler`) noch ESLint noch `check:deps` decken das in
+ * `apps/web` ab, deshalb steht die Regel hier.
  */
 const SRC = resolve(import.meta.dirname, '../src');
 const ERLAUBTE_ENDUNGEN = ['.js', '.css', '.json'];

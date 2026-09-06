@@ -57,12 +57,12 @@ const VORLAGE: VeraenderbareOfferte = {
           flaecheInnen: 82,
           flaecheAussen: 12,
           stockwerk: 2,
-          energielabel: 'A',
+          energielabel: 'minergie_a' as const,
           ...BEWERTUNGEN_STANDARD,
           anzahlBadezimmer: 1,
           lift: true,
           baujahr: 2027,
-          heizungsart: 'Waermepumpe',
+          heizungsart: 'heat_pump_air' as const,
         },
         referenceValuation: {
           value: {
@@ -85,12 +85,12 @@ const VORLAGE: VeraenderbareOfferte = {
           flaecheInnen: 104,
           flaecheAussen: 18,
           stockwerk: 3,
-          energielabel: 'A',
+          energielabel: 'minergie_a' as const,
           ...BEWERTUNGEN_STANDARD,
           anzahlBadezimmer: 2,
           lift: true,
           baujahr: 2027,
-          heizungsart: 'Waermepumpe',
+          heizungsart: 'heat_pump_air' as const,
         },
         referenceValuation: {
           value: {

@@ -1,7 +1,4 @@
-/**
- * Reine Uebernahme-Funktion fuer `spaltenwerte`, getrennt von `AnpassungsSpalten.tsx` und
- * direkt testbar.
- */
+/** Reine Uebernahme-Funktion fuer `spaltenwerte`, direkt testbar. */
 import type { AnpassungsSpalte, ProjektEinheit } from '../../server/projekt-schema.js';
 
 /** Traegt den Vorgabewert der Spalte in alle Einheiten ein, die fuer diese Spalte noch

@@ -1,4 +1,4 @@
-// Keine Formel. Bezeichner werden hereingereicht, nie im Kern erzeugt (Spec 03 §9.2, E-29).
+// Keine Formel. Bezeichner werden hereingereicht, nie im Kern erzeugt (E-29).
 import type { Branded } from './brand.js';
 
 export type LiegenschaftId = Branded<string, 'LiegenschaftId'>;

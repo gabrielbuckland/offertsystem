@@ -1,13 +1,11 @@
 /**
- * ABWEICHUNG VOM PLAN, bewusst und vom Plan selbst so vorgesehen: Die Erwartungswerte
- * folgen der tatsaechlichen ICU-Ausgabe der Laufzeit, nicht der im Plan notierten
- * Schreibweise. Konkret setzt `de-CH` als Tausendertrennung U+2019 (rechtes
- * Anfuehrungszeichen) statt des Apostrophs U+0027, ein festes Leerzeichen U+00A0 nach
- * dem Waehrungskuerzel, kein Leerzeichen vor dem
- * Prozentzeichen und ein gewoehnliches Minus. Der Plan haelt fest: «Bei abweichendem
- * Minuszeichen der Laufzeit wird der Erwartungswert des Tests an die Locale-Ausgabe
- * angepasst, nicht die Ausgabe an den Test» — eine eigene Ersetzung im String waere
- * genau der Weg, die Schweizer Notation an einer Stelle zu verlieren.
+ * Die Erwartungswerte folgen bewusst der tatsaechlichen ICU-Ausgabe der Laufzeit:
+ * `de-CH` setzt als Tausendertrennung U+2019 (rechtes Anfuehrungszeichen) statt des
+ * Apostrophs U+0027, ein festes Leerzeichen U+00A0 nach dem Waehrungskuerzel, kein
+ * Leerzeichen vor dem Prozentzeichen und ein gewoehnliches Minus. Weicht das
+ * Minuszeichen der Laufzeit ab, wird der Erwartungswert des Tests an die
+ * Locale-Ausgabe angepasst, nicht die Ausgabe an den Test — eine eigene Ersetzung im
+ * String waere genau der Weg, die Schweizer Notation an einer Stelle zu verlieren.
  */
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -53,7 +51,7 @@ describe('Betragsformatierung', () => {
  * beiden Seiten — serverseitig fuer Druck und erste Auslieferung, im Browser fuer die
  * Client-Komponenten. Ungebunden hiesse das eine Hydratationsabweichung bei jedem
  * Seitenaufbau und denselben Betrag mit verschiedenen Trennzeichen auf Bildschirm und im
- * PDF, waehrend NFA-13/P-06 einheitliche Schweizer Notation behaupten.
+ * PDF, waehrend NFA-13 einheitliche Schweizer Notation verlangt.
  *
  * Pruefbar ohne zweite Laufzeit, weil die Festlegung eine eigene Funktion ueber
  * `Intl.NumberFormatPart[]` ist: Der Test reicht die FREMDE Trennung herein.

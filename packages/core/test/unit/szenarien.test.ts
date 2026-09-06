@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { fuehreSzenarioAus, ladeSzenario, schreibeSzenarienArtefakt } from '../helper/szenario.js';
 import { dokumentiere } from '../helper/dokumentiere.js';
+import { ladeReferenz } from '../helper/referenz.js';
 
 const SCHWELLE = 0.001;
 
-describe('T2 — die sechs Testszenarien gegen die Referenzberechnung', () => {
+describe('T2 — die sechs Testszenarien gegen ihre Erwartungswerte', () => {
   const ergebnisse = ['S1', 'S2', 'S3', 'S4a', 'S4b', 'S6'].map((id) => fuehreSzenarioAus(id));
 
   // In Vitest 2 reicht `it.each` den Testkontext (und damit `task.meta`) nicht
@@ -13,8 +14,8 @@ describe('T2 — die sechs Testszenarien gegen die Referenzberechnung', () => {
   for (const id of ['S1', 'S2', 'S3', 'S4a', 'S4b', 'S6']) {
     it(`${id} hält die Abweichungsschwelle von 0,1 Prozent in V, H_min und H_max ein`, ({ task }) => {
       dokumentiere(task, {
-        vorbedingung: `Szenario ${id} mit unabhängiger Referenzberechnung`,
-        schritte: 'Das Szenario durch die Pipeline rechnen und mit der Referenz vergleichen',
+        vorbedingung: `Szenario ${id} mit hinterlegten Erwartungswerten`,
+        schritte: 'Das Szenario durch die Pipeline rechnen und mit den Erwartungswerten vergleichen',
         erwartung: 'Die relative Abweichung in V, H_min und H_max beträgt je höchstens 0,1 Prozent',
         anforderung: 'A-06',
       });
@@ -137,16 +138,28 @@ describe('T2 — die sechs Testszenarien gegen die Referenzberechnung', () => {
     expect(pfad).toMatch(/^artifacts\/scenarios\//);
   });
 
-  it('erzeugt bei Überschreitung eine Stufendiagnose statt nur eines Fehlschlags', ({ task }) => {
+  it('erkennt eine verfälschte Erwartung als nicht bestanden', ({ task }) => {
     dokumentiere(task, {
-      vorbedingung: 'Szenario S1 mit auf 1 überschriebener Referenz-Verkaufssumme',
-      schritte: 'Das Szenario mit der verfälschten Referenz rechnen',
-      erwartung: 'bestanden ist false und die Stufendiagnose nennt die betroffenen Referenzschritte',
+      vorbedingung: 'Szenario S1 mit auf 1 überschriebener erwarteter Verkaufssumme',
+      schritte: 'Das Szenario mit der verfälschten Erwartung rechnen',
+      erwartung: 'bestanden ist false und die Abweichung der Verkaufssumme ist ausgewiesen',
     });
+    // Gegenprobe zum Szenarienvergleich: Ohne sie bliebe offen, ob der Vergleich
+    // ueberhaupt anschlaegt oder jedes Szenario unbesehen als bestanden gilt.
     const e = fuehreSzenarioAus('S1', { referenzUeberschreiben: { verkaufssumme: 1 } });
     expect(e.bestanden).toBe(false);
-    expect(e.stufendiagnose).toBeDefined();
-    expect(Object.keys(e.stufendiagnose!)).toEqual(
-      expect.arrayContaining(['02_qm_preis', '03_wohnungspreis', '04_verkaufssumme']));
+    expect(Math.abs(e.abweichung.verkaufssumme)).toBeGreaterThan(SCHWELLE);
+  });
+
+  it('weist einen Erwartungswert ohne Manifesteintrag zurück', ({ task }) => {
+    dokumentiere(task, {
+      vorbedingung: 'Blattname ohne Eintrag im Manifest',
+      schritte: 'ladeReferenz mit dem unbekannten Namen aufrufen',
+      erwartung: 'Der Lader wirft einen Fehler mit Hinweis auf den fehlenden Manifesteintrag',
+    });
+    // Gegenprobe zur Zusage des Manifests: Ohne die Pruefsummenkontrolle liesse sich ein
+    // Erwartungswert an ein geaendertes Ergebnis anpassen, und der Vergleich verglich
+    // die Implementierung mit sich selbst.
+    expect(() => ladeReferenz('gibt_es_nicht')).toThrow(/Manifesteintrag/);
   });
 });

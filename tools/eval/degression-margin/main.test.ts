@@ -30,13 +30,12 @@ describe('Abnahmetest F2 (Spec 06 §7.2)', () => {
   });
 
   it('liegt in der von Spec 02 §5.8.4 hergeleiteten Groessenordnung', () => {
-    // ABWEICHUNG VOM PLAN, begruendet: Der Plan erwartet margin_min zwischen 1.2 und 5
-    // und deutet einen kleineren Wert als Vorzeichen- oder Einheitenfehler. Das trifft
-    // hier nicht zu. Spec 02 §5.8.4 leitet die Reserve am Grenzfall grosser
-    // Projektspruenge her (lambda = 9); ueber das feine Gitter liegt das Minimum
-    // dagegen bei lambda knapp ueber 1 — dort sind Degressionsgewinn und
-    // Aufwandzuschlag beide fast null, und die Marge ist entsprechend knapp, aber
-    // erfuellt. Geprueft wird deshalb der Kennwert, der der Herleitung entspricht.
+    // margin_min_grosser_sprung wird gegen 1.2-5 geprueft: Am Grenzfall grosser
+    // Projektspruenge (lambda = 9) ist die Reserve deutlich groesser als ueber das
+    // feine Gitter, wo das Minimum bei lambda knapp ueber 1 liegt — dort sind
+    // Degressionsgewinn und Aufwandzuschlag beide fast null, und die Marge ist
+    // entsprechend knapp, aber erfuellt. Geprueft wird deshalb der Kennwert, der zur
+    // jeweiligen Herleitung passt.
     expect(artefakt.margin_min).toBeGreaterThan(1);
     expect(artefakt.margin_min_grosser_sprung).toBeGreaterThan(1.2);
     expect(artefakt.margin_min_grosser_sprung).toBeLessThan(5);

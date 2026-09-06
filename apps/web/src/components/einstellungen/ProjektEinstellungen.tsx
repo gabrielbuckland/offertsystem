@@ -76,11 +76,11 @@ async function schreibeProjektEinstellungen(
 type Reiter = 'formular' | 'json';
 
 /**
- * Entwurf §4 verlangt den Umschalter auf BEIDEN Ebenen. Auf der Projektebene hat er eine
- * zweite Achse: Bearbeitet wird das DELTA (das ist es, was abgelegt wird), zur Kontrolle
- * ansehen laesst sich die EFFEKTIVE Konfiguration — die aber nur lesend, weil ein
- * Zurueckschreiben der Vollform aus jedem Projekt eine Vollkopie machte und das
- * Ueberschreibungsprotokoll (Beleg fuer A-13) jeden Wert als abweichend meldete.
+ * Auf der Projektebene hat der Umschalter eine zweite Achse: Bearbeitet wird das DELTA
+ * (das ist es, was abgelegt wird), zur Kontrolle ansehen laesst sich die EFFEKTIVE
+ * Konfiguration — die aber nur lesend, weil ein Zurueckschreiben der Vollform aus jedem
+ * Projekt eine Vollkopie machte und das Ueberschreibungsprotokoll (Beleg fuer A-13) jeden
+ * Wert als abweichend meldete.
  */
 type JsonSicht = 'delta' | 'effektiv';
 

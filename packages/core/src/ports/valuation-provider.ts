@@ -8,7 +8,7 @@ import type { RepraesentativeParametrisierung } from '../domain/wohnungstyp.js';
 
 export type Konfidenzklasse = 'poor' | 'medium' | 'good';
 
-/** Reine Anzeigeinformation. Gelangt NICHT in `PipelineEingang` (Brief §8, E-21). */
+/** Reine Anzeigeinformation. Gelangt NICHT in `PipelineEingang` (E-21). */
 export interface BewertungsAnzeige {
   readonly konfidenzbereich: { readonly von: Rappen; readonly bis: Rappen };
   readonly konfidenzklasse: Konfidenzklasse;

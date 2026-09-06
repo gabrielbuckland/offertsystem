@@ -6,8 +6,8 @@ export interface ApiErgebnis<T> {
   readonly rumpf: T;
 }
 
-// Einziger fetch-Weg der Oberflaeche (Spec §3): buendelt fetch + leseRumpf + Fangnetz.
-// JSON-Koerper setzen Aufrufer weiterhin selbst via `init`, damit der Wrapper keine zweite
+// Einziger fetch-Weg der Oberflaeche: buendelt fetch + leseRumpf + Fangnetz. JSON-Koerper
+// setzen Aufrufer weiterhin selbst via `init`, damit der Wrapper keine zweite
 // Serialisierungsregel wird.
 export async function rufeApi<T>(pfad: string, init?: RequestInit): Promise<ApiErgebnis<T>> {
   try {

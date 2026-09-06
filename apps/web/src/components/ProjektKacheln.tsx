@@ -1,7 +1,7 @@
 /**
- * Kachelübersicht der Projekte (Design-Spec §2/§3). Die Kennung (UUID) ist rein
- * technisch und dient nur der Verlinkung — Menschen identifizieren ein Projekt über
- * Adresse und Datum, nicht über die Kennung, darum steht sie nirgends als Text.
+ * Die Kennung (UUID) ist rein technisch und dient nur der Verlinkung — Menschen
+ * identifizieren ein Projekt über Adresse und Datum, nicht über die Kennung, darum
+ * steht sie nirgends als Text.
  *
  * Ein schemawidriges Artefakt wird GEKENNZEICHNET, nicht teilweise dargestellt (I-24).
  */
@@ -39,7 +39,7 @@ export function ProjektKacheln({ eintraege, leerAktion }: ProjektKachelnProps) {
             className="rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary">
           {e.fehlerhaft ? (
             // `e.datei` bewusst NICHT gezeigt: Der Dateiname traegt die UUID
-            // (`${id}.json`) und wuerde die Kennung sichtbar machen (Spec §2/§3).
+            // (`${id}.json`) und wuerde die Kennung sichtbar machen.
             <p className="text-muted-foreground">
               Projekt nicht lesbar. Die Datei muss geprüft werden.
             </p>

@@ -8,8 +8,7 @@ import {
   EinstellungsEditor, rahmenBefunde,
 } from '../../../src/components/einstellungen/EinstellungsEditor.js';
 
-/** Steuerbares Promise, um eine spaet eintreffende Antwort zu erzwingen — gleiches
- *  Vorgehen wie in verwende-projekt.test.ts. */
+/** Steuerbares Promise, um eine spaet eintreffende Antwort zu erzwingen. */
 function steuerbar<T>() {
   let aufloesen!: (wert: T) => void;
   const versprechen = new Promise<T>((r) => { aufloesen = r; });
@@ -59,11 +58,11 @@ describe('EinstellungsEditor', () => {
   it('fuehrt die gesperrten Wurzeln nicht in den JSON-Reiter (W-1)', () => {
     /**
      * Der JSON-Reiter liegt hinter einem Umschalter im Client-Zustand und ist ohne
-     * Hook-Testbibliothek nicht zu oeffnen; geprueft wird deshalb quelltextnah, wie in
-     * `ProjektAnsicht.test.ts`. Die Aussage selbst ist scharf: `zustand.entwurf` ist die
-     * VOLLE Rohkonfiguration; ging sie ungefiltert an den schreibbaren Reiter, war `api`
-     * ueber jede der vier Karten editier- und speicherbar — die Rollentrennung aus US-08
-     * haette danach nur noch im Formularreiter existiert.
+     * Hook-Testbibliothek nicht zu oeffnen; geprueft wird deshalb quelltextnah. Die Aussage
+     * selbst ist scharf: `zustand.entwurf` ist die VOLLE Rohkonfiguration; ging sie
+     * ungefiltert an den schreibbaren Reiter, war `api` ueber jede der vier Karten
+     * editier- und speicherbar — die Rollentrennung aus US-08 haette danach nur noch im
+     * Formularreiter existiert.
      */
     const quelle = readFileSync(new URL(
       '../../../src/components/einstellungen/EinstellungsEditor.tsx', import.meta.url,
@@ -95,15 +94,15 @@ describe('rahmenBefunde (Naht Rahmen <-> Feld-Editor)', () => {
   });
 
   it('haelt den leeren Pfad bei mehreren Praefixen trotzdem nur einmal', () => {
-    // «Preisanpassung» deckt drei Wurzeln ab; der frueher noetige Doppel-Filter entfaellt,
-    // weil ueber die Befundliste statt ueber die Praefixe iteriert wird.
+    // «Preisanpassung» deckt drei Wurzeln ab; iteriert wird aber ueber die Befundliste
+    // statt ueber die Praefixe, darum erscheint der ortlose Befund nur einmal.
     expect(rahmenBefunde([ortlos], ['flaeche', 'preisanpassung', 'anpassungsVorlagen']))
       .toEqual([ortlos]);
   });
 
   it('zeigt einen Befund auf der Merkmale-Wurzel, seit `merkmale` zu den Praefixen von '
     + '«Preisanpassung» gehoert (Task 7)', () => {
-    // Regression: `BEREICHE.preisanpassung.praefix` (bereiche.ts) bekam `'merkmale'`
+    // Regression: `BEREICHE.preisanpassung.praefix` bekam `'merkmale'`
     // zusaetzlich zu `flaeche`/`preisanpassung`/`anpassungsVorlagen`. Ohne diesen Eintrag
     // waere ein Befund GENAU auf der Merkmale-Wurzel (z. B. ein Schemafehler auf dem
     // Schluessel selbst, kein zeilenverankerter `anpassungsVorlagen[i].regel.merkmal`-

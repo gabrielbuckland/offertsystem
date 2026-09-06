@@ -5,9 +5,9 @@ import { BEWERTUNGEN_STANDARD } from '../helper/projekt.js';
 const grenzen = { zMin: -0.25, zMax: 0.25, begruendungMinLaenge: 10 };
 
 const parametrisierung = {
-  flaecheInnen: 92.5, flaecheAussen: 0, stockwerk: 1, energielabel: 'B',
+  flaecheInnen: 92.5, flaecheAussen: 0, stockwerk: 1, energielabel: 'minergie_p' as const,
   ...BEWERTUNGEN_STANDARD, anzahlBadezimmer: 1,
-  lift: true, baujahr: 2025, heizungsart: 'heat_pump',
+  lift: true, baujahr: 2025, heizungsart: 'heat_pump_air' as const,
 };
 
 function roh(anpassungen: unknown[] = []): unknown {

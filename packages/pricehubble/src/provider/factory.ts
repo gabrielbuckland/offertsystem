@@ -26,12 +26,25 @@ import {
 } from '../config/api-konfiguration.js';
 import { HttpClient } from '../client/http-client.js';
 import { stdoutProtokoll } from '../client/protokoll.js';
-import { TokenVerwaltung } from '../client/token-verwaltung.js';
+import { TokenVerwaltung, type Zugang } from '../client/token-verwaltung.js';
 import { Warteschlange } from '../client/warteschlange.js';
 import { systemUhr } from '../client/uhr.js';
 import { jitterStromAusLaufSeed } from '../client/zufall.js';
 import { MockValuationProvider } from './mock-valuation-provider.js';
 import { PriceHubbleAdapter } from './pricehubble-adapter.js';
+
+/** PH_ACCESS_TOKEN gewinnt; sonst der Login mit Zugangsdaten (E-31). */
+function zugangAus(env: AdapterUmgebung): Zugang {
+  const token = (env.PH_ACCESS_TOKEN ?? '').trim();
+  if (token !== '') {
+    return { art: 'token', token };
+  }
+  return {
+    art: 'zugangsdaten',
+    benutzername: env.PH_USERNAME ?? '',
+    passwort: env.PH_PASSWORD ?? '',
+  };
+}
 
 export interface FactoryOptionen {
   /** Lauf-Seed; der Jitter-Strom ist daraus als `seed XOR 1` abgeleitet (E-27). */
@@ -66,10 +79,7 @@ export function createValuationProvider(
       client,
       konfiguration: geprueft,
       uhr: systemUhr,
-      zugangsdaten: {
-        benutzername: env.PH_USERNAME ?? '',
-        passwort: env.PH_PASSWORD ?? '',
-      },
+      zugang: zugangAus(env),
     }),
     uhr: systemUhr,
     protokoll: stdoutProtokoll,

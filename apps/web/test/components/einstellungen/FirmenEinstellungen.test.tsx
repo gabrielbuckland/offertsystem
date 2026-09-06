@@ -14,10 +14,9 @@ describe('FirmenEinstellungen', () => {
   const markup = renderToStaticMarkup(<FirmenEinstellungen anfang={FIRMA} />);
 
   /**
-   * Der Kern von W-6: Vier Entwuerfe hiessen vier Fussleisten. Genau eine
-   * Speichern-Schaltflaeche ist der pruefbare Ausdruck davon, dass es genau einen
-   * Entwurf gibt — mit `renderToStaticMarkup` ist das Speicherverhalten selbst nicht
-   * ausloesbar (kein jsdom im Repo).
+   * Genau eine Speichern-Schaltflaeche ist der pruefbare Ausdruck davon, dass es genau
+   * einen Entwurf gibt — mit `renderToStaticMarkup` ist das Speicherverhalten selbst
+   * nicht ausloesbar (kein jsdom im Repo).
    */
   it('fuehrt genau eine Fussleiste fuer die ganze Ebene (W-6)', () => {
     expect(markup.split('Speichern').length - 1).toBe(1);

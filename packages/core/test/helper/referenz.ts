@@ -1,8 +1,8 @@
 /**
- * Leser der Referenz-Ausleitung (T1).
+ * Leser der unabhaengig gerechneten Erwartungswerte der Szenarien (T2).
  *
  * Prueft vor jedem Zugriff die SHA-256-Summe der CSV-Datei gegen `manifest.json`.
- * Ohne diese Pruefung koennte eine Referenzdatei unbemerkt an ein geaendertes
+ * Ohne diese Pruefung koennte ein Erwartungswert unbemerkt an ein geaendertes
  * Rechenergebnis angepasst werden — der Vergleich verglichte dann die
  * Implementierung mit sich selbst und belegte nichts mehr.
  *

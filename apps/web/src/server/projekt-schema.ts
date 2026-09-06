@@ -10,6 +10,7 @@
  */
 import { z } from 'zod';
 import {
+  BADEZIMMER_MAX, BADEZIMMER_MIN, EnergielabelSchema, HeizungsartSchema,
   normalisiereBereiche, pruefeBereiche, QualitaetsbewertungenSchema, ZustandsbewertungenSchema,
 } from '@offert/core';
 import { offertDokumentSchema } from '@offert/offer';
@@ -20,13 +21,13 @@ const parametrisierungSchema = z.object({
   flaecheInnen: z.number().positive(),
   flaecheAussen: z.number().nonnegative(),
   stockwerk: z.number().int(),
-  energielabel: z.string(),
+  energielabel: EnergielabelSchema,
   zustandsbewertungen: ZustandsbewertungenSchema,
   qualitaetsbewertungen: QualitaetsbewertungenSchema,
-  anzahlBadezimmer: z.number().int().nonnegative(),
+  anzahlBadezimmer: z.number().int().min(BADEZIMMER_MIN).max(BADEZIMMER_MAX),
   lift: z.boolean(),
   baujahr: z.number().int(),
-  heizungsart: z.string(),
+  heizungsart: HeizungsartSchema,
 }).strict();
 
 const referenzobjektSchema = z.object({
@@ -126,10 +127,10 @@ export const projektSchema = z.object({
    * Wahrheit darueber.
    */
   einstellungen: z.record(z.unknown()).optional(),
-  // Empfänger der Offerte (Spec 0x §1). Optional: bestehende Projekte bleiben gültig.
+  // Empfänger der Offerte. Optional: bestehende Projekte bleiben gültig.
   auftraggeber: z.string().trim().min(1).optional(),
   // Projektspezifische Kopie des Offerttexts. Fehlt sie, gilt beim Finalisieren die
-  // globale Vorlage (vorlagen-ablage.ts).
+  // globale Vorlage.
   offertText: offertDokumentSchema.optional(),
   meta: z.object({
     erstelltAm: z.string().min(1),
@@ -165,10 +166,10 @@ export const projektSchema = z.object({
     }
   }
 
-  // Die Kennung (`id`) ist der Schluessel fuer Basispreis und Anpassungen (projektion.ts)
-  // und braucht deshalb eine eigene Pruefung: Eine editierte Wohnungsnummer laesst die
-  // Kennung unveraendert, ein Generatorlauf koennte trotzdem eine bereits vergebene Kennung
-  // erneut zuteilen (siehe einheiten-generator.ts).
+  // Die Kennung (`id`) ist der Schluessel fuer Basispreis und Anpassungen und braucht
+  // deshalb eine eigene Pruefung: Eine editierte Wohnungsnummer laesst die Kennung
+  // unveraendert, ein Generatorlauf koennte trotzdem eine bereits vergebene Kennung
+  // erneut zuteilen.
   const idGesehen = new Map<string, number[]>();
   p.einheiten.forEach((e, i) => {
     idGesehen.set(e.id, [...(idGesehen.get(e.id) ?? []), i]);

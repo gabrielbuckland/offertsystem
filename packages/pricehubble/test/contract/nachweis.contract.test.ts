@@ -7,6 +7,8 @@ import { ValuationResponseSchema } from '../../src/schema/valuation-response.js'
 import { ladeFixture } from '../fixtures.js';
 import { schreibeNachweisArtefakt } from '../nachweis/schreibe-artefakt.js';
 
+// `update-dossier.success.json` fehlt bewusst: Die PATCH-Antwort ist ein leerer
+// Rumpf `{}` ohne eigenes Contract-Schema (Spec 04 §5.4, Rueckvergleich per GET).
 const FAELLE = [
   ['loginResponse', LoginResponseSchema, 'synthetic/auth/login.success.json'],
   ['dossierResponse', DossierResponseSchema, 'synthetic/dossier/get-dossier.success.json'],
@@ -15,6 +17,22 @@ const FAELLE = [
     'locationScoresResponse',
     LocationScoresResponseSchema,
     'synthetic/location/location-scores.success.json',
+  ],
+  ['loginResponse (aufgezeichnet)', LoginResponseSchema, 'recorded/auth/login.success.json'],
+  [
+    'dossierResponse (aufgezeichnet)',
+    DossierResponseSchema,
+    'recorded/dossier/get-dossier.success.json',
+  ],
+  [
+    'valuationResponse (aufgezeichnet)',
+    ValuationResponseSchema,
+    'recorded/dossier/valuation.success.json',
+  ],
+  [
+    'locationScoresResponse (aufgezeichnet)',
+    LocationScoresResponseSchema,
+    'recorded/location/location-scores.success.json',
   ],
 ] as const;
 
@@ -43,8 +61,9 @@ afterAll(() => {
       laufzeitMs: Date.now() - beginn,
       // Contract-Tests melden eine Vertragsabweichung, sie verhindern sie nicht.
       wirkung: 'detektiv',
-      // Solange Aufgabe 18 blockiert ist, gibt es keine aufgezeichneten Fixtures (G-2).
-      fixtures_herkunft: 'synthetisch',
+      // Synthetische Fixtures fuer die MSW-Tests plus per test:record aufgezeichnete
+      // API-Antworten (M-FIX erledigt 2026-09-06).
+      fixtures_herkunft: 'gemischt',
     },
   );
 });

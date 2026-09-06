@@ -1,10 +1,3 @@
-/**
- * ABWEICHUNG VOM PLAN, bewusst: Der Brief zeigt `render`/`screen` aus
- * `@testing-library/react`. Das Paket ist in diesem Repo nicht installiert (kein
- * Eintrag in package.json/node_modules) und wird wegen `npm run check:deps` nicht
- * nachinstalliert. Stattdessen `renderToStaticMarkup`, Vorbild
- * `apps/web/test/components/shell.test.tsx`.
- */
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { formatiereHonorarProzent, berechneHonorarProzent } from '@offert/offer';

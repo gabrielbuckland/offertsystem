@@ -1,13 +1,12 @@
 /**
  * `Number('')` ist 0 — ein geleertes Faktorfeld meldete deshalb eine erfundene Null, die
- * der Kern anschliessend gewichtet. Genau der Fall, fuer den `entscheideZellenwert`
- * geschrieben wurde; die Lehre stand bisher nur in `zellen-logik.ts`/`ZellenEingabe.tsx`.
- * `ZahlFeld` uebernimmt seither deren Muster: lokaler Entwurf, Meldung erst bei `onBlur`.
+ * der Kern anschliessend gewichtet. `ZahlFeld` folgt deshalb dem Muster: lokaler Entwurf,
+ * Meldung erst bei `onBlur`.
  *
- * Handler werden ueber gemockte Primitive abgefangen und direkt aufgerufen (Vorgehen wie
- * in `AnpassungsSpalten.test.tsx`) — das Repo fuehrt kein jsdom. Ein simulierter
- * Tastendruck aendert dabei die eingefangene Closure nicht (kein echter Re-Render), darum
- * wird der Entwurfszustand ueber die initiale `werte`-Prop gesetzt, siehe Kommentar unten.
+ * Handler werden ueber gemockte Primitive abgefangen und direkt aufgerufen — das Repo
+ * fuehrt kein jsdom. Ein simulierter Tastendruck aendert dabei die eingefangene Closure
+ * nicht (kein echter Re-Render), darum wird der Entwurfszustand ueber die initiale
+ * `werte`-Prop gesetzt, siehe Kommentar unten.
  */
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
@@ -60,10 +59,10 @@ function zeichne(werte: Readonly<Record<string, number>>, aendere: (w: Readonly<
 }
 
 /*
- * `entscheideZahlfeldCommit` ist die aus `ZahlFeld` herausgeloeste Commit-Entscheidung
- * (Task-11-Review): Anders als die Handler-Tests unten kann diese Suite die eigentliche
- * onChange->onBlur-Verknuepfung direkt beweisen — ein getippter Wert wird beim Verlassen
- * genau der Wert, der committet wird —, weil sie keinen React-Render braucht.
+ * `entscheideZahlfeldCommit` ist die aus `ZahlFeld` herausgeloeste Commit-Entscheidung:
+ * Anders als die Handler-Tests unten kann diese Suite die eigentliche onChange->onBlur-
+ * Verknuepfung direkt beweisen — ein getippter Wert wird beim Verlassen genau der Wert,
+ * der committet wird —, weil sie keinen React-Render braucht.
  */
 describe('entscheideZahlfeldCommit', () => {
   it('committet einen getippten, gueltigen Wert', () => {

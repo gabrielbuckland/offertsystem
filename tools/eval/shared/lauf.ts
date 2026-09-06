@@ -2,9 +2,9 @@
  * Keine eigene Modellformel; der Lauf ruft ausschliesslich den Kern.
  *
  * Die Umsetzung Szenario -> `EingangsArgumente` steht hier und nicht in den Testhelfern
- * des Kerns: `tools/eval` haengt nach Spec 06 §7 nur von `packages/core/src` ab, nicht von
- * dessen Testbaum. Der Unterschied zur Testfassung ist bewusst: Hier wird die
- * Konfiguration UEBERGEBEN, weil die Werkzeuge gerade Varianten davon rechnen.
+ * des Kerns: `tools/eval` haengt nur von `packages/core/src` ab, nicht von dessen
+ * Testbaum. Der Unterschied zur Testfassung ist bewusst: Hier wird die Konfiguration
+ * UEBERGEBEN, weil die Werkzeuge gerade Varianten davon rechnen.
  */
 import {
   berechne,
@@ -65,12 +65,12 @@ function parametrisierung(typ: SzenarioTyp): RepraesentativeParametrisierung {
     flaecheInnen: quadratmeter(typ.A_ref_innen),
     flaecheAussen: typ.A_ref_aussen as RepraesentativeParametrisierung['flaecheAussen'],
     stockwerk: 1,
-    energielabel: 'C',
+    energielabel: 'minergie_eco',
     ...BEWERTUNGEN_STANDARD,
     anzahlBadezimmer: 1,
     lift: false,
     baujahr: 2025,
-    heizungsart: 'Waermepumpe',
+    heizungsart: 'heat_pump_air',
   };
 }
 

@@ -108,16 +108,16 @@ describe('OfferteDokument — Regelspur bleibt intern', () => {
     };
     offerte.derivation.units[0]!.adjustments[0]!.value.uebersteuert = true;
     const html = renderToStaticMarkup(<OfferteDokument offerte={offerte} />);
-    // Alle drei Strings sind in einem regelspurfreien Dokument bereits geprueft
-    // (siehe Entscheid 1 im Taskbericht): Das Dossier zeigt "Stockwerk" (Grossbuchstabe,
-    // Etagenangabe der Einheit) und "Konfidenzbereich" (kleines b) — beides trifft die
-    // hier gepruefte Gross-/Kleinschreibung nicht. Die Assertions sind also echt
-    // diskriminierend fuer die Regelspur, nicht zufaellig durch Boilerplate erfuellt.
+    // Alle drei Strings sind in einem regelspurfreien Dokument bereits geprueft:
+    // Das Dossier zeigt "Stockwerk" (Grossbuchstabe, Etagenangabe der Einheit) und
+    // "Konfidenzbereich" (kleines b) — beides trifft die hier gepruefte
+    // Gross-/Kleinschreibung nicht. Die Assertions sind also echt diskriminierend fuer
+    // die Regelspur, nicht zufaellig durch Boilerplate erfuellt.
     expect(html).not.toContain('stockwerk');
     expect(html).not.toContain('Bereich');
     expect(html).not.toContain('Regelwert');
-    // Review-Finding 5: Das gesetzte Fixture-Feld selbst wurde bislang von keiner
-    // Assertion geprueft. Ein kuenftiges Template, das ein "übersteuert"-Badge rendert,
+    // Das gesetzte Fixture-Feld selbst wurde bislang von keiner Assertion geprueft.
+    // Ein kuenftiges Template, das ein "übersteuert"-Badge rendert,
     // haette die drei Assertions oben unberuehrt gelassen — genau die sensibelste
     // Offenlegung (der Eigentuemer saehe, dass der Vermarkter von der Staffel abgewichen
     // ist) waere unbemerkt durchgerutscht. `toLowerCase()` faengt sowohl

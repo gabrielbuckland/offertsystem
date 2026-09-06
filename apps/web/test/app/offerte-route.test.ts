@@ -39,9 +39,9 @@ function beispielErfassung(): Record<string, unknown> {
     wohnungstypen: [{
       id: 'T-3.5', zimmerzahl: 3.5,
       parametrisierung: {
-        flaecheInnen: 82, flaecheAussen: 12, stockwerk: 2, energielabel: 'A',
+        flaecheInnen: 82, flaecheAussen: 12, stockwerk: 2, energielabel: 'minergie_a' as const,
         ...BEWERTUNGEN_STANDARD,
-        anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'Waermepumpe',
+        anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump_air' as const,
       },
     }],
     einheiten: Array.from({ length: 6 }, (_, i) => ({
@@ -96,10 +96,10 @@ describe('POST /api/offerte', () => {
 
   it('legt bei einem Stufenfehler keine Offerte ab (I-24)', async () => {
     // Ohne einen konfigurierten manuellen Aufwandfaktor bricht die Pipeline mit
-    // FAKTOR_FEHLT ab. Die Firmen-Defaults fuehren seit Konfigversion 1.1.0 keinen
-    // manuellen Faktor mehr (config/README.md) — der Testfall laedt deshalb eine
-    // abgewandelte Konfiguration MIT manuellem Faktor, denn geprueft wird hier nicht
-    // die Standardkonfiguration, sondern dass im Fehlerfall NICHTS abgelegt wird.
+    // FAKTOR_FEHLT ab. Die Firmen-Defaults fuehren keinen manuellen Faktor mehr — der
+    // Testfall laedt deshalb eine abgewandelte Konfiguration MIT manuellem Faktor, denn
+    // geprueft wird hier nicht die Standardkonfiguration, sondern dass im Fehlerfall
+    // NICHTS abgelegt wird.
     const roh = JSON.parse(
       await readFile(`${WURZEL}/config/company-defaults.json`, 'utf8'),
     ) as { aufwandfaktoren: Record<string, Record<string, unknown>> };

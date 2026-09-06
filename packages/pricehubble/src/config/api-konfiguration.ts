@@ -1,14 +1,14 @@
 /**
- * Keine Formel. Typ und Initialisierungspruefung des `api`-Blocks (Spec 04 §2, §6.2).
+ * Keine Formel. Typ und Initialisierungspruefung des `api`-Blocks.
  *
- * Der Block wird dem Adapter von `apps/web/src/server` uebergeben (PE-17, G-9); dieses
+ * Der Block wird dem Adapter von `apps/web/src/server` uebergeben (PE-17); dieses
  * Paket laedt ihn nicht und sucht ihn nicht. Geprueft wird die Erwartung an das, was
- * uebergeben wurde — bewusst doppelt zu P1s Ladezeitpruefung, weil der Adapter auch
+ * uebergeben wurde — bewusst doppelt zur Ladezeitpruefung dort, weil der Adapter auch
  * programmatisch aufgerufen werden kann.
  */
 import { KonfigurationsFehler } from './konfigurations-fehler.js';
 
-/** Endpunktschablonen; `{dossierId}` wird zur Laufzeit ersetzt (Spec 04 §1.1). */
+/** Endpunktschablonen; `{dossierId}` wird zur Laufzeit ersetzt. */
 export interface Endpunkte {
   readonly login: string;
   readonly dossierGet: string;
@@ -29,7 +29,7 @@ export interface RetryKonfiguration {
 }
 
 /**
- * Schluesselnamen nach Spec 02 §1.2 (E-13, G-7). Der Adapter haelt keine eigene
+ * Schluesselnamen sind verbindlich (E-13). Der Adapter haelt keine eigene
  * Konstante; jeder Wert stammt aus `config.api.*`.
  */
 export interface ApiKonfiguration {
@@ -48,6 +48,8 @@ export interface AdapterUmgebung {
   readonly PH_BASE_URL?: string;
   readonly PH_USERNAME?: string;
   readonly PH_PASSWORD?: string;
+  /** Manuell besorgter Token; ersetzt PH_USERNAME/PH_PASSWORD (E-31). */
+  readonly PH_ACCESS_TOKEN?: string;
   readonly PH_DOSSIER_ID?: string;
 }
 
@@ -105,10 +107,24 @@ export function pruefeUmgebung(env: AdapterUmgebung): ProviderSchalter {
     );
   }
   if (schalter === 'pricehubble') {
-    for (const name of ['PH_USERNAME', 'PH_PASSWORD', 'PH_DOSSIER_ID'] as const) {
-      if ((env[name] ?? '').trim() === '') {
-        throw new KonfigurationsFehler(name, 'ist bei VALUATION_PROVIDER=pricehubble Pflicht');
+    // Reihenfolge bewusst: Zugangsdaten vor Dossier, damit die Meldung den zuerst
+    // fehlenden Zugangsweg nennt. PH_ACCESS_TOKEN hebt nur die Zugangsdaten auf,
+    // nie die Dossier-Pflicht.
+    if ((env.PH_ACCESS_TOKEN ?? '').trim() === '') {
+      for (const name of ['PH_USERNAME', 'PH_PASSWORD'] as const) {
+        if ((env[name] ?? '').trim() === '') {
+          throw new KonfigurationsFehler(
+            name,
+            'ist bei VALUATION_PROVIDER=pricehubble Pflicht, solange kein PH_ACCESS_TOKEN gesetzt ist',
+          );
+        }
       }
+    }
+    if ((env.PH_DOSSIER_ID ?? '').trim() === '') {
+      throw new KonfigurationsFehler(
+        'PH_DOSSIER_ID',
+        'ist bei VALUATION_PROVIDER=pricehubble Pflicht',
+      );
     }
   }
   return schalter;

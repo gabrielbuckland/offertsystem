@@ -51,8 +51,8 @@ function standardtext(feldpfad: string, issue: z.ZodIssue, k: Konfiguration): st
     case 'ort':
     case 'name':
       return 'Dieses Feld ist ein Pflichtfeld.';
-    // UUID statt Freitext (Spec 05 §8): leere Eingabe und falsch geformter Wert muessen
-    // dieselbe feldverankerte Meldung ergeben.
+    // UUID statt Freitext: leere Eingabe und falsch geformter Wert muessen dieselbe
+    // feldverankerte Meldung ergeben.
     case 'projektId':
       return 'Die Projekt-Kennung muss eine gueltige UUID sein.';
     default:

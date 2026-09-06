@@ -1,4 +1,4 @@
-// Keine Formel. Einziger Aufloesungspunkt des Strategy Pattern (Brief §5.5): bildet
+// Keine Formel. Einziger Aufloesungspunkt des Strategy Pattern: bildet
 // jeden Bezeichner aus bezeichner.ts auf seine Strategie ab. Der Record-Typ erzwingt
 // Vollstaendigkeit — ein Bezeichner ohne registrierte Strategie bricht die Uebersetzung
 // zur Uebersetzungszeit, nicht zur Laufzeit.

@@ -1,10 +1,8 @@
 /**
- * Fixture-Aufbau ohne Zufall (Spec 03 §9, I-14).
+ * Fixture-Aufbau ohne Zufall (I-14).
  *
- * Der Plan P2 verwendet diese Datei durchgehend, definiert sie aber an keiner
- * Stelle; sie entsteht hier und waechst mit den Aufgaben mit. Alle Werte sind
- * feste Literale — kein `Date.now()`, kein `Math.random()`, keine Ableitung aus
- * der Umgebung; sonst waere der Determinismusnachweis (I-14) von der
+ * Alle Werte sind feste Literale — kein `Date.now()`, kein `Math.random()`, keine
+ * Ableitung aus der Umgebung; sonst waere der Determinismusnachweis (I-14) von der
  * Ausfuehrungszeit abhaengig.
  */
 import type { Adresse } from '../../src/domain/adresse.js';
@@ -57,13 +55,13 @@ export function parametrisierungFixture(): RepraesentativeParametrisierung {
     flaecheInnen: quadratmeter(92.5),
     flaecheAussen: quadratmeterAbNull(0),
     stockwerk: 1,
-    energielabel: 'B',
+    energielabel: 'minergie_p' as const,
     zustandsbewertungen: BEWERTUNGEN_STANDARD.zustandsbewertungen,
     qualitaetsbewertungen: BEWERTUNGEN_STANDARD.qualitaetsbewertungen,
     anzahlBadezimmer: 1,
     lift: true,
     baujahr: 2025,
-    heizungsart: 'heat_pump',
+    heizungsart: 'heat_pump_air' as const,
   };
 }
 
@@ -109,10 +107,10 @@ export function lagescoresFixture(
  * Kernseitige Standardkonfiguration der Tests.
  *
  * Bewusst ein eigenes Literal und keine Ableitung aus `config/company-defaults.json`:
- * Der Kern darf das Dateisystem nicht lesen (R1), und die Testerwartungen des Plans
- * weichen an einer Stelle ab — die ordinale Skala des Innenausbaus fuehrt hier fuenf
- * Stufen, die ausgelieferte Standardkonfiguration sechs. Die Skala ist rein deskriptiv
- * (PE-05) und geht in keine Formel ein; die Abweichung beruehrt kein Rechenergebnis.
+ * Der Kern darf das Dateisystem nicht lesen (R1). Die ordinale Skala des Innenausbaus
+ * fuehrt hier fuenf Stufen statt der sechs der ausgelieferten Standardkonfiguration;
+ * sie ist rein deskriptiv (PE-05) und geht in keine Formel ein, die Abweichung
+ * beruehrt kein Rechenergebnis.
  */
 export function standardKonfiguration(): Konfiguration {
   const faktoren = new Map<FaktorId, FaktorParameter>();
@@ -378,7 +376,7 @@ export function normalisierungErgebnis(
   return { faktoren };
 }
 
-/** Struktur der Szenario-Fixtures aus `test/fixtures/scenarios/` (Spec 06 §3). */
+/** Struktur der Szenario-Fixtures aus `test/fixtures/scenarios/`. */
 export interface SzenarioFixture {
   readonly szenario_id: string;
   readonly bezeichnung: string;

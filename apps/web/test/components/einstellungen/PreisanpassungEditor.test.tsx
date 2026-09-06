@@ -1,12 +1,7 @@
-/**
- * `renderToStaticMarkup` haengt keine Handler an (kein jsdom/@testing-library im Repo,
- * siehe `AnpassungsSpalten.test.tsx`) — deshalb werden `Button`/`Input`/`Select`/
- * `ZellenEingabe` gemockt, um die waehrend eines echten Renderdurchlaufs erzeugten
- * Closures abzufangen und danach direkt aufzurufen. `MerkmalEditor` und
- * `BereichsregelEditor` sind eigene, getrennt getestete Komponenten (siehe deren eigene
- * Testdateien) — hier interessiert nur, MIT WELCHEN PROPS `PreisanpassungEditor` sie
- * aufruft, nicht ihr eigenes Rendering, darum werden auch sie gemockt.
- */
+// `Button`/`Input`/`Select`/`ZellenEingabe` werden gemockt, um die waehrend des
+// Renderdurchlaufs erzeugten Closures abzufangen. `MerkmalEditor`/`BereichsregelEditor`
+// werden ebenfalls gemockt, weil hier nur interessiert, MIT WELCHEN PROPS
+// `PreisanpassungEditor` sie aufruft, nicht ihr eigenes Rendering.
 import { renderToStaticMarkup } from 'react-dom/server';
 import {
   describe, expect, it, vi,
@@ -137,8 +132,6 @@ describe('PreisanpassungEditor — Regel aktivieren erzwingt vorgabefaktor: 0', 
     const erste = naechstesEntwurf.anpassungsVorlagen[0]!;
     expect(erste['vorgabefaktor']).toBe(0);
     expect(erste['regel']).toEqual({ merkmal: 'stockwerk', bereiche: [{ wert: 0 }] });
-    // Die zweite Vorlage bleibt unangetastet — die Umschaltung trifft nur den Index,
-    // dessen Kontrollkaestchen bedient wurde.
     expect(naechstesEntwurf.anpassungsVorlagen[1]).toEqual(vorlage({ id: 'v2' }));
   });
 });
@@ -188,7 +181,6 @@ describe('PreisanpassungEditor — BereichsregelEditor-Anbindung', () => {
       vorlage({ id: 'mit-regel', vorgabefaktor: 0, erfassungsform: 'absolut', regel }),
     ]), aendere);
 
-    // Genau EIN BereichsregelEditor — fuer die Vorlage OHNE Regel wird keiner gerendert.
     expect(erfasst.bereichsregelEditoren).toHaveLength(1);
     expect(erfasst.bereichsregelEditoren[0]!.regel).toEqual(regel);
     expect(erfasst.bereichsregelEditoren[0]!.merkmale).toEqual(MERKMALE);
@@ -200,7 +192,6 @@ describe('PreisanpassungEditor — BereichsregelEditor-Anbindung', () => {
     expect(aendere).toHaveBeenCalledTimes(1);
     const naechstesEntwurf = aendere.mock.calls[0]![0] as { anpassungsVorlagen: readonly Record<string, unknown>[] };
     expect(naechstesEntwurf.anpassungsVorlagen[1]!['regel']).toEqual(neueRegel);
-    // Die Vorlage ohne Regel bleibt unberuehrt.
     expect(naechstesEntwurf.anpassungsVorlagen[0]).toEqual(vorlage({ id: 'ohne-regel' }));
   });
 });

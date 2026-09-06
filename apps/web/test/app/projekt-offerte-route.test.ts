@@ -12,7 +12,7 @@ const ADRESSE = { strasse: 'Seestrasse', hausnummer: '1', plz: '8001', ort: 'Zü
 
 // Ein von der (in diesen Tests nicht berechneten) Range unabhaengiger, aber formal
 // gueltiger Betrag: Die Route lehnt eine Abweichung von der Honorarrange nicht ab
-// (honorar-eingabe.ts, Spec 2026-08-29) — nur das Format wird hier geprueft.
+// (honorar-eingabe.ts) — nur das Format wird hier geprueft.
 const GEWAEHLTES_HONORAR = 5_000_000_00;
 
 function anfrageMitHonorar(gewaehltesHonorar: unknown = GEWAEHLTES_HONORAR): Request {
@@ -32,8 +32,8 @@ async function projekteUndOffertenVerzeichnis() {
 }
 
 // `auftraggeber` optional: Die Standardvorlage verwendet {auftraggeber} und verlangt ihn
-// erst beim Finalisieren (Task 8) — nur Faelle, die eine erfolgreiche Offerte erwarten,
-// geben ihn hier mit; der 422-Fall bleibt bewusst ohne.
+// erst beim Finalisieren — nur Faelle, die eine erfolgreiche Offerte erwarten, geben ihn
+// hier mit; der 422-Fall bleibt bewusst ohne.
 async function vorbereitetesProjekt(projekte: string, auftraggeber?: string) {
   const p = await legeProjektAn(ADRESSE, projekte, standardKonfiguration());
   await speichereProjekt({
@@ -41,9 +41,9 @@ async function vorbereitetesProjekt(projekte: string, auftraggeber?: string) {
     referenzobjekte: [{
       id: 'R-1', zimmerzahl: 3.5,
       parametrisierung: {
-        flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'B',
+        flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'minergie_p' as const,
         ...BEWERTUNGEN_STANDARD,
-        anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
+        anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump_air' as const,
       },
     }],
     anpassungsSpalten: [],
@@ -217,8 +217,8 @@ describe('POST /api/projekt/[id]/offerte', () => {
     expect(antwort.status).toBe(201);
     const { offertId } = await antwort.json() as { offertId: string };
     const offerte = await ladeOfferte(offertId, offerten);
-    // `loeseDokumentAuf` (Task 3) ersetzt den Platzhalter-Knoten durch einen EIGENEN
-    // Textknoten, ohne ihn mit Nachbartext zu verschmelzen (siehe
+    // `loeseDokumentAuf` ersetzt den Platzhalter-Knoten durch einen EIGENEN Textknoten,
+    // ohne ihn mit Nachbartext zu verschmelzen (siehe
     // packages/offer/test/vorlage/aufloesung.test.ts) — «für Zürich» steht deshalb nicht
     // als zusammenhängende Zeichenkette im JSON. Geprüft wird daher auf beide Bestandteile.
     const inhalt = JSON.stringify(offerte.dokument!.inhalt);

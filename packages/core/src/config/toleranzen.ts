@@ -1,5 +1,5 @@
-// Keine Formel. Einzige Toleranzquelle (E-17, Brief §5.3). Der Kern importiert die Datei,
-// die Property-Tests lesen dieselbe; A5 wird daraus gerendert.
+// Keine Formel. Einzige Toleranzquelle (E-17). Der Kern importiert die Datei,
+// die Property-Tests lesen dieselbe.
 import daten from '../../test/property/invariants.json' with { type: 'json' };
 
 export type InvariantenId =

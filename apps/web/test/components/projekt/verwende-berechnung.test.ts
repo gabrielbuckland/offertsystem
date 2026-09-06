@@ -5,8 +5,8 @@ import {
 import type { ApiErgebnis } from '../../../src/components/rufe-api.js';
 
 /**
- * Reine Verarbeitung getrennt vom Hook getestet (kein jsdom in diesem Repo,
- * `environment: 'node'` in vitest.workspace.ts) — Testdaten sind Literale, ohne fetch.
+ * Reine Verarbeitung getrennt vom Hook getestet (kein jsdom in diesem Repo) —
+ * Testdaten sind Literale, ohne fetch.
  */
 function ergebnis(
   teil: Partial<ApiErgebnis<BerechnungsAntwort>>,

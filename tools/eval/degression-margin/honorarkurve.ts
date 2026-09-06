@@ -1,5 +1,5 @@
 /**
- * Geschlossene Auswertung von eq:honorar_mapping ohne Pipeline-Durchlauf (Spec 06 §7.2).
+ * Geschlossene Auswertung von eq:honorar_mapping ohne Pipeline-Durchlauf.
  *
  * Zwei Festlegungen aus E-11: Die Auswertung geschieht JE RANDKURVE GETRENNT — hMin und
  * hMax sind unabhaengige Stuetzstellen ohne festes Verhaeltnis —, und sie ist eine reine

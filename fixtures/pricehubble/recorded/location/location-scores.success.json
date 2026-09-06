@@ -1,0 +1,58 @@
+{
+  "scores": {
+    "health": {
+      "isOverridden": false,
+      "originalScore": 1,
+      "score": 1
+    },
+    "leisure": {
+      "isOverridden": false,
+      "originalScore": 0.925,
+      "score": 0.925
+    },
+    "family": {
+      "isOverridden": false,
+      "originalScore": 1,
+      "score": 1
+    },
+    "shopping": {
+      "isOverridden": false,
+      "originalScore": 0.9,
+      "score": 0.9
+    },
+    "catering": {
+      "isOverridden": false,
+      "originalScore": 0.975,
+      "score": 0.975
+    },
+    "view": {
+      "isOverridden": false,
+      "originalScore": 0.87,
+      "score": 0.87
+    },
+    "noise": {
+      "isOverridden": false,
+      "originalScore": 0.566,
+      "score": 0.566
+    },
+    "nuisance": {
+      "isOverridden": false,
+      "originalScore": 0.875,
+      "score": 0.875
+    },
+    "location": {
+      "isOverridden": false,
+      "originalScore": 0.546,
+      "score": 0.546
+    }
+  },
+  "health": 1,
+  "leisure": 0.925,
+  "family": 1,
+  "shopping": 0.9,
+  "catering": 0.975,
+  "view": 0.87,
+  "noise": 0.566,
+  "nuisance": 0.875,
+  "location": 0.546
+}

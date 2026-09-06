@@ -21,11 +21,10 @@ export interface WarteschlangenBeobachter {
 
 // Sorgt dafuer, dass hoechstens ein Speicherversuch gleichzeitig unterwegs ist. Trifft
 // waehrend eines laufenden Versuchs ein neuerer Stand ein, wird nur der NEUESTE vorgemerkt
-// und nach Abschluss gesendet. Noetig, weil `schreibeAtomar` (projekt-ablage.ts) den zuletzt
-// ANKOMMENDEN Schreibvorgang gewinnen laesst, nicht den zuletzt GESENDETEN — ohne diese
-// Sequenzierung kann ein spaeter geaendertes, aber schneller beantwortetes PUT von einem
-// aelteren, langsameren PUT ueberschrieben werden (ein `AbortController` loest das nicht,
-// da der Server das bereits empfangene aeltere PUT trotzdem zu Ende schreibt).
+// und nach Abschluss gesendet. Noetig, weil der Server den zuletzt ANKOMMENDEN
+// Schreibvorgang gewinnen laesst, nicht den zuletzt GESENDETEN — ein `AbortController`
+// loest das nicht, da der Server ein bereits empfangenes aelteres PUT trotzdem zu Ende
+// schreibt.
 export function baueSpeicherwarteschlange(
   sende: Speicherfunktion,
   beobachter: WarteschlangenBeobachter,
@@ -65,8 +64,8 @@ export function baueSpeicherwarteschlange(
   };
 }
 
-// Spec §3. `ok` bleibt false bei HTTP-Fehlern UND bei geworfenen Ausnahmen (Netzausfall) —
-// beides ist fuer die Warteschlange ein Fehlschlag.
+// `ok` bleibt false bei HTTP-Fehlern UND bei geworfenen Ausnahmen (Netzausfall) — beides
+// ist fuer die Warteschlange ein Fehlschlag.
 async function schreibeUeberPut(projekt: Projekt): Promise<boolean> {
   const { ok } = await rufeApi<unknown>(`/api/projekt/${projekt.id}`, {
     method: 'PUT',
@@ -78,7 +77,7 @@ async function schreibeUeberPut(projekt: Projekt): Promise<boolean> {
 
 // Haelt den Projektstand und speichert ihn entprellt (jede Zelleingabe loest sonst je
 // Zeichen einen Schreibvorgang aus). `speichernFehler` macht einen fehlgeschlagenen
-// Speicherversuch sichtbar — Design-Spec §2.
+// Speicherversuch sichtbar.
 export function verwendeProjekt(anfang: Projekt, aufGespeichert?: (projekt: Projekt) => void) {
   const [projekt, setzeProjekt] = useState(anfang);
   const [speichernLaeuft, setzeSpeichern] = useState(false);

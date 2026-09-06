@@ -1,7 +1,6 @@
 /**
- * R4 — Deklarationsdisziplin (Spec 01 §3.2).
- * Prueft die package.json-Deklarationen und die tatsaechlichen Importe gegen die
- * Abhaengigkeitsmatrix aus Spec 01 §2.2.
+ * R4 — Deklarationsdisziplin: prueft die package.json-Deklarationen und die
+ * tatsaechlichen Importe gegen die Abhaengigkeitsmatrix.
  *
  * Laufzeit: node --experimental-strip-types (PE-09). Deshalb kein enum, keine
  * namespace-Deklaration und keine Parametereigenschaften — Type-Stripping

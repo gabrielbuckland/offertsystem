@@ -1,4 +1,4 @@
-// Dateibasierte JSON-Ablage der Offerten (E-14, Brief §5.2). Ablageort kommt aus der
+// Dateibasierte JSON-Ablage der Offerten (E-14). Ablageort kommt aus der
 // Umgebung via `holeLaufzeit()` (PE-24), kein Vorgabewert hier. Atomar und append-only:
 // Artefakte werden nur angelegt, nie ueberschrieben (Reproduzierbarkeit, US-13). Kein
 // DBMS/ORM (AK-4.5): ein Schreiber, keine Nebenlaeufigkeit, keine Abfragen ausser Auflisten.
@@ -23,9 +23,9 @@ export interface ListenEintrag {
   // Betrag und als Vergleichswert in dieser Uebersichtsliste (siehe `honorar` unten).
   readonly honorarMin?: number | undefined;
   readonly honorarMax?: number | undefined;
-  // Der vom Vermarkter gewaehlte, der Offerte zugrundeliegende Betrag (Spec 2026-08-29).
+  // Der vom Vermarkter gewaehlte, der Offerte zugrundeliegende Betrag.
   // Ungesetzt bei einem Altartefakt ohne `aggregates.gewaehltesHonorar` — die Anzeige
-  // faellt dann auf die Range zurueck (`ProjektOfferten.tsx`).
+  // faellt dann auf die Range zurueck.
   readonly honorar?: number | undefined;
   // SHA-256 der Konfiguration, aus der die Offerte entstand (metadata.konfigPruefsumme).
   // Ungesetzt im Fehlerzweig aus demselben Grund wie `projektId`.
@@ -46,10 +46,9 @@ function normalisiere(text: string): string {
 /**
  * Zeitstempel voran, damit die lexikografische Sortierung der chronologischen entspricht.
  * Der Dateiname ist Bequemlichkeit, kein Datentraeger: Alle darin enthaltenen Angaben
- * stehen auch im Dokument. Die Referenznummer entfaellt als Namensbestandteil (Spec 05
- * §2/§8): Ein Projekt identifiziert sich ueber Adresse und Datum, und die ersten acht
- * Zeichen der `offertId` genuegen, um mehrere Offerten desselben Projekts am selben Tag
- * zu unterscheiden.
+ * stehen auch im Dokument. Die Referenznummer entfaellt als Namensbestandteil: Ein Projekt
+ * identifiziert sich ueber Adresse und Datum, und die ersten acht Zeichen der `offertId`
+ * genuegen, um mehrere Offerten desselben Projekts am selben Tag zu unterscheiden.
  */
 export function dateinameFuer(offerte: Offer): string {
   const stempel = offerte.metadata.erstelltAm.slice(0, 16).replace(/[-:]/g, '')

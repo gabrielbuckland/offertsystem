@@ -1,5 +1,5 @@
 /**
- * Ebene 2 der Konfigurationspruefung: lokale Wertebereiche (Spec 02 §3.2).
+ * Ebene 2 der Konfigurationspruefung: lokale Wertebereiche.
  * Rein lokale Praedikate ohne Blick auf andere Felder.
  *
  * Formelbezug: eq:flaeche (alpha), eq:wohnungspreis (z-Grenzen),
@@ -45,7 +45,7 @@ export function pruefeEbene2(konfiguration: RohKonfiguration): KonfigurationsFeh
         wert: faktor.gewicht,
       }));
     }
-    // min > max ist KEIN Fehler, sondern die dokumentierte Invertierung (Brief §4).
+    // min > max ist KEIN Fehler, sondern die dokumentierte Invertierung.
     // Erzwungen wird nur min !== max, sonst Division durch null in eq:normalisierung.
     if (!istEndlich(faktor.min) || !istEndlich(faktor.max) || faktor.min === faktor.max) {
       befunde.push(fehler('CFG_NORM_BOUNDS', `aufwandfaktoren.${name}`, {

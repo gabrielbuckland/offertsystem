@@ -1,8 +1,4 @@
-/**
- * Reine Entscheidungslogik der Einheitentabelle, getrennt von den React-Komponenten
- * (`ZellenEingabe.tsx`, `EinheitenTabelle.tsx`), damit sie ohne DOM-Ereignisse testbar
- * ist.
- */
+/** Reine Entscheidungslogik der Einheitentabelle, ohne DOM-Ereignisse testbar. */
 
 export type Zellentscheid =
   | { readonly art: 'uebernehmen'; readonly wert: number }
@@ -32,8 +28,8 @@ const PROZENT_PRAEZISION = 1e6;
  * Faktor (0.05) -> Prozentzahl fuer die Anzeige (5).
  *
  * Reine Anzeigeumrechnung eines dimensionslosen Faktors, keine Rappen-Rundungsstelle
- * (E-09 betrifft Franken/Rappen, nicht diese Umrechnung). `projektion.ts` nimmt den
- * gespeicherten `spaltenwerte`-Wert unveraendert als Faktor — die Kolonnen-Ueberschrift
+ * (E-09 betrifft Franken/Rappen, nicht diese Umrechnung). Der gespeicherte
+ * `spaltenwerte`-Wert wird unveraendert als Faktor verwendet — die Kolonnen-Ueberschrift
  * "(%)" waere sonst falsch: `5` eingegeben hiesse `500%` statt `5%`.
  */
 export function faktorZuProzent(faktor: number): number {
@@ -48,10 +44,9 @@ export function prozentZuFaktor(prozent: number): number {
 /**
  * Rappen -> Franken fuer die Anzeige. Kehrbild von `frankenZuRappen`.
  *
- * `basispreis` und `erfassterBetrag`/absolute `spaltenwerte` fuehren Rappen
- * (`erfassung-schema.ts`: `erfassterBetrag: z.number().int()`) — eine Kolonne, die
- * "(CHF)" beschriftet und den Rappen-Wert unskaliert anzeigt, ist um den Faktor 100 zu
- * klein/gross.
+ * `basispreis` und `erfassterBetrag`/absolute `spaltenwerte` fuehren Rappen als
+ * ganzzahligen Wert — eine Kolonne, die "(CHF)" beschriftet und den Rappen-Wert
+ * unskaliert anzeigt, ist um den Faktor 100 zu klein/gross.
  */
 export function rappenZuFranken(rappen: number): number {
   return rappen / 100;

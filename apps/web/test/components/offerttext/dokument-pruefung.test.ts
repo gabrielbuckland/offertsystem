@@ -20,8 +20,7 @@ describe('istGueltigesOffertDokument (C-1)', () => {
   });
 
   it('weist eine verschachtelte Liste in einem Listenpunkt zurück', () => {
-    // Genau der Fall aus C-1: `Tab`/`sinkListItem` erzeugte vorher eine verschachtelte
-    // Liste, die `listItem.content` (nur `paragraph`) nicht traegt.
+    // `listItem.content` traegt nur `paragraph`, keine verschachtelte Liste.
     const verschachtelt = {
       type: 'doc',
       content: [{
@@ -42,8 +41,6 @@ describe('istGueltigesOffertDokument (C-1)', () => {
   });
 
   it('weist einen Blockknoten (Preistabelle) in einem Listenpunkt zurück', () => {
-    // Der zweite C-1-Fall: `insertContent({ type: 'platzhalterTabelle' })` mit Cursor
-    // in einem Listenpunkt.
     const blockInListe = {
       type: 'doc',
       content: [{

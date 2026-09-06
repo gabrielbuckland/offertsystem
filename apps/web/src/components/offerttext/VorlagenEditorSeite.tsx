@@ -1,10 +1,9 @@
 'use client';
 
 /**
- * Pflege der GLOBALEN Offerttext-Vorlage (Spec 2026-08-27 §3). Gespeichert wird
- * explizit, nicht bei jedem Tastendruck: die Vorlage betrifft alle künftigen Offerten,
- * die 422-Befunde der Route gehören deshalb VOR das Sichern, nicht in ein stilles
- * Autosave.
+ * Pflege der GLOBALEN Offerttext-Vorlage. Gespeichert wird explizit, nicht bei jedem
+ * Tastendruck: die Vorlage betrifft alle künftigen Offerten, die 422-Befunde der Route
+ * gehören deshalb VOR das Sichern, nicht in ein stilles Autosave.
  */
 import { useEffect, useState } from 'react';
 import type { OffertDokument } from '@offert/offer';

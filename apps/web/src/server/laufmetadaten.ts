@@ -22,9 +22,9 @@ export interface Laufmetadaten {
 }
 
 /**
- * Laufende Nummer innerhalb des Prozesses. Vorlaeufig: Das endgueltige Muster der
- * Referenznummer ist beim Auftraggeber offen (OFFEN-05-1). Die Nummer ist bewusst kein
- * Datentraeger — alles, was sie andeutet, steht auch im Dokument.
+ * Laufende Nummer innerhalb des Prozesses. Das Muster der Referenznummer ist vorlaeufig.
+ * Die Nummer ist bewusst kein Datentraeger — alles, was sie andeutet, steht auch im
+ * Dokument.
  */
 let laufendeNummer = 0;
 
@@ -33,7 +33,7 @@ function naechsteNummer(): string {
   return String(laufendeNummer).padStart(3, '0');
 }
 
-/** Vorlaeufiges Muster A-<Jahr>-<laufende Nummer> bis zur Festlegung (OFFEN-05-1). */
+/** Vorlaeufiges Muster A-<Jahr>-<laufende Nummer>. */
 export const laufzeitQuelle: LaufmetadatenQuelle = {
   neueId: () => randomUUID(),
   naechsteReferenznummer: () => `A-${new Date().getFullYear()}-${naechsteNummer()}`,

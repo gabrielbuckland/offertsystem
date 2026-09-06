@@ -67,8 +67,6 @@ it('deklariert den vollständigen Tokensatz und keine harten Farben im Button', 
   }
   const button = readFileSync(
     new URL('../src/components/ui/button.tsx', import.meta.url), 'utf8');
-  // Semantisches Token statt fester Palette: `bg-red-600` war der Umweg, weil es kein
-  // `--destructive` gab (docs/offene-punkte-projektansicht.md).
   expect(button).not.toContain('bg-red-600');
   expect(button).toContain('bg-destructive');
   expect(button).toContain('bg-primary');

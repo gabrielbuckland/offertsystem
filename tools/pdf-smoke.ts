@@ -1,7 +1,7 @@
 /**
  * Laufzeit: node --experimental-strip-types (PE-09). Kein Vitest-Test: Der Rauchtest
- * braucht einen laufenden Server und gehoert damit nach Kapitel 4.4 nicht in die
- * Testsuite. Er belegt genau eine Aussage — der Druckpfad erzeugt ein PDF.
+ * braucht einen laufenden Server und belegt genau eine Aussage — der Druckpfad
+ * erzeugt ein PDF.
  *
  * Der Import ist RELATIV auf die Quelle, nicht ueber `@offert/offer`: Node verweigert
  * das Type-Stripping fuer Pakete aus `node_modules`, und Workspace-Pakete werden

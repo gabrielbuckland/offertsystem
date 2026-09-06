@@ -1,13 +1,8 @@
 /**
- * Durchstich-Test (Task 12): Die Schreibroute fuer das projektbezogene Einstellungs-Delta
- * (Commit b78c88c) und die Oberflaeche dafuer (Commit 4cea4b9) wurden von verschiedenen
- * Agenten gebaut und nie gegeneinander geprueft. Dieser Test belegt die ganze Kette in
- * einem Durchlauf: Projekt anlegen, Delta ueber die echte Route schreiben, Projekt neu
- * laden und pruefen, dass das Delta im Artefakt steht, und schliesslich pruefen, dass die
- * Berechnung mit dem Delta rechnet (andere Pruefsumme als ein Projekt ohne Delta).
- *
- * Aufbaumuster uebernommen aus projekt-put-route.test.ts (Fixtur-Aufbau) und
- * projekt-einstellungen-route.test.ts (Aufruf der Route als reine Funktion).
+ * Durchstich-Test: Belegt die ganze Kette in einem Durchlauf: Projekt anlegen, Delta
+ * ueber die echte Route schreiben, Projekt neu laden und pruefen, dass das Delta im
+ * Artefakt steht, und schliesslich pruefen, dass die Berechnung mit dem Delta rechnet
+ * (andere Pruefsumme als ein Projekt ohne Delta).
  */
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -39,9 +34,9 @@ async function rechenbaresProjektAnlegen(verzeichnis: string) {
     referenzobjekte: [{
       id: 'R-1', zimmerzahl: 3.5,
       parametrisierung: {
-        flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'B',
+        flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'minergie_p' as const,
         ...BEWERTUNGEN_STANDARD,
-        anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
+        anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump_air' as const,
       },
     }],
     anpassungsSpalten: [],
@@ -73,7 +68,7 @@ describe('Durchstich: Einstellungs-Schreibroute -> Ablage -> Berechnung', () => 
       const idMitDelta = await rechenbaresProjektAnlegen(v);
 
       // Schritt 2: das Delta wird NICHT direkt ins Artefakt geschrieben, sondern ueber
-      // dieselbe Route gesendet, die auch die Oberflaeche (Commit 4cea4b9) verwendet.
+      // dieselbe Route gesendet, die auch die Oberflaeche verwendet.
       const antwortSchreiben = await POST_EINSTELLUNGEN(
         anfrage({ honorar: { skalierung: { gMax: 1.2 } } }),
         { params: Promise.resolve({ id: idMitDelta }) },

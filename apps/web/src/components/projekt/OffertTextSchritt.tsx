@@ -1,8 +1,8 @@
 'use client';
 
-// Projektspezifischer Offerttext (Spec 2026-08-27 §3): Kopie der globalen Vorlage entsteht
-// beim ersten Oeffnen (Spec §1) und wird sofort in den Projektstand geschrieben, nicht erst
-// beim ersten Tastendruck. Editor-`key` bleibt im Normalfall stabil; nur der explizite
+// Projektspezifischer Offerttext: Kopie der globalen Vorlage entsteht beim ersten Oeffnen
+// und wird sofort in den Projektstand geschrieben, nicht erst beim ersten Tastendruck.
+// Editor-`key` bleibt im Normalfall stabil; nur der explizite
 // «Zuruecksetzen»-Klick erhoeht `zuruecksetzenZaehler` und erzwingt damit gezielt einen
 // Remount (TipTaps `useEditor` uebernimmt eine geaenderte `inhalt`-Prop sonst nicht
 // automatisch).

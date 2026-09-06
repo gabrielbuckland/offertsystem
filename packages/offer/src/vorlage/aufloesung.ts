@@ -1,5 +1,5 @@
 /**
- * Keine Formel. Platzhalter-Auflösung beim Finalisieren (Spec 2026-08-27 §2).
+ * Keine Formel. Platzhalter-Auflösung beim Finalisieren.
  *
  * Reine Funktion Dokument+Werte -> Dokument, läuft genau EINMAL beim Finalisieren — das
  * abgelegte Artefakt enthält das Ergebnis, nie die Vorlage (US-13). Deshalb wird hier
@@ -14,10 +14,18 @@ import {
 import { TEXT_PLATZHALTER, type PlatzhalterWerte, type TextPlatzhalterId } from './platzhalter.js';
 
 export class PlatzhalterFehler extends Error {
-  constructor(readonly id: string, readonly grund: 'unbekannt' | 'fehlt') {
+  // Feldzuweisung statt Parametereigenschaft: `node --experimental-strip-types` (PE-09)
+  // uebersetzt nicht, es entfernt nur Typen — eine Parametereigenschaft verlangte eine
+  // Codeerzeugung und bricht jeden strip-only-Einstiegspunkt (u.a. `beispiel:offerte`).
+  public readonly id: string;
+  public readonly grund: 'unbekannt' | 'fehlt';
+
+  constructor(id: string, grund: 'unbekannt' | 'fehlt') {
     super(grund === 'unbekannt'
       ? `Unbekannter Platzhalter «${id}» im Offerttext.`
       : `Für den Platzhalter «${id}» liegt kein Wert vor.`);
+    this.id = id;
+    this.grund = grund;
     this.name = 'PlatzhalterFehler';
   }
 }

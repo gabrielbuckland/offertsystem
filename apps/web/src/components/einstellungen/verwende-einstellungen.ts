@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Zustand eines Einstellungs-Editors (Spec §6, US-08).
+ * Zustand eines Einstellungs-Editors (US-08).
  *
  * BEWUSST ohne Autosave — anders als die Projektseite (`verwendeProjekt`, die jede
  * Aenderung entprellt automatisch per PUT schreibt): Ein Schreibvorgang hier trifft
@@ -40,8 +40,8 @@ export interface EinstellungsBefund {
  */
 export type Bearbeitungsebene = 'firma' | 'projekt';
 
-/** Props, die jeder konkrete Bereichs-Editor (HonorarEditor, FaktorenEditor, ...;
- *  Tasks 15/16) entgegennimmt. */
+/** Props, die jeder konkrete Bereichs-Editor (HonorarEditor, FaktorenEditor, ...)
+ *  entgegennimmt. */
 export interface BereichsEditorProps {
   readonly einstellungen: VerwendeEinstellungenErgebnis;
   /** Fehlt auf der firmenweiten Seite; dort gilt `'firma'` als Vorgabe. */
@@ -153,9 +153,8 @@ export function baueSpeicherSteuerung(
 }
 
 /**
- * Strukturvergleich statt Referenzvergleich (Abweichung vom urspruenglichen Plan,
- * Ruecksprache Auftraggeber): `aendere` liefert bei jedem Ruecksetzen auf den
- * Ausgangswert eine NEUE Referenz, obwohl der Baum inhaltlich unveraendert ist. `entwurf`
+ * Strukturvergleich statt Referenzvergleich: `aendere` liefert bei jedem Ruecksetzen auf
+ * den Ausgangswert eine NEUE Referenz, obwohl der Baum inhaltlich unveraendert ist. `entwurf`
  * ist exakt die JSON-Form, die auch an `POST /api/einstellungen` geht — ein
  * `JSON.stringify`-Vergleich ist deshalb sowohl ausreichend als auch ehrlich, und die
  * Firmenweite-Wirkung-Schranke («Speichern» nur bei echter Aenderung aktiv) bleibt damit

@@ -1,7 +1,6 @@
 /**
  * Oeffentlicher Einstiegspunkt des Berechnungskerns.
- * Nur was hier exportiert wird, ist von aussen sichtbar — erst dadurch ist die
- * Aussage «der Kern wurde nicht angefasst» ueberpruefbar (Spec 01 §2.3).
+ * Nur was hier exportiert wird, ist von aussen sichtbar.
  *
  * Diese Datei wird ausschliesslich ADDITIV erweitert (PE-15). PAKET_NAME bleibt
  * bestehen, weil die Paketaufloesung darueber geprueft wird; die
@@ -39,10 +38,18 @@ export {
 export {
   BEWERTUNGSFELDER,
   QUALITAETSWERTE,
+  BADEZIMMER_MAX,
+  BADEZIMMER_MIN,
+  ENERGIELABELWERTE,
+  EnergielabelSchema,
+  HEIZUNGSARTWERTE,
+  HeizungsartSchema,
   QualitaetsbewertungenSchema,
   ZUSTANDSWERTE,
   ZustandsbewertungenSchema,
   type Bewertungsfeld,
+  type Energielabel,
+  type Heizungsart,
   type Qualitaetsbewertungen,
   type Qualitaetswert,
   type Zustandsbewertungen,

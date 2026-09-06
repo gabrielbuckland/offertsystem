@@ -1,12 +1,16 @@
-/** Keine Formel. Contract-Schema der Lagescore-Antwort E5 (Spec 04 §1.6). */
+/** Keine Formel. Contract-Schema der Lagescore-Antwort E5. */
 import { z } from 'zod';
 
 /**
  * Neun Einzelscores (`subsec:ph_dimensionen`). Der Adapter polt `noise` und
  * `nuisance` NICHT um — die Umpolung geschieht ausschliesslich ueber vertauschte
- * Normalisierungsgrenzen in der Konfiguration (I-13, Spec 04 §4.2).
+ * Normalisierungsgrenzen in der Konfiguration (I-13).
  *
- * UNVERIFIZIERT (G-2, OFFEN-2): Fuer E5 existiert keine aufgezeichnete Antwort.
+ * Die neun Score-Objekte stehen unter `scores`. Dieselben neun Namen erscheinen
+ * zusaetzlich flach auf oberster Ebene als blosse Zahlen; sie werden verworfen, weil
+ * ihnen `originalScore` und `isOverridden` fehlen und der Kern die Uebersteuerung
+ * fuehren muss. Tolerant nach oben, streng nach unten. Gegen eine echte Antwort
+ * verifiziert.
  */
 export const LAGESCORE_NAMEN = [
   'location',
@@ -26,11 +30,13 @@ const EinzelscoreSchema = z.object({
   isOverridden: z.boolean().optional(),
 });
 
-export const LocationScoresResponseSchema = z.object(
-  Object.fromEntries(LAGESCORE_NAMEN.map((name) => [name, EinzelscoreSchema])) as Record<
-    (typeof LAGESCORE_NAMEN)[number],
-    typeof EinzelscoreSchema
-  >,
-);
+export const LocationScoresResponseSchema = z.object({
+  scores: z.object(
+    Object.fromEntries(LAGESCORE_NAMEN.map((name) => [name, EinzelscoreSchema])) as Record<
+      (typeof LAGESCORE_NAMEN)[number],
+      typeof EinzelscoreSchema
+    >,
+  ),
+});
 
 export type LocationScoresResponse = z.infer<typeof LocationScoresResponseSchema>;

@@ -1,13 +1,11 @@
 /**
- * Keine Formel. Ein Zod-Artefakt fuer alle drei Pruefebenen
- * (Spec 02 §3, NFA-08, AK-1).
+ * Keine Formel. Ein Zod-Artefakt fuer alle drei Pruefebenen (NFA-08, AK-1).
  * Es gibt keine handgeschriebene interface-Definition der Konfiguration; alle
  * Typen entstehen per z.infer, damit Laufzeit- und Uebersetzungszeitpruefung
  * nicht auseinanderlaufen koennen.
  *
  * Eine verletzende Konfiguration wird ganz oder gar nicht angenommen: kein
- * --force-Pfad, kein Warnmodus, keine Teiluebernahme gueltiger Bloecke
- * (Spec 02 §3.4).
+ * --force-Pfad, kein Warnmodus, keine Teiluebernahme gueltiger Bloecke.
  */
 import { z } from 'zod';
 import { pruefeEbene2 } from './ebene2.js';

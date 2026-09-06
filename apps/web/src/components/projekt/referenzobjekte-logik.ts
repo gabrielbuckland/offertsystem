@@ -1,6 +1,7 @@
 // Reine Entscheidungslogik des Anlegen-Dialogs (`Referenzobjekte.tsx`), getrennt von der
 // Komponente, damit sie ohne DOM/React testbar ist (gleiches Muster wie `zellen-logik.ts`
 // und `faktoren-logik.ts`).
+import { BADEZIMMER_MIN } from '@offert/core';
 import type { Qualitaetsbewertungen, Zustandsbewertungen } from '@offert/core';
 import type { Referenzobjekt } from '../../server/projekt-schema.js';
 
@@ -31,7 +32,7 @@ export function naechsteId(vorhandene: readonly Referenzobjekt[]): string {
 // `ProjektEinheit`). `baujahr` kommt vom Projekt, nicht aus einem eigenen Dialogfeld: bei
 // einem Neubauprojekt hat jede Wohnung dasselbe Baujahr. `zustandsbewertungen`/
 // `qualitaetsbewertungen` kommen aus den firmenweiten Dossier-Voreinstellungen, aus
-// demselben Grund (Rueckmeldung Auftraggeber). Energielabel, Badezimmer, Lift, Heizungsart
+// demselben Grund. Energielabel, Badezimmer, Lift, Heizungsart
 // bleiben bei ihren Platzhaltern: PriceHubble fuehrt sie nicht als Pflichtfelder.
 export function neuesReferenzobjekt(
   zimmerzahl: number,
@@ -48,7 +49,7 @@ export function neuesReferenzobjekt(
       flaecheInnen: wohnflaeche, flaecheAussen: 0, stockwerk: 0, energielabel: '',
       zustandsbewertungen: { ...zustandsbewertungen },
       qualitaetsbewertungen: { ...qualitaetsbewertungen },
-      anzahlBadezimmer: 0, lift: false, baujahr, heizungsart: '',
+      anzahlBadezimmer: BADEZIMMER_MIN, lift: false, baujahr, heizungsart: '',
     },
   };
 }

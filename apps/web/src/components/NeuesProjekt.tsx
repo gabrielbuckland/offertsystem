@@ -3,7 +3,7 @@
 /**
  * Legt ein Projekt an. Die Kennung entsteht serverseitig in `POST /api/projekt`
  * (E-29) — dieses Formular erfasst nur die Adresse, mit der Menschen ein Projekt
- * identifizieren (Design-Spec §2/§3), nie eine Kennung.
+ * identifizieren, nie eine Kennung.
  */
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';

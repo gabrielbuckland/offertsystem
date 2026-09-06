@@ -1,5 +1,4 @@
-// Zusammenbauschicht: nur hier treffen Konfiguration, Provider-Implementierung und Vorlage
-// aufeinander (Spec 01 §7.2, E-26).
+// Zusammenbauschicht (E-26).
 export const PAKET_NAME = '@offert/web';
 
 export { bildePruefsumme, kanonischSerialisieren } from './kanonisch.js';

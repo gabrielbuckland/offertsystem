@@ -1,5 +1,5 @@
 /**
- * Keine Formel. Zod-Schema der Offerttext-Dokumente (Spec 2026-08-27 §2).
+ * Keine Formel. Zod-Schema der Offerttext-Dokumente.
  *
  * Bewusst eine TEILMENGE des ProseMirror-JSON: Jeder erlaubte Knoten hat genau einen
  * Renderpfad (VermarktungsOfferte) und eine Editor-Entsprechung — ein durchgereichter
@@ -160,7 +160,7 @@ export const aufgeloestesDokumentSchema: z.ZodType<AufgeloestesDokument> = baueB
   textSchema, [preistabelleSchema],
 );
 
-/** Platzhalter-Vorkommen mit Knotenart (M-1): `platzhalter` (inline) oder
+/** Platzhalter-Vorkommen mit Knotenart: `platzhalter` (inline) oder
  *  `platzhalterTabelle` (block). Beide können dieselbe `id` tragen (z. B.
  *  `preistabelle`), sind aber NICHT austauschbar — `aufloesung.ts` kennt
  *  `preistabelle` ausschliesslich als Blockknoten. */

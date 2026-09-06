@@ -4,7 +4,7 @@
 // Kennt nur die Form des Teilbaums, keine Konfigurationsbezeichner — der Server prueft die
 // eigentliche Wahrheit (Luecklosigkeit, Degression) beim Speichern; ein Verstoss kommt als
 // Befund mit Pfad `honorar.stuetzstellen[i].<feld>` zurueck und wird hier an dieser Zeile
-// verankert (`befundeFuerPfad`), Spec §6.
+// verankert (`befundeFuerPfad`).
 import { Trash2 } from 'lucide-react';
 import { Fragment, type ReactElement } from 'react';
 import { frankenZuRappen, rappenZuFranken } from '../projekt/zellen-logik.js';

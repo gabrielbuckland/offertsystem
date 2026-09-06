@@ -1,6 +1,6 @@
 // eq:aufwandindikator — D = Summe_d w_d * x_dach_d, mit Summe w_d = 1 folgt D in [0, 1].
 // D misst die Aufwandintensitaet bei gegebener Verkaufssumme, nicht den absoluten Aufwand
-// (Brief §4). Die Stufe enthaelt keinen faktorspezifischen Zweig (I-13).
+// Die Stufe enthaelt keinen faktorspezifischen Zweig (I-13).
 // Sonderfall: S-05.
 import type { Gewicht, Score } from '../domain/geld.js';
 import type { FaktorId } from '../domain/ids.js';
@@ -23,9 +23,9 @@ export interface GewichtungErgebnis {
   readonly gewichtssumme: number; // Summe w_d, ausgewiesen
   readonly aufwandindikator: number; // D (wirksam; bei Uebersteuerung deren Wert)
   /**
-   * Nur gesetzt, wenn der Vermarkter D uebersteuert hat (Muster `wirksamer-wert.ts` in
-   * apps/web: die ANWESENHEIT entscheidet, nicht die Groesse). `abgeleitet` haelt den
-   * weiterhin berechneten Faktorwert fest, damit Ausweis und Vorschlag erhalten bleiben.
+   * Nur gesetzt, wenn der Vermarkter D uebersteuert hat — die ANWESENHEIT entscheidet,
+   * nicht die Groesse. `abgeleitet` haelt den weiterhin berechneten Faktorwert fest,
+   * damit Ausweis und Vorschlag erhalten bleiben.
    */
   readonly uebersteuerung?: { readonly abgeleitet: number };
 }
@@ -33,9 +33,8 @@ export interface GewichtungErgebnis {
 export function berechneAufwandindikator(
   normalisierung: NormalisierungErgebnis,
   konfiguration: Konfiguration,
-  // In [0,1]; die Bereichspruefung liegt beim Aufrufer (apps/web validiert per Zod im
-  // Projektschema) — der Kern uebernimmt den Wert unveraendert, wie bei den
-  // Vermarkter-Faktorwerten auch.
+  // In [0,1]; die Bereichspruefung liegt beim Aufrufer — der Kern uebernimmt den Wert
+  // unveraendert, wie bei den Vermarkter-Faktorwerten auch.
   uebersteuerung?: number,
 ): Result<GewichtungErgebnis, StufenFehler> {
   const eintraege = sortiereNachSchluessel(konfiguration.faktoren);
@@ -44,7 +43,7 @@ export function berechneAufwandindikator(
   // Vorbedingung trotz I-21: der Kern ist auch mit programmatisch konstruierter
   // Konfiguration aufrufbar (Tests, Sensitivitaetsanalyse). D in [0,1] darf davon
   // nicht abhaengen. Es wird NICHT normiert (w_d / Summe w_d) — das machte einen
-  // Konfigurationsfehler unsichtbar (Spec 03 S-05).
+  // Konfigurationsfehler unsichtbar (S-05).
   const toleranz = toleranzFuer('I-12').wert;
   if (Math.abs(gewichtssumme - 1) > toleranz) {
     return fehlschlag(

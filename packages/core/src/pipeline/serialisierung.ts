@@ -2,7 +2,7 @@
 // (PE-08). Sie rechnet nicht und rundet nicht; jede Zahl geht unveraendert durch.
 // Zweck: Der Reproduzierbarkeitsnachweis (AK-4.4, US-13, I-14) speichert die Eingabe und
 // rechnet sie spaeter erneut. ReadonlyMap ueberlebt JSON nicht, und `Liegenschaft` darf nur
-// ueber die Eingabeschicht entstehen (I-02) — beides loest ausschliesslich diese Datei.
+// ueber die Eingabeschicht entstehen (I-02) — beides loest diese Datei.
 import { z } from 'zod';
 import { gewicht, rappen, score } from '../domain/geld.js';
 import { faktorId, lagescoreName, wohnungstypId } from '../domain/ids.js';
@@ -11,6 +11,7 @@ import {
   validiereLiegenschaftEingabe, type EingabeFehler,
 } from '../eingabe/validiere.js';
 import { normalisiereBereiche } from '../modell/bereichsregel.js';
+import { STRATEGIE_BEZEICHNER } from '../normalization/bezeichner.js';
 import type {
   FaktorParameter, Konfiguration, Stuetzstelle,
 } from '../config/typen.js';
@@ -80,7 +81,7 @@ const KonfigurationsKopieSchema = z.object({
   })).default([]),
   faktoren: z.array(z.tuple([z.string(), z.object({
     grenzeMin: z.number(), grenzeMax: z.number(), gewicht: z.number(),
-    strategie: z.enum(['min-max', 'z-score']),
+    strategie: z.enum(STRATEGIE_BEZEICHNER),
     quelle: z.enum(['lagescore', 'manuell', 'abgeleitet']),
     quellSchluessel: z.string(), bezeichnung: z.string(),
     referenzverteilung: z.object({

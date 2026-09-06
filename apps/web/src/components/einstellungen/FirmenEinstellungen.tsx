@@ -2,16 +2,11 @@
 
 /**
  * Firmenweite Einstellungen (Ebene 1) mit GENAU EINEM Entwurf fuer alle vier
- * Bereichskarten (W-6, Gesamtreview 2026-08-29). Vorher fuehrte jede Karte ueber einen
- * eigenen `EinstellungsEditor` einen EIGENEN Entwurf aus demselben `anfang` und POSTete
- * beim Speichern die GANZE Konfiguration daraus, ohne `router.refresh()` danach. Die
- * anderen drei Karten behielten also ihren urspruenglichen `anfang`; wer nacheinander
- * zwei Karten speicherte, ueberschrieb damit die zuerst gespeicherte Aenderung still
- * (live reproduziert 2026-08-31: `energielabel` gesetzt und gespeichert, danach `alpha`
- * gesetzt und gespeichert liess `energielabel` wieder auf `null`). Mit EINEM
- * `verwendeEinstellungen`-Aufruf hier oben, geteilt von allen vier Karten, ist das
- * strukturell ausgeschlossen: Es gibt nur noch einen Entwurf und eine Fussleiste, die
- * ihn schreibt.
+ * Bereichskarten. Getrennte Entwuerfe je Karte liessen sich beim Speichern gegenseitig
+ * ueberschreiben: Wer nacheinander zwei Karten speicherte, verlor die zuerst gespeicherte
+ * Aenderung wieder. Mit EINEM `verwendeEinstellungen`-Aufruf hier oben, geteilt von allen
+ * vier Karten, ist das strukturell ausgeschlossen: Es gibt nur noch einen Entwurf und
+ * eine Fussleiste, die ihn schreibt.
  */
 import { Fragment, useState } from 'react';
 import { GESPERRTE_PFADE } from '@offert/core';
@@ -28,10 +23,9 @@ import { BEREICHE, wurzeln, type Bereich } from '../../app/(anwendung)/einstellu
 /**
  * Reihenfolge der Pipeline-Stufen (US-09/A-10) fuer die Uebersicht: Stufe 3
  * (Normalisierung) und Stufe 4 (Gewichtung) teilen sich einen Bereich (`faktoren`) — ein
- * Faktor traegt Min/Max UND Gewicht in einem Editor, siehe `FaktorenEditor`. Zwei
- * eingebettete Editoren fuer denselben Bereich haetten zwei unabhaengige Entwuerfe zur
- * Folge (`EinstellungsEditor`-Dateikommentar); deshalb genau EIN Editor pro Bereich,
- * mit dem Stufenlabel, das er inhaltlich abdeckt.
+ * Faktor traegt Min/Max UND Gewicht in einem Editor. Zwei eingebettete Editoren fuer
+ * denselben Bereich haetten zwei unabhaengige Entwuerfe zur Folge; deshalb genau EIN
+ * Editor pro Bereich, mit dem Stufenlabel, das er inhaltlich abdeckt.
  */
 const PIPELINE_REIHENFOLGE: ReadonlyArray<{
   readonly stufenLabel: string; readonly bereich: Bereich;

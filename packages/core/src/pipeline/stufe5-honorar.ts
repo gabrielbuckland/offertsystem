@@ -2,7 +2,7 @@
 // H_(V) = H_^(k) + (V - V_k_min)/(V_k_max - V_k_min) * (H_^(k+1) - H_^(k)).
 // V waehlt die Stufe, D skaliert das Niveau innerhalb der Stufe. Rundungsstelle R3 liegt
 // NACH der Multiplikation mit g(D), getrennt je Randwert (E-09).
-// Sonderfaelle: S-08, S-10. S-09 und S-11 sind Ladezeitfaelle (Spec 02) und erreichen
+// Sonderfaelle: S-08, S-10. S-09 und S-11 sind Ladezeitfaelle und erreichen
 // diese Stufe nicht; die Stufenwahl nimmt die erste passende Stufe der aufsteigenden Liste.
 import { rundeAufRappen, type Rappen } from '../domain/geld.js';
 import { fehlschlag, ok, type Result } from '../domain/result.js';
@@ -54,7 +54,7 @@ export function bildeHonorarrange(
   }
 
   // Stufenwahl: das eindeutige k mit V_k_min <= V < V_k_max. Liegt V exakt auf der
-  // letzten Stuetzstelle, wird die letzte Stufe mit t = 1 gerechnet (E-04, Spec 06 §2.4);
+  // letzten Stuetzstelle, wird die letzte Stufe mit t = 1 gerechnet (E-04);
   // eine Extrapolation findet nicht statt.
   let k = stuetzstellen.findIndex((s, i) => i < stuetzstellen.length - 1
     && v >= s.v && v < stuetzstellen[i + 1]!.v);

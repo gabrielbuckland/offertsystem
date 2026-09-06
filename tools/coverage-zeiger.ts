@@ -1,8 +1,6 @@
 /**
- * Schreibt `artifacts/coverage/latest.json`. Der Sammler des Evaluationsplans
- * sucht Nachweisartefakte ueber einen `latest.json`-Zeiger und nicht ueber ein
- * Verzeichnismuster; ohne den Zeiger bricht er nach eigener Randbedingung ab
- * (PE-18).
+ * Schreibt `artifacts/coverage/latest.json` als Zeiger auf den juengsten
+ * Abdeckungslauf (PE-18).
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';

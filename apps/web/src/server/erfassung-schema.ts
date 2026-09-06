@@ -5,7 +5,10 @@
  * Typ je Zimmerzahl) stehen in `superRefine` auf Aggregatebene, nicht je Feld.
  */
 import type { Konfiguration } from '@offert/core';
-import { QualitaetsbewertungenSchema, ZustandsbewertungenSchema } from '@offert/core';
+import {
+  BADEZIMMER_MAX, BADEZIMMER_MIN, EnergielabelSchema, HeizungsartSchema,
+  QualitaetsbewertungenSchema, ZustandsbewertungenSchema,
+} from '@offert/core';
 import { z } from 'zod';
 
 /** Verbindliche Feldliste der Dossier-Parametrisierung (E-28); zehn Felder, nicht mehr. */
@@ -13,13 +16,13 @@ const dossierParameterSchema = z.object({
   flaecheInnen: z.number().positive(),
   flaecheAussen: z.number().nonnegative(),
   stockwerk: z.number().int(),
-  energielabel: z.string(),
+  energielabel: EnergielabelSchema,
   zustandsbewertungen: ZustandsbewertungenSchema,
   qualitaetsbewertungen: QualitaetsbewertungenSchema,
-  anzahlBadezimmer: z.number().int().nonnegative(),
+  anzahlBadezimmer: z.number().int().min(BADEZIMMER_MIN).max(BADEZIMMER_MAX),
   lift: z.boolean(),
   baujahr: z.number().int(),
-  heizungsart: z.string(),
+  heizungsart: HeizungsartSchema,
 }).strict();
 
 export function erfassungsSchema(k: Konfiguration) {
@@ -30,7 +33,7 @@ export function erfassungsSchema(k: Konfiguration) {
     erfassterBetrag: z.number().int().optional(),
     begruendung: z.string().trim().min(k.preisanpassung.begruendungMinLaenge),
     vorlageId: z.string().optional(),
-    // Dokumentarisch (`wirksamer-wert.ts`); fliesst in keine Formel ein.
+    // Dokumentarisch; fliesst in keine Formel ein.
     regel: z.object({
       merkmal: z.string().min(1),
       merkmalswert: z.number(),
@@ -59,8 +62,8 @@ export function erfassungsSchema(k: Konfiguration) {
   });
 
   return z.object({
-    // UUID statt Freitext (Spec 05 §8): `packages/offer` verlangt dieselbe Form, eine
-    // laxere Fassung liesse eine Eingabe erst spaeter in `baueOfferte` scheitern.
+    // UUID statt Freitext: `packages/offer` verlangt dieselbe Form, eine laxere Fassung
+    // liesse eine Eingabe erst spaeter in `baueOfferte` scheitern.
     projekt: z.object({
       projektId: z.string().uuid(),
     }).strict(),
@@ -78,9 +81,8 @@ export function erfassungsSchema(k: Konfiguration) {
       parametrisierung: dossierParameterSchema, // E-28, zehn Felder
     }).strict()).min(1),
     einheiten: z.array(einheit).min(1),
-    aufwandfaktoren: z.record(z.number()), // datengetrieben, Aufgabe 15
-    // Uebersteuerter Aufwandindikator D (projekt-schema.ts, dort begruendet) — optional,
-    // die Anwesenheit entscheidet.
+    aufwandfaktoren: z.record(z.number()), // datengetrieben
+    // Uebersteuerter Aufwandindikator D — optional, die Anwesenheit entscheidet.
     aufwandindikatorUebersteuerung: z.number().min(0).max(1).optional(),
   }).strict().superRefine((e, ctx) => {
     // I-01: Eindeutigkeit auf Aggregatebene, nicht je Feld. Gemeldet wird an ALLEN

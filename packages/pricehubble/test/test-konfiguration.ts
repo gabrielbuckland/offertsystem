@@ -1,9 +1,9 @@
 import type { ApiKonfiguration } from '../src/config/api-konfiguration.js';
 
 /**
- * Vorgabewerte der Standardkonfiguration (Spec 02 §1.2, Spec 04 §6.2).
+ * Vorgabewerte der Standardkonfiguration.
  * Die Werte stehen hier, weil es eine Testkonfiguration ist — im Produktivpfad
- * stammen sie aus `config/company-defaults.json` (G-4).
+ * stammen sie aus `config/company-defaults.json`.
  */
 export function testKonfiguration(
   ueberschreibungen: Partial<ApiKonfiguration> = {},

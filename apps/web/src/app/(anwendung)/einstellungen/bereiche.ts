@@ -5,16 +5,11 @@ import { PreisanpassungEditor } from '../../../components/einstellungen/Preisanp
 import type { BereichsEditor } from '../../../components/einstellungen/verwende-einstellungen.js';
 
 /**
- * Die vier Bereiche entsprechen den Editor-Pfaden aus `PipelineAnsicht` (`pipeline-daten.ts`).
- * `praefix` kann mehrere Konfigurationswurzeln nennen: «Preisanpassung» deckt sowohl
- * `flaeche` (α) als auch `preisanpassung` (zMin/zMax/Begruendung) und `anpassungsVorlagen`
- * ab, siehe `baueStufeVerkaufssumme` in `pipeline-daten.ts`.
- *
- * DIESE ZUORDNUNG BLEIBT BEWUSST HIER UND WANDERT NICHT NACH `components/einstellungen/`:
- * Ein Architekturtest scannt genau diesen Ordner auf fest verdrahtete Konfigurations-
- * bezeichner, und Werte wie `honorar`/`aufwandfaktoren` SIND solche Bezeichner. Als
- * Routing-Metadatum faellt die Zuordnung hier nicht unter das Verbot — im Editor-Ordner
- * selbst waere sie es. Bitte nicht "aufraeumend" verschieben.
+ * Bewusst hier belassen, nicht nach `components/einstellungen/` verschoben:
+ * Ein Architekturtest scannt genau diesen Ordner auf fest verdrahtete
+ * Konfigurationsbezeichner, und Werte wie `honorar`/`aufwandfaktoren` sind
+ * solche Bezeichner. Als Routing-Metadatum faellt die Zuordnung hier nicht
+ * unter das Verbot — im Editor-Ordner selbst waere sie es.
  */
 export const BEREICHE = {
   dossier: {
@@ -50,7 +45,6 @@ export const BEREICHE = {
 
 export type Bereich = keyof typeof BEREICHE;
 
-/** Wurzelpfade eines Bereichs — ein Bereich kann mehrere umfassen (`praefix` oben). */
 export function wurzeln(praefix: string | readonly string[]): readonly string[] {
   return typeof praefix === 'string' ? [praefix] : praefix;
 }

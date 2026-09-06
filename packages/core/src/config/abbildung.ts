@@ -1,5 +1,5 @@
-// Keine Formel. Einzige Uebersetzungsstelle zwischen der Rohkonfiguration (Spec 02,
-// JSON-Schreibweise) und dem Kerntyp `Konfiguration` (Spec 03, I-23) — PE-01, PE-02.
+// Keine Formel. Einzige Uebersetzungsstelle zwischen der Rohkonfiguration (JSON-Schreibweise)
+// und dem Kerntyp `Konfiguration` (I-23, PE-01, PE-02).
 // Die Funktion ist total: Sie wirft nie, sondern liefert entweder die Abbildung oder die
 // Fehlerliste der drei Pruefebenen.
 import { fehler, type KonfigurationsFehler } from './fehlercodes.js';
@@ -98,7 +98,7 @@ export function parseKonfiguration(
 
   const faktoren = new Map<FaktorId, FaktorParameter>();
   // Aufsteigende Codepoint-Ordnung: Die Einfuegereihenfolge der Map darf nicht von der
-  // Schluesselreihenfolge des JSON abhaengen (Spec 03 §9.3, I-14).
+  // Schluesselreihenfolge des JSON abhaengen (I-14).
   for (const bezeichner of Object.keys(roh.aufwandfaktoren).sort()) {
     const abgebildet = bildeFaktorAb(bezeichner, roh.aufwandfaktoren[bezeichner]!);
     if (!abgebildet.ok) return fehlschlag(abgebildet.fehler);
@@ -120,8 +120,7 @@ export function parseKonfiguration(
     merkmale: roh.merkmale,
     faktoren: faktoren as Faktormenge,
     honorar: { stuetzstellen, skalierung: roh.honorar.skalierung },
-    // `api` und `dossierDefaults` bleiben bewusst aussen vor: Keine Stufe liest sie.
-    // `konfigPruefsumme` ergaenzt der Lader in apps/web (E-26, PE-04).
+    // `api` und `dossierDefaults` bleiben bewusst aussen vor: Keine Stufe liest sie (E-26, PE-04).
   };
 
   return ok({ kern, roh });

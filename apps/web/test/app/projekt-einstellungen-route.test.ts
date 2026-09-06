@@ -1,5 +1,5 @@
 /**
- * Deckt den Schreibweg der PROJEKTBEZOGENEN Ebene ab (Task 6). Zurueckweisen statt
+ * Deckt den Schreibweg der PROJEKTBEZOGENEN Ebene ab. Zurueckweisen statt
  * melden (I-21): Ein invariantenverletzendes oder gesperrtes Delta darf das
  * Projektartefakt nicht veraendern — mehrere Tests pruefen das ausdruecklich, indem
  * sie nach einer 422-Antwort erneut laden und `einstellungen` unveraendert vorfinden.
@@ -87,7 +87,7 @@ describe('POST /api/projekt/[id]/einstellungen', () => {
     const rumpf = await antwort.json() as {
       befunde: readonly { pfad: string; text: string }[];
     };
-    // Der frueher gesetzte Sammelanker `(konfiguration)` ist von keiner Karte greifbar.
+    // Ein Sammelanker `(konfiguration)` waere von keiner Karte greifbar.
     expect(rumpf.befunde.map((b) => b.pfad)).not.toContain('(konfiguration)');
     // Die Gewichtssumme wird auf der Bereichswurzel gemeldet — genau dort, wo die
     // Aufwandfaktoren-Karte ihre Rahmenbefunde zeigt.

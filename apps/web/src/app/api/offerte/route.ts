@@ -1,6 +1,6 @@
 /**
- * Duenner Adapter (Brief §5.1): validieren, beschaffen, rechnen lassen, uebersetzen,
- * ablegen. Er rechnet nicht und formatiert nicht.
+ * Duenner Adapter: validieren, beschaffen, rechnen lassen, uebersetzen, ablegen. Er
+ * rechnet nicht und formatiert nicht.
  *
  * Die Reihenfolge ist bindend: Vollstaendigkeitspruefung vor Metadaten, Metadaten vor
  * Berechnung (der Zeitstempel geht in den Eingang, E-29), Ablage zuletzt. Im Fehlerfall

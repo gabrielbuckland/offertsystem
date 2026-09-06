@@ -1,10 +1,9 @@
 /**
- * `renderToStaticMarkup` liefert keine anfassbaren Handler (das Repo hat weder jsdom noch
- * @testing-library/react), darum werden `ZellenEingabe`/`Button`/`Select` gemockt, um die
- * waehrend eines echten Renderdurchlaufs erzeugten Closures abzufangen und direkt
- * aufzurufen — dasselbe Vorgehen wie in `AnpassungsSpalten.test.tsx`. `Input` und der
- * native `<dialog>`-Knoten brauchen dafuer keinen Mock: Kein Test hier liest deren Props,
- * und `showModal`/`close` werden im SSR-Rendering ohnehin nie aufgerufen.
+ * `renderToStaticMarkup` liefert keine anfassbaren Handler, darum werden
+ * `ZellenEingabe`/`Button`/`Select` gemockt, um die waehrend eines echten Renderdurchlaufs
+ * erzeugten Closures abzufangen und direkt aufzurufen. `Input` und der native
+ * `<dialog>`-Knoten brauchen dafuer keinen Mock: Kein Test hier liest deren Props, und
+ * `showModal`/`close` werden im SSR-Rendering ohnehin nie aufgerufen.
  */
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
@@ -61,17 +60,16 @@ import { Referenzobjekte } from '../../../src/components/projekt/Referenzobjekte
 const R: Referenzobjekt = {
   id: 'R1', zimmerzahl: 3.5,
   parametrisierung: {
-    flaecheInnen: 86, flaecheAussen: 19, stockwerk: 0, energielabel: 'B',
+    flaecheInnen: 86, flaecheAussen: 19, stockwerk: 0, energielabel: 'minergie_p' as const,
     ...BEWERTUNGEN_STANDARD,
-    anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
+    anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump_air' as const,
   },
 };
 
 // Standardwerte statt individuell befuellter Werte: Tests, denen die konkreten
 // Zustands-/Qualitaetswerte egal sind, bekommen mit dieser Fixture den Standard — wo es
 // darauf ankommt (Anlegen-Dialog uebernimmt Zustand/Qualitaet aus `dossierDefaults`),
-// setzt der jeweilige Test seine eigene Fixture (siehe `referenzobjekte-logik.test.ts`
-// fuer die reine Logik).
+// setzt der jeweilige Test seine eigene Fixture.
 const dossierDefaultsStandard: DossierDefaults = { ...BEWERTUNGEN_STANDARD };
 
 function zeichne(
@@ -127,7 +125,7 @@ const KEINE_EINHEITEN: readonly ProjektEinheit[] = [];
  * Diese Suite haelt die Eigenschaft fest, ohne die das Mehrtypenmodell durch die
  * Oberflaeche unerreichbar bleibt: Die typbestimmenden Merkmale muessen editierbar sein,
  * und ein zweites Referenzobjekt darf nicht mit der Zimmerzahl des ersten kollidieren
- * (ZIMMERZAHL_MEHRFACH, `packages/core/src/domain/liegenschaft.ts`).
+ * (ZIMMERZAHL_MEHRFACH).
  */
 describe('Referenzobjekte — typbestimmende Merkmale sind editierbar', () => {
   it('bindet Zimmerzahl und Wohnflaeche als Zahleneingaben (kein Stockwerk mehr)', () => {
@@ -162,10 +160,10 @@ describe('Referenzobjekte — typbestimmende Merkmale sind editierbar', () => {
 });
 
 /**
- * Anlegen laeuft ueber den Dialog (Rueckmeldung Auftraggeber): Zimmerzahl kommt aus einem
- * `Select` mit den Schweizer Halbschritten 1..6 statt aus einer berechneten naechsten
- * ganzen Zahl, Wohnflaeche aus einem Zahlenfeld — beides muss der Vermarkter bewusst
- * eintragen, statt eine erratene 1 m² nachtraeglich zu korrigieren.
+ * Anlegen laeuft ueber den Dialog: Zimmerzahl kommt aus einem `Select` mit den
+ * Schweizer Halbschritten 1..6 statt aus einer berechneten naechsten ganzen Zahl,
+ * Wohnflaeche aus einem Zahlenfeld — beides muss der Vermarkter bewusst eintragen, statt
+ * eine erratene 1 m² nachtraeglich zu korrigieren.
  */
 describe('Referenzobjekte — Anlegen ueber den Dialog', () => {
   it('bietet ein optionales Feld fuer die Anzahl Wohnungen — dieser Typ entfaellt sonst '
@@ -175,9 +173,9 @@ describe('Referenzobjekte — Anlegen ueber den Dialog', () => {
   });
 
   // Die eigentliche Verknuepfung "gewaehlte Zimmerzahl + eingetragene Wohnflaeche ergeben
-  // genau dieses Referenzobjekt" ist reine Logik ohne React-Zustand und steht deshalb in
-  // `referenzobjekte-logik.test.ts` (`neuesReferenzobjekt`): `renderToStaticMarkup`
-  // haengt keine echten State-Updates aneinander, ein Select-onChange gefolgt von einem
+  // genau dieses Referenzobjekt" ist reine Logik ohne React-Zustand und wird deshalb nicht
+  // hier geprueft: `renderToStaticMarkup` haengt keine echten State-Updates aneinander,
+  // ein Select-onChange gefolgt von einem
   // Input-onChange und erst dann einem Klick liesse sich hier nicht ehrlich simulieren —
   // die drei Handler stammen alle aus demselben, einmaligen Renderdurchlauf und wuerden
   // sonst weiterhin den Ausgangszustand sehen (kein Ersatz fuer eine echte Re-Render-Kette).
@@ -193,10 +191,9 @@ describe('Referenzobjekte — Anlegen ueber den Dialog', () => {
 });
 
 /**
- * Sind alle elf Halbschritte vergeben, gibt es keine unterscheidbare Zimmerzahl mehr —
- * anders als die fruehere, auf ganze Zahlen bis 12 offene Zaehlung kann das jetzt
- * tatsaechlich vorkommen (elf Referenzobjekte reichen), und der Dialog selbst kann dann
- * gar nicht mehr sinnvoll geoeffnet werden.
+ * Sind alle elf Halbschritte vergeben, gibt es keine unterscheidbare Zimmerzahl mehr
+ * (elf Referenzobjekte reichen), und der Dialog selbst kann dann gar nicht mehr sinnvoll
+ * geoeffnet werden.
  */
 describe('Referenzobjekte — alle Zimmerzahlen vergeben', () => {
   function volleBelegung(): readonly Referenzobjekt[] {
@@ -228,8 +225,8 @@ describe('Referenzobjekte — alle Zimmerzahlen vergeben', () => {
 
 /**
  * Ein entferntes Referenzobjekt liesse eine Einheit ohne gueltigen Typ zurueck
- * (REFERENZOBJEKT_UNBEKANNT, `projekt-schema.ts`) — die Loeschung muss deshalb gesperrt
- * sein, solange eine Einheit noch darauf zeigt.
+ * (REFERENZOBJEKT_UNBEKANNT) — die Loeschung muss deshalb gesperrt sein, solange eine
+ * Einheit noch darauf zeigt.
  */
 describe('Referenzobjekte — Loeschung', () => {
   function entfernenKnopf() {

@@ -1,7 +1,7 @@
 /**
  * Keine eigene Formel; Umkehrung von eq:wohnungspreis nach dem Faktor.
  *
- * Spec 03 §1.4, PE-21: Absolut erfasste Zu-/Abschlaege werden bei der Erfassung in
+ * PE-21: Absolut erfasste Zu-/Abschlaege werden bei der Erfassung in
  * Faktoren umgerechnet, nicht im Kern — der bleibt bei einer Darstellungsform (E-09,
  * I-06). Bezugsgroesse ist der ungerundete Basispreis aus Stufe 2, nicht der gerundete
  * Wohnungspreis mit bereits enthaltenen Anpassungen.

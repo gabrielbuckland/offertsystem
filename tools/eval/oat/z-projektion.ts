@@ -1,7 +1,7 @@
 /**
  * Keine Modellformel; eine Operation des WERKZEUGS, nicht der Pipeline.
  *
- * zMin/zMax wirken nach Spec 03 nicht kappend, sondern zurueckweisend (I-07): eine
+ * zMin/zMax wirken nicht kappend, sondern zurueckweisend (I-07): eine
  * Einheit mit z_j ausserhalb der Grenzen laesst Stufe 1 fehlschlagen. Eine blosse
  * Verengung des Korridors erzeugte beim tragenden Szenario fuer D3 deshalb keinen
  * Messwert, sondern einen Eingabefehler.

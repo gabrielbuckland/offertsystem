@@ -3,7 +3,7 @@
     "schemaVersion": 1,
     "konfigVersion": "1.1.0-strategie-vorlaeufig",
     "gueltigAb": "2026-08-16",
-    "beschreibung": "Konfigurationsvariante fuer die Sonderfall-Messung des Erweiterungsszenarios (docs/testdoku/erweiterung-risikoindex.md): Der Faktor preissegment nutzt die Strategie wurzelminmax (varianzstabilisierende Wurzeltransformation fuer den rechtsschiefen mittleren Quadratmeterpreis) bei unveraenderten Grenzen. Nicht ausgeliefert; Basis ist company-defaults.json 1.1.0."
+    "beschreibung": "Konfigurationsvariante fuer die Sonderfall-Messung des Erweiterungsszenarios: Der Faktor preissegment nutzt die Strategie wurzelminmax (varianzstabilisierende Wurzeltransformation fuer den rechtsschiefen mittleren Quadratmeterpreis) bei unveraenderten Grenzen. Nicht ausgeliefert; Basis ist company-defaults.json 1.1.0."
   },
   "flaeche": {
     "alpha": 0.5

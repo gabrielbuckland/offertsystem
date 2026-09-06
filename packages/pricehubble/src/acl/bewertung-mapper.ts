@@ -1,5 +1,5 @@
 /**
- * Anti-Corruption Layer, Bewertungsrichtung (Spec 04 §4.1, E-21).
+ * Anti-Corruption Layer, Bewertungsrichtung (E-21).
  * Keine eigene Formel; die Rundungsstellen gehoeren zur Preiskette von eq:qm_preis.
  *
  * Zielstruktur ist die UNVERAENDERTE `Referenzbewertung` aus `packages/core`; der
@@ -12,7 +12,7 @@
  *
  * Der Quadratmeterpreis wird NICHT uebernommen — eq:qm_preis bildet ihn lokal, weil
  * ein fremder Quadratmeterpreis auf einer fremden Flaechendefinition beruhte und I-05
- * (Referenztreue) dann nicht mehr exakt gaelte (Spec 04 §4.3).
+ * (Referenztreue) dann nicht mehr exakt gaelte.
  */
 import {
   rundeAufRappen,
@@ -24,7 +24,7 @@ import type { ValuationResponse } from '../schema/valuation-response.js';
 
 export const ANBIETER = 'pricehubble';
 
-/** Franken je Rappen; Einheitenumrechnung, kein Verhaltensparameter (G-4). */
+/** Franken je Rappen; Einheitenumrechnung, kein Verhaltensparameter. */
 const RAPPEN_JE_FRANKEN = 100;
 
 export function aufReferenzbewertung(args: {
@@ -63,10 +63,10 @@ export interface DossierBody {
  * `RepraesentativeParametrisierung` (E-28). Der Adapter definiert die Feldmenge
  * nicht selbst und sendet keine Vorgabewerte.
  *
- * `flaecheAussen` wird auf `balconyArea` abgebildet; `gardenArea` wird nicht gesetzt
- * (Spec 04 §1.4). eq:flaeche kennt genau eine Aussenflaeche mit genau einem
- * Gewichtungsfaktor; eine Aufteilung auf zwei API-Felder setzte eine Regel voraus,
- * die das Modell nicht hergibt. Vereinfachung, ausgewiesen als N-17.
+ * `flaecheAussen` wird auf `balconyArea` abgebildet; `gardenArea` wird nicht gesetzt.
+ * eq:flaeche kennt genau eine Aussenflaeche mit genau einem Gewichtungsfaktor; eine
+ * Aufteilung auf zwei API-Felder setzte eine Regel voraus, die das Modell nicht
+ * hergibt. Bewusste Vereinfachung.
  */
 export function dossierBody(p: RepraesentativeParametrisierung): DossierBody {
   return {
@@ -74,13 +74,20 @@ export function dossierBody(p: RepraesentativeParametrisierung): DossierBody {
       livingArea: p.flaecheInnen,
       balconyArea: p.flaecheAussen,
       floorNumber: p.stockwerk,
-      energyLabel: p.energielabel,
       condition: p.zustandsbewertungen,
       quality: p.qualitaetsbewertungen,
       numberOfBathrooms: p.anzahlBadezimmer,
       hasLift: p.lift,
       buildingYear: p.baujahr,
-      heatingGenerationType: p.heizungsart,
+      // `energyLabel` und `heatingGenerationType` sind serverseitig geschlossene
+      // Aufzaehlungen OHNE Leerwert (live belegt 2026-09-01: energyLabel nur
+      // minergie*, heatingGenerationType nur electric|wood|gas|oil|district|
+      // heat_pump_air|heat_pump_geothermal|solar). Ein leeres Feld wird deshalb
+      // weggelassen statt als '' gesendet — sonst lehnt die API das ganze PATCH
+      // mit 400 ab, und eine Liegenschaft ohne Minergie-Label waere ueberhaupt
+      // nicht bewertbar.
+      ...(p.energielabel === '' ? {} : { energyLabel: p.energielabel }),
+      ...(p.heizungsart === '' ? {} : { heatingGenerationType: p.heizungsart }),
     },
   };
 }

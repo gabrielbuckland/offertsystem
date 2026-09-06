@@ -1,5 +1,5 @@
 /**
- * Keine Formel. Rueckvergleich des gesendeten E3-Bodys (Spec 04 §5.4).
+ * Keine Formel. Rueckvergleich des gesendeten E3-Bodys.
  *
  * Ein stillschweigend ignorierter oder gerundeter Parameter fuehrte sonst zu einer
  * Bewertung auf einem anderen Objekt, als der Vermarkter erfasst hat.
@@ -7,7 +7,7 @@
  */
 import type { DossierBody } from './bewertung-mapper.js';
 
-/** Toleranz fuer Gleitkommaflaechen (Spec 04 §5.4). */
+/** Toleranz fuer Gleitkommaflaechen. */
 const TOLERANZ = 1e-9;
 
 function gleich(gesendet: unknown, zurueck: unknown): boolean {

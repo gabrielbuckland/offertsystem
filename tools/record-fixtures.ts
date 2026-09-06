@@ -1,5 +1,5 @@
 /**
- * Meilenstein M-FIX — Aufzeichnungspfad (E-31, Spec 04 §8.3).
+ * Aufzeichnungspfad fuer PriceHubble-Fixtures (E-31).
  *
  * Laufzeit: `node --experimental-strip-types` (Node >= 22.6, PE-09). Kein `tsx`.
  *
@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { anonymisiere } from '../packages/pricehubble/src/acl/anonymisierung.js';
 import { HttpClient } from '../packages/pricehubble/src/client/http-client.js';
 import { stdoutProtokoll } from '../packages/pricehubble/src/client/protokoll.js';
-import { TokenVerwaltung } from '../packages/pricehubble/src/client/token-verwaltung.js';
+import { TokenVerwaltung, type Zugang } from '../packages/pricehubble/src/client/token-verwaltung.js';
 import { systemUhr } from '../packages/pricehubble/src/client/uhr.js';
 import { jitterStromAusLaufSeed } from '../packages/pricehubble/src/client/zufall.js';
 import {
@@ -34,7 +34,29 @@ import type { EndpunktName } from '../packages/pricehubble/src/client/fehler.js'
 // einer file-URL prozentkodiert sind und als Pfad nicht mehr aufloesbar waeren.
 const WURZEL = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-const PFLICHT = ['PH_BASE_URL', 'PH_USERNAME', 'PH_PASSWORD', 'PH_DOSSIER_ID'] as const;
+const PFLICHT = ['PH_BASE_URL', 'PH_DOSSIER_ID'] as const;
+
+/**
+ * Zwei zulaessige Zugangswege: entweder PH_USERNAME und PH_PASSWORD, oder ein von
+ * Hand besorgter PH_ACCESS_TOKEN. Der Token-Weg erlaubt den Aufzeichnungslauf, ohne
+ * dass Zugangsdaten in den Prozess gelangen (E-31).
+ */
+function leseZugang(env: Record<string, string | undefined>): Zugang {
+  const token = (env['PH_ACCESS_TOKEN'] ?? '').trim();
+  if (token !== '') {
+    return { art: 'token', token };
+  }
+  const benutzername = (env['PH_USERNAME'] ?? '').trim();
+  const passwort = (env['PH_PASSWORD'] ?? '').trim();
+  if (benutzername === '' || passwort === '') {
+    throw new Error(
+      'test:record kann nicht laufen: entweder PH_USERNAME und PH_PASSWORD setzen '
+      + 'oder PH_ACCESS_TOKEN aus einem manuellen Login. Zugangsdaten gehoeren nach '
+      + '.env.local und werden nie eingecheckt.',
+    );
+  }
+  return { art: 'zugangsdaten', benutzername, passwort };
+}
 
 interface Aufzeichnung {
   readonly datei: string;
@@ -90,8 +112,7 @@ async function main(): Promise<void> {
   pruefeZugang(env);
 
   const basisUrl = String(env['PH_BASE_URL']);
-  const benutzername = String(env['PH_USERNAME']);
-  const passwort = String(env['PH_PASSWORD']);
+  const zugang = leseZugang(env);
   const dossierId = String(env['PH_DOSSIER_ID']);
 
   const konfiguration = ladeApiKonfiguration(basisUrl);
@@ -106,7 +127,7 @@ async function main(): Promise<void> {
     client,
     konfiguration,
     uhr: systemUhr,
-    zugangsdaten: { benutzername, passwort },
+    zugang,
   });
 
   const token = await tokenVerwaltung.holeToken();
@@ -146,7 +167,9 @@ async function main(): Promise<void> {
         location: {
           address: {
             postCode: '8008',
-            city: 'Zuerich',
+            // Muss der Dossier-Adresse exakt entsprechen: Mit 'Zuerich' lehnt die API
+            // die Referenz ab (403 «Request is not allowed with this reference»).
+            city: 'Zürich',
             street: 'Hornbachstrasse',
             houseNumber: '65',
           },
@@ -173,8 +196,8 @@ async function main(): Promise<void> {
     if (!antwort.ok) {
       throw new Error(`${eintrag.endpunkt} fehlgeschlagen: ${antwort.fehler.art}`);
     }
-    // Anonymisierung VOR dem Schreiben (Spec 04 §8.3 Punkt 2): unanonymisiertes
-    // Material liegt zu keinem Zeitpunkt auf Platte.
+    // Anonymisierung VOR dem Schreiben: unanonymisiertes Material liegt zu keinem
+    // Zeitpunkt auf Platte.
     schreibe(eintrag.datei, anonymisiere(antwort.wert.rumpf));
     protokollzeilen.push(
       JSON.stringify({

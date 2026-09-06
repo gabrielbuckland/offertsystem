@@ -1,5 +1,5 @@
 /**
- * Konfigurationslader (Spec 02 §6, E-26). Liest die firmenweite Berechnungsbasis vom
+ * Konfigurationslader (E-26). Liest die firmenweite Berechnungsbasis vom
  * Dateisystem, prueft/bildet sie ueber `parseKonfiguration` auf den Kerntyp ab (PE-01,
  * dieser Lader ruft nur auf), fuehrt projektbezogene Ueberschreibungen zusammen und
  * bildet die SHA-256-Pruefsumme. Dateizugriff/Pruefsumme bleiben hier, weil der Kern
@@ -118,8 +118,8 @@ export function ladeKonfiguration(optionen: LadeOptionen): LadeErgebnis {
   const zusammengefuehrt = mergeKonfiguration(basis, optionen.ueberschreibungen ?? {});
   if (!zusammengefuehrt.ok) return { ok: false, fehler: zusammengefuehrt.fehler };
 
-  // Regel 5 aus Spec 02 §2.3: Nach dem Merge gilt erneut die volle Pruefung (I-21) — eine
-  // projektbezogene Uebersteuerung kann eine Invariante verletzen. `parseKonfiguration`
+  // Nach dem Merge gilt erneut die volle Pruefung (I-21) — eine projektbezogene
+  // Uebersteuerung kann eine Invariante verletzen. `parseKonfiguration`
   // statt `validiereKonfiguration`, da es zugleich den Kerntyp der zusammengefuehrten
   // Basis liefert (PE-01). Bewusst UNBEDINGT, nicht nur bei nichtleerem Protokoll.
   const nachgeparst = parseKonfiguration(zusammengefuehrt.wert.basis);

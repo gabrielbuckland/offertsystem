@@ -1,10 +1,9 @@
 /**
  * Objektbauer fuer Konfigurationstests. Liegt bewusst unter test/ und nicht
  * unter src/, damit eine Anpassung im Erweiterungsszenario nicht in den
- * Codefilter der Erweiterbarkeitsmessung faellt (Spec 01 §1.3).
+ * Codefilter der Erweiterbarkeitsmessung faellt.
  *
- * Die Werte entsprechen der Standardkonfiguration aus Spec 02 §5; Betraege in
- * Rappen, Preissegment-Grenzen in Rappen je Quadratmeter (E-07).
+ * Betraege in Rappen, Preissegment-Grenzen in Rappen je Quadratmeter (E-07).
  */
 import type { RohKonfiguration } from '../src/config/schema.js';
 

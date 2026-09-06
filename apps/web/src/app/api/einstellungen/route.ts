@@ -1,7 +1,6 @@
-// Schreibpfad der firmenweiten Konfiguration (Spec §6, US-08). Geschrieben wird nur nach
-// bestandener Validierung (I-21, zurueckweisen statt melden). Antwortform `befunde` (Pfad +
-// Text) statt `fehler.text`: die Editoren verankern ihre Meldung am Feld, nicht am
-// gesamten Formular.
+// Schreibpfad der firmenweiten Konfiguration (US-08). Geschrieben wird nur nach bestandener
+// Validierung (I-21, zurueckweisen statt melden). Antwortform `befunde` (Pfad + Text) statt
+// `fehler.text`: die Editoren verankern ihre Meldung am Feld, nicht am gesamten Formular.
 import { holeLaufzeit } from '../../../server/laufzeit.js';
 import { schreibeCompanyDefaults } from '../../../server/einstellungen-ablage.js';
 

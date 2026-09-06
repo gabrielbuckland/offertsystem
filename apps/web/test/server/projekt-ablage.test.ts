@@ -20,10 +20,8 @@ describe('Projektablage', () => {
     expect(await ladeProjekt(p.id, v)).toEqual(p);
   });
 
-  // Erwartung angehoben, nicht abgeschwaecht: Zuvor pruefte diese Suite nur, DASS ein
-  // Projekt entsteht. Der Spaltenschnitt eines neuen Projekts ist aber laut US-04 AK 5 /
-  // E-25 aus den firmenweiten Vorlagen vorbelegt — `vorbelegteSpalten` existierte, wurde
-  // aber ausser von seinem eigenen Test von niemandem aufgerufen.
+  // Der Spaltenschnitt eines neuen Projekts ist aus den firmenweiten Vorlagen vorbelegt
+  // (US-04 AK 5, E-25).
   it('belegt die Anpassungsspalten aus den firmenweiten Vorlagen vor', async () => {
     const v = await verzeichnis();
     const k = standardKonfiguration();

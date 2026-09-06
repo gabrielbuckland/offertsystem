@@ -1,5 +1,5 @@
-// TipTap-Knoten fuer die Platzhalter (Spec 2026-08-27 §2). Atomar: ein Platzhalter wird
-// eingefuegt und geloescht, nie zerschrieben.
+// TipTap-Knoten fuer die Platzhalter. Atomar: ein Platzhalter wird eingefuegt und
+// geloescht, nie zerschrieben.
 import { Node, mergeAttributes } from '@tiptap/core';
 import { PLATZHALTER_KATALOG } from '@offert/offer';
 

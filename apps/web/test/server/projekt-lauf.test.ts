@@ -30,9 +30,9 @@ async function vorbereitetesProjekt(projekte: string) {
     referenzobjekte: [{
       id: 'R-1', zimmerzahl: 3.5,
       parametrisierung: {
-        flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'B',
+        flaecheInnen: 86, flaecheAussen: 19, stockwerk: 1, energielabel: 'minergie_p' as const,
         ...BEWERTUNGEN_STANDARD,
-        anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump',
+        anzahlBadezimmer: 1, lift: true, baujahr: 2027, heizungsart: 'heat_pump_air' as const,
       },
     }],
     anpassungsSpalten: [],
@@ -61,7 +61,7 @@ describe('Projektlauf', () => {
       const lauf = await fuehreProjektlauf(id, laufzeit.wert);
       expect(lauf.art).toBe('offerte');
       if (lauf.art !== 'offerte') return;
-      // Dieselbe Struktur wie im Offert-Artefakt — kein zweites Datenbild (Spec §4):
+      // Dieselbe Struktur wie im Offert-Artefakt — kein zweites Datenbild:
       expect(priceDerivationSchema.safeParse(lauf.offerte.derivation).success).toBe(true);
       expect(aggregateValuesSchema.safeParse(lauf.offerte.aggregates).success).toBe(true);
       // Die Zuordnung Wohnungsnummer -> Einheitenkennung stammt aus dem Projekt; das

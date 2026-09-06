@@ -11,9 +11,9 @@ function referenzobjekt(id: string, zimmerzahl: number): Referenzobjekt {
     id,
     zimmerzahl,
     parametrisierung: {
-      flaecheInnen: 60, flaecheAussen: 0, stockwerk: 0, energielabel: '',
+      flaecheInnen: 60, flaecheAussen: 0, stockwerk: 0, energielabel: '' as const,
       ...BEWERTUNGEN_STANDARD,
-      anzahlBadezimmer: 0, lift: false, baujahr: 0, heizungsart: '',
+      anzahlBadezimmer: 1, lift: false, baujahr: 0, heizungsart: '' as const,
     },
   };
 }
@@ -60,9 +60,9 @@ describe('neuesReferenzobjekt', () => {
       id: 'R2',
       zimmerzahl: 4.5,
       parametrisierung: {
-        flaecheInnen: 72, flaecheAussen: 0, stockwerk: 0, energielabel: '',
+        flaecheInnen: 72, flaecheAussen: 0, stockwerk: 0, energielabel: '' as const,
         ...BEWERTUNGEN_STANDARD,
-        anzahlBadezimmer: 0, lift: false, baujahr: 2027, heizungsart: '',
+        anzahlBadezimmer: 1, lift: false, baujahr: 2027, heizungsart: '' as const,
       },
     });
   });
@@ -104,8 +104,7 @@ describe('anzahlWohnungenAusEntwurf', () => {
 
 /**
  * Die eigentliche Verkettung "neu angelegtes Referenzobjekt + Anzahl Wohnungen ergeben
- * genau so viele neue Einheiten dieses Typs" — reine Funktionen, deshalb hier statt im
- * Komponententest (`Referenzobjekte.test.tsx`) pruefbar.
+ * genau so viele neue Einheiten dieses Typs" — reine Funktionen, deshalb hier pruefbar.
  */
 describe('neuesReferenzobjekt + erzeugeEinheiten (Anlegen-Dialog mit Anzahl)', () => {
   it('erzeugt genau so viele Einheiten des neuen Typs wie im Dialog angegeben', () => {

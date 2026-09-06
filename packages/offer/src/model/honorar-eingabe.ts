@@ -1,6 +1,6 @@
 /**
  * Keine Formel. Formatpruefung des vom Vermarkter gewaehlten Honorarbetrags
- * (`aggregates.gewaehltesHonorar`, Spec 2026-08-29).
+ * (`aggregates.gewaehltesHonorar`).
  *
  * Geprueft wird die Form (R3: Ganzzahl in Rappen, wie `feeRange.min/max`) UND die
  * Positivitaet. Eine Abweichung von der Honorarrange ist KEINE Formverletzung, sondern
@@ -10,10 +10,10 @@
  * lehnt nur ein falsches FORMAT (inkl. Nicht-Positivitaet) ab, nie eine Abweichung von
  * der Range.
  *
- * Die Positivpruefung (Review-Befund 2026-08-29) traegt NICHT `feeRange` (die ist ein
- * berechneter Wert, der nie negativ wird): `gewaehltesHonorar` ist eine Benutzereingabe
- * und damit eine eigene Vertrauensgrenze — ohne diese Pruefung liesse sich ein
- * Honorar von z. B. -50'000 CHF erfassen und unveraendert ins Kundendokument drucken.
+ * Die Positivpruefung traegt NICHT `feeRange` (die ist ein berechneter Wert, der nie
+ * negativ wird): `gewaehltesHonorar` ist eine Benutzereingabe und damit eine eigene
+ * Vertrauensgrenze — ohne diese Pruefung liesse sich ein Honorar von z. B. -50'000 CHF
+ * erfassen und unveraendert ins Kundendokument drucken.
  */
 export type HonorarPruefung =
   | { readonly ok: true; readonly wert: number }
@@ -34,7 +34,7 @@ export function validiereGewaehltesHonorar(wert: unknown): HonorarPruefung {
 
 /**
  * Honorar als Anteil (nicht Prozentzahl, also 0.032 statt 3.2) der Verkaufssumme, fuer
- * `formatiereHonorarProzent` (Spec 2026-08-29). `null` statt `NaN`/`Infinity`, wenn die
+ * `formatiereHonorarProzent`. `null` statt `NaN`/`Infinity`, wenn die
  * Verkaufssumme keine sinnvolle Bezugsgroesse ist (<= 0) — die Anzeige entscheidet dann
  * selbst ueber einen Platzhaltertext, statt eine kaputte Zahl zu erhalten.
  */

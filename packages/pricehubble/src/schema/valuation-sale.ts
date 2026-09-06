@@ -1,18 +1,18 @@
 /**
- * Keine Formel. Contract-Schema der Bewertungsantwort (Spec 04 §5.2, §5.3).
+ * Keine Formel. Contract-Schema der Bewertungsantwort.
  * Tolerant nach oben (unbekannte Felder werden verworfen), streng nach unten.
  */
 import { z } from 'zod';
 
-/** Obergrenze des Plausibilitaetsfensters in CHF (Spec 04 §5.2). */
+/** Obergrenze des Plausibilitaetsfensters in CHF. */
 const PLAUSIBILITAETSGRENZE_CHF = 1e9;
-/** Ein Tag Toleranz fuer Zeitzonenversatz beim Bewertungsdatum (Spec 04 §5.2). */
+/** Ein Tag Toleranz fuer Zeitzonenversatz beim Bewertungsdatum. */
 const DATUMS_TOLERANZ_MS = 86_400_000;
 
 /**
  * Feldnamen des Dossier-Wegs (Bruno-Collection). Kapitel 2 nennt `salePrice`,
- * `salePriceRange`, `confidence` — das sind die Namen des zustandslosen Endpunkts
- * (R-04, Nachfuehrung N-4).
+ * `salePriceRange`, `confidence` — das sind die Namen des zustandslosen Endpunkts,
+ * nicht des hier verwendeten Dossier-Wegs.
  */
 export const ValuationSaleSchema = z
   .object({

@@ -12,10 +12,8 @@ describe('leseUmgebung', () => {
     expect(ergebnis.wert.companyDefaultsPfad).toMatch(/config[/\\]company-defaults\.json$/);
   });
 
-  // Regression: Die Vorgabewerte waren relativ und wurden gegen process.cwd()
-  // aufgeloest. `next dev` laeuft mit apps/web als Arbeitsverzeichnis, wodurch der
-  // Lader unter apps/web/config/ suchte und die Erfassung mit CFG_SCHEMA_TYPE
-  // abbrach. Die Vorgaben muessen deshalb arbeitsverzeichnisunabhaengig sein.
+  // `next dev` laeuft mit apps/web als Arbeitsverzeichnis; die Vorgaben muessen deshalb
+  // arbeitsverzeichnisunabhaengig sein.
   it('loest die Vorgabepfade absolut auf, unabhaengig vom Arbeitsverzeichnis', () => {
     const ergebnis = leseUmgebung({});
     expect(ergebnis.ok).toBe(true);
@@ -44,6 +42,27 @@ describe('leseUmgebung', () => {
     expect(ergebnis.ok).toBe(false);
     if (ergebnis.ok) return;
     expect(ergebnis.meldungen).toHaveLength(4);
+    expect(ergebnis.meldungen.join(' ')).toContain('PH_DOSSIER_ID');
+  });
+
+  it('akzeptiert pricehubble mit PH_ACCESS_TOKEN statt Zugangsdaten (E-31)', () => {
+    const ergebnis = leseUmgebung({
+      VALUATION_PROVIDER: 'pricehubble',
+      PH_BASE_URL: 'https://api.pricehubble.com',
+      PH_ACCESS_TOKEN: 't-manuell',
+      PH_DOSSIER_ID: '4711',
+    });
+    expect(ergebnis.ok).toBe(true);
+  });
+
+  it('verlangt auch mit PH_ACCESS_TOKEN weiterhin Basis-URL und Dossier (E-31)', () => {
+    const ergebnis = leseUmgebung({
+      VALUATION_PROVIDER: 'pricehubble',
+      PH_ACCESS_TOKEN: 't-manuell',
+    });
+    expect(ergebnis.ok).toBe(false);
+    if (ergebnis.ok) return;
+    expect(ergebnis.meldungen).toHaveLength(2);
     expect(ergebnis.meldungen.join(' ')).toContain('PH_DOSSIER_ID');
   });
 

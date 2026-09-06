@@ -3,9 +3,9 @@ import { cn } from '../../lib/utils.js';
 export type HinweisArt = 'fehler' | 'warnung' | 'info' | 'erfolg';
 
 /**
- * Einziges Erscheinungsbild fuer Meldungen (Spec §3). Vereinheitlicht nur Rolle, Farbe
- * und Symbol; Texte kommen weiterhin aus der Uebersetzungsschicht, die Verankerung am
- * Feld bleibt Sache des Aufrufers.
+ * Einziges Erscheinungsbild fuer Meldungen. Vereinheitlicht nur Rolle, Farbe und Symbol;
+ * Texte kommen weiterhin aus der Uebersetzungsschicht, die Verankerung am Feld bleibt
+ * Sache des Aufrufers.
  */
 const ARTEN: Record<HinweisArt, { rolle: 'alert' | 'status'; klasse: string; symbol: string }> = {
   fehler:  { rolle: 'alert',  klasse: 'border-destructive/40 bg-destructive/5 text-destructive', symbol: '✕' },

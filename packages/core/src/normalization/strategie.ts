@@ -1,4 +1,4 @@
-// eq:normalisierung — Vertrag der Strategieschnittstelle (Strategy Pattern, Brief §5.5).
+// eq:normalisierung — Vertrag der Strategieschnittstelle (Strategy Pattern).
 // Vertrag: das Ergebnis liegt garantiert in [0, 1] fuer jeden endlichen Rohwert (I-22);
 // hoeher = aufwandintensiver. Die Umpolung liegt in den Daten (vertauschte Grenzen),
 // nicht im Code (I-13).

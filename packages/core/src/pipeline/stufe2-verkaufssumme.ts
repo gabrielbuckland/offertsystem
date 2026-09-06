@@ -1,6 +1,6 @@
 // eq:flaeche, eq:qm_preis, eq:wohnungspreis, eq:verkaufssumme.
 // Rundungsstelle R2 liegt am Wohnungspreis nach Anwendung der Zu-/Abschlaege; q_t und
-// basispreis bleiben ungerundete Zwischenwerte (Brief §5.3, E-09).
+// basispreis bleiben ungerundete Zwischenwerte (E-09).
 // Sonderfaelle: S-04 (A_t_ref = 0), S-06 (z_j <= -1 bzw. ausserhalb der Grenzen).
 import { rappen, rundeAufRappen, type Rappen } from '../domain/geld.js';
 import type { Wohnungsnummer, WohnungstypId } from '../domain/ids.js';
@@ -68,7 +68,7 @@ export function berechneVerkaufssumme(
         }, { wohnungstyp: typ.id }),
       );
     }
-    // eq:qm_preis — ungerundet; jede Rundung hier bricht I-05 (Spec 03 §5.4).
+    // eq:qm_preis — ungerundet; jede Rundung hier bricht I-05.
     ableitungen.set(typ.id, {
       wohnungstypId: typ.id,
       referenzwert: bewertung.marktwert,
@@ -118,7 +118,7 @@ export function berechneVerkaufssumme(
     });
   }
 
-  // eq:verkaufssumme — exakte Ganzzahlsumme; keine Rundung noetig (Spec 03 §5.3).
+  // eq:verkaufssumme — exakte Ganzzahlsumme; keine Rundung noetig.
   const verkaufssumme = rappen(positionen.reduce((s, p) => s + p.preis, 0));
 
   return ok({

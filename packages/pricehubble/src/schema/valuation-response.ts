@@ -1,4 +1,4 @@
-/** Keine Formel. Contract-Schema der Bewertungsantwort E4 (Spec 04 §1.5). */
+/** Keine Formel. Contract-Schema der Bewertungsantwort E4. */
 import { z } from 'zod';
 import { ValuationSaleSchema } from './valuation-sale.js';
 

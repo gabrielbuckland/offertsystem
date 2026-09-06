@@ -2,14 +2,10 @@
  * Deckt den Zweig ab, der einspringt, wenn `ladeKonfiguration` NACH einem erfolgreichen
  * Schreibvorgang scheitert (Luecke zwischen Kernvalidierung und Ladepfad). Unter legitimer,
  * JSON-rundreisefaehiger Eingabe ist diese Divergenz mit den heutigen Fixtures nicht
- * erreichbar: `ladeKonfiguration` ruft intern erneut exakt dieselbe `validiereKonfiguration`
- * auf, die `schreibeCompanyDefaults` bereits bestanden hat, und die zusaetzlichen
- * Kernpruefungen in `parseKonfiguration` (Ganzzahligkeit der Stuetzstellen, Gewichtsbereich)
- * sind laut deren eigenem Kommentar in `abbildung.ts` bereits durch Ebene 2 abgedeckt — ein
- * "Netz gegen den Defekt, nicht gegen erwartbare Eingaben". Diese eine Datei mockt deshalb
- * gezielt `ladeKonfiguration`, um den sonst toten Zweig nachweisbar zu machen; die eigentliche
- * Schreib-/Validierungslogik (`einstellungen-ablage.test.ts`) laeuft ungemockt gegen den
- * echten Lader.
+ * erreichbar, da `ladeKonfiguration` intern erneut dieselbe Validierung durchlaeuft, die das
+ * Schreiben bereits bestanden hat. Diese Datei mockt deshalb gezielt `ladeKonfiguration`, um
+ * den sonst toten Zweig nachweisbar zu machen; die eigentliche Schreib-/Validierungslogik
+ * laeuft in einer anderen Suite ungemockt gegen den echten Lader.
  */
 import { dirname, join, resolve } from 'node:path';
 import { copyFileSync, mkdtempSync, readdirSync, readFileSync } from 'node:fs';
@@ -63,7 +59,7 @@ describe('schreibeCompanyDefaults — Wiederherstellung nach fehlgeschlagenem Na
     expect(readFileSync(pfad, 'utf8')).toBe(vorher);
 
     // Der Schreibversuch selbst lief durch (Backup existiert) — der Fehlschlag liegt
-    // erst NACH dem Schreiben, im Nachladeschritt, wie in der Kopfdoku beschrieben.
+    // erst NACH dem Schreiben, im Nachladeschritt.
     const gesichert = readdirSync(join(dirname(pfad), 'backups'));
     expect(gesichert).toHaveLength(1);
   });

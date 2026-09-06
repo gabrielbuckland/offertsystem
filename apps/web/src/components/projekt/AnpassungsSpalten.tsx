@@ -252,7 +252,6 @@ export function AnpassungsSpalten(
                   sonst faelschlich als (nicht vorhandenes) Vorgabewert-Feld durchgingen. */}
               <div className={`border-t border-border/50 p-6 pt-2 ${isOffen ? '' : 'hidden'}`}>
                 <div className="flex flex-col gap-6">
-                  {/* Stage 1: Basic Config */}
                   <div className="flex flex-wrap items-end gap-6">
                     <div className="min-w-[200px] flex-1 space-y-2">
                       <Label htmlFor={`spalte-${s.id}-bezeichnung`}>Bezeichnung</Label>
@@ -304,7 +303,7 @@ export function AnpassungsSpalten(
                     )}
                   </div>
 
-                  {/* Stage 2: Rules / Actions — echt bedingt gemountet, siehe Kommentar oben. */}
+                  {/* Echt bedingt gemountet, siehe Kommentar oben. */}
                   {isOffen && (
                   <div className="rounded-md border border-border/50 bg-muted/10 p-4">
                     {s.regel === undefined ? (

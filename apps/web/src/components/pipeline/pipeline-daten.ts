@@ -28,6 +28,7 @@ import {
   formatiereScore,
   formatiereZimmerzahl,
 } from '@offert/offer';
+import { beschrifteFeld, beschrifteObjekt, beschrifteWert } from '../../lib/dossier-beschriftungen.js';
 
 export interface PipelineZeile {
   readonly beschriftung: string;
@@ -80,17 +81,6 @@ interface PipelineExtras {
 }
 
 const FEHLT = '—';
-
-/**
- * `dossierDefaults` fuehrt genau die beiden Bewertungsobjekte `zustandsbewertungen` und
- * `qualitaetsbewertungen`, jedes mit der vollstaendigen PriceHubble-Feldmenge
- * (`DossierDefaultsSchema`, strikt). Es gibt keine Rechenstufe dahinter und keinen
- * Fehlfall: Eine leere, fehlende oder skalare Form haelt schon die Konfigurationspruefung
- * auf, hier kaeme sie nie an.
- */
-function formatiereBewertungen(bewertungen: Readonly<Record<string, unknown>>): string {
-  return Object.entries(bewertungen).map(([feld, wert]) => `${feld}: ${String(wert)}`).join(', ');
-}
 
 /**
  * Vergleicht den Bezugspfad einer Zeile mit dem Pfad eines Protokolleintrags,
@@ -146,25 +136,42 @@ function herkunft(
   return istProjektbezogen(bezugspfade, ueberschreibungen) ? 'projekt' : 'firmenweit';
 }
 
+/**
+ * `dossierDefaults` fuehrt genau die beiden Bewertungsobjekte `zustandsbewertungen` und
+ * `qualitaetsbewertungen`, jedes mit der vollstaendigen PriceHubble-Feldmenge
+ * (`DossierDefaultsSchema`, strikt). Es gibt keine Rechenstufe dahinter und keinen
+ * Fehlfall: Eine leere, fehlende oder skalare Form haelt schon die Konfigurationspruefung
+ * auf, hier kaeme sie nie an.
+ *
+ * Beide Objekte werden als eigener Abschnitt mit einer Zeile je Bewertungsfeld
+ * ausgewiesen; die Ansprache kommt aus `lib/dossier-beschriftungen`, damit im Rechenweg
+ * dieselben Begriffe stehen wie im Dossier-Editor.
+ */
 function baueStufeEingabe(
   basis: OffertKonfiguration,
   ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
 ): PipelineStufe {
   const defaults = basis.dossierDefaults as unknown as Record<string, Record<string, unknown>>;
-  const zeilen: PipelineZeile[] = Object.entries(defaults).map(([feldname, bewertungen]) => ({
-    beschriftung: feldname,
-    wert: formatiereBewertungen(bewertungen),
-    // Zwei Wege fuehren zu einem projektbezogenen Dossier-Wert: die Voreinstellung
-    // selbst oder der Wert eines einzelnen Wohnungstyps.
-    herkunft: herkunft(ueberschreibungen,
-      `dossierDefaults.${feldname}`, `dossierParameter.*.${feldname}`),
-  }));
+  const abschnitte: PipelineAbschnitt[] = Object.entries(defaults).map(
+    ([objektschluessel, bewertungen]) => ({
+      titel: beschrifteObjekt(objektschluessel),
+      zeilen: Object.entries(bewertungen).map(([feld, wert]) => ({
+        beschriftung: beschrifteFeld(feld),
+        wert: beschrifteWert(objektschluessel, String(wert)),
+        // Zwei Wege fuehren zu einem projektbezogenen Dossier-Wert: die Voreinstellung
+        // selbst oder der Wert eines einzelnen Wohnungstyps.
+        herkunft: herkunft(ueberschreibungen,
+          `dossierDefaults.${objektschluessel}.${feld}`,
+          `dossierParameter.*.${objektschluessel}.${feld}`),
+      })),
+    }),
+  );
   return {
     nr: 1,
     titel: 'Eingabe',
     zweck: 'Dossier-Vorgaben, die je Wohnungstyp in die Bewertungsanfrage an PriceHubble '
       + 'eingehen. Projektbezogene Werte ersetzen die firmenweiten.',
-    abschnitte: [{ zeilen }],
+    abschnitte,
     editorPfad: '/einstellungen/dossier',
   };
 }

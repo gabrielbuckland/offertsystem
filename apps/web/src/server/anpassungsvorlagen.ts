@@ -2,9 +2,9 @@
  * Anpassungs-Vorlagen aus den Company Defaults (E-25, US-04 AK 5). Vorlagen werden
  * VORGESCHLAGEN, nicht vorbelegt — eine automatisch gesetzte Anpassung waere ein
  * Herkunftsfehler und die Musterform des Automation Bias. Bei einer Vorlage MIT
- * Bereichsregel uebernimmt `spalten-vorbelegung.ts` Erfassungsform und Regel automatisch,
- * das ist trotzdem kein Automation Bias: kein Zu-/Abschlagswert wird gesetzt, die Regel
- * wird erst wirksam, wenn der Vermarkter das Merkmal erfasst (`ermittleWirksamenWert`).
+ * Bereichsregel wird Erfassungsform und Regel automatisch uebernommen, das ist trotzdem
+ * kein Automation Bias: kein Zu-/Abschlagswert wird gesetzt, die Regel wird erst wirksam,
+ * wenn der Vermarkter das Merkmal erfasst.
  */
 import type { Konfiguration, KernAnpassungsVorlage } from '@offert/core';
 

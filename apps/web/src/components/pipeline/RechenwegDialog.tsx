@@ -1,10 +1,10 @@
 'use client';
 
-// Seitenfuellender Dialog fuer den Rechenweg. Natives `<dialog>` mit `showModal()` wie die
-// uebrigen Dialoge der Anwendung — Fokusfalle, Esc und Backdrop kommen vom Browser. Zustand
-// lebt beim Aufrufer; `onClose` haelt ihn synchron, wenn der Dialog sich selbst schliesst
-// (Esc). Inhalt wird nur im offenen Zustand gerendert, damit die Seite nicht bei jedem
-// Projekt-Update auch den ganzen Rechenweg neu aufbaut.
+// Seitenfuellender Dialog fuer den Rechenweg. Natives `<dialog>` mit `showModal()`:
+// Fokusfalle, Esc und Backdrop kommen vom Browser. Zustand lebt beim Aufrufer; `onClose`
+// haelt ihn synchron, wenn der Dialog sich selbst schliesst (Esc). Inhalt wird nur im
+// offenen Zustand gerendert, damit die Seite nicht bei jedem Projekt-Update auch den
+// ganzen Rechenweg neu aufbaut.
 import { useEffect, useRef } from 'react';
 import { Button } from '../ui/button.js';
 import { PipelineAnsicht } from './PipelineAnsicht.js';
@@ -31,7 +31,7 @@ export function RechenwegDialog({ offen, schliesse, stufen }: RechenwegDialogPro
       ref={dialogRef}
       aria-label="Rechenweg"
       onClose={schliesse}
-      // `m-auto` gegen Tailwinds Preflight-`margin: 0` (siehe Referenzobjekte.tsx).
+      // `m-auto` gegen Tailwinds Preflight-`margin: 0`.
       className="m-auto h-[calc(100dvh-2.5rem)] w-[min(72rem,calc(100vw-2.5rem))] rounded-xl border border-border bg-background p-0 backdrop:bg-foreground/40"
     >
       {offen && (
