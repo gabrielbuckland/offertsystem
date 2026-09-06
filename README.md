@@ -63,7 +63,6 @@ verletzende Konfiguration zurueck, bevor gerechnet wird.
 |---|---|---|
 | `npm run eval:config` | `artifacts/config/<zeitstempel>/config-validation.json` plus `artifacts/config/latest.json` | Positivlauf je Pruefebene und Negativmatrix (Variante → erwarteter Code → tatsaechlicher Code) |
 | `npm run test:coverage` | `artifacts/coverage/coverage-summary.json` plus `artifacts/coverage/latest.json` | Testabdeckung |
-| — | `docs/testdoku/boundary-negativfall.md` | protokollierter Nachweis, dass die Architekturregel scharf ist |
 | — | `packages/core/test/fixtures/config-invalid/negativmatrix.md` | Negativmatrix inkl. konstruktiv ausgeschlossener Faelle |
 
 Jedes Artefaktverzeichnis traegt einen `latest.json`-Zeiger auf den juengsten
