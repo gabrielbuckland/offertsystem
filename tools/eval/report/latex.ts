@@ -87,12 +87,15 @@ export function tabelle(t: {
   readonly zeilen: readonly (readonly string[])[];
   readonly beschriftung: string;
   readonly label: string;
-  /** true: \\midrule zwischen den Datenzeilen (Benutzervorgabe fuer E.1). */
-  readonly zeilentrenner?: boolean;
+  /** true: \\midrule vor der letzten Zeile (Totalzeile). */
+  readonly totalzeile?: boolean;
 }): string {
   const kopfzeile = t.kopf.map((k) => `\\textbf{${k}}`).join(' & ');
-  const rumpf = t.zeilen.map((z) => `${z.join(' & ')} \\\\`)
-    .join(t.zeilentrenner === true ? '\n\\midrule\n' : '\n');
+  const zeilenTex = t.zeilen.map((z) => `${z.join(' & ')} \\\\`);
+  if (t.totalzeile === true && zeilenTex.length > 1) {
+    zeilenTex.splice(zeilenTex.length - 1, 0, '\\midrule');
+  }
+  const rumpf = zeilenTex.join('\n');
   // Eine X-Spalte macht die Tabelle zur tabularx ueber die volle Textbreite.
   const spec = t.spalten.join('');
   const voll = spec.includes('X');

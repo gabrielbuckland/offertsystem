@@ -100,7 +100,7 @@ export function a5Coverage(coverage: CoverageArtefakt): string {
       + 'eigene Festlegung der Umsetzung. Die Abdeckung ist ein notwendiges, kein '
       + 'hinreichendes Kriterium.',
     label: 'tab:a5_coverage',
-    zeilentrenner: true,
+    totalzeile: true,
   });
 }
 
@@ -160,6 +160,6 @@ export function a5Uebersicht(tests: TestArtefakt, contractTests: number | null):
       + 'Testfälle und Protokolle entstehen reproduzierbar aus dem '
       + 'Implementierungsrepositorium.',
     label: 'tab:a5_uebersicht',
-    zeilentrenner: true,
+    totalzeile: true,
   });
 }
