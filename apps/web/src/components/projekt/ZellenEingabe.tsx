@@ -17,7 +17,7 @@ export function ZellenEingabe({ wert, aendere }: ZellenEingabeProps) {
   return (
     <Input
       type="number"
-      className="h-8 w-full"
+      className="h-8 w-full min-w-16"
       value={entwurf}
       onChange={(e) => setzeEntwurf(e.target.value)}
       onBlur={() => {

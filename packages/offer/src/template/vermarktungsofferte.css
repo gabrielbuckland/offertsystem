@@ -44,7 +44,13 @@
   margin: 1.25rem 0 0.35rem;
 }
 .vermarktungsofferte p { margin: 0.5rem 0; }
-.vermarktungsofferte ul, .vermarktungsofferte ol { margin: 0.5rem 0 0.75rem 1.4rem; }
+/* list-style ausdruecklich: Tailwinds Preflight setzt es in der Web-Ansicht auf none. */
+.vermarktungsofferte ul, .vermarktungsofferte ol {
+  margin: 0.5rem 0 0.75rem 1.4rem;
+  padding-left: 0.35rem;
+}
+.vermarktungsofferte ul { list-style: disc; }
+.vermarktungsofferte ol { list-style: decimal; }
 .vermarktungsofferte .preistabelle {
   width: 100%;
   border-collapse: collapse;

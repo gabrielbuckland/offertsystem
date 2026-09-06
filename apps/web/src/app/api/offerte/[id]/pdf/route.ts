@@ -1,9 +1,10 @@
 import { druckeOfferte } from '@offert/offer/druck';
+import { druckBasisUrl } from '../../../../../server/druck-basis-url.js';
 import { verzeichnisAusLaufzeit } from '../../../../../server/laufzeit.js';
 import { ladeOfferte } from '../../../../../server/offerten-ablage.js';
 import { dateiname } from '../../../../../server/pdf-dateiname.js';
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(anfrage: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const verzeichnis = verzeichnisAusLaufzeit();
   let offerte;
@@ -19,7 +20,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const adresse = `${offerte.property.adresse.strasse} ${offerte.property.adresse.hausnummer}, `
     + `${offerte.property.adresse.plz} ${offerte.property.adresse.ort}`;
   const pdf = await druckeOfferte({
-    basisUrl: process.env['APP_BASE_URL'] ?? 'http://localhost:3000',
+    basisUrl: druckBasisUrl(anfrage.url),
     offertId: id,
     adresse,
     erstelltAm: offerte.metadata.erstelltAm,

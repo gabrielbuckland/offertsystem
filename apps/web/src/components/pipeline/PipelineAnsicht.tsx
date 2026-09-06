@@ -22,10 +22,7 @@ function Herkunftszeichen({ herkunft }: { readonly herkunft: 'firmenweit' | 'pro
 
 function Formelzeile({ zeile }: { readonly zeile: PipelineZeile }) {
   return (
-    <div className={zeile.hervorgehoben === true
-      ? 'rounded-md border border-accent-foreground/20 bg-accent/60 px-3 py-2'
-      : 'px-3 py-1.5'}
-    >
+    <div className={zeile.hervorgehoben === true ? 'px-3 py-2' : 'px-3 py-1.5'}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-0.5">
         <dt className={`flex items-center gap-2 text-sm ${
           zeile.hervorgehoben === true ? 'font-medium' : 'text-muted-foreground'}`}

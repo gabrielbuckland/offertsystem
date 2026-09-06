@@ -59,7 +59,7 @@ export async function druckeOfferte(
         + `<span>${optionen.adresse !== undefined && optionen.erstelltAm !== undefined
           ? escapeHtml(`${optionen.adresse} · ${optionen.erstelltAm.slice(0, 10)}`)
           : escapeHtml(optionen.offertId)}</span>`
-        + '<span class="pageNumber"></span>/<span class="totalPages"></span></div>',
+        + '<span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>',
     });
   } finally {
     // Auch im Fehlerfall: Ein offener Browserprozess ueberlebt sonst den Lauf.
