@@ -1,11 +1,8 @@
 'use client';
 
-// Bearbeitet die Staffel einer Anpassungsvorlage. Gezeigt/erfasst wird die Einheit, in der
-// ein Mensch denkt (Prozent bei 'relativ', Franken bei 'absolut'), abgelegt die des Kerns
-// (Faktor bzw. Rappen) — Skalen nicht mischen. Restfall (letzte Zeile) traegt bewusst KEINE
-// Schwelleneingabe: er ist das, was die Auswertung total macht, und darf nicht
-// wegkonfiguriert werden. Typen kommen aus `@offert/core`, nicht aus dem Projektschema:
-// dieser Editor bearbeitet die firmenweite Konfiguration, nicht ein Projektartefakt.
+// Anzeige/Erfassung in Prozent bzw. Franken, Ablage in Faktor bzw. Rappen (Kern-Skala).
+// Restfall (letzte Zeile) traegt bewusst keine Schwelleneingabe: er macht die Auswertung
+// total und darf nicht wegkonfiguriert werden.
 import { Trash2 } from 'lucide-react';
 import { pruefeBereiche, type Bereichsregel, type Merkmal } from '@offert/core';
 import { Button } from '../ui/button.js';
@@ -42,7 +39,6 @@ export function BereichsregelEditor(
   function fuegeHinzu() {
     const letzterMitSchwelle = regel.bereiche.filter((b) => b.unter !== undefined).at(-1);
     const neu = { unter: (letzterMitSchwelle?.unter ?? 0) + 1, wert: 0 };
-    // Vor dem Restfall einfuegen, damit er am Schluss bleibt.
     aendere({ ...regel, bereiche: [...regel.bereiche.slice(0, -1), neu, ...regel.bereiche.slice(-1)] });
   }
 

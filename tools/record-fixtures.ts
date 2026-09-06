@@ -1,17 +1,11 @@
 /**
- * Aufzeichnungspfad fuer PriceHubble-Fixtures (E-31).
- *
- * Laufzeit: `node --experimental-strip-types` (Node >= 22.6, PE-09). Kein `tsx`.
- *
- * EINZIGES Skript mit echtem API-Zugriff, nie Teil von `verify` oder `test`: Es
- * verbraucht kontingentierte Abrufe, verlangt Zugangsdaten und veraendert versioniertes
- * Testmaterial (waere sonst nicht reproduzierbar).
- *
- * Einziger zulaessiger Weg, auf dem Dateien unter `fixtures/pricehubble/recorded/`
- * entstehen — von Hand abgelegte Dateien waeren in ihrer Herkunft nicht belegt.
- *
- * Importe sind relativ, weil Node das Type-Stripping fuer `node_modules` verweigert
- * (PE-09, PE-11).
+ * Aufzeichnungspfad fuer PriceHubble-Fixtures (E-31). Laufzeit: node --experimental-strip-types
+ * (Node >= 22.6, PE-09), kein tsx; Importe relativ, da Node Type-Stripping fuer node_modules
+ * verweigert (PE-09, PE-11).
+ * EINZIGES Skript mit echtem API-Zugriff, nie Teil von verify/test: verbraucht kontingentierte
+ * Abrufe, verlangt Zugangsdaten und veraendert versioniertes Testmaterial.
+ * Einziger zulaessiger Weg, auf dem Dateien unter fixtures/pricehubble/recorded/ entstehen —
+ * von Hand abgelegte Dateien waeren in ihrer Herkunft nicht belegt.
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -30,17 +24,14 @@ import {
 } from '../packages/pricehubble/src/config/api-konfiguration.js';
 import type { EndpunktName } from '../packages/pricehubble/src/client/fehler.js';
 
-// `fileURLToPath` statt `.pathname`: Der Ablageort enthaelt Leerzeichen, die in
-// einer file-URL prozentkodiert sind und als Pfad nicht mehr aufloesbar waeren.
+// fileURLToPath statt .pathname: der Ablageort kann Leerzeichen enthalten, die eine
+// file-URL prozentkodiert und als Pfad sonst nicht mehr aufloesbar waeren.
 const WURZEL = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 const PFLICHT = ['PH_BASE_URL', 'PH_DOSSIER_ID'] as const;
 
-/**
- * Zwei zulaessige Zugangswege: entweder PH_USERNAME und PH_PASSWORD, oder ein von
- * Hand besorgter PH_ACCESS_TOKEN. Der Token-Weg erlaubt den Aufzeichnungslauf, ohne
- * dass Zugangsdaten in den Prozess gelangen (E-31).
- */
+// Zwei zulaessige Zugangswege: PH_USERNAME/PH_PASSWORD oder ein von Hand besorgter
+// PH_ACCESS_TOKEN; der Token-Weg erlaubt den Lauf ohne Zugangsdaten im Prozess (E-31).
 function leseZugang(env: Record<string, string | undefined>): Zugang {
   const token = (env['PH_ACCESS_TOKEN'] ?? '').trim();
   if (token !== '') {
@@ -76,7 +67,7 @@ function schreibe(relativ: string, inhalt: unknown): void {
   schreibeText(relativ, `${JSON.stringify(inhalt, null, 2)}\n`);
 }
 
-/** Zugangspruefung aus P1; sie bleibt der erste Riegel vor jedem Netzzugriff. */
+// Zugangspruefung aus P1; erster Riegel vor jedem Netzzugriff.
 function pruefeZugang(env: Record<string, string | undefined>): void {
   const schalter = pruefeUmgebung(env);
   if (schalter !== 'pricehubble') {
@@ -95,11 +86,8 @@ function pruefeZugang(env: Record<string, string | undefined>): void {
   }
 }
 
-/**
- * Der `api`-Block stammt aus derselben Konfiguration wie im Betrieb (E-13, G-7);
- * einzig die Basis-URL kommt aus der Umgebung, damit gegen eine Sandbox
- * aufgezeichnet werden kann, ohne die versionierte Konfiguration zu veraendern.
- */
+// Der api-Block stammt aus derselben Konfiguration wie im Betrieb (E-13, G-7); nur die
+// Basis-URL kommt aus der Umgebung, damit gegen eine Sandbox aufgezeichnet werden kann.
 function ladeApiKonfiguration(basisUrl: string): ApiKonfiguration {
   const roh = JSON.parse(
     readFileSync(`${WURZEL}/config/company-defaults.json`, 'utf8'),

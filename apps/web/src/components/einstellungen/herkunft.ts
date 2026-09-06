@@ -1,7 +1,5 @@
-// Reine Logik der Herkunftsanzeige: Welcher Konfigurationspfad wird projektbezogen
-// uebersteuert, und wie setzt man ihn auf den Firmenwert zurueck? `setzeZurueck` raeumt
-// leer gewordene Elternobjekte ab, sonst bliebe eine Wurzel ohne Wirkung im Delta stehen
-// und die Anzeige meldete faelschlich «uebersteuert».
+// `setzeZurueck` raeumt leer gewordene Elternobjekte ab, sonst bliebe eine Wurzel ohne
+// Wirkung im Delta stehen und die Anzeige meldete faelschlich "uebersteuert".
 type Delta = Readonly<Record<string, unknown>>;
 
 function istObjekt(wert: unknown): wert is Record<string, unknown> {

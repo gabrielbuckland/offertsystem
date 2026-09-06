@@ -27,9 +27,8 @@ const anfrage = (konfiguration = testKonfiguration()) => ({
   timeoutMs: konfiguration.timeoutMs,
 });
 
-// Geschweifte Klammern statt Ausdruckskoerper: `vi.useFakeTimers()` liefert
-// `VitestUtils` zurueck, und ein Hook erwartet `void` — der Ausdruckskoerper
-// reichte den Rueckgabewert durch und brach `tsc`.
+// Geschweifte Klammern statt Ausdruckskoerper: Ausdruckskoerper reicht den
+// `VitestUtils`-Rueckgabewert von `vi.useFakeTimers()` durch, Hooks erwarten `void`.
 beforeEach(() => {
   vi.useFakeTimers();
 });

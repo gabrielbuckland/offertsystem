@@ -3,9 +3,7 @@ import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * PE-14 verlangt die explizite `.js`-Endung bei relativen Importen. Weder `tsc`
- * (moduleResolution `Bundler`) noch ESLint noch `check:deps` decken das in
- * `apps/web` ab, deshalb steht die Regel hier.
+ * PE-14: Explicit .js in relative imports; tsc/ESLint/check:deps don't cover it in apps/web.
  */
 const SRC = resolve(import.meta.dirname, '../src');
 const ERLAUBTE_ENDUNGEN = ['.js', '.css', '.json'];
@@ -18,7 +16,6 @@ function quelldateien(verzeichnis: string = SRC): readonly string[] {
   });
 }
 
-/** Statisch (`import`/`export ... from`, auch `import type`) und dynamisch (`import(...)`). */
 function relativeSpezifizierer(inhalt: string): readonly string[] {
   return [...inhalt.matchAll(/(?:from|import)\s*\(?\s*['"](\.\.?\/[^'"]+)['"]/g)].map((m) => m[1]!);
 }

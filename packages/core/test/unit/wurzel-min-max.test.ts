@@ -1,6 +1,3 @@
-// Unit-Tests der Sonderfall-Strategie wurzel-min-max (Erweiterungsszenario).
-// Grenzfaelle nach dem Muster von normalisierung.test.ts; Metadaten fuer
-// Anhang E via dokumentiere.
 import { describe, expect, it } from 'vitest';
 import { alleStrategien, loeseStrategieAuf } from '../../src/normalization/registry.js';
 import { gewicht } from '../../src/domain/geld.js';

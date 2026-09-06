@@ -1,8 +1,6 @@
 /**
- * Der Schreibpfad wird gegen eine Arbeitskopie von `config/company-defaults.json`
- * in einem `mkdtemp`-Verzeichnis gefahren (nicht gegen die ausgelieferte Datei):
- * `standardkonfiguration.test.ts` garantiert deren Gueltigkeit und darf durch
- * diese Tests nicht beruehrt werden.
+ * Write path uses temp copy of company-defaults.json (not shipped config);
+ * standardkonfiguration.test.ts guarantees the shipped one.
  */
 import {
   copyFileSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync,
@@ -41,7 +39,7 @@ describe('schreibeCompanyDefaults', () => {
     expect(e.ok).toBe(false);
     if (e.ok) return;
     expect(e.befunde.some((b) => b.pfad.startsWith('honorar'))).toBe(true);
-    expect(readFileSync(pfad, 'utf8')).toBe(vorher); // zurueckweisen statt melden
+    expect(readFileSync(pfad, 'utf8')).toBe(vorher);
   });
 
   it('schreibt eine gueltige Konfiguration atomar und sichert die Vorversion', async () => {
@@ -53,7 +51,7 @@ describe('schreibeCompanyDefaults', () => {
     if (!e.ok) return;
     expect(e.pruefsumme).toMatch(/^[0-9a-f]{64}$/);
     const gesichert = readdirSync(join(dirname(pfad), 'backups'));
-    expect(gesichert).toHaveLength(1); // zeitgestempelte Vorversion
+    expect(gesichert).toHaveLength(1);
     const neu = JSON.parse(readFileSync(pfad, 'utf8')) as Record<string, unknown>;
     const neuePreisanpassung = neu['preisanpassung'] as Record<string, unknown>;
     expect(neuePreisanpassung['begruendungMinLaenge']).toBe(12);
@@ -71,9 +69,7 @@ describe('schreibeCompanyDefaults', () => {
     afterEach(() => { vi.useRealTimers(); });
 
     it('verliert bei gleichem Zeitstempel keine der beiden Vorversionen', async () => {
-      // Ohne eingefrorene Zeit koennten zwei rasch aufeinanderfolgende Aufrufe zufaellig
-      // denselben oder verschiedene Zeitstempel erhalten — nicht deterministisch pruefbar.
-      // `vi.setSystemTime` erzwingt die Kollision, die `sichereVorversion` abfangen muss.
+      // Frozen time forces collision for deterministic testing.
       vi.useFakeTimers();
       vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
 
@@ -89,7 +85,6 @@ describe('schreibeCompanyDefaults', () => {
 
       const backupVerzeichnis = join(dirname(pfad), 'backups');
       const gesichert = readdirSync(backupVerzeichnis);
-      // Keine der beiden Sicherungen wurde von der anderen ueberschrieben.
       expect(gesichert).toHaveLength(2);
 
       const inhalte = gesichert.map(
@@ -99,8 +94,7 @@ describe('schreibeCompanyDefaults', () => {
       const minLaengen = inhalte
         .map((i) => (i['preisanpassung'] as Record<string, unknown>)['begruendungMinLaenge'])
         .sort();
-      // Erste Sicherung: der Ausgangsstand (10). Zweite Sicherung: der Stand nach dem
-      // ersten Schreiben (12), bevor der zweite Schreibvorgang ihn auf 13 aendert.
+      // First backup: initial state (10); second: after first write (12), before second write (13).
       expect(minLaengen).toEqual([10, 12]);
     });
 
@@ -111,9 +105,7 @@ describe('schreibeCompanyDefaults', () => {
       const backupVerzeichnis = join(dirname(pfad), 'backups');
       mkdirSync(backupVerzeichnis, { recursive: true });
       const basis = '2026-02-02T00-00-00.000Z';
-      // Belegt jeden Zaehlerstand, den `sichereVorversion` bis zu ihrer Obergrenze
-      // (MAX_SICHERUNGS_VERSUCHE = 1000 in der Quelle) versuchen wird — Zaehler 0..1000,
-      // also 1001 Dateien.
+      // Occupy all counter values (0..1000) up to MAX_SICHERUNGS_VERSUCHE to force exhaustion.
       writeFileSync(join(backupVerzeichnis, `${basis}.json`), '{}');
       for (let i = 1; i <= 1000; i += 1) {
         writeFileSync(join(backupVerzeichnis, `${basis}-${i}.json`), '{}');
@@ -127,8 +119,7 @@ describe('schreibeCompanyDefaults', () => {
       expect(antwort.ok).toBe(false);
       if (antwort.ok) return;
       expect(antwort.befunde[0]?.text).toContain('kein freier Name');
-      // Zurueckweisen statt melden: Vor `sichereVorversion` wurde nichts an `pfad`
-      // geschrieben, also bleibt die Datei unangetastet.
+      // Reject, not report: failure before sichereVorversion; file unchanged.
       expect(readFileSync(pfad, 'utf8')).toBe(vorher);
     });
   });

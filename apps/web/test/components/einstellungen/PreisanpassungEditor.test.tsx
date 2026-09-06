@@ -1,7 +1,4 @@
-// `Button`/`Input`/`Select`/`ZellenEingabe` werden gemockt, um die waehrend des
-// Renderdurchlaufs erzeugten Closures abzufangen. `MerkmalEditor`/`BereichsregelEditor`
-// werden ebenfalls gemockt, weil hier nur interessiert, MIT WELCHEN PROPS
-// `PreisanpassungEditor` sie aufruft, nicht ihr eigenes Rendering.
+// UI-Komponenten gemockt, um Closures abzufangen; MerkmalEditor/BereichsregelEditor, um ihre Props zu prüfen.
 import { renderToStaticMarkup } from 'react-dom/server';
 import {
   describe, expect, it, vi,
@@ -118,10 +115,7 @@ function checkboxen(): readonly ErfassterInput[] {
 
 describe('PreisanpassungEditor — Regel aktivieren erzwingt vorgabefaktor: 0', () => {
   it('setzt beim Aktivieren vorgabefaktor auf 0 und legt eine minimale, gueltige Regel an', () => {
-    // Dies ist die einzige Invariante, die eine gespeicherte Konfiguration vor
-    // `CFG_BEREICHSREGEL` («Regel und Vorgabewert nebeneinander») bewahrt — faellt sie
-    // einem Refactoring zum Opfer, merkt das niemand, bis ein Vermarkter nicht mehr
-    // speichern kann.
+    // CFG_BEREICHSREGEL: Einzige Invariante, die Konfiguration bewahrt; Refactoring-Fehler hätte Speichern.
     const aendere = vi.fn();
     rendere(basisEntwurf([vorlage({ vorgabefaktor: 0.05 }), vorlage({ id: 'v2' })]), aendere);
 
@@ -150,10 +144,7 @@ describe('PreisanpassungEditor — Regel deaktivieren', () => {
     expect(aendere).toHaveBeenCalledTimes(1);
     const naechstesEntwurf = aendere.mock.calls[0]![0] as { anpassungsVorlagen: readonly Record<string, unknown>[] };
     const erste = naechstesEntwurf.anpassungsVorlagen[0]!;
-    // `merge`/`{...v, regel: undefined}` liesse den Schluessel mit dem Wert `undefined`
-    // stehen; `JSON.stringify` (der Vergleich in `entwurfGeaendert`) und ein `.strict()`-
-    // Zod-Schema behandeln das unterschiedlich von "Schluessel fehlt ganz" — deshalb
-    // `hasOwnProperty`, nicht nur ein Wertevergleich.
+    // undefined ≠ missing key für JSON.stringify und Zod.strict().
     expect(Object.prototype.hasOwnProperty.call(erste, 'regel')).toBe(false);
   });
 });

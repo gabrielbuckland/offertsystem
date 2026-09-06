@@ -1,11 +1,5 @@
-/**
- * Degressionspruefungen der Honorarkonfiguration.
- * Formelbezug: eq:honorar_mapping, eq:degression_stufe, eq:netto_degression.
- *
- * Beide Bedingungen haengen allein von den konfigurierten Stuetzstellen ab und
- * sind ohne Projektdaten auswertbar (I-21). hMin und hMax werden getrennt
- * geprueft, weil sie unabhaengig konfigurierbar sind (E-11).
- */
+// eq:honorar_mapping, eq:degression_stufe, eq:netto_degression — ohne Projektdaten
+// auswertbar (I-21); hMin/hMax getrennt geprueft, da unabhaengig konfigurierbar (E-11).
 import { fehler, type KonfigurationsFehler } from './fehlercodes.js';
 import type { RohKonfiguration, RohStuetzstelle } from './schema.js';
 
@@ -13,12 +7,9 @@ export type Randkurve = 'hMin' | 'hMax';
 
 const RANDKURVEN: readonly Randkurve[] = ['hMin', 'hMax'];
 
-/**
- * eq:honorar_mapping — lineare Interpolation der Honorarbasis zwischen zwei
- * Stuetzstellen. Oberhalb der hoechsten Stuetzstelle ist das Modell NICHT
- * definiert (keine Extrapolation, E-04). Rueckgabewert ist ungerundet;
- * gerundet wird erst nach der Multiplikation mit g(D) (Rundungsstelle R3, E-09).
- */
+// eq:honorar_mapping — lineare Interpolation zwischen Stuetzstellen. Oberhalb der
+// hoechsten Stuetzstelle keine Extrapolation (E-04). Rueckgabe ungerundet; gerundet wird
+// erst nach Multiplikation mit g(D) (Rundungsstelle R3, E-09).
 export function interpoliereHonorarbasis(
   stuetzstellen: readonly RohStuetzstelle[],
   v: number,
@@ -42,13 +33,10 @@ export function interpoliereHonorarbasis(
   return undefined;
 }
 
-/**
- * eq:degression_stufe (I-19) — der Grenzsatz darf den Durchschnittssatz nicht
- * erreichen. Geprueft wird in der Produktform s_k * V_k^max < H^(k+1), das
- * vermeidet die Division und damit den Sonderfall V = 0 in der ersten Stufe.
- * Die Randpruefung genuegt, weil phi auf einer Stufe streng faellt, sobald
- * s_k < phi(V_k^max) gilt.
- */
+// eq:degression_stufe (I-19) — Grenzsatz darf Durchschnittssatz nicht erreichen. Geprueft
+// in Produktform s_k * V_k^max < H^(k+1), vermeidet Division und den Sonderfall V=0 in
+// der ersten Stufe. Randpruefung genuegt, da phi auf einer Stufe streng faellt sobald
+// s_k < phi(V_k^max).
 export function pruefeStufenDegression(
   stuetzstellen: readonly RohStuetzstelle[],
 ): KonfigurationsFehler[] {
@@ -78,25 +66,16 @@ export function pruefeStufenDegression(
 }
 
 export interface NettoDegressionsBefund {
-  /** Verhaeltnis m_max/m_min der Normalisierungsgrenzen des Projektumfangs. */
   readonly lambda: number;
-  /** Maximaler Zuwachs von g ueber die volle Spanne des Projektumfangs. */
   readonly rhoMax: number;
-  /** Zulaessiges Hoechstverhaeltnis phi(lambda*V)/phi(V) = 1/rhoMax. */
   readonly schwelle: number;
-  /** Kleinste ueber das Pruefgitter beobachtete Marge 1 - verhaeltnis/schwelle. */
   readonly kleinsteMarge: number;
-  /** Gitterpunkt, an dem die kleinste Marge auftritt (Rappen). */
   readonly engstesV: number;
-  /** Kleinster Gitterpunkt mit Verletzung; undefined, wenn die Bedingung haelt. */
   readonly verletzendesV: number | undefined;
 }
 
-/**
- * Sucht den Faktor, der die Einheitenzahl verarbeitet — ueber den Quellschluessel
- * `einheitenzahl` (E-05, PE-03), nicht ueber den Faktorschluessel: Wie der Faktor
- * heisst, ist Konfigurationssache, woher er seinen Rohwert bezieht, ist tragend.
- */
+// Suche ueber Quellschluessel `einheitenzahl` (E-05, PE-03), nicht ueber den Faktorschluessel:
+// wie der Faktor heisst ist Konfigurationssache, woher er seinen Rohwert bezieht ist tragend.
 function findeEinheitenzahlGewicht(konfiguration: RohKonfiguration): {
   readonly gewicht: number;
   readonly mMin: number;
@@ -113,14 +92,10 @@ function findeEinheitenzahlGewicht(konfiguration: RohKonfiguration): {
   return undefined;
 }
 
-/**
- * eq:netto_degression (I-18) — der relative Honorarsatz darf mit steigender
- * Einheitenzahl nicht steigen. Ausgewertet ohne Projektdaten ueber den
- * unguenstigsten Fall. Das Pruefgitter ist endlich und vollstaendig, weil oberhalb
- * der hoechsten Stuetzstelle kein Projektpaar mehr existiert (E-04): gepruefte
- * Punkte sind die Stuetzstellen selbst, ihre durch lambda geteilten Urbilder und
- * die Stufenmitten, jeweils beschraenkt auf lambda*V <= V_K.
- */
+// eq:netto_degression (I-18) — relativer Honorarsatz darf mit steigender Einheitenzahl
+// nicht steigen. Pruefgitter endlich/vollstaendig, da oberhalb der hoechsten Stuetzstelle
+// kein Projektpaar mehr existiert (E-04): geprueft werden die Stuetzstellen, ihre durch
+// lambda geteilten Urbilder und die Stufenmitten, beschraenkt auf lambda*V <= V_K.
 export function berechneNettoDegression(
   konfiguration: RohKonfiguration,
 ): NettoDegressionsBefund | undefined {

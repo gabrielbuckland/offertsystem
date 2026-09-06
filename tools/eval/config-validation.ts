@@ -1,11 +1,4 @@
-/**
- * Nachweisartefakt der Konfigurationsvalidierung.
- * Positivlauf (je Ebene, mit Zahlenwerten) und Negativmatrix
- * (Variante -> erwarteter Code -> tatsaechlicher Code -> Pass/Fail).
- *
- * Laufzeit: Type-Stripping mit Aufloesungshaken (PE-09); der Import geht
- * relativ auf die Kernquelle, nicht ueber @offert/core.
- */
+// PE-09: Type-Stripping mit Aufloesungshaken; Import relativ auf die Kernquelle, nicht ueber @offert/core.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {

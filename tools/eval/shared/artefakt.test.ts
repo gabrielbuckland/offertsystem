@@ -49,8 +49,7 @@ describe('schreibeArtefakt', () => {
   });
 
   it('liest auch Ablagen ausserhalb von eval, die andere Plaene schreiben', () => {
-    // Haelt die Abhaengigkeit fest, die PE-18 begruendet: artifacts/contract/ stammt aus
-    // P3, nicht aus diesem Plan, wird aber ueber denselben Zeiger gelesen.
+    // PE-18: artifacts/contract/ stammt aus P3, wird aber ueber denselben Zeiger gelesen.
     const wurzel = mkdtempSync(join(tmpdir(), 'eval-'));
     const ziel = join(wurzel, 'artifacts', 'contract', '2026-08-16T10-00-00Z');
     mkdirSync(ziel, { recursive: true });

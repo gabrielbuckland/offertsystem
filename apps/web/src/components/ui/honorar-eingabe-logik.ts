@@ -1,21 +1,16 @@
-// Reine Logik rund um den gewaehlten Honorarsatz (Eingabemodal, Aggregatleiste), getrennt
-// von der Darstellung fuer DOM-freie Tests.
+// Reine Logik rund um den gewaehlten Honorarsatz, getrennt von der Darstellung fuer
+// DOM-freie Tests.
 import { rundeAufRappen } from '@offert/core';
 import { berechneHonorarProzent, formatiereHonorarProzent } from '@offert/offer';
 
 export { honorarAbweichung, type HonorarAbweichung } from '@offert/offer';
 
-/** Die Verkaufssumme traegt die Prozentrechnung in beide Richtungen; <= 0 ist keine
- *  sinnvolle Bezugsgroesse (Division durch null), ein fehlender Wert erst recht nicht. */
+// <= 0 oder fehlend ist keine sinnvolle Bezugsgroesse (Division durch null).
 function verkaufssummeTaugt(wert: number | undefined): wert is number {
   return wert !== undefined && wert > 0;
 }
 
-/**
- * Formatierte Prozentanzeige eines Rappenbetrags (Empfehlungsrange, Honorarrange in der
- * Aggregatleiste) an der Verkaufssumme. `–` statt einer kaputten Zahl, wenn die
- * Verkaufssumme fehlt oder keine sinnvolle Bezugsgroesse ist.
- */
+// `–` statt einer kaputten Zahl, wenn die Verkaufssumme fehlt oder untauglich ist.
 export function formatiereHonorarAlsProzent(
   betragRappen: number, verkaufssummeRappen: number | undefined,
 ): string {
@@ -24,15 +19,8 @@ export function formatiereHonorarAlsProzent(
   return anteil === null ? '–' : formatiereHonorarProzent(anteil);
 }
 
-/**
- * Prozenteingabe (`3.2` fuer 3,2 %) -> Rappenbetrag. Der Vermarkter entscheidet in
- * Prozent der Verkaufssumme, das Artefakt fuehrt weiterhin einen Rappenbetrag — die
- * gesamte Preiskette, das Offertdokument und der Reproduzierbarkeitsrundlauf rechnen in
- * Rappen. Gerundet wird ueber `rundeAufRappen` (E-10), nicht ueber `Math.round`: die
- * Umrechnung ist eine Betragsableitung wie R1–R3 und muss denselben Rundungsmodus
- * benutzen. `undefined`, wenn die Eingabe leer oder nicht parsierbar ist oder die
- * Verkaufssumme als Bezugsgroesse fehlt — ohne sie gibt es keinen Betrag.
- */
+// E-10: Rundung ueber `rundeAufRappen`, nicht `Math.round` — Betragsableitung wie
+// R1-R3, muss denselben Rundungsmodus benutzen.
 export function prozentEingabeZuRappen(
   text: string, verkaufssummeRappen: number | undefined,
 ): number | undefined {
@@ -43,15 +31,8 @@ export function prozentEingabeZuRappen(
   return rundeAufRappen((verkaufssummeRappen * prozent) / 100);
 }
 
-/**
- * Sperrgrund fuers Bestaetigen, oder `undefined`, wenn ein gueltiger Betrag vorliegt.
- * Das Feld startet LEER — keine Vorbelegung mit dem Range-Mittelwert. Eine
- * Systemvorbelegung, die der Vermarkter nur noch bestaetigt, liefe als SEINE Entscheidung
- * ins Dokument (Herkunft `marketer-decision`), obwohl sie das System gesetzt hat
- * (Automation Bias). Drei Faelle statt eines generischen Textes, damit der Vermarkter
- * sieht, WARUM gesperrt ist: fehlende Bezugsgroesse (kein Prozentsatz umrechenbar),
- * nichts eingegeben, oder eine unbrauchbare Eingabe (z. B. Text).
- */
+// Drei Faelle statt eines generischen Textes, damit der Vermarkter sieht, warum
+// gesperrt ist.
 export function honorarSperrgrund(
   eingabe: string, betrag: number | undefined, verkaufssummeRappen: number | undefined,
 ): string | undefined {

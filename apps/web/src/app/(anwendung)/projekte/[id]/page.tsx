@@ -25,28 +25,20 @@ export default async function ProjektSeite({ params }: Props) {
   const projekt = await ladeProjekt(id, laufzeit.wert.projekteVerzeichnis).catch(() => null);
   if (projekt === null) notFound();
 
-  /**
-   * Henne-Ei-Muster: Die Firmenlaufzeit liefert nur den Ablageort, aus dem das Projekt
-   * geladen wird; angezeigt und gerechnet wird danach auf der projektbezogenen Laufzeit.
-   * Ohne diesen zweiten Schritt liefen Anzeige und Berechnung mit unterschiedlichen
-   * Konfigurationen auseinander.
-   */
+  // Henne-Ei: Firmenlaufzeit liefert nur den Ablageort; Anzeige/Berechnung laufen
+  // danach auf der projektbezogenen Laufzeit, sonst liefen sie mit unterschiedlichen Konfigurationen auseinander.
   const projektLaufzeit = holeProjektLaufzeit(projekt);
   if (!projektLaufzeit.ok) {
-    // Zurueckweisen statt melden (I-21) gilt auch fuer die Anzeige: Ein Projekt mit
-    // invariantenverletzendem Delta bekommt kein Formular, das so tut, als liesse sich
-    // damit rechnen.
+    // I-21: Zurueckweisen statt melden gilt auch fuer die Anzeige.
     return <main><h1>Projekt</h1><p>{projektLaufzeit.meldungen.join(' ')}</p></main>;
   }
   const { konfiguration, rohKonfiguration, fingerabdruck } = projektLaufzeit.wert;
-  // Filterung auf dieses Projekt liegt beim Aufrufer — `listeOfferten` liefert
-  // ungefiltert alle Projekte.
+  // listeOfferten liefert ungefiltert alle Projekte, Filterung liegt beim Aufrufer.
   const alleOfferten = await listeOfferten(laufzeit.wert.offertenVerzeichnis);
   const offerten = alleOfferten.filter((eintrag) => eintrag.projektId === id);
   return (
     <>
-      {/* Ausserhalb des <main> von `ProjektAnsicht`: Die Brotkrume traegt den Rueckweg
-          auf Projektebene, der Link daneben fuehrt zur projektbezogenen Einstellungsebene. */}
+      {/* Ausserhalb des <main> von ProjektAnsicht. */}
       <div className="mb-2 flex items-center justify-between">
         <Brotkrume stufen={[
           { beschriftung: 'Projekte', href: '/projekte' },
@@ -67,11 +59,9 @@ export default async function ProjektSeite({ params }: Props) {
       <ProjektAnsicht
         projekt={projekt}
         faktorformular={baueFaktorformular(konfiguration)}
-        // Dieselbe Rohkonfiguration, die fuer den Konfigurationsabdruck (PE-04) bereits
-        // durch `unknown` geschleust wird — hier symmetrisch zurueckgeschaerft.
+        // PE-04: dieselbe Rohkonfiguration, symmetrisch zum Konfigurationsabdruck durch unknown geschleust.
         konfigurationBasis={rohKonfiguration as unknown as OffertKonfiguration}
-        // Das Ueberschreibungsprotokoll aus derselben Laufzeit: Es entscheidet im
-        // Rechenweg je Zeile ueber «firmenweit» oder «projektbezogen» (A-13).
+        // A-13: entscheidet je Zeile im Rechenweg ueber «firmenweit» oder «projektbezogen».
         ueberschreibungen={fingerabdruck.ueberschreibungen}
       />
     </>

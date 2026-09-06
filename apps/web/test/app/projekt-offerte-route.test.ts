@@ -9,10 +9,6 @@ import { standardKonfiguration } from '../bau/offerte-bauer.js';
 import { BEWERTUNGEN_STANDARD } from '../bau/bewertungen.js';
 
 const ADRESSE = { strasse: 'Seestrasse', hausnummer: '1', plz: '8001', ort: 'Zürich' };
-
-// Ein von der (in diesen Tests nicht berechneten) Range unabhaengiger, aber formal
-// gueltiger Betrag: Die Route lehnt eine Abweichung von der Honorarrange nicht ab
-// (honorar-eingabe.ts) — nur das Format wird hier geprueft.
 const GEWAEHLTES_HONORAR = 5_000_000_00;
 
 function anfrageMitHonorar(gewaehltesHonorar: unknown = GEWAEHLTES_HONORAR): Request {
@@ -30,10 +26,6 @@ async function projekteUndOffertenVerzeichnis() {
   process.env['OFFERTEN_VERZEICHNIS'] = offerten;
   return { projekte, offerten };
 }
-
-// `auftraggeber` optional: Die Standardvorlage verwendet {auftraggeber} und verlangt ihn
-// erst beim Finalisieren — nur Faelle, die eine erfolgreiche Offerte erwarten, geben ihn
-// hier mit; der 422-Fall bleibt bewusst ohne.
 async function vorbereitetesProjekt(projekte: string, auftraggeber?: string) {
   const p = await legeProjektAn(ADRESSE, projekte, standardKonfiguration());
   await speichereProjekt({
@@ -60,8 +52,6 @@ async function vorbereitetesProjekt(projekte: string, auftraggeber?: string) {
 
 beforeEach(async () => {
   process.env['VALUATION_PROVIDER'] = 'mock';
-  // Frisches Temp-Verzeichnis je Testfall: Die Standardvorlage darf nicht ueber eine
-  // zuvor von einem anderen Test geschriebene Datei am selben Pfad einwirken.
   process.env['OFFERT_VORLAGE_PATH'] =
     join(await mkdtemp(join(tmpdir(), 'vorlage-')), 'offert-vorlage.json');
 });
@@ -158,7 +148,6 @@ describe('POST /api/projekt/[id]/offerte', () => {
     process.env['OFFERT_VORLAGE_PATH'] =
       join(await mkdtemp(join(tmpdir(), 'vorlage-')), 'offert-vorlage.json');
     const id = await vorbereitetesProjekt(projekte);
-    // Die Standardvorlage verwendet {auftraggeber} — das Projekt muss ihn liefern.
     const projekt = await ladeProjekt(id, projekte);
     await speichereProjekt({ ...projekt, auftraggeber: 'Muster Immobilien AG' }, projekte);
 
@@ -171,7 +160,6 @@ describe('POST /api/projekt/[id]/offerte', () => {
     const offerte = await ladeOfferte(offertId, offerten);
     expect(offerte.dokument).toBeDefined();
     expect(offerte.dokument!.auftraggeber).toBe('Muster Immobilien AG');
-    // Aufgelöst heisst: keine Platzhalter-Knoten mehr im Inhalt.
     expect(JSON.stringify(offerte.dokument!.inhalt)).not.toContain('platzhalter');
     expect(JSON.stringify(offerte.dokument!.inhalt)).toContain('Muster Immobilien AG');
   });
@@ -236,10 +224,6 @@ describe('POST /api/projekt/[id]/offerte', () => {
     expect(antwort.status).toBe(201);
     const { offertId } = await antwort.json() as { offertId: string };
     const offerte = await ladeOfferte(offertId, offerten);
-    // Die Standardvorlage wurde nicht ueber /api/vorlage geschrieben — ihre Version ist
-    // die eingebaute `VORLAGE_VERSION` ('1', vorlagen-ablage.ts `ladeVorlage`-Fallback für
-    // eine fehlende Datei). I-5 betrifft den SCHREIBweg: Sobald eine Vorlage abgelegt
-    // wird, bestimmt der Server die Version — das prüft `vorlagen-ablage.test.ts` direkt.
     expect(offerte.dokument!.vorlageVersion).toBe('1');
   });
 

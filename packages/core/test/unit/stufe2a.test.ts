@@ -40,7 +40,6 @@ describe('Zwischenschritt 4.2a — ergaenzeAbgeleiteteFaktoren (E-06)', () => {
     if (!v.ok) return;
     const r = ergaenzeAbgeleiteteFaktoren(e, v.wert);
     if (r.ok) {
-      // Die Anpassung darf ueber die Hintertuer nicht auf das Honorar wirken.
       expect(r.wert.rohfaktoren.get(faktorId('preissegment')))
         .toBeCloseTo(85_000_000 / 92.5, 6);
     }

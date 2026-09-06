@@ -4,9 +4,7 @@
  */
 import { z } from 'zod';
 
-/** Obergrenze des Plausibilitaetsfensters in CHF. */
 const PLAUSIBILITAETSGRENZE_CHF = 1e9;
-/** Ein Tag Toleranz fuer Zeitzonenversatz beim Bewertungsdatum. */
 const DATUMS_TOLERANZ_MS = 86_400_000;
 
 /**

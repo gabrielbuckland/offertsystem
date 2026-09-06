@@ -1,15 +1,7 @@
-/**
- * Keine Formel. Herkunftskennzeichnung der Offerte (A-13, A-14).
- *
- * Die Trennung liegt bewusst im Typsystem und nicht in der Vorlage: Sie traegt die
- * Vertragskonformitaet und darf nicht in der austauschbaren Darstellungsschicht
- * liegen. Eine Vermischung der vier Klassen ist damit ein Uebersetzungsfehler und
- * kein Reviewbefund.
- *
- * Es gibt keine klassenuebergreifende Aggregation. Eine
- * Ableitung ueber Klassengrenzen erzeugt eine NEUE Klasse und fuehrt die
- * Eingangsgroessen als eigene Felder weiter.
- */
+// Keine Formel. A-13, A-14: Herkunftskennzeichnung der Offerte. Die Trennung liegt
+// bewusst im Typsystem, nicht in der Vorlage, da sie Vertragskonformitaet traegt.
+// Keine klassenuebergreifende Aggregation: eine Ableitung ueber Klassengrenzen
+// erzeugt eine neue Klasse und fuehrt die Eingangsgroessen als eigene Felder weiter.
 import { z, type ZodTypeAny } from 'zod';
 
 export type Herkunft =
@@ -36,11 +28,8 @@ export const HERKUNFT_BESCHRIFTUNG: Readonly<Record<Herkunft, string>> = {
   'marketer-decision': 'Entscheid Vermarkter',
 };
 
-/**
- * Kein Aufweichen beim Serialisieren. `.strict()` haelt
- * ein zusaetzliches Feld auf, `z.literal` eine fremde oder fehlende Klasse — die
- * Herkunft wird nie ergaenzt, sondern verlangt.
- */
+// .strict() haelt ein zusaetzliches Feld auf, z.literal eine fremde/fehlende Klasse —
+// die Herkunft wird nie ergaenzt, sondern verlangt.
 export function provenancedSchema<S extends ZodTypeAny, P extends Herkunft>(
   wertSchema: S,
   klasse: P,

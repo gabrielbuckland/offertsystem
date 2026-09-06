@@ -3,11 +3,7 @@ import {
   bildeDelta, effektiveKonfiguration,
 } from '../../../src/components/einstellungen/projekt-einstellungen-logik.js';
 
-/**
- * Firmenwerte als Ausschnitt der echten Konfigurationsform: ein tiefer Zahlenwert
- * (`flaeche.alpha`), ein Objekt mit Geschwisterfeldern (`preisanpassung`), eine Liste
- * (`honorar.stuetzstellen`) und die projektbezogen gesperrten Wurzeln `meta`/`api`.
- */
+// Testfixture deckt tiefe Skalare, Objekte mit Geschwistern, Listen, und gesperrte Wurzeln ab.
 const FIRMA = {
   flaeche: { alpha: 0.5 },
   preisanpassung: { zMin: -0.25, zMax: 0.25 },
@@ -28,7 +24,7 @@ describe('effektiveKonfiguration', () => {
   });
 
   it('ersetzt ein Array als Ganzes statt elementweise zu verschmelzen', () => {
-    // Elementweises Verschmelzen wuerde eine geloeschte Stuetzstelle wieder einfuehren.
+    // Element-Merge würde gelöschte Einträge wieder einführen.
     const effektiv = effektiveKonfiguration(FIRMA, { honorar: { stuetzstellen: [] } });
     expect(effektiv['honorar']).toEqual({ stuetzstellen: [], gMin: 0.85 });
   });
@@ -43,9 +39,7 @@ describe('effektiveKonfiguration', () => {
 
 describe('bildeDelta', () => {
   it('liefert fuer einen unveraenderten Entwurf ein leeres Delta', () => {
-    // Der tragende Fall: Oeffnen und Speichern ohne Aenderung darf das Projekt NICHT
-    // zur Vollkopie der Firmenwerte machen — sonst erreichte es eine spaetere
-    // firmenweite Korrektur nie mehr.
+    // Speichern ohne Änderung darf nicht zur Vollkopie führen.
     expect(bildeDelta(effektiveKonfiguration(FIRMA, {}), FIRMA)).toEqual({});
   });
 
@@ -58,8 +52,7 @@ describe('bildeDelta', () => {
   it('laesst unveraenderte Geschwisterfelder aus dem Delta heraus', () => {
     const entwurf = effektiveKonfiguration(FIRMA, {});
     entwurf['preisanpassung'] = { zMin: -0.25, zMax: 0.4 };
-    // `zMin` ist unveraendert und gehoert deshalb nicht in die Ablage: Es soll dem
-    // Firmenwert weiterhin folgen.
+    // zMin unveraendert folgt weiterhin dem Firmenwert.
     expect(bildeDelta(entwurf, FIRMA)).toEqual({ preisanpassung: { zMax: 0.4 } });
   });
 
@@ -72,10 +65,7 @@ describe('bildeDelta', () => {
   });
 
   it('haelt `meta` und `api` aus dem Delta heraus, auch wenn sie bearbeitet wurden', () => {
-    // Beide sind projektbezogen gesperrt (GESPERRTE_PFADE); `mergeKonfiguration` wuerde
-    // sie mit CFG_MERGE_LOCKED_PATH zurueckweisen. Der Editor darf sie deshalb gar nicht
-    // erst mitsenden — sonst scheiterte jedes Speichern an einem Wert, den der
-    // Vermarkter nur angezeigt bekam.
+    // Gesperrt (GESPERRTE_PFADE); mergeKonfiguration würde CFG_MERGE_LOCKED_PATH werfen.
     const entwurf = effektiveKonfiguration(FIRMA, {});
     entwurf['meta'] = { version: '9.9.9' };
     entwurf['api'] = { baseUrl: 'https://boese.test', timeoutMs: 1 };
@@ -90,15 +80,14 @@ describe('bildeDelta', () => {
   });
 
   it('nimmt einen im Firmenstand unbekannten Schluessel als Ganzes auf', () => {
-    // Rein konfigurativ ergaenzter Aufwandfaktor (offene Wurzel im Kern-Merge).
+    // Konfigurativ ergänzter Aufwandfaktor.
     const firma = { aufwandfaktoren: { lage: { gewicht: 0.3 } } };
     const entwurf = { aufwandfaktoren: { lage: { gewicht: 0.3 }, laerm: { gewicht: 0.2 } } };
     expect(bildeDelta(entwurf, firma)).toEqual({ aufwandfaktoren: { laerm: { gewicht: 0.2 } } });
   });
 
   it('meldet einen im Entwurf fehlenden Firmenschluessel nicht als Abweichung', () => {
-    // Ein Merge, der Werte nur ueberlagert, hat keine Form fuer «dieser Schluessel soll
-    // hier fehlen». Der Entwurf gilt an dieser Stelle als unveraendert.
+    // Overlay-Merge kann "Schlüssel soll fehlen" nicht ausdrücken.
     const entwurf = { flaeche: { alpha: 0.5 } };
     expect(bildeDelta(entwurf, { flaeche: { alpha: 0.5 }, preisanpassung: { zMax: 0.25 } }))
       .toEqual({});

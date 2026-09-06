@@ -8,14 +8,11 @@ import type { StrategieBezeichner } from '../normalization/bezeichner.js';
 
 export type FaktorQuelle = 'lagescore' | 'manuell' | 'abgeleitet';
 
-/**
- * Geschlossene Literal-Union ueber die implementierten Strategien (S-07).
- * Quelle ist die Bezeichner-Liste in `normalization/bezeichner.ts`; der Re-Export haelt
- * die bestehenden Importpfade stabil.
- */
+// Geschlossene Literal-Union ueber die implementierten Strategien (S-07). Quelle ist
+// normalization/bezeichner.ts; Re-Export haelt bestehende Importpfade stabil.
 export type { StrategieBezeichner };
 
-/** Im Kern vorhandene Kennzahlen fuer die Quelle `abgeleitet` (E-05, E-06). */
+// Im Kern vorhandene Kennzahlen fuer die Quelle `abgeleitet` (E-05, E-06).
 export type AbleitungsName = 'einheitenzahl' | 'mittlererQuadratmeterpreis';
 
 export interface Referenzverteilung {
@@ -24,11 +21,8 @@ export interface Referenzverteilung {
   readonly kappungSigma: number;
 }
 
-/**
- * Rein deskriptive Stufenbeschriftung eines ordinal erfassten Faktors (E-24, PE-05).
- * Geht in KEINE Formel ein; dieselbe Stellung wie `bezeichnung`. Die Erfassungsmaske in
- * `apps/web` liest sie, die Berechnungsstufen ignorieren sie.
- */
+// Rein deskriptive Stufenbeschriftung (E-24, PE-05), geht in keine Formel ein; die
+// Erfassungsmaske in apps/web liest sie, die Berechnungsstufen ignorieren sie.
 export interface Faktorskala {
   readonly form: 'ordinal';
   readonly stufen: readonly { readonly wert: number; readonly bezeichnung: string }[];
@@ -63,7 +57,7 @@ export interface Skalierungsparameter {
 export interface Merkmal {
   readonly id: string;
   readonly bezeichnung: string;
-  /** Nur 'zahl': die Bereichssemantik setzt eine Ordnung voraus. */
+  // Nur 'zahl': die Bereichssemantik setzt eine Ordnung voraus.
   readonly form: 'zahl';
 }
 
@@ -73,7 +67,7 @@ export interface AnpassungsVorlage {
   readonly vorgabefaktor: number;
   readonly erfassungsform: 'relativ' | 'absolut';
   readonly begruendungVorschlag: string;
-  /** Traegt die Vorlage eine Regel, ist `vorgabefaktor` zwingend 0 (Ebene 3). */
+  // Traegt die Vorlage eine Regel, ist vorgabefaktor zwingend 0 (Ebene 3).
   readonly regel?: Bereichsregel;
 }
 
@@ -102,10 +96,8 @@ export interface Konfiguration {
     readonly stuetzstellen: readonly Stuetzstelle[]; // aufsteigend, lueckenlos (I-20)
     readonly skalierung: Skalierungsparameter;
   };
-  /**
-   * SHA-256 der kanonisch serialisierten effektiven Konfiguration; in apps/web gebildet
-   * (E-26, PE-04). Optional, weil `parseKonfiguration` nicht hasht — der Lader ergaenzt das
-   * Feld. Die eingebettete Kopie der Konfiguration heisst projektweit `konfigurationsAbdruck`.
-   */
+  // SHA-256 der kanonisch serialisierten effektiven Konfiguration, in apps/web gebildet
+  // (E-26, PE-04). Optional, weil parseKonfiguration nicht hasht — der Lader ergaenzt das
+  // Feld.
   readonly konfigPruefsumme?: string;
 }

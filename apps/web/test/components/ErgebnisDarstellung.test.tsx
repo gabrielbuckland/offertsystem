@@ -22,7 +22,6 @@ describe('ErgebnisDarstellung', () => {
     const o = baueBeispielOfferte();
     const html = renderToStaticMarkup(<ErgebnisDarstellung offerte={o} />);
     const t = o.derivation.apartmentTypes[0]!;
-    // q_t = P_t^ref / A_t^ref: alle drei Groessen im selben Abschnitt
     expect(html).toContain(formatiereAggregat(t.referenceValuation.value.marktwert));
     expect(html).toContain(formatiereFlaeche(t.referenceArea.value));
     expect(html).toContain(formatiereBetrag(t.pricePerSqm.value));

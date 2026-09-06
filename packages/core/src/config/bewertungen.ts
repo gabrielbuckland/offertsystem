@@ -1,9 +1,5 @@
-// Keine Formel.
-//
-// Feldmenge und Aufzaehlungswerte der PriceHubble-Objekte `condition` und `quality`
-// (docs.pricehubble.com, dossier_creation/valuation). Wissen ueber ein FREMDES
-// Datenformat zum Zweck der Zurueckweisung, nicht die Bevorzugung eines Faktors
-// in der Rechnung.
+// Keine Formel. Feldmenge/Enums der PriceHubble-Objekte `condition`/`quality`
+// (docs.pricehubble.com, dossier_creation/valuation) — Fremdformat zur Zurueckweisung.
 import { z } from 'zod';
 
 export const BEWERTUNGSFELDER = ['bathrooms', 'kitchen', 'flooring', 'windows'] as const;
@@ -28,13 +24,8 @@ export const QualitaetsbewertungenSchema = z.object({
   windows: z.enum(QUALITAETSWERTE),
 }).strict();
 
-/**
- * `energyLabel`, `heatingGenerationType` und `numberOfBathrooms` sind serverseitig
- * ebenfalls geschlossen (live belegt 2026-09-01; die API antwortet sonst mit 400).
- * Der leere String steht fuer «nicht angegeben» und wird beim PATCH weggelassen —
- * die API kennt keinen Leerwert, eine Liegenschaft ohne Minergie-Label muss aber
- * erfassbar bleiben.
- */
+// Serverseitig geschlossen (live belegt 2026-09-01, sonst 400). Leerer String = "nicht
+// angegeben", wird beim PATCH weggelassen; die API kennt keinen Leerwert.
 export const ENERGIELABELWERTE = [
   '', 'minergie', 'minergie_p', 'minergie_a', 'minergie_eco', 'minergie_p_eco',
   'minergie_a_eco',
@@ -45,7 +36,6 @@ export const HEIZUNGSARTWERTE = [
   'heat_pump_geothermal', 'solar',
 ] as const;
 
-/** `numberOfBathrooms` akzeptiert ausschliesslich 1..5. */
 export const BADEZIMMER_MIN = 1;
 export const BADEZIMMER_MAX = 5;
 

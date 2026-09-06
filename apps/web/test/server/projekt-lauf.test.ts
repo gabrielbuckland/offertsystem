@@ -1,7 +1,4 @@
-/**
- * Der gemeinsame Rechenweg beider Projektrouten. Geprueft wird genau das, was ihn von
- * zwei getrennten Wegen unterscheidet: Er baut die Offerte immer — und legt nie etwas ab.
- */
+/// Gemeinsamer Rechenweg: baut Offerte, legt nichts ab.
 import { mkdtemp, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -61,13 +58,9 @@ describe('Projektlauf', () => {
       const lauf = await fuehreProjektlauf(id, laufzeit.wert);
       expect(lauf.art).toBe('offerte');
       if (lauf.art !== 'offerte') return;
-      // Dieselbe Struktur wie im Offert-Artefakt — kein zweites Datenbild:
       expect(priceDerivationSchema.safeParse(lauf.offerte.derivation).success).toBe(true);
       expect(aggregateValuesSchema.safeParse(lauf.offerte.aggregates).success).toBe(true);
-      // Die Zuordnung Wohnungsnummer -> Einheitenkennung stammt aus dem Projekt; das
-      // Offert-Schema kennt nur die Wohnungsnummer.
       expect(lauf.einheitenIds.get('A-01')).toBe('E-1');
-      // Nichts abgelegt: das Offertenverzeichnis bleibt leer.
       const dateien = await readdir(offerten).catch(() => []);
       expect(dateien).toHaveLength(0);
     });

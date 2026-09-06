@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest';
-// Pfad nach PE-25: `src/config/`, nicht `src/konfig/`. Zugriff auf den Kerntyp ueber
-// `wert.kern`, weil parseKonfiguration Kernform und Rohform gemeinsam traegt (PE-01).
+// PE-25: Pfad `src/config/`, nicht `src/konfig/`.
+// PE-01: parseKonfiguration traegt Kern- und Rohform gemeinsam, Kerntyp ueber `wert.kern`.
 import { parseKonfiguration } from '../../src/config/abbildung.js';
 import { BASIS_KONFIGURATION, baueKonfiguration } from '../konfigurations-bauer.js';
 
-/** Die vom JSON-Schema zugelassenen Bezeichner — vollstaendig aufgezaehlt. */
+// Beide Listen sind vollstaendig — Grundlage der Injektivitaetspruefung unten.
 const SCHEMA_BEZEICHNER = ['minmax', 'zscore'] as const;
-
-/** Die vom Kern gefuehrten Bezeichner — vollstaendig aufgezaehlt. */
 const KERN_BEZEICHNER = ['min-max', 'z-score'] as const;
 
 describe('Abbildung der Strategiebezeichner (PE-02)', () => {

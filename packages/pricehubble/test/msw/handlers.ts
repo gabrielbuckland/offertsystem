@@ -9,7 +9,6 @@ const STANDARD_KOPFZEILEN = { 'x-ph-request-id': 'test-request-id' };
 /** Zuletzt per PATCH gesetzte Felder; der GET spiegelt sie zurueck. */
 let zuletztGepatcht: Record<string, unknown> = {};
 
-/** Normalbetrieb — Szenario 1 auf HTTP-Ebene. */
 export const standardHandler = [
   http.post(`${BASIS}/auth/login/credentials`, () =>
     HttpResponse.json(ladeFixture('synthetic/auth/login.success.json'), {

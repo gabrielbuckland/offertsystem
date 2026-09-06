@@ -1,8 +1,3 @@
-/**
- * Route gegen die echte Verdrahtung (wie `offerte-route.test.ts`): `COMPANY_DEFAULTS_PATH`
- * zeigt auf eine Arbeitskopie in einem Temporaerverzeichnis, damit die ausgelieferte
- * `config/company-defaults.json` unangetastet bleibt.
- */
 import { copyFileSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';

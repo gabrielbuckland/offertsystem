@@ -34,7 +34,7 @@ interface VorlageRoh {
   readonly vorgabefaktor: number;
   readonly erfassungsform: 'relativ' | 'absolut';
   readonly begruendungVorschlag: string;
-  // Traegt die Vorlage eine Regel, ist `vorgabefaktor` zwingend 0 (Ebene 3).
+  // Ebene 3: traegt die Vorlage eine Regel, ist `vorgabefaktor` zwingend 0.
   readonly regel?: Bereichsregel;
 }
 
@@ -95,8 +95,8 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
     schreibe({ anpassungsVorlagen: vorlagen.map((v, i) => (i === index ? { ...v, regel } : v)) });
   }
 
-  // Schaltet die Regel EIN/AUS statt sie per Merge-Patch (`aendereVorlage`) zu setzen: ein
-  // Merge kann `regel` setzen, aber nicht wieder entfernen.
+  // Eigene Funktion statt Merge-Patch (`aendereVorlage`): ein Merge kann `regel` setzen,
+  // aber nicht wieder entfernen.
   function schalteRegel(index: number, aktiv: boolean): void {
     schreibe({
       anpassungsVorlagen: vorlagen.map((v, i) => {
@@ -181,12 +181,11 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
               const zeilenBefunde = befundeFuerPfad(einstellungen.befunde, `anpassungsVorlagen[${index}]`);
               const regelAktiv = vorlage.regel !== undefined;
               return (
-                // Index statt `id` als Key: zwei frisch hinzugefuegte Vorlagen tragen
-                // kurzzeitig dieselbe abgeleitete ID.
+                // Index statt `id` als Key: zwei neue Vorlagen tragen kurzzeitig dieselbe ID.
                 <Fragment key={index}>
                   <TableRow>
                     <TableCell>
-                      {/* Nur lesend: `id` ist Referenzziel von `vorlageId` in bestehenden Offerten. */}
+                      {/* `id` ist Referenzziel von `vorlageId` in bestehenden Offerten. */}
                       <Input value={vorlage.id} readOnly disabled className="h-8 w-full" />
                     </TableCell>
                     <TableCell>
@@ -218,8 +217,6 @@ export function PreisanpassungEditor({ einstellungen }: BereichsEditorProps): Re
                           />
                           Regel verwenden
                         </label>
-                        {/* Ausgeblendet statt gesperrt: Regel und Vorgabewert nebeneinander
-                            weist Ebene 3 zurueck. */}
                         {!regelAktiv && (
                           <ZellenEingabe
                             wert={faktorZuProzent(vorlage.vorgabefaktor)}

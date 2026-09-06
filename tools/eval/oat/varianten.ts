@@ -1,20 +1,14 @@
-/**
- * Keine Modellformel; Variantenbildung fuer den OAT-Lauf.
- *
- * Sechs Dimensionen, je vier Stufen (-20/-10/+10/+20 Prozent). Varianten entstehen auf der
- * ROHFORM, weil nur sie Eingabe der Validierung ist (PE-01); jede Variante durchlaeuft
- * zuletzt denselben Ladepfad wie im Betrieb (I-21).
- *
- * D4 — skaliert wird die SPANNE um den Mittelpunkt, nicht beide Grenzen einzeln: Sonst
- * verschoebe sich bei `min != 0` zugleich Lage und Breite des Saettigungsbereichs, und die
- * Wirkung waere keiner Groesse mehr zuzuordnen. Die Umpolung (`min > max`) bleibt erhalten,
- * da die Vorzeichen der Abstaende unberuehrt bleiben (I-13).
- *
- * D5 — `gMin` bleibt fest: sonst verletzte ein negatives delta sofort I-16 (`gMin <= 1 <= gMax`).
- *
- * D6 — Stuetzstelle k = 0 bleibt unberuehrt (`V_0 = 0` ist die Untergrenze des
- * Definitionsbereichs); `H^(0)` bleibt aus demselben Grund fest, sonst vermengte sich D6 mit D5.
- */
+// Keine Modellformel; Variantenbildung fuer den OAT-Lauf. Sechs Dimensionen, je vier
+// Stufen (-20/-10/+10/+20 Prozent). Varianten entstehen auf der ROHFORM, weil nur sie
+// Eingabe der Validierung ist (PE-01); jede Variante durchlaeuft zuletzt denselben
+// Ladepfad wie im Betrieb (I-21).
+// D4 — skaliert wird die SPANNE um den Mittelpunkt, nicht beide Grenzen einzeln: sonst
+// verschoebe sich bei `min != 0` zugleich Lage und Breite des Saettigungsbereichs. Die
+// Umpolung (`min > max`) bleibt erhalten, da die Vorzeichen der Abstaende unberuehrt
+// bleiben (I-13).
+// D5 — `gMin` bleibt fest: sonst verletzte ein negatives delta sofort I-16.
+// D6 — Stuetzstelle k = 0 und `H^(0)` bleiben unberuehrt (`V_0 = 0` ist die Untergrenze
+// des Definitionsbereichs), sonst vermengte sich D6 mit D5.
 import { sortiereNachSchluessel } from '../shared/artefakt.ts';
 import { klone, validiere } from '../shared/konfig.ts';
 import type { Szenario } from '../shared/szenario.ts';
@@ -23,7 +17,6 @@ import { projiziereAufKorridor } from './z-projektion.ts';
 
 export const STUFEN_PROZENT = [-20, -10, 10, 20] as const;
 
-/** Schreibbarer Ausschnitt der Rohkonfiguration; nur die variierten Bloecke. */
 interface RohFaktor {
   gewicht: number;
   min: number;
@@ -79,7 +72,6 @@ export function baueVarianten(basisRoh: unknown): readonly Variante[] {
   const varianten: Variante[] = [];
   const gewichteBasis = gewichteAus(basisRoh);
 
-  // D1 — Gewichte einzeln, mit proportionaler Renormalisierung
   for (const faktorId of Object.keys(gewichteBasis).sort()) {
     for (const p of STUFEN_PROZENT) {
       const r = renormalisiere(gewichteBasis, faktorId, p / 100);
@@ -104,7 +96,6 @@ export function baueVarianten(basisRoh: unknown): readonly Variante[] {
     }
   }
 
-  // D2 — alpha
   for (const p of STUFEN_PROZENT) {
     const roh = alsRoh(klone(basisRoh));
     const neu = roh.flaeche.alpha * (1 + p / 100);
@@ -118,7 +109,7 @@ export function baueVarianten(basisRoh: unknown): readonly Variante[] {
     });
   }
 
-  // D3 — Korridor der Zu-/Abschlaege; die Szenariodaten werden mitprojiziert
+  // D3 — Korridor der Zu-/Abschlaege; Szenariodaten werden mitprojiziert.
   for (const p of STUFEN_PROZENT) {
     const roh = alsRoh(klone(basisRoh));
     const zMin = roh.preisanpassung.zMin * (1 + p / 100);
@@ -138,7 +129,6 @@ export function baueVarianten(basisRoh: unknown): readonly Variante[] {
     });
   }
 
-  // D4 — Normalisierungsgrenzen je Faktor: Spanne um den Mittelpunkt skaliert
   for (const [faktorId] of sortiereNachSchluessel(alsRoh(basisRoh).aufwandfaktoren)) {
     for (const p of STUFEN_PROZENT) {
       const roh = alsRoh(klone(basisRoh));
@@ -156,7 +146,6 @@ export function baueVarianten(basisRoh: unknown): readonly Variante[] {
     }
   }
 
-  // D5 — Bildbereich von g: Spanne skaliert, gMin fest
   for (const p of STUFEN_PROZENT) {
     const roh = alsRoh(klone(basisRoh));
     const gMin = roh.honorar.skalierung.gMin;
@@ -169,7 +158,6 @@ export function baueVarianten(basisRoh: unknown): readonly Variante[] {
     });
   }
 
-  // D6 — Stuetzstellen: Intervallgrenzen und Honorarbasen getrennt
   for (const p of STUFEN_PROZENT) {
     const rohV = alsRoh(klone(basisRoh));
     rohV.honorar.stuetzstellen = rohV.honorar.stuetzstellen.map(
@@ -196,7 +184,7 @@ export function baueVarianten(basisRoh: unknown): readonly Variante[] {
     });
   }
 
-  // Letzter Schritt: derselbe Ladepfad wie im Betrieb (I-21).
+  // Derselbe Ladepfad wie im Betrieb (I-21).
   return varianten.map((v) => {
     if (v.status === 'unzulaessig') return v;
     const geprueft = validiere(v.konfigRoh);

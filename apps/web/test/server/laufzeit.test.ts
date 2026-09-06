@@ -1,10 +1,4 @@
-/**
- * Keine Formel. Belegt die eine Verdrahtungsstelle (PE-24, PE-17, AK-17).
- *
- * Verweist auf `config/company-defaults.json` und die Negativfixtures unter
- * `packages/core/test/fixtures/config-invalid/` statt eigener Kopien: eine dritte Kopie
- * waere ein zweiter Konfigurationsstand, der beim Nachziehen auseinanderlaeuft.
- */
+/// Keine Formel. Belegt die eine Verdrahtungsstelle (PE-24, PE-17, AK-17).
 import { execSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -50,8 +44,7 @@ describe('Verdrahtung von Umgebung, Konfiguration, Adapter und Ablage', () => {
   });
 
   it('traegt keinen Ablagepfad im Code der uebrigen Serverdateien', () => {
-    // `umgebung.ts` ist ausgenommen: Es ist der einzige Ort, an dem Umgebungswerte
-    // gelesen werden, und traegt den Vorgabewert deshalb zu Recht (E-14).
+    // E-14: Umgebungsvorgabewert ist Sonderfall.
     const treffer = execSync(
       'grep -rn "data/offerten" apps/web/src --include=*.ts --include=*.tsx'
       + ' | grep -v "server/umgebung.ts" || true',

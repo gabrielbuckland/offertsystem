@@ -102,10 +102,7 @@ describe('anzahlWohnungenAusEntwurf', () => {
   });
 });
 
-/**
- * Die eigentliche Verkettung "neu angelegtes Referenzobjekt + Anzahl Wohnungen ergeben
- * genau so viele neue Einheiten dieses Typs" — reine Funktionen, deshalb hier pruefbar.
- */
+// Verkettung: Referenzobjekt + Anzahl erzeugt genau diese Einheitenmenge (reine Funktionen).
 describe('neuesReferenzobjekt + erzeugeEinheiten (Anlegen-Dialog mit Anzahl)', () => {
   it('erzeugt genau so viele Einheiten des neuen Typs wie im Dialog angegeben', () => {
     const neues = neuesReferenzobjekt(

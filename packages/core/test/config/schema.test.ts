@@ -105,9 +105,8 @@ describe('Ebene 1 — Struktur', () => {
 
   it('nimmt einen beliebigen neuen Faktorschluessel an, ohne dass eine Union zu ergaenzen waere', () => {
     const erweitert = structuredClone(minimal);
-    // Der Zugriff ist bewusst ueber einen Indexzugriff getypt: `minimal` ist ein
-    // Literal, und genau die Erweiterbarkeit um einen dort unbekannten Schluessel
-    // ist der Gegenstand dieses Tests (I-13).
+    // I-13: Indexzugriff bewusst, da genau die Erweiterbarkeit um einen in `minimal`
+    // unbekannten Schluessel der Gegenstand dieses Tests ist.
     (erweitert.aufwandfaktoren as Record<string, unknown>)['risikoindex'] = {
       bezeichnung: 'Risikoindex',
       quelle: 'manuell',
@@ -151,9 +150,8 @@ describe('Ebene 1 — Struktur', () => {
   });
 
   it('belegt merkmale und erfassungsform vor, wenn sie in einer gespeicherten Konfiguration fehlen', () => {
-    // Belegt das Kompatibilitaetsversprechen: Ein Artefakt aus `data/`, das vor dieser
-    // Erweiterung geschrieben wurde, hat weder `merkmale` noch `erfassungsform` und muss
-    // ohne Nachbearbeitung gueltig bleiben (E-07 der Anforderung, hier: Vorgabewerte).
+    // E-07: Ein Artefakt aus `data/` ohne `merkmale`/`erfassungsform` muss ohne
+    // Nachbearbeitung gueltig bleiben (Kompatibilitaetsversprechen, hier: Vorgabewerte).
     const ohneMerkmaleUndErfassungsform = structuredClone(minimal) as Record<string, unknown>;
     delete ohneMerkmaleUndErfassungsform['merkmale'];
     (ohneMerkmaleUndErfassungsform['anpassungsVorlagen'] as unknown[]).push({

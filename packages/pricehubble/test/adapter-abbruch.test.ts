@@ -28,7 +28,6 @@ describe('Abbruch mitten im Typen-Durchlauf (Spec 04 §3.3, US-15, NFA-10)', () 
     expect(ergebnis.wert.bewertungen.size).toBe(1);
     expect(ergebnis.wert.fehlgeschlagenerTyp).toBe('t-2' as WohnungstypId);
     expect(ergebnis.wert.fehler?.art).toBe('antwort_ungueltig');
-    // Typ 3 wurde nicht mehr versucht: hoechstens zwei Bewertungsaufrufe.
     expect(bewertungsaufrufe).toBe(2);
   });
 
@@ -83,8 +82,7 @@ describe('Abbruch mitten im Typen-Durchlauf (Spec 04 §3.3, US-15, NFA-10)', () 
 
   it('bricht bei fehlgeschlagener PATCH-Verifikation ab', async () => {
     mswServer.use(
-      // Das Fremdsystem quittiert das PATCH, uebernimmt den gesendeten Wert aber
-      // stillschweigend nicht. Sichtbar wird das erst beim Zurueckleseabruf.
+      // PATCH wird quittiert, der Wert aber stillschweigend nicht uebernommen; sichtbar erst beim Rueckleseabruf.
       http.get(`${BASIS}/api/v1/dossiers/${TEST_DOSSIER_ID}`, () => {
         const basis = ladeFixture<{ property: Record<string, unknown> }>(
           'synthetic/dossier/get-dossier.success.json',
@@ -140,8 +138,7 @@ describe('Abbruch mitten im Typen-Durchlauf (Spec 04 §3.3, US-15, NFA-10)', () 
     );
     const { adapter } = baueAdapter();
     await adapter.bewerteWohnungstypen([anfrage(1), anfrage(2)]);
-    // Genau ein PATCH: fuer Typ 1. Kein Rueckschreibversuch auf einer Ressource in
-    // unbestimmtem Zustand.
+    // Kein Rueckschreibversuch auf einer Ressource in unbestimmtem Zustand.
     expect(patches).toBe(1);
   });
 });

@@ -1,19 +1,11 @@
 /**
- * Anti-Corruption Layer, Lagerichtung. Keine Formel.
- *
- * Drei Festlegungen, die hier durchgesetzt werden:
- *  - KEINE Verdichtung zu einem Sammelwert (I-26).
- *  - KEINE Umpolung von `noise`/`nuisance` im ACL; sie geschieht ausschliesslich ueber
- *    vertauschte Normalisierungsgrenzen in der Konfiguration (I-13). Jede
- *    Sonderbehandlung hier machte einen neuen Faktor wieder zu einer Codeaenderung
- *    und verfehlte FF 1.
- *  - Schluessel ist `LagescoreName`, nicht `FaktorId` (E-08). Die Aufloesung
- *    `FaktorId -> quellSchluessel -> LagescoreName` leistet der Beschaffer im Kern.
- *
- * `meta` ist Ausweisinformation fuer A-13 und ausdruecklich kein Berechnungseingang.
- *
- * Ein fehlender Score ist bereits im Schema ein Vertragsbruch (E-22) und erreicht
- * diese Funktion nicht.
+ * Keine Formel. Keine Verdichtung zu einem Sammelwert (I-26). Keine Umpolung von
+ * `noise`/`nuisance` hier — geschieht ueber vertauschte Normalisierungsgrenzen in der
+ * Konfiguration (I-13), sonst waere ein neuer Faktor wieder eine Codeaenderung (FF 1).
+ * Schluessel ist `LagescoreName`, nicht `FaktorId` (E-08); Aufloesung macht der
+ * Beschaffer im Kern. `meta` ist Ausweisinformation (A-13), kein Berechnungseingang.
+ * Ein fehlender Score ist bereits im Schema ein Vertragsbruch (E-22) und erreicht diese
+ * Funktion nicht.
  */
 import type { Lagescores, LagescoreName, Score } from '@offert/core';
 import {

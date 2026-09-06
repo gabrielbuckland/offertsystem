@@ -1,13 +1,7 @@
 'use client';
 
-/**
- * Erzeugt Einheitenzeilen aus Wuenschen der Form «2 mal 3.5 Zimmer». Ruft die reine
- * Funktion `erzeugeEinheiten` auf und haengt das Ergebnis an die vorhandenen Einheiten
- * an; dieser Block liefert nur die Eingabe der Anzahl je Referenzobjekt.
- *
- * Nacherfassen, nicht Ersterfassung: Dieser Baustein deckt nur den Fall, dass spaeter
- * weitere Wohnungen eines BEREITS bestehenden Typs dazukommen.
- */
+// Nacherfassen, nicht Ersterfassung: deckt nur den Fall, dass spaeter weitere Wohnungen
+// eines BEREITS bestehenden Typs dazukommen.
 import { useRef, useState } from 'react';
 import { erzeugeEinheiten, type Wunsch } from '../../server/einheiten-generator.js';
 import type {
@@ -20,7 +14,6 @@ import { Label } from '../ui/label.js';
 export interface EinheitenGeneratorProps {
   readonly referenzobjekte: readonly Referenzobjekt[];
   readonly einheiten: readonly ProjektEinheit[];
-  // Neue Einheiten uebernehmen den Vorgabewert jeder Spalte (einheiten-generator.ts).
   readonly spalten: readonly AnpassungsSpalte[];
   readonly aendere: (einheiten: readonly ProjektEinheit[]) => void;
 }
@@ -63,7 +56,7 @@ export function EinheitenGenerator({
       <dialog
         ref={dialogRef}
         aria-label="Wohnungen nacherfassen"
-        // `m-auto`: Preflight ueberschreibt sonst die UA-Zentrierung nativer Dialoge.
+        // m-auto: Preflight ueberschreibt sonst die UA-Zentrierung nativer Dialoge.
         className="m-auto rounded-lg border border-border bg-background p-6 backdrop:bg-foreground/30"
       >
         <h3 className="mb-1 text-base font-semibold">Wohnungen nacherfassen</h3>

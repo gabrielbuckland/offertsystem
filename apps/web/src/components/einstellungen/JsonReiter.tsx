@@ -1,9 +1,7 @@
 'use client';
 
-// JSON-Sicht auf denselben Entwurfsstand wie das Formular — kein zweiter, unabhaengiger
-// Entwurf (sonst kennte der Speichern-Knopf die Eingaben des anderen Reiters nicht).
 // Rohtext bleibt lokal: waehrend des Tippens ist das JSON regelmaessig unparsierbar; nach
-// oben gemeldet wird nur ein geparster Wert, bis dahin steht der Befund am Feld.
+// oben gemeldet wird nur ein geparster Wert.
 import { useState } from 'react';
 import type { EinstellungsBefund } from './verwende-einstellungen.js';
 import { alsText, ausText } from './json-reiter-logik.js';
@@ -11,7 +9,6 @@ import { Hinweis } from '../ui/hinweis.js';
 
 export interface JsonReiterProps {
   readonly wert: Readonly<Record<string, unknown>>;
-  // Wird nur bei parsierbarem Inhalt aufgerufen.
   readonly aendere: (naechster: Record<string, unknown>) => void;
   readonly schreibbar: boolean;
   readonly befunde: readonly EinstellungsBefund[];

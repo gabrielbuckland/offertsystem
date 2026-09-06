@@ -1,8 +1,4 @@
-/**
- * Prüft die Dokumentwahl der Darstellung als reine Funktion der Artefaktform —
- * kein Oberflächentest, sondern die Zusage: Neues Artefakt -> Kundendokument,
- * Alt-Artefakt ohne Dokumentblock -> bisheriger Rechenweg (I-24: nie halb).
- */
+// I-24: Dokumentwahl als Funktion der Artefaktform (nie halb).
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { ErgebnisDarstellung } from '../../src/components/ErgebnisDarstellung.js';
@@ -24,8 +20,8 @@ describe('ErgebnisDarstellung', () => {
     );
     expect(html).toContain('Kundentext');
     expect(html).toContain('vermarktungsofferte');
-    expect(html).toContain('Rechenweg');            // Tool-Ansicht bleibt erreichbar
-    expect(html).toContain('<details');             // aber nicht Teil des Dokuments
+    expect(html).toContain('Rechenweg');
+    expect(html).toContain('<details');
   });
 
   it('zeigt Alt-Artefakte ohne Dokumentblock weiterhin als Rechenweg', () => {

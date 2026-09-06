@@ -1,11 +1,5 @@
-/**
- * Keine Formel. Gemeinsamer Schreibweg fuer dateibasierte Ablagen (I-3).
- *
- * Erst vollstaendig in eine Temp-Datei schreiben, dann verknuepfen (`rename`): Ein
- * Absturz mitten im Schreiben oder zwei gleichzeitige Schreibvorgaenge hinterlassen so
- * nie eine abgeschnittene Zieldatei — entweder der alte oder der neue Stand ist
- * vollstaendig da.
- */
+// I-3: Erst in Temp-Datei schreiben, dann per `rename` verknuepfen — so hinterlaesst ein
+// Absturz oder ein gleichzeitiger Schreibvorgang nie eine abgeschnittene Zieldatei.
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs/promises';
 import { dirname } from 'node:path';

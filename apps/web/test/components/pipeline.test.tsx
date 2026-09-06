@@ -21,8 +21,7 @@ function alleZeilen(stufe: PipelineStufe): readonly PipelineZeile[] {
   return stufe.abschnitte.flatMap((a) => a.zeilen ?? []);
 }
 
-/** Herleitung aus der echten Beispiel-Offerte: derselbe Kern, dieselbe Konfiguration —
- *  die Formelzeilen muessen exakt die Kernwerte ausweisen (I-24). */
+// I-24: Formelzeilen müssen Kernwerte exakt ausweisen.
 function herleitung() {
   const offerte = baueBeispielOfferte();
   return { derivation: offerte.derivation, aggregates: offerte.aggregates };
@@ -34,8 +33,7 @@ function zeile(stufe: PipelineStufe, beschriftung: string): PipelineZeile {
   return treffer;
 }
 
-/** Stufe 1 fuehrt je Bewertungsobjekt einen eigenen Abschnitt; dieselbe Feldbeschriftung
- *  kommt darin zweimal vor und muss ueber den Abschnittstitel angesprochen werden. */
+// Stufe 1: je Bewertungsobjekt ein Abschnitt; Feldbeschriftung über Abschnittstitel ansprechen.
 function zeileImAbschnitt(
   stufe: PipelineStufe, abschnittstitel: string, beschriftung: string,
 ): PipelineZeile {
@@ -47,17 +45,7 @@ function zeileImAbschnitt(
   return treffer;
 }
 
-/**
- * Projekt-Delta, das in jeder projektbezogen uebersteuerbaren Wurzel eingreift, die der
- * Rechenweg anzeigt: eine Dossier-Voreinstellung, ein Flaechenparameter, ein
- * Honorarparameter, das Gewicht eines bestehenden Aufwandfaktors und ein rein
- * projektbezogen ergaenzter Faktor.
- *
- * Das Ueberschreibungsprotokoll wird NICHT von Hand geschrieben, sondern vom echten
- * Zwei-Ebenen-Merge erzeugt, und die Pipeline erhaelt die zusammengefuehrte Basis — so
- * prueft der Test die Herkunftsanzeige gegen die Pfadform des Kerns und nicht gegen
- * seine eigene Annahme darueber.
- */
+// Projekt-Delta mit Überschreibungen aus echtem Zwei-Ebenen-Merge; nicht per Hand geschrieben.
 function mitProjektDelta() {
   const firma = basis();
   const bestehenderFaktor = Object.keys(firma.aufwandfaktoren).sort((a, b) => a.localeCompare(b))[0]!;
@@ -88,9 +76,7 @@ describe('bauePipelineDaten', () => {
     const stufen = bauePipelineDaten(basis());
     expect(stufen.map((s) => s.nr)).toEqual([1, 2, 3, 4, 5]);
     const faktorStufe = stufen.find((s) => s.nr === 3)!;
-    // Datengetrieben (US-09): jeder konfigurierte Faktor erscheint mit seiner
-    // Bezeichnung, ohne dass dieser Test oder die Komponente einen Bezeichner fest
-    // verdrahtet.
+    // US-09: datengetrieben, keine fest verdrahteten Bezeichner.
     expect(alleZeilen(faktorStufe).length).toBeGreaterThanOrEqual(3);
   });
 
@@ -138,6 +124,7 @@ describe('bauePipelineDaten', () => {
     // Ein Protokolleintrag `honorar.skalierung.gMin` muss die Zeile treffen, die den
     // Skalierungsbereich zeigt — der Eintrag ist feiner als die Zeile.
     const honorar = stufen.find((s) => s.nr === 5)!;
+    // Protokoll-Eintrag feiner/gleich/gröber als Zeile-Pfad muss treffen.
     expect(zeile(honorar, 'Skalierungsbereich g').herkunft).toBe('projekt');
     expect(zeile(honorar, 'Honorarstaffel').herkunft).toBe('firmenweit');
   });
@@ -150,14 +137,11 @@ describe('bauePipelineDaten', () => {
     const bestehend = delta.basis.aufwandfaktoren[delta.bestehenderFaktor]!.bezeichnung;
     const neu = delta.basis.aufwandfaktoren[delta.neuerFaktor]!.bezeichnung;
 
-    // Uebersteuert ist das GEWICHT: das faerbt die Beitragszeile, nicht die Skalenzeile,
-    // deren angezeigte Grenzen unveraendert firmenweit gelten.
+    // Übersteuert ist Gewicht: Beitragszeile ja, Skalenzeile nein.
     expect(zeile(beitraege, bestehend).herkunft).toBe('projekt');
     expect(zeile(skalen, bestehend).herkunft).toBe('firmenweit');
 
-    // Ein projektbezogen ergaenzter Faktor steht als ganzer Teilbaum im Protokoll
-    // (`aufwandfaktoren.<faktor>`) — der Eintrag ist groeber als die Zeilen und muss
-    // beide treffen.
+    // Neuer Faktor: ganzer Teilbaum im Protokoll trifft beide Zeilen.
     expect(zeile(skalen, neu).herkunft).toBe('projekt');
     expect(zeile(beitraege, neu).herkunft).toBe('projekt');
   });
@@ -167,8 +151,7 @@ describe('bauePipelineDaten', () => {
     const stufen = bauePipelineDaten(basis(), { herleitung: h });
     const verkauf = stufen.find((s) => s.nr === 2)!;
 
-    // Je Wohnungstyp und je Einheit genau eine Tabellenzeile — der Rechenweg zeigt jede
-    // Einheit einzeln, nicht nur ein Beispiel (Nachvollziehbarkeit, US-09).
+    // US-09: je Wohnungstyp/Einheit eine Zeile, Nachvollziehbarkeit.
     const tabellen = verkauf.abschnitte.flatMap((a) => (a.tabelle === undefined ? [] : [a.tabelle]));
     expect(tabellen.map((t) => t.zeilen.length)).toEqual([
       h.derivation.apartmentTypes.length,
@@ -216,12 +199,9 @@ describe('istProjektbezogen', () => {
   it('trifft einen Eintrag, der feiner oder groeber ist als der Bezugspfad der Zeile', () => {
     expect(istProjektbezogen(['honorar.skalierung.gMin'], protokoll('honorar.skalierung.gMin')))
       .toBe(true);
-    // Groeber: der ganze Teilbaum wurde ersetzt.
     expect(istProjektbezogen(['honorar.skalierung.gMin'], protokoll('honorar'))).toBe(true);
-    // Feiner: die Zeile zeigt den Teilbaum, uebersteuert wurde ein Blatt darin.
     expect(istProjektbezogen(['honorar.skalierung'], protokoll('honorar.skalierung.gMax')))
       .toBe(true);
-    // Nachbarpfad derselben Wurzel darf nicht faelschlich treffen.
     expect(istProjektbezogen(['honorar.skalierung.gMin'], protokoll('honorar.stuetzstellen')))
       .toBe(false);
   });
@@ -234,8 +214,7 @@ describe('istProjektbezogen', () => {
   });
 
   it('weist eine gesperrte Wurzel nie als projektbezogen aus', () => {
-    // `api` steht in `GESPERRTE_PFADE`; der Merge lehnt eine solche Uebersteuerung ab.
-    // Selbst wenn ein Eintrag den Pfad truege, darf die Anzeige ihn nicht bestaetigen.
+    // api in GESPERRTE_PFADE; Anzeige darf nie bestätigen.
     expect(istProjektbezogen(['api.baseUrl'], protokoll('api.baseUrl'))).toBe(false);
     expect(istProjektbezogen(['meta.konfigVersion'], protokoll('meta'))).toBe(false);
   });
@@ -246,8 +225,7 @@ describe('istProjektbezogen', () => {
   });
 
   it('keine Zeile verdrahtet ihre Herkunft fest', () => {
-    // Waere die Herkunft als Literal im Quelltext verdrahtet, faellt sie vom Protokoll
-    // ab; dieser Test faengt den Rueckfall, bevor der Rechenweg falsch anzeigt (K-2).
+    // K-2: Herkunft als Literal würde Protokoll ignorieren; Rückfall-Schutz.
     const quelle = readFileSync(
       new URL('../../src/components/pipeline/pipeline-daten.ts', import.meta.url), 'utf8');
     expect(quelle).not.toContain("herkunft: 'firmenweit'");
@@ -259,9 +237,7 @@ describe('PipelineAnsicht', () => {
   it('bearbeitet die Konfiguration nicht direkt aus dem Projekt heraus', () => {
     const html = renderToStaticMarkup(
       <PipelineAnsicht stufen={bauePipelineDaten(basis())} />);
-    // Die Projektseite fuehrt KEINEN Weg in die Konfiguration ausser dem Verweis — sonst
-    // bearbeitete der Vermarkter aus dem Projekt heraus Werte, die auf alle Projekte
-    // wirken.
+    // Kein Weg in Konfiguration ausser Verweis; verhindert projektübergreifende Änderungen.
     expect(html).not.toContain('Bearbeiten');
   });
 });

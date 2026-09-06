@@ -1,9 +1,4 @@
-/**
- * E-04 end to end: Liegt die Verkaufssumme ausserhalb der konfigurierten Staffel, ist das
- * KEIN Eingabefehler, sondern ein Teilergebnis. Geprueft wird deshalb nicht die
- * Textuebersetzung des Fehlercodes, sondern der Rueckgabetyp von `fuehreProjektlauf` samt
- * Nutzlast: Verkaufssumme, D und JEDE Wohnungsposition muessen vorhanden bleiben.
- */
+/// E-04: Teilergebnis bei Staffelüberschuss mit voller Nutzlast.
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -17,11 +12,7 @@ import { BEWERTUNGEN_STANDARD } from '../bau/bewertungen.js';
 
 const ADRESSE = { strasse: 'Seestrasse', hausnummer: '1', plz: '8001', ort: 'Zürich' };
 
-/**
- * Staffel, deren oberste Stuetzstelle (CHF 200'000) weit unter der Verkaufssumme des
- * Fixtures liegt. Die uebrigen Konfigurationsteile bleiben unveraendert, damit einzig
- * Stufe 5 scheitert und die Stufen 1–4 gueltig durchlaufen.
- */
+// Staffel: oberste Stutzstelle unter Verkaufssumme — nur Stufe 5 scheitert, Stufen 1–4 gültig.
 function staffelZuTief(basis: Konfiguration): Konfiguration {
   const unterste = basis.honorar.stuetzstellen[0];
   if (unterste === undefined) throw new Error('Standardkonfiguration ohne Stuetzstellen');
@@ -92,7 +83,6 @@ describe('Projektlauf – Honorarabbruch (E-04)', () => {
 
     expect(lauf.fehler.stufe).toBe(5);
     expect(lauf.fehler.code).toBe('VERKAUFSSUMME_AUSSERHALB');
-    // Teilergebnis vollstaendig: Verkaufssumme, D und jede Wohnungsposition.
     expect(lauf.teilergebnis.verkaufssumme).toBeGreaterThan(0);
     expect(lauf.teilergebnis.aufwandindikator).toBeGreaterThan(0);
     expect(lauf.teilergebnis.positionen).toHaveLength(2);

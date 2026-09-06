@@ -1,18 +1,9 @@
-/**
- * Deterministisches Offert-Objekt fuer die Tests dieses Pakets.
- *
- * Saemtliche Bezeichner und Zeitstempel sind literal fixiert: Nach E-29 werden sie in
- * Testlaeufen aus dem Fixture UEBERNOMMEN und nicht erzeugt — mit `new Date()` oder
- * `randomUUID()` waere I-14 (Reproduzierbarkeit) nicht beobachtbar, weil sich zwei
- * Laeufe schon in den Metadaten unterschieden.
- *
- * Der Bauer liefert bei jedem Aufruf eine frische Tiefkopie: Die Tests veraendern
- * einzelne Felder, um Zurueckweisungen zu belegen, und duerfen sich dabei nicht
- * gegenseitig beeinflussen.
- */
+// Bezeichner/Zeitstempel literal fixiert statt new Date()/randomUUID() (E-29, I-14:
+// Reproduzierbarkeit waere sonst nicht beobachtbar). structuredClone pro Aufruf,
+// da Tests einzelne Felder fuer Zurueckweisungstests mutieren.
 import type { Offer } from '../../src/model/offer.js';
 
-/** Tief veraenderbare Fassung; das Schema selbst fuehrt alles `readonly`. */
+// Tief veraenderbare Fassung; das Schema selbst fuehrt alles `readonly`.
 export type Veraenderbar<T> = T extends readonly (infer U)[]
   ? Veraenderbar<U>[]
   : T extends object
@@ -23,9 +14,7 @@ export type VeraenderbareOfferte = Veraenderbar<Offer>;
 
 const PRUEFSUMME = 'a'.repeat(64);
 
-// Lokal statt aus einem fremden Testbaum importiert (weder apps/web/test noch
-// packages/core/test): Testhelfer bleiben je Paket eigenstaendig, ein Import in den
-// Testbaum eines anderen Pakets koppelte die Suiten aneinander.
+// Bewusst lokal statt aus fremdem Testbaum importiert: Testhelfer bleiben pro Paket eigenstaendig.
 const BEWERTUNGEN_STANDARD = {
   zustandsbewertungen: {
     bathrooms: 'well_maintained', kitchen: 'well_maintained',

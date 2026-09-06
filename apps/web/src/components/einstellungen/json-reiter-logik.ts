@@ -1,20 +1,12 @@
-// Reine Serialisierungs-/Parselogik des JSON-Reiters, getrennt von `JsonReiter.tsx`,
-// damit sie ohne DOM/React testbar ist (gleiches Muster wie `faktoren-logik.ts`/`zellen-logik.ts`).
-
 export type JsonLeseErgebnis =
   | { readonly ok: true; readonly wert: Record<string, unknown> }
   | { readonly ok: false; readonly text: string };
 
-/** Serialisiert fuer die Anzeige: zwei Leerzeichen Einrueckung (lesbar, diff-freundlich). */
 export function alsText(wert: Readonly<Record<string, unknown>>): string {
   return JSON.stringify(wert, null, 2);
 }
 
-/**
- * Waehrend des Tippens ist JSON regelmaessig unparsierbar (z. B. `{"a":`); der
- * Fehlerfall traegt deshalb einen anzeigbaren Satz statt zu werfen. Array/Skalar an
- * der Wurzel ist ebenfalls ungueltig, `verwendeEinstellungen` erwartet ein Objekt.
- */
+// Array/Skalar an der Wurzel ist ungueltig, `verwendeEinstellungen` erwartet ein Objekt.
 export function ausText(roh: string): JsonLeseErgebnis {
   let geparst: unknown;
   try {
@@ -28,15 +20,8 @@ export function ausText(roh: string): JsonLeseErgebnis {
   return { ok: true, wert: geparst as Record<string, unknown> };
 }
 
-/**
- * Blendet ganze Wurzeln aus der JSON-Sicht aus. Zusammen mit `mitWurzeln` haelt das die
- * Rollentrennung auch im JSON-Reiter durch: Ein Bereich, der im Formular nur lesend
- * gezeigt wird, darf nicht ueber den Umweg des Rohtextes editierbar werden.
- *
- * Die Wurzelliste kommt als Parameter herein und steht nicht als Literal hier — die
- * einzige Wahrheit darueber, was projektbezogen bzw. durch den Auftraggeber
- * unveraenderlich ist, ist `GESPERRTE_PFADE` im Kern.
- */
+// Blendet Wurzeln aus der JSON-Sicht aus, damit ein nur lesend gezeigter Bereich nicht
+// ueber den Rohtext editierbar wird.
 export function ohneWurzeln(
   wert: Readonly<Record<string, unknown>>, wurzeln: readonly string[],
 ): Record<string, unknown> {
@@ -48,12 +33,8 @@ export function ohneWurzeln(
   return ergebnis;
 }
 
-/**
- * Gegenstueck zu `ohneWurzeln`: setzt die ausgeblendeten Wurzeln aus dem unveraenderten
- * Bestand wieder ein. Ein im Rohtext trotzdem eingetippter gesperrter Schluessel wird
- * dabei verworfen — sonst waere die Sperre eine blosse Anzeigekosmetik, die sich durch
- * Tippen umgehen liesse.
- */
+// Gegenstueck zu `ohneWurzeln`: ein trotzdem eingetippter gesperrter Schluessel wird
+// verworfen, sonst waere die Sperre nur Anzeigekosmetik.
 export function mitWurzeln(
   bearbeitet: Readonly<Record<string, unknown>>,
   bestand: Readonly<Record<string, unknown>>,

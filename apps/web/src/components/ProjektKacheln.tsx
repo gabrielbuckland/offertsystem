@@ -1,10 +1,5 @@
-/**
- * Die Kennung (UUID) ist rein technisch und dient nur der Verlinkung — Menschen
- * identifizieren ein Projekt über Adresse und Datum, nicht über die Kennung, darum
- * steht sie nirgends als Text.
- *
- * Ein schemawidriges Artefakt wird GEKENNZEICHNET, nicht teilweise dargestellt (I-24).
- */
+// Kennung (UUID) ist rein technisch (Verlinkung), steht nirgends als Text.
+// Schemawidriges Artefakt wird GEKENNZEICHNET, nicht teilweise dargestellt (I-24).
 import Link from 'next/link';
 import type { Route } from 'next';
 import { Building2 } from 'lucide-react';
@@ -13,8 +8,7 @@ import { LeererZustand } from './ui/leerer-zustand.js';
 
 export interface ProjektKachelnProps {
   readonly eintraege: readonly ProjektEintrag[];
-  // Die Aktion (Dialog-Auslöser) gehört der Seite, nicht dieser Komponente — sonst
-  // koppelte sie Darstellung und Formular.
+  // Dialog-Ausloeser gehoert der Seite, nicht dieser Komponente (sonst Darstellung/Formular gekoppelt).
   readonly leerAktion?: React.ReactNode;
 }
 
@@ -38,8 +32,7 @@ export function ProjektKacheln({ eintraege, leerAktion }: ProjektKachelnProps) {
         <li key={e.id}
             className="rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary">
           {e.fehlerhaft ? (
-            // `e.datei` bewusst NICHT gezeigt: Der Dateiname traegt die UUID
-            // (`${id}.json`) und wuerde die Kennung sichtbar machen.
+            // e.datei bewusst NICHT gezeigt: Dateiname traegt die UUID.
             <p className="text-muted-foreground">
               Projekt nicht lesbar. Die Datei muss geprüft werden.
             </p>

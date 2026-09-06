@@ -1,16 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { anfrage, adresse, baueAdapter } from './adapter-hilfen.js';
 
-/**
- * I-27 / NFA-12: Die Abrufzahl skaliert mit der Zahl der Wohnungstypen `T`, nicht mit
- * der Einheitenzahl `m`. Verbindliche Grundformel `N = 2 + 3*T`.
- *
- * Je Typ fallen drei Abrufe an: E3 PATCH, der Zuruecklese-GET fuer die Verifikation
- * und E4 POST. Der GET ist unvermeidbar, weil E3 mit leerem Rumpf antwortet
- * (live belegt 2026-09-01) — ohne ihn gaebe es keinen Rueckvergleich.
- * Gemessen wird auf der HTTP-Ebene; am Interface waere die Zahl konstruktionsbedingt
- * immer 1 und die Messung wertlos.
- */
+// I-27/NFA-12: Grundformel N = 2 + 3*T (Abrufzahl skaliert mit Wohnungstypen T, nicht
+// Einheiten m). Je Typ: E3 PATCH, Zuruecklese-GET (unvermeidbar, da E3 leeren Rumpf
+// liefert, live belegt), E4 POST. Gemessen auf HTTP-Ebene; am Interface waere die
+// Zahl konstruktionsbedingt immer 1 und die Messung wertlos.
 async function zaehleAbrufe(typen: number): Promise<number> {
   const { adapter, protokoll } = baueAdapter();
   await adapter.holeLagescores(adresse);
@@ -30,9 +24,8 @@ describe('Abrufzahl je Offerte (I-27, NFA-12, AK-3)', () => {
   });
 
   it('ist unabhaengig von der Einheitenzahl m', async () => {
-    // Beide Projekte haben 3 Wohnungstypen; 24 bzw. 120 Einheiten wirken
-    // ausschliesslich lokal ueber eq:wohnungspreis, eq:verkaufssumme und den
-    // Aufwandfaktor Projektumfang — sie loesen keinen Abruf aus.
+    // Einheitenzahl wirkt nur lokal (eq:wohnungspreis, eq:verkaufssumme, Aufwandfaktor
+    // Projektumfang) und loest keinen Abruf aus.
     expect(await zaehleAbrufe(3)).toBe(await zaehleAbrufe(3));
   });
 });

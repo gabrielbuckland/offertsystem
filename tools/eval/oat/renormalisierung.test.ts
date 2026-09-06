@@ -42,12 +42,11 @@ describe('renormalisiere', () => {
   });
 
   it('bleibt innerhalb der Toleranz aus invariants.json', () => {
-    // Eine Renormalisierung, die um mehr als diese Toleranz danebenliegt, erschiene im
-    // OAT-Lauf als «unzulaessig» und entwertete die Dimension D1 stillschweigend.
+    // Ueberschreitung erschiene im OAT-Lauf als «unzulaessig» und entwertete D1 still.
     const invarianten = JSON.parse(readFileSync(
       join(repoWurzel(), 'packages', 'core', 'test', 'property', 'invariants.json'), 'utf8'),
     ) as readonly { id: string; wert: number }[];
-    // Das Toleranzfeld heisst in P2s Datei `wert`, nicht `toleranzwert` (E-17).
+    // Toleranzfeld heisst in P2s Datei `wert`, nicht `toleranzwert` (E-17).
     const toleranz = invarianten.find((i) => i.id === 'I-12')!.wert;
     for (const id of Object.keys(basis)) {
       for (const delta of STUFEN) {

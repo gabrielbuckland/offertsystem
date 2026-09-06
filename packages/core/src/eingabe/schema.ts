@@ -53,13 +53,10 @@ export const liegenschaftEingabeSchema = z.object({
   id: z.string().min(1),
   adresse: adresseEingabeSchema,
   wohnungstypen: z.array(wohnungstypEingabeSchema).min(1),
-  /**
-   * Bewusst OHNE `.min(1)`: Die Regel «mindestens eine Einheit» gehoert dem Aggregat
-   * (I-01) und wird von `erzeugeLiegenschaft` mit dem sprechenden Code `KEINE_EINHEIT`
-   * gemeldet. Eine zusaetzliche Schemaschranke griffe frueher und ersetzte diesen Code
-   * durch das generische `SCHEMA_VERLETZT` — die Aggregatregel waere dann zwar
-   * vorhanden, aber ueber die Eingabeschicht nicht mehr erreichbar und damit unbelegt.
-   */
+  // Bewusst ohne .min(1): «mindestens eine Einheit» gehoert dem Aggregat (I-01) und wird
+  // von erzeugeLiegenschaft mit dem sprechenden Code KEINE_EINHEIT gemeldet. Eine
+  // Schemaschranke griffe frueher und ersetzte diesen Code durch das generische
+  // SCHEMA_VERLETZT.
   einheiten: z.array(einheitEingabeSchema),
 });
 

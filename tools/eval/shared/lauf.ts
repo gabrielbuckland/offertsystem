@@ -1,11 +1,7 @@
-/**
- * Keine eigene Modellformel; der Lauf ruft ausschliesslich den Kern.
- *
- * Die Umsetzung Szenario -> `EingangsArgumente` steht hier und nicht in den Testhelfern
- * des Kerns: `tools/eval` haengt nur von `packages/core/src` ab, nicht von dessen
- * Testbaum. Der Unterschied zur Testfassung ist bewusst: Hier wird die Konfiguration
- * UEBERGEBEN, weil die Werkzeuge gerade Varianten davon rechnen.
- */
+// Keine eigene Modellformel; der Lauf ruft ausschliesslich den Kern.
+// Szenario -> EingangsArgumente steht hier statt in den Testhelfern des Kerns, da
+// tools/eval nur von packages/core/src abhaengt, nicht von dessen Testbaum. Anders als
+// dort wird die Konfiguration UEBERGEBEN, da die Werkzeuge gerade Varianten davon rechnen.
 import {
   berechne,
   erzeugeLiegenschaft,
@@ -28,10 +24,8 @@ import type {
 } from '../../../packages/core/src/index.ts';
 import type { Szenario, SzenarioTyp } from './szenario.ts';
 
-/**
- * Fester Zeitstempel als Rueckfall: E-29 verlangt hereingereichte Bezeichner und
- * Zeitpunkte, sonst waere I-14 nicht beobachtbar. Die Fixtures fuehren ihn selbst.
- */
+// E-29: fester Zeitstempel als Rueckfall, verlangt hereingereichte Bezeichner und
+// Zeitpunkte, sonst waere I-14 nicht beobachtbar (Fixtures fuehren ihn selbst).
 export const EVAL_ZEITSTEMPEL = '2026-01-01T00:00:00.000Z';
 
 // Lokal statt aus apps/web/test importiert: tools/ steht ausserhalb der Abhaengigkeitsmatrix,

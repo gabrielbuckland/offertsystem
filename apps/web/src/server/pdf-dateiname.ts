@@ -1,6 +1,5 @@
-// Namensbildung der PDF-Auslieferung, ausgelagert aus dem Route Handler: Next.js laesst in
-// einer `route.ts` nur Handler-Exporte und einige benannte Konfigurationswerte zu und bricht
-// den Build bei jedem weiteren Export ab.
+// Ausgelagert aus dem Route Handler: Next.js laesst in `route.ts` nur Handler-Exporte und
+// einige benannte Konfigurationswerte zu und bricht den Build bei jedem weiteren Export ab.
 export function dateiname(
   metadaten: { readonly offertId: string; readonly erstelltAm: string },
 ): string {

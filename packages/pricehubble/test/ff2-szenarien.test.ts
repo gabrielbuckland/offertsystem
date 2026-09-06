@@ -15,19 +15,13 @@ const laufBeginn = Date.now();
 let szenarienGruen = 0;
 const kategorien: KategorieZeile[] = [];
 
-/**
- * Jeder Szenariotest ruft am Ende `vermerke(...)` auf. Damit steht im Artefakt nicht nur
- * pass/fail, sondern das, was Kapitel 6 tabelliert: je gefahrener Fehlerkategorie der
- * erwartete und der tatsaechlich beobachtete Fehlerstatus sowie der Zustand der
- * Berechnungspipeline. Der beobachtete Status stammt aus dem Ergebnisobjekt des Laufs,
- * nicht aus der Erwartung — die Tabelle zeigt damit Messwerte, keine Sollwerte.
- */
+// Speist die Kapitel-6-Tabelle: beobachteter Status stammt aus dem Ergebnisobjekt,
+// nicht aus der Erwartung — die Tabelle zeigt Messwerte, keine Sollwerte.
 function vermerke(zeile: KategorieZeile): void {
   szenarienGruen += 1;
   kategorien.push(zeile);
 }
 
-/** Beobachteter Fehlerstatus eines Laufs: ProviderFehler-Art oder 'keiner'. */
 function beobachtet(ergebnis: { readonly ok: boolean }): string {
   const e = ergebnis as {
     readonly ok: boolean;

@@ -3,19 +3,7 @@ import { join } from 'node:path';
 
 export type Nachweisart = 'contract' | 'integration';
 
-/**
- * Eine Zeile je gefahrenem Fall (nur Integrations-Artefakt). Erwarteter und
- * beobachteter Status stehen getrennt, damit die Tabelle in Kapitel 6 den Nachweis
- * «jede Fehlerkategorie endet in einem benannten Fehlerstatus» je Fall ablesbar
- * macht, statt ihn ueber eine Zusammenfassung zu behaupten.
- *
- * `kategorie` traegt eine der vier kanonischen Fehlerkategorien aus
- * tab:fehler_abbildung des Berichts (Transport/Verfuegbarkeit,
- * Zugriffs-/Anfragefehler, Kontingent, Vertragsbruch) oder «keine» fuer Erfolgs-
- * und Toleranzfaelle; `fall` benennt die konkrete Auspraegung. Die feste
- * Kategorienmenge macht die Vollstaendigkeitsaussage «alle vier Kategorien
- * gefahren» am Artefakt pruefbar (F-064).
- */
+// F-064: feste Kategorienmenge macht «alle vier Kategorien gefahren» am Artefakt pruefbar.
 export type Fehlerkategorie =
   | 'Transport/Verfügbarkeit'
   | 'Zugriffs-/Anfragefehler'
@@ -32,37 +20,19 @@ export interface KategorieZeile {
   readonly pipelineZustand: 'nicht gestartet' | 'abgebrochen' | 'abgeschlossen';
 }
 
-/**
- * Schema der Nachweisartefakte (PE-18). Die ersten sechs Felder sind fuer beide Arten
- * verbindlich; `wirkung` und `fixtures_herkunft` fuehrt nur das Contract-Artefakt,
- * `kategorien` nur das Integrations-Artefakt.
- */
+// PE-18: `wirkung`/`fixtures_herkunft` nur Contract-Artefakt, `kategorien` nur Integration.
 export interface Nachweisinhalt {
-  /** Was das System im gemessenen Lauf getan hat (Freitext, eine Zeile). */
   readonly systemverhalten: string;
-  /**
-   * Beobachteter Fehlerstatus: 'keiner' oder die ProviderFehler-Art bzw. HTTP-Status.
-   * Das Integrations-Artefakt weist den Status je Kategorie in `kategorien` aus und
-   * laesst dieses Summenfeld weg.
-   */
+  // Integrations-Artefakt weist den Status je Kategorie in `kategorien` aus statt hier.
   readonly fehlerstatus?: string;
-  /** Zustand der Berechnungspipeline; im Integrations-Artefakt je Kategorie gefuehrt. */
   readonly pipelineZustand?: 'nicht gestartet' | 'abgebrochen' | 'abgeschlossen';
   readonly ergebnis: 'pass' | 'fail';
   readonly anzahlTests: number;
   readonly laufzeitMs: number;
-  /**
-   * Nur Contract-Artefakt: Die Contract-Tests wirken **detektiv**, nicht praeventiv —
-   * sie melden eine Vertragsabweichung, sie verhindern sie nicht.
-   */
+  // Contract-Tests wirken detektiv, nicht praeventiv: melden eine Abweichung, verhindern sie nicht.
   readonly wirkung?: 'detektiv';
-  /**
-   * Nur Contract-Artefakt: Herkunft der geprueften Fixtures. Solange es keine
-   * aufgezeichneten Antworten gibt, steht hier 'synthetisch' — damit ist die
-   * Nachweisluecke im Artefakt selbst ablesbar und nicht nur im Fliesstext behauptet.
-   */
+  // 'synthetisch' macht eine fehlende Aufzeichnung im Artefakt selbst ablesbar.
   readonly fixtures_herkunft?: 'synthetisch' | 'aufgezeichnet' | 'gemischt';
-  /** Nur Integrations-Artefakt: eine Zeile je gefahrener Fehlerkategorie. */
   readonly kategorien?: readonly KategorieZeile[];
 }
 

@@ -1,20 +1,11 @@
-// Reine Logik von `ProjektOfferten.tsx`, getrennt von der Darstellung, damit sie ohne
-// Rendering testbar ist.
 import { formatiereHonorarProzent, berechneHonorarProzent } from '@offert/offer';
 import type { ListenEintrag } from '../../server/offerten-ablage.js';
 
-// Dieselbe Kuerzung wie im Dateinamen (`dateinameFuer` in `offerten-ablage.ts`): die
-// Kennung dient nur der Unterscheidung mehrerer Offerten desselben Tages.
+// Dieselbe Kuerzung wie im Dateinamen (dateinameFuer in offerten-ablage.ts).
 export function referenzAus(offertId: string): string {
   return offertId.slice(0, 8);
 }
 
-/**
- * Honorar-Spalte als Prozentsatz der Verkaufssumme, analog dem Offertdokument:
- * gewaehlter Betrag statt Range, wenn vorhanden (siehe `offerten-ablage.ts`); sonst die
- * Range der Herleitung. `–`, wenn die Verkaufssumme im Listeneintrag fehlt oder keine
- * sinnvolle Bezugsgroesse ist (Division durch null).
- */
 export function honorarProzentZelle(
   e: Pick<ListenEintrag, 'honorar' | 'honorarMin' | 'honorarMax' | 'verkaufssumme'>,
 ): string {

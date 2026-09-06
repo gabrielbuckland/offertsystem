@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
-"""Erzeugt die Szenario-Fixtures (T2) und ihre unabhaengig gerechneten Erwartungswerte.
+"""Erzeugt Szenario-Fixtures (T2) und unabhaengig gerechnete Erwartungswerte: Formeln aus
+Kapitel 3.3 (eq:flaeche, eq:qm_preis, eq:wohnungspreis, eq:verkaufssumme, eq:normalisierung,
+eq:aufwandindikator, eq:honorar_mapping) auf einem zweiten, von packages/core getrennten
+Rechenweg in Python neu implementiert; kein Import aus packages/core.
 
-UNABHAENGIGKEIT: Dieses Skript wertet die Formeln aus Kapitel 3.3 der Arbeit
-(eq:flaeche, eq:qm_preis, eq:wohnungspreis, eq:verkaufssumme, eq:normalisierung,
-eq:aufwandindikator, eq:honorar_mapping) auf einem zweiten, vom Produktivcode
-getrennten Rechenweg aus. Es importiert nichts aus `packages/core`; die Formeln
-stehen hier ein zweites Mal, in einer anderen Sprache.
-
-Rundung: kaufmaennisch, halbe Betraege vom Nullpunkt weg (E-10). Gerundet wird
-am Wohnungspreis (R2) und in der Honorarkette nach der Multiplikation mit g(D)
-(R3); `q_t`, `basispreis`, `basisMin` und `basisMax` bleiben ungerundet.
+Rundung: kaufmaennisch, halbe Betraege vom Nullpunkt weg (E-10), am Wohnungspreis (R2) und
+in der Honorarkette nach der Multiplikation mit g(D) (R3); q_t, basispreis, basisMin und
+basisMax bleiben ungerundet.
 
 Aufruf: python3 tools/referenz/referenzmappe.py
 """
@@ -24,7 +21,6 @@ from pathlib import Path
 WURZEL = Path(__file__).resolve().parents[2]
 CSV_ZIEL = WURZEL / "packages" / "core" / "test" / "fixtures" / "reference"
 
-# --- Modellparameter der Standardkonfiguration -----------------------------------
 ALPHA = 0.5
 G_MIN, G_MAX = 0.85, 1.15
 STUETZSTELLEN = [
@@ -97,18 +93,10 @@ def schreibe_manifest(eintraege: list[dict[str, str]]) -> None:
         json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
-# =============================================================================
-# Szenarien (T2) — Fixtures und unabhaengig gerechnete Erwartungswerte
-# =============================================================================
-# Aufbau je Szenario: Wohnungstypen (Referenzflaechen und Referenzwert), Einheiten
-# (die als 3-Tupel die Referenzflaechen tragen, damit I-05 unmittelbar beobachtbar
-# bleibt, oder als 5-Tupel eine explizit abweichende Geometrie fuehren — S6, F-061),
-# Lagescores und manuell erfasste Aufwandfaktoren.
-#
-# Die Erwartungswerte entstehen auf dem oben beschriebenen getrennten Rechenweg:
-# V ueber eq:wohnungspreis und eq:verkaufssumme, D ueber
-# eq:normalisierung und eq:aufwandindikator, die Honorarrange ueber
-# eq:honorar_mapping. Kein Import aus packages/core.
+# Szenarien (T2): Wohnungstypen (Referenzflaechen/-wert), Einheiten als 3-Tupel (erben die
+# Referenzflaechen, I-05 beobachtbar) oder 5-Tupel (abweichende Geometrie, S6/F-061),
+# Lagescores, Aufwandfaktoren. Erwartungswerte ueber eq:wohnungspreis/eq:verkaufssumme (V),
+# eq:normalisierung/eq:aufwandindikator (D), eq:honorar_mapping (Honorarrange).
 
 FAKTOREN = [
     # (id, quelle, quellschluessel, grenzeMin, grenzeMax, gewicht)
@@ -186,12 +174,9 @@ SZENARIEN = {
         "aufwandfaktoren": {"f_x": 99},
     },
     "S6": {
-        # In S1-S4b tragen alle Einheiten exakt die Referenzgeometrie ihres Typs;
-        # dort kuerzt sich alpha aus eq:wohnungspreis (p_j = P_ref) und die
-        # OAT-Dimension D2 zeigt ueberall 0 (F-061). S6 laesst die Geometrie
-        # bewusst abweichen: Erdgeschoss ohne Balkon (A_aussen = 0), Regelgeschosse
-        # auf der Referenz, Attika mit grosser Terrasse deutlich darueber. Erst so
-        # wird die alpha-Wirkung in der Sensitivitaetsanalyse messbar.
+        # In S1-S4b tragen alle Einheiten die Referenzgeometrie ihres Typs, alpha kuerzt
+        # sich aus eq:wohnungspreis und D2 zeigt ueberall 0 (F-061). S6 laesst die Geometrie
+        # bewusst abweichen, damit die alpha-Wirkung in der Sensitivitaetsanalyse messbar wird.
         "bezeichnung": "MFH mit heterogenen Aussenflaechen, Einheitengeometrie "
                        "weicht vom Referenzobjekt ab",
         "lage": {"adresse": "Gartenstrasse 7", "plz": "6048", "ort": "Horw"},
@@ -211,11 +196,8 @@ SZENARIEN = {
 
 
 def einheit_mit_flaechen(typen: dict, eintrag: tuple) -> tuple:
-    """Normalisiert einen Einheiten-Eintrag auf (unit, typ, anpassungen, innen, aussen).
-
-    3-Tupel erben die Referenzflaechen ihres Typs (I-05 direkt beobachtbar);
-    5-Tupel fuehren die Geometrie explizit (S6, F-061).
-    """
+    # 3-Tupel erben die Referenzflaechen ihres Typs (I-05 beobachtbar); 5-Tupel fuehren
+    # die Geometrie explizit (S6, F-061).
     if len(eintrag) == 5:
         return eintrag
     unit, typ_id, anpassungen = eintrag
@@ -224,7 +206,6 @@ def einheit_mit_flaechen(typen: dict, eintrag: tuple) -> tuple:
 
 
 def szenario_kennzahlen(name: str):
-    """Rechnet V, D und die Honorarrange eines Szenarios unabhaengig aus."""
     s = SZENARIEN[name]
     typen = {t[0]: t for t in s["typen"]}
 
@@ -236,8 +217,8 @@ def szenario_kennzahlen(name: str):
             return None  # ohne Referenzbewertung entsteht kein Ergebnis (I-24)
         a_ref = flaeche(innen_ref, aussen_ref, ALPHA)
         q_t = p_ref / a_ref
-        # eq:flaeche der EINHEIT: erst wenn die Geometrie vom Referenzobjekt abweicht
-        # (S6), unterscheidet sich a_j von a_ref und alpha kuerzt sich nicht mehr aus.
+        # eq:flaeche der Einheit: erst bei abweichender Geometrie (S6) unterscheidet sich
+        # a_j von a_ref und alpha kuerzt sich nicht mehr aus.
         a_j = flaeche(innen_j, aussen_j, ALPHA)
         basispreis = q_t * a_j
         z = sum(f for f, _ in anpassungen)
@@ -277,7 +258,6 @@ BLATT_SZENARIO = ["szenario_id", "m", "V_rappen", "D", "g_D", "k",
 
 
 def schreibe_szenarien() -> list[dict[str, str]]:
-    """Schreibt Fixture-JSON je Szenario und die Erwartungs-CSV; liefert Manifesteintraege."""
     ziel_fixtures = WURZEL / "packages" / "core" / "test" / "fixtures" / "scenarios"
     ziel_fixtures.mkdir(parents=True, exist_ok=True)
     eintraege = []
@@ -314,9 +294,8 @@ def schreibe_szenarien() -> list[dict[str, str]]:
             schreiber = csv.writer(datei, lineterminator="\n")
             schreiber.writerow(BLATT_SZENARIO)
             if kennzahlen is None:
-                # Kein Ergebnis erwartet; die Zeile haelt das ausdruecklich fest, statt
-                # zu fehlen — eine fehlende Datei waere von einem Versehen nicht zu
-                # unterscheiden.
+                # Kein Ergebnis erwartet; Zeile haelt das fest statt zu fehlen (fehlende
+                # Datei waere von einem Versehen nicht zu unterscheiden).
                 schreiber.writerow([name, len(s["einheiten"]), "", "", "", "", "", "", ""])
             else:
                 schreiber.writerow([

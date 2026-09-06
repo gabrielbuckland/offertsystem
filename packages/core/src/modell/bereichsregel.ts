@@ -1,16 +1,9 @@
-/**
- * Keine Formel. Bildet einen numerischen Merkmalswert auf einen Zu-/Abschlagswert ab.
- *
- * Die Staffel ist eine Liste exklusiver Obergrenzen: der erste Bereich mit
- * `merkmalswert < unter` gewinnt, der Eintrag ohne `unter` ist der Restfall und steht
- * zwingend am Schluss. Diese Schreibweise kann per Konstruktion weder eine Luecke
- * noch eine Ueberlappung enthalten — eine ganze Fehlerklasse entfaellt, statt geprueft
- * zu werden. Bewusst keine Ausdruckssprache: eine Tabelle ist konfigurierbar, ein
- * Ausdruck waere Code in der Konfiguration.
- */
+// Keine Formel.
+// Staffel aus exklusiven Obergrenzen: erster Treffer mit merkmalswert < unter
+// gewinnt; Eintrag ohne unter ist Restfall am Schluss. Schliesst Luecken/
+// Ueberlappungen per Konstruktion aus. Bewusst keine Ausdruckssprache.
 
 export interface Bereich {
-  /** Exklusive Obergrenze. Fehlt beim Restfall. */
   readonly unter?: number;
   readonly wert: number;
 }
@@ -22,23 +15,19 @@ export interface Bereichsregel {
 
 export interface Bereichstreffer {
   readonly wert: number;
-  /** Index des getroffenen Bereichs, 0-basiert — wandert als Nachweis ins Artefakt. */
+  // 0-basiert, wandert als Nachweis ins Artefakt.
   readonly bereich: number;
 }
 
-/**
- * Normalisiert Rohbereiche (aus Zod-Schema oder serialisierter Kopie) auf `Bereich`.
- * Ausschliesslich fuer `exactOptionalPropertyTypes` noetig: `z.number().optional()`
- * infert `unter?: number | undefined`, waehrend `Bereich.unter` ohne explizites
- * `undefined` im Wertebereich gilt.
- */
+// Noetig wegen exactOptionalPropertyTypes: z.number().optional() infert
+// unter?: number | undefined, Bereich.unter erlaubt das nicht explizit.
 export function normalisiereBereiche(
   bereiche: readonly { readonly unter?: number | undefined; readonly wert: number }[],
 ): readonly Bereich[] {
   return bereiche.map((b) => (b.unter === undefined ? { wert: b.wert } : { unter: b.unter, wert: b.wert }));
 }
 
-/** Leeres Ergebnis heisst gueltig; sonst je Befund ein Satz fuer die Fehlermeldung. */
+// Leeres Ergebnis heisst gueltig; sonst je Befund ein Satz fuer die Fehlermeldung.
 export function pruefeBereiche(bereiche: readonly Bereich[]): readonly string[] {
   const gruende: string[] = [];
 
@@ -77,11 +66,9 @@ export function pruefeBereiche(bereiche: readonly Bereich[]): readonly string[] 
   return gruende;
 }
 
-/**
- * Total und fehlerfrei ueber jede Staffel, die pruefeBereiche akzeptiert. Ausserhalb
- * dieser Domaene (z. B. leere Staffel oder fehlender Restfall) ist der Aufruf ein
- * Programmierfehler und schlaegt laut fehl, statt einen falschen Wert zu liefern.
- */
+// Nur fuer Staffeln definiert, die pruefeBereiche akzeptiert; ausserhalb davon
+// (z. B. fehlender Restfall) ist der Aufruf ein Programmierfehler und schlaegt
+// laut fehl, statt einen falschen Wert zu liefern.
 export function werteBereichsregelAus(
   regel: Bereichsregel,
   merkmalswert: number,

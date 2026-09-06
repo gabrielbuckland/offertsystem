@@ -12,8 +12,7 @@ describe('leseUmgebung', () => {
     expect(ergebnis.wert.companyDefaultsPfad).toMatch(/config[/\\]company-defaults\.json$/);
   });
 
-  // `next dev` laeuft mit apps/web als Arbeitsverzeichnis; die Vorgaben muessen deshalb
-  // arbeitsverzeichnisunabhaengig sein.
+  // next dev läuft mit apps/web; Vorgaben arbeitsverzeichnisunabhängig.
   it('loest die Vorgabepfade absolut auf, unabhaengig vom Arbeitsverzeichnis', () => {
     const ergebnis = leseUmgebung({});
     expect(ergebnis.ok).toBe(true);
@@ -23,8 +22,6 @@ describe('leseUmgebung', () => {
     expect(existsSync(ergebnis.wert.companyDefaultsPfad)).toBe(true);
     expect(isAbsolute(ergebnis.wert.offertenVerzeichnis)).toBe(true);
     expect(isAbsolute(ergebnis.wert.offertVorlagePfad)).toBe(true);
-
-    // Die Vorgabe darf nicht ins Paketverzeichnis der Zugriffsschicht zeigen.
     expect(ergebnis.wert.companyDefaultsPfad).not.toMatch(/apps[/\\]web/);
     expect(ergebnis.wert.offertenVerzeichnis).not.toMatch(/apps[/\\]web/);
     expect(ergebnis.wert.offertVorlagePfad).not.toMatch(/apps[/\\]web/);

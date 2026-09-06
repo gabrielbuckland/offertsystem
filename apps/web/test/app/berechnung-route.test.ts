@@ -35,12 +35,7 @@ async function vorbereitetesProjekt() {
   return p.id;
 }
 
-/**
- * Eigene Fixtur statt eines Parameters an `vorbereitetesProjekt`: Sie deckt genau die
- * Regressionsstelle ab, die zwei Basisplaeufe ohne echte `ohneAnpassungen`-Option
- * unmoeglich gemacht hat — eine in Franken erfasste Spalte, die den Basispreis braucht,
- * bevor der Basispreis existiert (PE-21).
- */
+// PE-21: Zwei Basisplaeuf ohne `ohneAnpassungen`-Option möglich
 async function projektMitFrankenAnpassung() {
   const v = await mkdtemp(join(tmpdir(), 'projekte-'));
   process.env['PROJEKTE_VERZEICHNIS'] = v;
@@ -132,10 +127,7 @@ describe('POST /api/projekt/[id]/berechnung', () => {
     expect(priceDerivationSchema.safeParse(rumpf.herleitung?.derivation).success).toBe(true);
     expect(aggregateValuesSchema.safeParse(rumpf.herleitung?.aggregates).success).toBe(true);
 
-    // Der Kern der Zusammenlegung: EIN Datenbild, nicht zwei (NFA-07). Die flachen
-    // Felder der Antwort sind Projektionen derselben Herleitung. Liefen beide je
-    // auseinander, faellt genau diese Zusicherung — ohne sie pruefte der Test nur, dass
-    // ueberhaupt etwas Schemakonformes mitgeschickt wird.
+    // NFA-07: Ein Datenbild, nicht zwei — Projektion prüfen.
     const aggregate = aggregateValuesSchema.parse(rumpf.herleitung?.aggregates);
     expect(aggregate.totalSalesValue.value).toBe(rumpf.verkaufssumme);
     expect(aggregate.feeRange.value.min).toBe(rumpf.honorarMin);
@@ -148,8 +140,6 @@ describe('POST /api/projekt/[id]/berechnung', () => {
   });
 
   it('rechnet mit dem Einstellungs-Delta des Projekts', async () => {
-    // Beide Projekte im selben Verzeichnis, damit dieselbe Umgebung fuer beide
-    // Anfragen gilt; eines der beiden erhaelt eine abweichende Skalierungsobergrenze.
     const v = await mkdtemp(join(tmpdir(), 'projekte-'));
     process.env['PROJEKTE_VERZEICHNIS'] = v;
     const ohne = await legeProjektAn(ADRESSE, v, standardKonfiguration());
@@ -191,7 +181,6 @@ describe('POST /api/projekt/[id]/berechnung', () => {
 
     const rumpfA = await a.json() as { metadaten: { konfigPruefsumme: string } };
     const rumpfB = await b.json() as { metadaten: { konfigPruefsumme: string } };
-    // Die Pruefsumme weist den PROJEKTBEZOGENEN Stand aus, nicht den Firmenstand.
     expect(rumpfB.metadaten.konfigPruefsumme).not.toBe(rumpfA.metadaten.konfigPruefsumme);
   });
 });

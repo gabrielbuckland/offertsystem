@@ -1,9 +1,5 @@
 'use client';
 
-// Editor fuer `dossierDefaults` — firmenweite Voreinstellung der beiden
-// PriceHubble-Objekte `condition` und `quality`. Feldmenge und Werte sind vom Anbieter
-// vorgegeben und kommen aus dem Kern, die deutschen Beschriftungen aus
-// `lib/dossier-beschriftungen` — derselben Quelle, aus der auch der Rechenweg liest.
 import type { ReactElement } from 'react';
 import { BEWERTUNGSFELDER } from '@offert/core';
 import {

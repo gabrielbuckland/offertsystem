@@ -2,11 +2,7 @@ import { cn } from '../../lib/utils.js';
 
 export type HinweisArt = 'fehler' | 'warnung' | 'info' | 'erfolg';
 
-/**
- * Einziges Erscheinungsbild fuer Meldungen. Vereinheitlicht nur Rolle, Farbe und Symbol;
- * Texte kommen weiterhin aus der Uebersetzungsschicht, die Verankerung am Feld bleibt
- * Sache des Aufrufers.
- */
+// Vereinheitlicht nur Rolle, Farbe und Symbol; Texte kommen aus der Uebersetzungsschicht.
 const ARTEN: Record<HinweisArt, { rolle: 'alert' | 'status'; klasse: string; symbol: string }> = {
   fehler:  { rolle: 'alert',  klasse: 'border-destructive/40 bg-destructive/5 text-destructive', symbol: '✕' },
   warnung: { rolle: 'status', klasse: 'border-amber-500/40 bg-amber-500/10 text-amber-800', symbol: '!' },
@@ -18,11 +14,8 @@ export function Hinweis({ art, children, className, rolle }: {
   readonly art: HinweisArt;
   readonly children: React.ReactNode;
   readonly className?: string;
-  /**
-   * Ueberschreibt die Standard-Rolle der Art: Ob eine Meldung unterbrechen muss, ist eine
-   * Eigenschaft der SITUATION, nicht der Art (z. B. eine blockierende „warnung“, die
-   * gestalterisch keine „fehler“-Rotfaerbung braucht).
-   */
+  // Ueberschreibt die Standard-Rolle: ob eine Meldung unterbrechen muss, ist eine
+  // Eigenschaft der Situation, nicht der Art.
   readonly rolle?: 'alert' | 'status';
 }) {
   const a = ARTEN[art];

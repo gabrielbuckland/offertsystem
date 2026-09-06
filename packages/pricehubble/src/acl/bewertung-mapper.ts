@@ -1,18 +1,10 @@
 /**
  * Anti-Corruption Layer, Bewertungsrichtung (E-21).
- * Keine eigene Formel; die Rundungsstellen gehoeren zur Preiskette von eq:qm_preis.
- *
- * Zielstruktur ist die UNVERAENDERTE `Referenzbewertung` aus `packages/core`; der
- * Adapter definiert keine eigenen Feldnamen (I-23, Dependency Inversion).
- *
- * Rundungsstellen (E-09, E-10):
- *   R1 — `marktwert`, erste der zwei Rundungsstellen der Preisableitung
- *   R0 — `anzeige.konfidenzbereich`, reine Anzeige, wirkt rechnerisch nicht weiter
- * Beide ueber `rundeAufRappen` aus `@offert/core`; kein `Math.round`.
- *
- * Der Quadratmeterpreis wird NICHT uebernommen — eq:qm_preis bildet ihn lokal, weil
- * ein fremder Quadratmeterpreis auf einer fremden Flaechendefinition beruhte und I-05
- * (Referenztreue) dann nicht mehr exakt gaelte.
+ * Keine eigene Formel; Rundungsstellen gehoeren zur Preiskette von eq:qm_preis (E-09, E-10).
+ * Zielstruktur ist die unveraenderte `Referenzbewertung` aus `packages/core`; der Adapter
+ * definiert keine eigenen Feldnamen (I-23, Dependency Inversion).
+ * Quadratmeterpreis wird NICHT uebernommen — eq:qm_preis bildet ihn lokal, da eine fremde
+ * Flaechendefinition I-05 (Referenztreue) verletzen wuerde.
  */
 import {
   rundeAufRappen,
@@ -24,7 +16,6 @@ import type { ValuationResponse } from '../schema/valuation-response.js';
 
 export const ANBIETER = 'pricehubble';
 
-/** Franken je Rappen; Einheitenumrechnung, kein Verhaltensparameter. */
 const RAPPEN_JE_FRANKEN = 100;
 
 export function aufReferenzbewertung(args: {
@@ -45,8 +36,7 @@ export function aufReferenzbewertung(args: {
         bis: rundeAufRappen(verkauf.valueRange.upper * RAPPEN_JE_FRANKEN),
       },
       konfidenzklasse: verkauf.valuationConfidence,
-      // Weggelassen statt auf undefined gesetzt: `exactOptionalPropertyTypes`
-      // unterscheidet beides, und `konfidenzwert` ist im Vertrag optional.
+      // Weggelassen statt undefined: exactOptionalPropertyTypes unterscheidet beides.
       ...(verkauf.valuationConfidenceScore === undefined
         ? {}
         : { konfidenzwert: verkauf.valuationConfidenceScore }),
@@ -59,14 +49,9 @@ export interface DossierBody {
 }
 
 /**
- * Der E3-Body entsteht ausschliesslich aus den zehn Feldern der verbindlichen Liste
- * `RepraesentativeParametrisierung` (E-28). Der Adapter definiert die Feldmenge
- * nicht selbst und sendet keine Vorgabewerte.
- *
- * `flaecheAussen` wird auf `balconyArea` abgebildet; `gardenArea` wird nicht gesetzt.
- * eq:flaeche kennt genau eine Aussenflaeche mit genau einem Gewichtungsfaktor; eine
- * Aufteilung auf zwei API-Felder setzte eine Regel voraus, die das Modell nicht
- * hergibt. Bewusste Vereinfachung.
+ * E-28: Feldmenge aus `RepraesentativeParametrisierung`, keine Vorgabewerte.
+ * `flaecheAussen` -> `balconyArea`; `gardenArea` bleibt unbelegt, da eq:flaeche nur eine
+ * Aussenflaeche mit einem Gewichtungsfaktor kennt (bewusste Vereinfachung).
  */
 export function dossierBody(p: RepraesentativeParametrisierung): DossierBody {
   return {
@@ -79,13 +64,9 @@ export function dossierBody(p: RepraesentativeParametrisierung): DossierBody {
       numberOfBathrooms: p.anzahlBadezimmer,
       hasLift: p.lift,
       buildingYear: p.baujahr,
-      // `energyLabel` und `heatingGenerationType` sind serverseitig geschlossene
-      // Aufzaehlungen OHNE Leerwert (live belegt 2026-09-01: energyLabel nur
-      // minergie*, heatingGenerationType nur electric|wood|gas|oil|district|
-      // heat_pump_air|heat_pump_geothermal|solar). Ein leeres Feld wird deshalb
-      // weggelassen statt als '' gesendet — sonst lehnt die API das ganze PATCH
-      // mit 400 ab, und eine Liegenschaft ohne Minergie-Label waere ueberhaupt
-      // nicht bewertbar.
+      // energyLabel/heatingGenerationType sind serverseitig geschlossene Enums ohne
+      // Leerwert (live geprueft 2026-09-01); '' wird deshalb weggelassen statt gesendet,
+      // sonst lehnt die API das ganze PATCH mit 400 ab.
       ...(p.energielabel === '' ? {} : { energyLabel: p.energielabel }),
       ...(p.heizungsart === '' ? {} : { heatingGenerationType: p.heizungsart }),
     },

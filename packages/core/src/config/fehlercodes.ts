@@ -1,12 +1,6 @@
-/**
- * Keine Formel — Fehlercode-Namensraum der Konfiguration (E-16).
- * CFG_* gilt ausschliesslich fuer LADEZEIT-Fehler; wo derselbe Sachverhalt
- * bereits zur Ladezeit feststellbar ist, ist der CFG_*-Code der frueher
- * greifende.
- *
- * Fehler tragen strukturierte Parameter, keinen Fliesstext (E-03): Anzeigetexte
- * entstehen in der Uebersetzungsschicht, nicht im Kern.
- */
+// Keine Formel — Fehlercode-Namensraum der Konfiguration (E-16). CFG_* gilt
+// ausschliesslich fuer Ladezeit-Fehler. Strukturierte Parameter statt Fliesstext (E-03):
+// Anzeigetexte entstehen in der Uebersetzungsschicht, nicht im Kern.
 
 export type Pruefebene = 1 | 2 | 3;
 

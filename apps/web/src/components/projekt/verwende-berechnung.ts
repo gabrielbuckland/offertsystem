@@ -1,17 +1,12 @@
 'use client';
 
-// `verarbeiteBerechnungsAntwort` ist bewusst von `verwendeBerechnung` getrennt: reine
-// Funktion, dadurch ohne DOM testbar.
 import { useCallback, useRef, useState } from 'react';
 import type { Projekt } from '../../server/projekt-schema.js';
 import { rufeApi, type ApiErgebnis } from '../rufe-api.js';
 import { baueSpeicherwarteschlange, type Speicherwarteschlange } from './verwende-projekt.js';
 import type { Preis } from './EinheitenTabelle.js';
 
-/**
- * Antwortform von `POST /api/projekt/[id]/berechnung`. `unvollstaendig` (I-24) und
- * `honorarAbbruch` (E-04) kommen beide mit Status 200, kein Fehler.
- */
+// I-24: unvollstaendig, E-04: honorarAbbruch — beide kommen mit Status 200, kein Fehler.
 export interface BerechnungsAntwort {
   readonly einheiten?: readonly {
     readonly id: string;
@@ -30,7 +25,6 @@ export interface BerechnungsAntwort {
     readonly positionen: readonly { readonly wohnungsnummer: string; readonly preis: number }[];
     readonly meldung: string;
   };
-  /** Fuer die Anzeige zaehlt ausschliesslich `text`. */
   readonly fehler?: { readonly text: string };
 }
 
@@ -45,8 +39,7 @@ export interface BerechnungsStand {
   readonly fehler: string | undefined;
 }
 
-// `herleitung`/`honorarAbbruch` sind optionale Felder (`exactOptionalPropertyTypes`):
-// „nicht vorhanden“ heisst den Schluessel weglassen, nicht `undefined` zuweisen.
+// exactOptionalPropertyTypes: „nicht vorhanden“ heisst Schluessel weglassen, nicht undefined zuweisen.
 const OHNE_AGGREGATE: Omit<BerechnungsStand, 'laeuft'> = {
   preise: {},
   verkaufssumme: undefined,
@@ -55,12 +48,8 @@ const OHNE_AGGREGATE: Omit<BerechnungsStand, 'laeuft'> = {
   fehler: undefined,
 };
 
-/**
- * Reine Verarbeitung des Antwortrumpfs, ohne Netzwerk und ohne React-Zustand. Vier
- * Faelle: Erfolg, `unvollstaendig` (I-24), `honorarAbbruch` (E-04), fehlgeschlagene
- * Antwort. `einheiten` liefert die Zuordnung Wohnungsnummer -> Kennung, die das
- * E-04-Teilergebnis selbst nicht mitbringt.
- */
+// einheiten liefert die Zuordnung Wohnungsnummer -> Kennung, die das E-04-Teilergebnis
+// selbst nicht mitbringt.
 export function verarbeiteBerechnungsAntwort(
   antwort: ApiErgebnis<BerechnungsAntwort>,
   einheiten: readonly { readonly id: string; readonly wohnungsnummer: string }[],
@@ -78,14 +67,13 @@ export function verarbeiteBerechnungsAntwort(
   }
 
   if (rumpf.unvollstaendig === true) {
-    // Kein Fehler (I-24): dem Projekt fehlen noch Referenzobjekte oder Einheiten.
+    // I-24: kein Fehler, dem Projekt fehlen noch Referenzobjekte oder Einheiten.
     return { ok: true, stand: OHNE_AGGREGATE };
   }
 
   if (rumpf.honorarAbbruch !== undefined) {
-    // E-04: Preise bleiben gueltig und sichtbar. Route fuehrt sie nach Wohnungsnummer
-    // statt Kennung (Offert-Schema kennt nur die Nummer); der Client stellt den Bezug
-    // her. `basispreis` bleibt weg, da das Teilergebnis keinen fuehrt (Spalte zeigt «—»).
+    // E-04: Route fuehrt Positionen nach Wohnungsnummer (Offert-Schema kennt nur die
+    // Nummer); basispreis bleibt weg, da das Teilergebnis keinen fuehrt (Spalte zeigt «—»).
     const nachNummer = new Map(einheiten.map((e) => [e.wohnungsnummer, e.id]));
     const teilpreise: Record<string, Preis> = {};
     for (const position of rumpf.honorarAbbruch.positionen) {
@@ -110,18 +98,13 @@ export function verarbeiteBerechnungsAntwort(
       honorarMin: rumpf.honorarMin,
       honorarMax: rumpf.honorarMax,
       fehler: undefined,
-      // Nur gesetzt wenn vorhanden (`exactOptionalPropertyTypes`).
       ...(rumpf.herleitung !== undefined ? { herleitung: rumpf.herleitung } : {}),
     },
   };
 }
 
-/**
- * Haelt den Berechnungsstand ueber eine eigene Speicherwarteschlange: hoechstens ein
- * Versuch gleichzeitig, eine langsame aeltere Antwort darf eine schnellere neuere nicht
- * ueberschreiben. Eigener Zustand, da Speichern und Berechnen unabhaengige
- * Netzwerkvorgaenge sind.
- */
+// Eigene Speicherwarteschlange: hoechstens ein Versuch gleichzeitig, eine langsame
+// aeltere Antwort darf eine schnellere neuere nicht ueberschreiben.
 export function verwendeBerechnung(): {
   readonly stand: BerechnungsStand;
   readonly stelleEin: (projekt: Projekt) => void;
@@ -139,7 +122,6 @@ export function verwendeBerechnung(): {
         return ok;
       },
       {
-        // `laeuft` blockiert die Offert-Schaltflaeche waehrend einer laufenden Berechnung.
         aufStatusWechsel: (laeuft) => setStand((vorher) => ({ ...vorher, laeuft })),
         aufFehler: () => undefined,
       },

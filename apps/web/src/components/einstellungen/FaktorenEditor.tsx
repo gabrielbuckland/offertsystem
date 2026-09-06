@@ -1,14 +1,8 @@
 'use client';
 
-/**
- * Editor fuer den Teilbaum `aufwandfaktoren` — Herkunft, Normalisierung und Gewichtung der
- * Faktoren, aus denen sich der Aufwandindikator D ergibt.
- *
- * Kennt nur die FORM des Teilbaums (`FaktorRoh`), keine Konfigurationsbezeichner — ein
- * Architekturtest scannt diesen Ordner auf woertlich verdrahtete Bezeichner. Die neun
- * gueltigen `lagescore`-Quellschluessel (PriceHubble, I-26) erscheinen deshalb NUR als
- * Platzhaltertext, nie in einer Verzweigung des Codes.
- */
+// I-26: die neun gueltigen `lagescore`-Quellschluessel (PriceHubble) erscheinen nur als
+// Platzhaltertext, nie in einer Codeverzweigung (Architekturtest scannt auf verdrahtete
+// Bezeichner).
 import { Trash2 } from 'lucide-react';
 import { Fragment, useState, type ReactElement } from 'react';
 import { faktorZuProzent, prozentZuFaktor } from '../projekt/zellen-logik.js';
@@ -42,14 +36,12 @@ interface FaktorRoh {
 
 type AufwandfaktorenRoh = Readonly<Record<string, FaktorRoh>>;
 
-/** Bezeichnermuster der Konfiguration: Kleinbuchstabe zuerst, danach alphanumerisch/`_`. */
 const SCHLUESSEL_MUSTER = /^[a-z][a-zA-Z0-9_]*$/;
 
 export function FaktorenEditor({ einstellungen, ebene = 'firma' }: BereichsEditorProps): ReactElement {
   const faktoren = einstellungen.entwurf['aufwandfaktoren'] as AufwandfaktorenRoh;
-  // Das Entfernen eines Faktors ist auf der Projektebene nicht ausdrueckbar (Delta-Modell,
-  // `Bearbeitungsebene`); HINZUFUEGEN dagegen schon — `aufwandfaktoren` ist im Kern-Merge
-  // eine offene Wurzel und traegt neue Schluessel.
+  // Entfernen ist auf Projektebene nicht ausdrueckbar (Delta-Modell, `Bearbeitungsebene`);
+  // Hinzufuegen schon, da `aufwandfaktoren` eine offene Wurzel im Kern-Merge ist.
   const entfernenMoeglich = ebene === 'firma';
   const [neuerSchluessel, setzeNeuerSchluessel] = useState('');
   const [neueQuelle, setzeNeueQuelle] = useState<'manuell' | 'lagescore'>('manuell');
@@ -105,7 +97,7 @@ export function FaktorenEditor({ einstellungen, ebene = 'firma' }: BereichsEdito
   }
 
   const gewichtssumme = Object.values(faktoren).reduce((summe, faktor) => summe + faktor.gewicht, 0);
-  // Gleitkomma-Rauschen (0.1 + 0.2 !== 0.3) darf die Warnung nicht faelschlich ausloesen.
+  // Toleranz gegen Gleitkomma-Rauschen (0.1 + 0.2 !== 0.3).
   const summeStimmt = Math.abs(gewichtssumme - 1) < 1e-6;
 
   return (
@@ -169,10 +161,8 @@ export function FaktorenEditor({ einstellungen, ebene = 'firma' }: BereichsEdito
                     wert={faktorZuProzent(faktor.gewicht)}
                     aendere={(wert) => aendereFaktor(schluessel, { gewicht: prozentZuFaktor(wert) })}
                   />
-                  {/* Ein Anteil an der Gewichtssumme ist ein beschraenkter, kontinuierlich
-                      verstellbarer Wert (0..100 %) — der Schieberegler ergaenzt das
-                      Zahlenfeld um den passenden Ziehsinn, ersetzt es aber nicht: ein
-                      exakter Prozentwert (z. B. 33.33 %) laesst sich am Regler kaum treffen. */}
+                  {/* Regler ergaenzt das Zahlenfeld, ersetzt es aber nicht: ein exakter
+                      Prozentwert (z. B. 33.33 %) laesst sich am Regler kaum treffen. */}
                   <Slider
                     min={0}
                     max={100}
@@ -184,8 +174,7 @@ export function FaktorenEditor({ einstellungen, ebene = 'firma' }: BereichsEdito
                 </div>
               </div>
               {faktor.quelle === 'lagescore' && (
-                // Min/Max duerfen bei einem Lagescore VERTAUSCHT stehen: die Reihenfolge
-                // traegt die Polung, ein Tausch waere ein fachlicher Fehler, kein Tippfehler.
+                // Min/Max duerfen bei einem Lagescore vertauscht stehen (Reihenfolge = Polung).
                 <p className="text-sm text-muted-foreground">
                   Min kann hier grösser als Max sein: Die Reihenfolge legt die Polung
                   des Lagescores fest (steigt der Aufwand mit dem Rohwert oder sinkt

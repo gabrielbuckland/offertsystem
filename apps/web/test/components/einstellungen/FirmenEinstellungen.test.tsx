@@ -13,11 +13,7 @@ const FIRMA = JSON.parse(readFileSync(
 describe('FirmenEinstellungen', () => {
   const markup = renderToStaticMarkup(<FirmenEinstellungen anfang={FIRMA} />);
 
-  /**
-   * Genau eine Speichern-Schaltflaeche ist der pruefbare Ausdruck davon, dass es genau
-   * einen Entwurf gibt — mit `renderToStaticMarkup` ist das Speicherverhalten selbst
-   * nicht ausloesbar (kein jsdom im Repo).
-   */
+  // W-6: Speichern-Button ist Ausdruck genau eines Entwurfs; Verhalten wegen renderToStaticMarkup nur via Markup testbar.
   it('fuehrt genau eine Fussleiste fuer die ganze Ebene (W-6)', () => {
     expect(markup.split('Speichern').length - 1).toBe(1);
     expect(markup.split('Verwerfen').length - 1).toBe(1);
@@ -28,9 +24,7 @@ describe('FirmenEinstellungen', () => {
   });
 
   it('zeigt alle vier Bereichskarten in Pipeline-Reihenfolge', () => {
-    // R-3: `renderToStaticMarkup` HTML-escaped das Kaufmanns-Und in
-    // BEREICHE.preisanpassung.titel ("Preisanpassung & Vorlagen") zu "&amp;" — die
-    // rohe Textform kommt im Markup nicht vor, die escapte schon.
+    // R-3: Kaufmanns-Und wird zu &amp; escaped.
     const positionen = ['Dossier-Voreinstellungen', 'Preisanpassung &amp; Vorlagen',
       'Aufwandfaktoren', 'Honorar'].map((t) => markup.indexOf(t));
     expect(positionen.every((p) => p >= 0)).toBe(true);

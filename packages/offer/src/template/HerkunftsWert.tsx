@@ -1,15 +1,7 @@
-/**
- * Keine Formel. Darstellungspflicht: Es gibt keinen Pfad, der
- * einen Wert ohne seine Herkunft ausgibt. Der Rohwert steckt in `Provenanced` und ist
- * nur ueber diese Komponente darstellbar.
- *
- * Das Format wird UEBERGEBEN, nicht gewaehlt: Waehlte die Komponente es selbst,
- * entstuende hier eine zweite Formatierungsregel neben `format/de-ch.ts`.
- *
- * Die Zuordnung traegt `data-herkunft`. Im Druck ist sie schwarzweiss lesbar, weil
- * Beschriftung und Abschnitt sie ohnehin im Text fuehren (AK-2.4) — die Kennzeichnung
- * haengt also nicht an einer Farbe.
- */
+// Keine Formel. Darstellungspflicht: kein Pfad gibt einen Wert ohne Herkunft aus.
+// Format wird uebergeben, nicht gewaehlt, sonst entstuende eine zweite Formatierungsregel
+// neben format/de-ch.ts. AK-2.4: data-herkunft ist im Druck schwarzweiss lesbar, da
+// Beschriftung/Abschnitt die Herkunft ohnehin im Text fuehren.
 import type { Herkunft, Provenanced } from '../model/provenance.js';
 import { HERKUNFT_BESCHRIFTUNG } from '../model/provenance.js';
 

@@ -38,8 +38,7 @@ export default function setup(): () => void {
     hostname: hostname(),
   }, null, 2)}\n`);
 
-  // Teardown: Die Einzelmeldungen der Properties werden zu properties.json verdichtet
-  // und der latest-Zeiger geschrieben. P5 liest beides (PE-18).
+  // PE-18: P5 liest properties.json und den latest-Zeiger.
   return () => {
     const properties = readdirSync(`${verzeichnis}/roh`)
       .filter((d) => d.endsWith('.json'))

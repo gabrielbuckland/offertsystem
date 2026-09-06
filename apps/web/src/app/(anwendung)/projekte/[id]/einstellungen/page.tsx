@@ -1,9 +1,5 @@
-/**
- * Einstiegsseite der projektbezogenen Einstellungen (Ebene 2 des Zwei-Ebenen-Modells).
- * Holt Ebene 1 (PE-04) und Ebene 2 getrennt und reicht beides durch. Zusammenfuehrung
- * geschieht bewusst NICHT hier, sondern in `ProjektEinstellungen` — nur dort laesst
- * sich die effektive Konfiguration wieder in ein Delta zurueckrechnen.
- */
+// PE-04: Zusammenfuehrung von Ebene 1/2 bewusst NICHT hier, sondern in ProjektEinstellungen
+// (nur dort laesst sich die effektive Konfiguration wieder in ein Delta zurueckrechnen).
 import { notFound } from 'next/navigation';
 import { ProjektEinstellungen } from '../../../../../components/einstellungen/ProjektEinstellungen.js';
 import { Brotkrume } from '../../../../../components/shell/Brotkrume.js';
@@ -39,8 +35,7 @@ export default async function ProjektEinstellungenSeite({ params }: Props) {
       <ProjektEinstellungen
         projektId={projekt.id}
         firmenwerte={laufzeit.wert.rohKonfiguration}
-        // Ein Projekt ohne abgelegte Abweichungen rechnet mit den reinen Firmenwerten;
-        // das leere Objekt ist genau diese Aussage (`projekt-schema.ts`).
+        // Leeres Objekt = Projekt rechnet mit reinen Firmenwerten (projekt-schema.ts).
         delta={projekt.einstellungen ?? {}}
       />
     </main>

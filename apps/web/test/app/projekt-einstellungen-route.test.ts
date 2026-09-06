@@ -1,9 +1,4 @@
-/**
- * Deckt den Schreibweg der PROJEKTBEZOGENEN Ebene ab. Zurueckweisen statt
- * melden (I-21): Ein invariantenverletzendes oder gesperrtes Delta darf das
- * Projektartefakt nicht veraendern — mehrere Tests pruefen das ausdruecklich, indem
- * sie nach einer 422-Antwort erneut laden und `einstellungen` unveraendert vorfinden.
- */
+// I-21: Zurückweisen statt melden — Projektartefakt nicht verändern bei Invariantenverletzung.
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -16,17 +11,10 @@ import { befundeFuerPfad } from '../../src/components/einstellungen/verwende-ein
 import { ladeProjekt, legeProjektAn } from '../../src/server/projekt-ablage.js';
 import { standardKonfiguration } from '../bau/offerte-bauer.js';
 
-/** Alle Bereichswurzeln der vier Karten — die Praefixe, an denen die Oberflaeche
- *  Befunde verankert (`bereiche.ts`). */
 const WURZELN = Object.values(BEREICHE).flatMap(
   (bereich) => (typeof bereich.praefix === 'string' ? [bereich.praefix] : [...bereich.praefix]),
 );
 
-/**
- * Bildet die Anzeigeregeln der Projektebene nach: Rahmen je Bereich, Feld-Editor je
- * Zeile, Auffangblock fuer den Rest. Ein Befund, den keine der drei Regeln durchlaesst,
- * erreicht den Benutzer nicht (K-1).
- */
 function wirdAngezeigt(befund: { readonly pfad: string; readonly text: string }): boolean {
   const inKarte = WURZELN.some((wurzel) => rahmenBefunde([befund], [wurzel]).length > 0
     || befundeFuerPfad([befund], wurzel).length > 0);
@@ -72,7 +60,6 @@ describe('POST /api/projekt/[id]/einstellungen', () => {
     expect(antwort.status).toBe(422);
     const rumpf = await antwort.json() as { befunde: readonly { pfad: string }[] };
     expect(rumpf.befunde.length).toBeGreaterThan(0);
-    // Zurueckweisen statt melden (I-21): Das Artefakt bleibt unangetastet.
     const neu = await ladeProjekt(projekt.id, verzeichnis);
     expect(neu.einstellungen).toBeUndefined();
   });
@@ -87,23 +74,15 @@ describe('POST /api/projekt/[id]/einstellungen', () => {
     const rumpf = await antwort.json() as {
       befunde: readonly { pfad: string; text: string }[];
     };
-    // Ein Sammelanker `(konfiguration)` waere von keiner Karte greifbar.
     expect(rumpf.befunde.map((b) => b.pfad)).not.toContain('(konfiguration)');
-    // Die Gewichtssumme wird auf der Bereichswurzel gemeldet — genau dort, wo die
-    // Aufwandfaktoren-Karte ihre Rahmenbefunde zeigt.
     expect(rumpf.befunde.some((b) => b.pfad === 'aufwandfaktoren')).toBe(true);
-    // Und der Text ist die Anzeigefassung aus `zuBefunden`, nicht die Maschinenform
-    // `CODE bei pfad: {json}` aus `laufzeit.ts`.
     expect(rumpf.befunde.every((b) => !b.text.includes(' bei aufwandfaktoren: {'))).toBe(true);
   });
 
   it('liefert nur Befunde, die die Oberflaeche auch anzeigen kann (K-1)', async () => {
     const { projekt } = await vorbereitetesProjekt();
     for (const delta of [
-      // Invariantenverletzung auf einer Bereichswurzel …
       { aufwandfaktoren: { lage_gesamt: { gewicht: 0.7 } } },
-      // … und ein gesperrter Pfad, zu dem es GAR KEINE Karte gibt: `api` ist bewusst
-      // kein Bereich der Oberflaeche. Ohne Auffangblock verschwaende diese Meldung.
       { api: { timeoutMs: 1 } },
     ]) {
       const antwort = await POST(

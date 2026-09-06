@@ -1,14 +1,4 @@
-/**
- * Die Projektdetailseite muss ANZEIGEN, WOMIT SIE RECHNET (K-2). Die rechnenden Routen
- * (`berechnung`, `bewertung`, `offerte`) nehmen die Projektlaufzeit; solange die Seite
- * daneben `holeLaufzeit()` verwendete, liefen Formular, Vorbelegung und Rechenweg auf der
- * Firmenkonfiguration, die Rechnung aber auf der projektbezogenen.
- *
- * Geprueft wird am ELEMENTBAUM der Server-Komponente statt am gerenderten Markup:
- * `ProjektAnsicht` ist eine Client-Komponente mit Hooks (`useRouter`), die ohne
- * Router-Kontext nicht rendert. Der Baum traegt die Props, um die es hier geht — genau
- * die drei Groessen, die zwischen Anzeige und Rechnung auseinanderliefen.
- */
+// K-2: Seite zeigt, womit sie rechnet — Projektlaufzeit statt Firmenkonfiguration.
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -23,14 +13,6 @@ import { standardKonfiguration } from '../bau/offerte-bauer.js';
 
 const ADRESSE = { strasse: 'Seestrasse', hausnummer: '1', plz: '8001', ort: 'Zürich' };
 
-/**
- * Delta mit allen drei Wirkungen in einem Zug: ein projektbezogen ERGAENZTER manueller
- * Faktor (Formular), eine Dossier-Voreinstellung (Vorbelegung) und damit zugleich ein
- * nichtleeres Ueberschreibungsprotokoll (Herkunftsanzeige im Rechenweg).
- *
- * Die Gewichte bleiben in der Summe 1 — sonst wiese die Nachvalidierung das Delta zurueck
- * und der Test pruefte nur noch den Fehlerpfad.
- */
 const DELTA = {
   dossierDefaults: { zustandsbewertungen: { kitchen: 'well_maintained' } },
   aufwandfaktoren: {
@@ -57,7 +39,6 @@ async function seitenBaum(delta?: Readonly<Record<string, unknown>>) {
   return ProjektSeite({ params: Promise.resolve({ id: projekt.id }) });
 }
 
-/** Sucht das erste Element eines gegebenen Komponententyps im Baum. */
 function finde(knoten: unknown, typ: unknown): ReactElement | undefined {
   if (Array.isArray(knoten)) {
     for (const kind of knoten) {
@@ -85,8 +66,6 @@ async function ansichtProps(delta?: Readonly<Record<string, unknown>>): Promise<
 
 describe('Projektdetailseite rechnet und zeigt auf derselben Konfiguration (K-2)', () => {
   it('baut das Faktorformular aus der PROJEKTBEZOGENEN Konfiguration', async () => {
-    // Sackgasse ohne diesen Bezug: Die Berechnung verlangt einen Wert fuer den
-    // projektbezogen ergaenzten Faktor, das Formular bietet dafuer kein Feld an.
     const props = await ansichtProps(DELTA);
     expect(props.faktorformular.felder.map((f) => f.faktorId)).toContain('laerm');
   });
@@ -97,7 +76,7 @@ describe('Projektdetailseite rechnet und zeigt auf derselben Konfiguration (K-2)
   });
 
   it('reicht das Ueberschreibungsprotokoll an den Rechenweg durch', async () => {
-    // Ohne diese Liste weist der Rechenweg-Dialog JEDE uebersteuerte Groesse als
+    // Ohne diese Liste weist der Rechenweg-Dialog jede uebersteuerte Groesse als
     // «firmenweit» aus — genau die Anzeige, die den Nachvollzug belegen soll (A-13).
     const props = await ansichtProps(DELTA);
     expect(props.ueberschreibungen ?? []).not.toHaveLength(0);

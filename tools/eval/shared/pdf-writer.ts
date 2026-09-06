@@ -1,17 +1,9 @@
-/**
- * Keine Modellformel. Minimaler Vektor-PDF-Schreiber fuer das Tornado-Diagramm.
- *
- * Warum kein Diagrammpaket: Der Bericht verlangt eine Vektorgrafik ohne externe
- * Abhaengigkeiten zur Laufzeit. Ein Tornado-Diagramm besteht aus gefuellten
- * Rechtecken, Linien und Text; eine Bibliothek braechte einen Rendering-Pfad mit, der im
- * Bericht nicht nachvollziehbar waere.
- *
- * Der Inhaltsstrom bleibt UNKOMPRIMIERT, damit die Datei diffbar und lesbar ist.
- *
- * KOPPLUNG, wichtig: Die Datei ist mit `latin1` zu schreiben. Die Byteversaetze der
- * Kreuzreferenztabelle werden hier ueber `Buffer.byteLength(..., 'latin1')` berechnet;
- * bei UTF-8 belegten Umlaute zwei Bytes und die Versaetze zeigten ins Leere.
- */
+// Keine Modellformel. Minimaler Vektor-PDF-Schreiber fuer das Tornado-Diagramm, ohne
+// Diagrammpaket (Vektorgrafik ohne externe Laufzeitabhaengigkeit, nachvollziehbarer
+// Rendering-Pfad). Inhaltsstrom bleibt unkomprimiert, damit die Datei diffbar bleibt.
+// KOPPLUNG: Datei ist mit `latin1` zu schreiben — die Byteversaetze der
+// Kreuzreferenztabelle werden ueber Buffer.byteLength(..., 'latin1') berechnet; bei
+// UTF-8 belegen Umlaute zwei Bytes und die Versaetze zeigen ins Leere.
 export type Farbe = readonly [number, number, number];
 
 export type Element =
@@ -27,7 +19,6 @@ export interface Seite {
 
 const z = (n: number): string => (Math.round(n * 1000) / 1000).toString();
 
-/** Klammern und Rueckstrich sind in PDF-Zeichenketten zu schuetzen. */
 function pdfText(s: string): string {
   return s.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
 }

@@ -8,7 +8,6 @@ describe('AppShell', () => {
     const markup = renderToStaticMarkup(<AppShell><p>Inhalt</p></AppShell>);
     expect(markup).toContain('href="/projekte"');
     expect(markup).not.toContain('<nav');
-    // Einstellungen gelten je Ebene und sind dort erreichbar, wo sie wirken.
     expect(markup).not.toContain('>Einstellungen<');
   });
 });

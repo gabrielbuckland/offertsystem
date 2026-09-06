@@ -1,11 +1,5 @@
 'use client';
 
-/**
- * Client-Klammer der Detailseite: Kopf, Basisinformationen, Referenzobjekte,
- * Zu-/Abschlaege, Einheitentabelle, Offerttext, Aufwandfaktoren, Aggregatleiste.
- * Der Projektstand lebt einmal (`verwendeProjekt`); jeder Block ruft `aendere` mit
- * dem vollen Projekt auf, damit die Persistenz (PUT) an einer Stelle bleibt.
- */
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
@@ -37,16 +31,10 @@ import { bauePipelineDaten } from '../pipeline/pipeline-daten.js';
 export interface ProjektAnsichtProps {
   readonly projekt: Projekt;
   readonly faktorformular: Faktorformular;
-  /** Basis der Pipeline-Stufen im Rechenweg-Dialog — dieselbe Konfiguration, gegen die
-   *  auch die Berechnung serverseitig laeuft. */
   readonly konfigurationBasis: OffertKonfiguration;
-  /**
-   * Das Ueberschreibungsprotokoll der EFFEKTIVEN Konfiguration. Der Rechenweg weist
-   * daraus je Zeile aus, ob der Wert firmenweit gilt oder projektbezogen uebersteuert
-   * ist — der Beleg fuer die Nachvollziehbarkeitsforderung A-13. Fehlt die Liste, meldet
-   * der Dialog jede uebersteuerte Groesse als «firmenweit» und sagt bei aktivem Delta
-   * systematisch die Unwahrheit; optional bleibt sie nur fuer den Fall ohne Delta.
-   */
+  // A-13: Ueberschreibungsprotokoll der EFFEKTIVEN Konfiguration, Beleg fuer die
+  // Nachvollziehbarkeit im Rechenweg-Dialog. Fehlt die Liste, meldet der Dialog jede
+  // uebersteuerte Groesse faelschlich als "firmenweit".
   readonly ueberschreibungen?: readonly UeberschreibungsProtokoll[] | undefined;
 }
 
@@ -62,18 +50,14 @@ interface OfferteAntwort {
   readonly fehler?: { readonly text: string };
 }
 
-/** Teilerfolg (Bewertung fehlt fuer einen Typ) ist eine Warnung, kein Fehler. */
 interface AbrufMeldung {
   readonly text: string;
   readonly art: HinweisArt;
 }
 
-/**
- * `OffertKonfiguration['anpassungsVorlagen']` (Zod-Inferenz, `regel?: Bereichsregel |
- * undefined`) und `Anpassungsvorlage` (Kern-Domaentyp, `regel?: Bereichsregel`) sind
- * strukturell gleich, aber unter `exactOptionalPropertyTypes` nicht zuweisungskompatibel.
- * Wie in `spalteAusVorlage`: das Feld fehlt statt auf `undefined` gesetzt zu werden.
- */
+// OffertKonfiguration['anpassungsVorlagen'] (Zod-Inferenz) und Anpassungsvorlage (Kern-
+// Domaentyp) sind strukturell gleich, aber unter exactOptionalPropertyTypes nicht
+// zuweisungskompatibel — daher fehlt das Feld statt auf undefined gesetzt zu werden.
 function zuAnpassungsvorlagen(
   vorlagen: OffertKonfiguration['anpassungsVorlagen'],
 ): readonly Anpassungsvorlage[] {
@@ -99,21 +83,17 @@ export function ProjektAnsicht(
 ) {
   const router = useRouter();
   const [abrufMeldung, setAbrufMeldung] = useState<AbrufMeldung | undefined>(undefined);
-  // Id des Referenzobjekts, dessen Einzelabruf laeuft (Zeilen-Aktion in
-  // `Referenzobjekte.tsx`); `undefined` = kein Abruf aktiv.
   const [abrufLaufend, setAbrufLaufend] = useState<string | undefined>(undefined);
   const [offerteLaeuft, setOfferteLaeuft] = useState(false);
   const [offerteFehler, setOfferteFehler] = useState<string | undefined>(undefined);
   const [rechenwegOffen, setRechenwegOffen] = useState(false);
-  // Honorareingabe VOR dem Erzeugen: Die Offerte nennt dem Eigentuemer einen einzigen
-  // Betrag, nie die Range — der Klick auf «Offerte generieren» oeffnet deshalb erst
-  // dieses Modal, statt sofort zu erzeugen.
+  // Honorareingabe VOR dem Erzeugen: die Offerte nennt dem Eigentuemer einen einzigen
+  // Betrag, nie die Range.
   const [honorarModalOffen, setHonorarModalOffen] = useState(false);
 
   async function rufeAb(referenzobjektId: string) {
     setAbrufMeldung(undefined);
     setAbrufLaufend(referenzobjektId);
-    // Fehlerbehandlung fuer Netz-/Antwortfehler liegt in `rufeApi`.
     const { ok, rumpf } = await rufeApi<BewertungsAntwort>(
       `/api/projekt/${projekt.id}/bewertung`,
       {
@@ -131,8 +111,7 @@ export function ProjektAnsicht(
       return;
     }
     aendere(rumpf.projekt);
-    // Ohne diese Meldung saehe der Vermarkter nur aktualisierte Zeilen und hielte
-    // den Teilerfolg (ein Typ ohne Bewertung) faelschlich fuer vollstaendig.
+    // Ohne diese Meldung haelt der Vermarkter den Teilerfolg faelschlich fuer vollstaendig.
     if (!rumpf.vollstaendig) {
       setAbrufMeldung({
         text: `Für den Referenzobjekttyp ${rumpf.fehlgeschlagenerTyp ?? '—'} liegt keine `
@@ -144,16 +123,11 @@ export function ProjektAnsicht(
 
   const { stand, stelleEin } = verwendeBerechnung();
 
-  /**
-   * Berechnung haengt am Erfolg des Speicherns, nicht an einem eigenen Zeitgeber auf
-   * `[projekt]`: ein paralleler Timer liefe gegen das gleichzeitige PUT und rechnete
-   * gegen einen halbfertigen Stand (sichtbar als uebersprungener Preis bzw. Offerte,
-   * die etwas anderes ausweist als der Bildschirm zeigte).
-   *
-   * I-1: Nur ein Speichern, das ein rechenrelevantes Feld aendert
-   * (`nurRechenirrelevanteFelderGeaendert`), loest die Berechnung aus. `letzterStand`
-   * haelt den zuletzt GESPEICHERTEN (nicht berechneten) Stand fest.
-   */
+  // Berechnung haengt am Erfolg des Speicherns, nicht an einem eigenen Zeitgeber auf
+  // [projekt]: ein paralleler Timer liefe gegen das gleichzeitige PUT und rechnete gegen
+  // einen halbfertigen Stand. I-1: nur ein Speichern, das ein rechenrelevantes Feld
+  // aendert, loest die Berechnung aus; letzterStand haelt den zuletzt GESPEICHERTEN
+  // (nicht berechneten) Stand fest.
   const letzterStand = useRef<Projekt>(anfang);
   const { projekt, aendere, speichernLaeuft, speichernFehler } = verwendeProjekt(
     anfang,
@@ -165,8 +139,8 @@ export function ProjektAnsicht(
     },
   );
 
-  // Initialer Abruf beim Mount: kein Speichern-Event, an das sich die erste
-  // Berechnung haengen koennte.
+  // Initialer Abruf beim Mount: kein Speichern-Event, an das sich die erste Berechnung
+  // haengen koennte.
   useEffect(() => {
     letzterStand.current = anfang;
     stelleEin(anfang);
@@ -175,7 +149,6 @@ export function ProjektAnsicht(
   async function erzeugeOfferte(gewaehltesHonorar: number) {
     setOfferteFehler(undefined);
     setOfferteLaeuft(true);
-    // Fehlerbehandlung fuer Netz-/Antwortfehler liegt in `rufeApi`.
     const { ok, rumpf } = await rufeApi<OfferteAntwort>(
       `/api/projekt/${projekt.id}/offerte`,
       {
@@ -192,35 +165,30 @@ export function ProjektAnsicht(
     router.push(`/offerte/${rumpf.offertId}` as Route);
   }
 
-  // `stand.herleitung` traegt in verwende-berechnung.ts bewusst `unknown` (keine
-  // React-/Node-Importe dort); hier auf die tatsaechlichen Offert-Modelltypen geschaerft.
+  // stand.herleitung traegt in verwende-berechnung.ts bewusst unknown (keine React-/Node-
+  // Importe dort); hier auf die tatsaechlichen Offert-Modelltypen geschaerft.
   const herleitung = stand.herleitung as
     { readonly derivation: PriceDerivation; readonly aggregates: AggregateValues } | undefined;
   const aufwandindikator = herleitung?.aggregates.effortIndicator.value;
 
-  // Abgeleiteter (nicht uebersteuerter) D-Wert = Summe der Faktorbeitraege. Bei
-  // Uebersteuerung traegt `effortIndicator` den gesetzten Wert, die Beitraege bleiben
-  // die Ableitung.
+  // Abgeleiteter (nicht uebersteuerter) D-Wert = Summe der Faktorbeitraege.
   const aufwandindikatorAbgeleitet = herleitung === undefined
     ? undefined
     : herleitung.aggregates.effortFactors.reduce((s, f) => s + f.beitrag, 0);
 
-  // E-04: Bei Honorarabbruch fehlt in `stand` Verkaufssumme/Herleitung
-  // (OHNE_AGGREGATE); der Abbruch-Rumpf fuehrt beide Werte separat, deshalb hier
-  // als Anzeige-Fallback.
+  // E-04: bei Honorarabbruch fehlt in stand Verkaufssumme/Herleitung; der Abbruch-Rumpf
+  // fuehrt beide Werte separat, deshalb hier als Anzeige-Fallback.
   const verkaufssummeAnzeige = stand.honorarAbbruch?.verkaufssumme ?? stand.verkaufssumme;
   const aufwandindikatorAnzeige = stand.honorarAbbruch?.aufwandindikator ?? aufwandindikator;
 
   return (
     <main>
-      {/* Brotkrume liegt auf Seitenebene (page.tsx), nicht hier. */}
       <header className="mb-6">
         <h1 className="text-2xl font-semibold">
           {projekt.adresse.strasse} {projekt.adresse.hausnummer}, {projekt.adresse.plz}{' '}
           {projekt.adresse.ort}
         </h1>
-        {/* Fester Platzhalter: der Indikator darf beim Ein-/Ausblenden keinen
-            Layout-Shift ausloesen (die Seite spraenge sonst bei jedem Autosave). */}
+        {/* Fester Platzhalter: verhindert Layout-Shift bei jedem Autosave. */}
         <div className="h-5">
           {speichernLaeuft && <StatusZeile text="Speichert…" />}
         </div>
@@ -246,8 +214,7 @@ export function ProjektAnsicht(
           aufwandindikator={projekt.aufwandindikatorUebersteuerung}
           aufwandindikatorVorschlag={aufwandindikatorAbgeleitet}
           aendereAufwandindikator={(w) => {
-            // Bedingter Spread statt `undefined`-Zuweisung: exactOptionalPropertyTypes,
-            // Schluessel soll bei undefined gar nicht existieren (Anwesenheit entscheidet).
+            // exactOptionalPropertyTypes: Schluessel soll bei undefined gar nicht existieren.
             const { aufwandindikatorUebersteuerung: _entfernt, ...rest } = projekt;
             aendere(w === undefined ? rest : { ...rest, aufwandindikatorUebersteuerung: w });
           }}
@@ -277,8 +244,6 @@ export function ProjektAnsicht(
           entferneSpalte={(id) => aendere({
             ...projekt,
             anpassungsSpalten: projekt.anpassungsSpalten.filter((s) => s.id !== id),
-            // Entfernte Spalte darf ihren Wert nicht in spaltenwerte ueberleben, sonst
-            // lebte er bei einer wiederverwendeten Spalten-ID unbeabsichtigt wieder auf.
             einheiten: [...entferneSpaltenwert(projekt.einheiten, id)],
           })}
           uebernehmeAufEinheiten={(spalteId) => {
@@ -301,7 +266,6 @@ export function ProjektAnsicht(
           preise={stand.preise}
           aendere={(einheiten) => aendere({ ...projekt, einheiten: [...einheiten] })}
         />
-        {/* Nacherfassen weiterer Wohnungen eines bestehenden Typs. */}
         <EinheitenGenerator
           referenzobjekte={projekt.referenzobjekte}
           einheiten={projekt.einheiten}
@@ -318,8 +282,8 @@ export function ProjektAnsicht(
       {stand.fehler !== undefined && (
         <Hinweis art="fehler" className="mt-4">{stand.fehler}</Hinweis>
       )}
-      {/* Nur solange die Konfiguration manuelle Faktoren fuehrt; verhindert
-          FAKTOR_FEHLT ohne Erfassungsstelle. */}
+      {/* Nur solange die Konfiguration manuelle Faktoren fuehrt; verhindert FAKTOR_FEHLT
+          ohne Erfassungsstelle. */}
       {faktorformular.felder.length > 0 && (
         <section className="mb-6 rounded-lg border border-border bg-card p-6">
           <Aufwandfaktoren
@@ -332,14 +296,13 @@ export function ProjektAnsicht(
       {offerteFehler !== undefined && (
         <Hinweis art="fehler" className="mt-4">{offerteFehler}</Hinweis>
       )}
-      {/* Eigener Dialog statt eingebetteter Block: die fuenf Stufen brauchen die volle Hoehe. */}
       <RechenwegDialog
         offen={rechenwegOffen}
         schliesse={() => setRechenwegOffen(false)}
         stufen={bauePipelineDaten(konfigurationBasis, {
           ...(herleitung === undefined ? {} : { herleitung }),
-          // Ohne diese Liste faerbt `bauePipelineDaten` jede Zeile «firmenweit» ein
-          // (pipeline-daten.ts, `istProjektbezogen`) — auch die uebersteuerten.
+          // Ohne diese Liste faerbt bauePipelineDaten jede Zeile "firmenweit" ein — auch
+          // die uebersteuerten.
           ...(ueberschreibungen === undefined ? {} : { ueberschreibungen }),
           aufwandindikatorUebersteuert: projekt.aufwandindikatorUebersteuerung !== undefined,
         })}
@@ -359,8 +322,6 @@ export function ProjektAnsicht(
           ? {}
           : { honorarAbbruchMeldung: stand.honorarAbbruch.meldung })}
       />
-      {/* Nur montiert, wenn Min/Max vorliegen: `Aggregatleiste` sperrt den auslösenden
-          Knopf ohne vollstaendiges Ergebnis (`gesperrtWeil`), das Modal setzt das voraus. */}
       {stand.honorarMin !== undefined && stand.honorarMax !== undefined && (
         <HonorarEingabeDialog
           offen={honorarModalOffen}

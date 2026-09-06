@@ -1,11 +1,7 @@
-/**
- * Keine Formel. Ebene 1 der Konfigurationspruefung: Struktur.
- * Die geprueften Parameter gehen in eq:flaeche, eq:normalisierung,
- * eq:aufwandindikator und eq:honorar_mapping ein; gerechnet wird hier nicht.
- * Geprueft werden Pflichtfelder, JSON-Typen, unbekannte Schluessel, Aufzaehlungen
- * und die Schemaversion. Zahlenbereiche gehoeren bewusst nach Ebene 2, damit
- * jede Verletzung einen fachlich sprechenden CFG_*-Code traegt.
- */
+// Keine Formel. Ebene 1 der Konfigurationspruefung: Struktur (Pflichtfelder, JSON-Typen,
+// unbekannte Schluessel, Aufzaehlungen, Schemaversion) — gerechnet wird hier nicht.
+// Zahlenbereiche gehoeren bewusst nach Ebene 2, damit jede Verletzung einen fachlich
+// sprechenden CFG_*-Code traegt.
 import { z } from 'zod';
 import { QualitaetsbewertungenSchema, ZustandsbewertungenSchema } from './bewertungen.js';
 import {
@@ -14,32 +10,24 @@ import {
   type RohStrategieBezeichner,
 } from '../normalization/bezeichner.js';
 
-/** Die neun von PriceHubble dokumentierten Lagescores (I-26: keine Verdichtung). */
+// Die neun von PriceHubble dokumentierten Lagescores (I-26: keine Verdichtung).
 export const LAGESCORE_NAMEN = [
   'location', 'family', 'health', 'leisure', 'shopping',
   'catering', 'view', 'noise', 'nuisance',
 ] as const;
 
-/**
- * Im Kern vorhandene Ableitungen fuer Faktoren der Quelle "abgeleitet" (E-05).
- * ACHTUNG: Das sind QUELLSCHLUESSEL, keine Faktorschluessel. Der Faktor, der die
- * Einheitenzahl verarbeitet, heisst weiterhin `projektumfang`; sein
- * quellSchluessel ist `einheitenzahl` (PE-03).
- */
+// Ableitungen fuer Faktoren der Quelle "abgeleitet" (E-05). Das sind Quellschluessel,
+// keine Faktorschluessel (PE-03).
 export const ABLEITUNGS_NAMEN = ['einheitenzahl', 'mittlererQuadratmeterpreis'] as const;
 
 export const BEZEICHNER_MUSTER = /^[a-z][a-zA-Z0-9_]*$/;
 
 export type FaktorQuelle = 'lagescore' | 'manuell' | 'abgeleitet';
-/**
- * Schreibweise des JSON-Schemas. Der Kern fuehrt die Bezeichner aus
- * `normalization/bezeichner.ts`; uebersetzt wird genau einmal, in parseKonfiguration
- * (PE-02, PE-01). Die zulaessigen Werte sind aus derselben Liste ABGELEITET, nicht
- * dupliziert — eine neue Strategie braucht keine Schemaaenderung (E-15).
- */
+// Schreibweise des JSON-Schemas; uebersetzt wird genau einmal, in parseKonfiguration
+// (PE-02, PE-01). Werte aus derselben Liste abgeleitet, nicht dupliziert (E-15).
 export type StrategieBezeichner = RohStrategieBezeichner;
 
-/** Nicht leer, weil die Bezeichner-Liste per Konstruktion mindestens min-max fuehrt. */
+// Nicht leer, weil die Bezeichner-Liste per Konstruktion mindestens min-max fuehrt.
 const ROH_STRATEGIEN = STRATEGIE_BEZEICHNER.map((b) => ROH_SCHREIBWEISE[b]) as
   [RohStrategieBezeichner, ...RohStrategieBezeichner[]];
 
@@ -91,11 +79,7 @@ const ReferenzverteilungSchema = z.object({
   kappungSigma: z.number(),
 }).strict();
 
-/**
- * Rein deskriptive Beschreibung einer ordinalen Erfassungsskala (PE-05, E-24),
- * geht in keine Formel ein. Zweck: die Oberflaeche liest die Stufenbeschriftungen
- * aus der Konfiguration statt sie zu kodieren.
- */
+// Rein deskriptive ordinale Erfassungsskala (PE-05, E-24), geht in keine Formel ein.
 const SkalaSchema = z.object({
   form: z.literal('ordinal'),
   stufen: z.array(z.object({
@@ -161,7 +145,7 @@ const ApiSchema = z.object({
     retryStatuscodes: z.array(z.number()),
   }).strict(),
   tokenGueltigkeitMin: z.number(),
-  /** Vorlaufzeit, um die ein Token vor Ablauf erneuert wird (PE-06). Standard: 30 Minuten. */
+  // Vorlaufzeit, um die ein Token vor Ablauf erneuert wird (PE-06).
   tokenSicherheitsmargeMin: z.number(),
 }).strict();
 

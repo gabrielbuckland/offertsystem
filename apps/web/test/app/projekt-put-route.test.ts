@@ -1,9 +1,3 @@
-/**
- * Deckt die Rumpfbehandlung der Speicherroute ab. Ein nicht parsierbarer Rumpf trifft
- * `anfrage.json()`, BEVOR `safeParse` laeuft — ohne eigenen Fang entstuende dort eine 500
- * statt der spezifizierten 422, und der Client saehe einen Serverfehler, wo ein
- * Eingabefehler vorliegt.
- */
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';

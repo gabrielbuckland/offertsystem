@@ -14,8 +14,6 @@ describe('vorbelegteSpalten', () => {
     expect(spalten.length).toBeGreaterThan(0);
     for (const [s, v] of spalten.map((s, i) => [s, konfiguration.anpassungsVorlagen[i]!] as const)) {
       expect(s.bezeichnung).not.toBe('');
-      // Dieselbe Konfiguration traegt sowohl 'relativ'- als auch 'absolut'-Vorlagen
-      // (z. B. 'stockwerklage').
       expect(s.erfassungsform).toBe(v.erfassungsform);
     }
   });
@@ -25,9 +23,7 @@ describe('vorbelegteSpalten', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  // `bezeichnung` ist das kurze Etikett der Vorlage, nicht der ausformulierte
-  // `begruendungVorschlag`-Satz. Eine Verwechslung faellt am Spaltenkopf nicht sofort auf
-  // (beides ist ein nichtleerer String), darum wird hier explizit auf den Wortlaut geprueft.
+  // bezeichnung ≠ begruendungVorschlag; Verwechslung nicht sofort erkennbar.
   it('uebernimmt die Vorlagenbezeichnung, nicht den Begruendungsvorschlag', () => {
     const vorlagen = standardKonfiguration().anpassungsVorlagen;
     const spalten = vorbelegteSpalten(standardKonfiguration());
@@ -50,8 +46,7 @@ describe('vorbelegteSpalten', () => {
     expect(spalten[0]!.vorgabewert).toBeUndefined();
   });
 
-  // Ohne Bedingung bleibt der Vorgabewert neutral, weil eine unbedingte Vorbelegung
-  // jeder Einheit alle Anpassungen zugleich gaebe.
+  // Ohne Bedingung: Vorgabewert neutral (unbedingte Vorbelegung gäbe alle Anpassungen).
   it('laesst eine Vorlage ohne Regel weiterhin ohne Vorgabewert starten', () => {
     const k = konfigurationMitVorlage({
       id: 'laermexposition', bezeichnung: 'Laermexposition',

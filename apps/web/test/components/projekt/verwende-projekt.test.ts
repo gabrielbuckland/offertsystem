@@ -1,15 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import { baueSpeicherwarteschlange } from '../../../src/components/projekt/verwende-projekt.js';
 
-/** Steuerbares Promise, um Ankunftsreihenfolge unabhaengig von der Sendereihenfolge
- *  zu erzwingen — genau das Szenario, das die Warteschlange abfangen muss. */
+// Steuerbares Promise: Ankunftsreihenfolge unabhängig von Sendereihenfolge erzwingen.
 function steuerbar<T>() {
   let aufloesen!: (wert: T) => void;
   const versprechen = new Promise<T>((r) => { aufloesen = r; });
   return { versprechen, aufloesen };
 }
 
-/** Laesst alle bereits angestossenen Promise-Ketten (then/catch/finally) abarbeiten. */
+// Hilfsfunktion: alle angestoßenen Promise-Ketten abarbeiten lassen.
 async function leeren(): Promise<void> {
   for (let i = 0; i < 5; i += 1) await Promise.resolve();
 }
@@ -54,17 +53,14 @@ describe('baueSpeicherwarteschlange', () => {
     const warteschlange = baueSpeicherwarteschlange(
       sende, { aufStatusWechsel: vi.fn(), aufFehler: vi.fn() });
 
-    // Erste Aenderung loest sofort einen Versuch aus.
     warteschlange.stelleEin({ id: 'p1', markierung: 'alt' } as never);
     expect(sende).toHaveBeenCalledTimes(1);
 
-    // Zweite, neuere Aenderung trifft ein, WAEHREND der erste Versuch noch unterwegs
-    // ist — sie darf keinen zweiten, ueberlappenden Versuch ausloesen.
+    // Zweite Änderung während Versuch unterwegs: kein überlappender Versuch.
     warteschlange.stelleEin({ id: 'p1', markierung: 'neu' } as never);
     expect(sende).toHaveBeenCalledTimes(1);
 
-    // Der aeltere Versuch trifft (spaeter) ein: erst danach darf der neuere gesendet
-    // werden, und zwar mit dem NEUESTEN Stand, nicht mit einem dazwischenliegenden.
+    // Älterer Versuch trifft ein: danach neuerer mit NEUESTEM Stand.
     erster.aufloesen(true);
     await leeren();
 
@@ -92,17 +88,7 @@ describe('baueSpeicherwarteschlange', () => {
   });
 });
 
-/**
- * `POST /berechnung` liest das Projekt von der Platte — eine Neuberechnung auf einem
- * EIGENEN, parallel zum Speichern gestarteten Zeitgeber rechnete deshalb gegen einen
- * Stand, den das gleichzeitige PUT gerade erst schrieb oder noch gar nicht geschrieben
- * hatte. Die Berechnung muss daher an das Speichern gekettet sein.
- *
- * Nachgestellt wird die Verkettung so, wie `ProjektAnsicht` sie verdrahtet: Der Rueckruf
- * `aufErfolg` der Speicher-Warteschlange stellt in die Berechnungs-Warteschlange ein.
- * Das PUT wird BEWUSST erst aufgeloest, nachdem der alte Zeitgeber laengst gefeuert
- * haette; genau in diesem Fenster darf keine Berechnung stattgefunden haben.
- */
+// POST /berechnung liest Platte: Berechnung muss an Speichern gekettet sein, nicht parallel.
 describe('Berechnung ist an das Speichern gekettet, nicht daneben gestartet', () => {
   function verdrahtet() {
     const put = steuerbar<boolean>();
@@ -127,6 +113,7 @@ describe('Berechnung ist an das Speichern gekettet, nicht daneben gestartet', ()
     expect(gesendet).toHaveLength(1);
     expect(berechnet).toEqual([]);
 
+    // Berechnung erst nach PUT-Antwort.
     put.aufloesen(true);
     await leeren();
     expect(berechnet).toEqual([{ id: 'p1', markierung: 'alt' }]);
@@ -153,14 +140,13 @@ describe('Berechnung ist an das Speichern gekettet, nicht daneben gestartet', ()
     zweites.aufloesen(true);
     await leeren();
 
-    // Entscheidend ist der LETZTE Lauf: Er gehoert zum neuesten Stand und lief erst,
-    // nachdem dessen PUT beantwortet war.
+    // Entscheidend: letzter Lauf gehört neuesten Stand, lief erst nach PUT-Antwort.
     expect(berechnet.at(-1)).toEqual({ id: 'p1', markierung: 'neu' });
     expect(berechnet).toHaveLength(2);
   });
 
   it('rechnet gar nicht, wenn das Speichern fehlschlaegt', async () => {
-    // Sonst zeigte die Oberflaeche Zahlen zu einem Stand, den der Server nie gesehen hat.
+    // Sonst UI-Zahlen zu ungespeichertem Stand.
     const berechnet: unknown[] = [];
     const speichern = baueSpeicherwarteschlange(vi.fn().mockResolvedValue(false), {
       aufStatusWechsel: vi.fn(),

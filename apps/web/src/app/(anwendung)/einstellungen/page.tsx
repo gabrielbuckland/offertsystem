@@ -12,8 +12,7 @@ export default async function EinstellungenSeite() {
     return <main><h1>Firmeneinstellungen</h1><p>{laufzeit.meldungen.join(' ')}</p></main>;
   }
   const rohKonfiguration = laufzeit.wert.rohKonfiguration;
-  // Typ bleibt dieselbe bereits validierte `OffertKonfiguration`; der Rueckweg spiegelt
-  // das (PE-01: die Pruefung, nicht diese Seite, buergt fuer die Form).
+  // PE-01: Form ist bereits geprueft, nicht hier erneut validieren.
   const api = (rohKonfiguration as unknown as OffertKonfiguration).api;
 
   return (
@@ -36,10 +35,7 @@ export default async function EinstellungenSeite() {
 
       <FirmenEinstellungen anfang={rohKonfiguration} />
 
-      {/* Rollentrennung (US-08): API-Anbindung ist Betriebsparameter, kein Einstellungswert
-          des Auftraggebers. Lesend statt editierbar, weil eine falsch gesetzte Basis-URL
-          oder ein zu knapper Timeout nicht durch Editor-Validierung abgefangen wird,
-          sondern erst beim naechsten PriceHubble-Aufruf durchschlaegt. */}
+      {/* US-08: Nur lesend, da Fehler hier erst beim naechsten PriceHubble-Aufruf durchschlagen. */}
       <Card className="mt-8">
         <CardHeader>
           <CardTitle>Technische Parameter (API)</CardTitle>

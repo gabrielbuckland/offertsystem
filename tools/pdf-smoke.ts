@@ -1,11 +1,8 @@
 /**
- * Laufzeit: node --experimental-strip-types (PE-09). Kein Vitest-Test: Der Rauchtest
- * braucht einen laufenden Server und belegt genau eine Aussage — der Druckpfad
- * erzeugt ein PDF.
- *
- * Der Import ist RELATIV auf die Quelle, nicht ueber `@offert/offer`: Node verweigert
- * das Type-Stripping fuer Pakete aus `node_modules`, und Workspace-Pakete werden
- * dorthin verknuepft (PE-09).
+ * Laufzeit: node --experimental-strip-types (PE-09). Kein Vitest-Test: braucht einen
+ * laufenden Server, belegt genau eine Aussage (Druckpfad erzeugt ein PDF).
+ * Import relativ auf die Quelle statt ueber @offert/offer: Node verweigert Type-Stripping
+ * fuer Pakete aus node_modules, wohin Workspace-Pakete verknuepft werden (PE-09).
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';

@@ -1,16 +1,8 @@
-/**
- * Keine Formel. Reine Funktion Offer -> kundengerichtetes HTML.
- *
- * Gerendert wird ausschliesslich das AUFGELÖSTE Dokument aus dem Artefakt — nicht die
- * Vorlage und nicht der Rechenweg: Die Offerte geht an den Eigentümer, der Rechenweg
- * bleibt Tool-Ansicht (Benutzerentscheid 2026-08-27). Dieselbe Komponente trägt
- * Bildschirm und PDF-Druck (AK-2.1), das Bereitschaftssignal bleibt
- * `data-druck-bereit`.
- *
- * Der Kopfblock (Titel, Objekt, Stand, Auftraggeber) kommt aus dem Offert-Objekt, der
- * Fliesstext aus dem Dokument — Layoutdaten und redigierbarer Text sind damit sauber
- * getrennt: Der Vermarkter kann den Kopf nicht zertippen.
- */
+// Keine Formel. Reine Funktion Offer -> kundengerichtetes HTML. Gerendert wird
+// ausschliesslich das aufgeloeste Dokument, nicht die Vorlage und nicht der Rechenweg
+// (Benutzerentscheid 2026-08-27). Kopfblock kommt aus dem Offert-Objekt, Fliesstext aus
+// dem Dokument — der Vermarkter kann den Kopf nicht zertippen. Dieselbe Komponente traegt
+// Bildschirm und PDF-Druck (AK-2.1); Bereitschaftssignal bleibt `data-druck-bereit`.
 import type { ReactNode } from 'react';
 import { formatiereDatum } from '../format/de-ch.js';
 import type { Offer } from '../model/offer.js';
@@ -42,10 +34,7 @@ function BlockKnoten({ knoten }: { knoten: AufgeloesterBlock }) {
         <ul>
           {knoten.content.map((li, i) => (
             <li key={i}>
-              {/* In <p> gewickelt — das Schema laesst mehrere Absaetze je
-                  Listenpunkt zu (z.array(paragraph).min(1)); ohne umschliessendes
-                  Element verschmolzen zwei Absaetze zu einem zusammenhaengenden
-                  Textlauf. */}
+              {/* In <p> gewickelt: Schema laesst mehrere Absaetze je Listenpunkt zu. */}
               {li.content.map((p, j) => (
                 <p key={j}><Inhalt inline={p.content} /></p>
               ))}

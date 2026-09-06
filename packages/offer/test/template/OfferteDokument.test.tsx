@@ -99,35 +99,20 @@ describe('OfferteDokument — Honorarbetrag statt Range (Spec 2026-08-29)', () =
 describe('OfferteDokument — Regelspur bleibt intern', () => {
   it('nennt die Regelspur NICHT im Dokument — die Offerte geht an den Eigentuemer', () => {
     const offerte = beispiel();
-    // regelwert bewusst verschieden vom eigenen `factor` der Anpassung (-0.03, "Nordlage,
-    // eingeschraenkte Besonnung" weiter unten im Dokument): Waeren beide Werte gleich,
-    // bestaetigte die formatierte Regelwert-Assertion unten nur zufaellig eine legitime,
-    // unabhaengige Zahl im Dokument statt echt die Regelspur zu pruefen.
+    // regelwert bewusst != adjustment.factor (-0.03): sonst wuerde die Assertion unten
+    // zufaellig eine andere, legitime Zahl im Dokument treffen statt echt die Regelspur.
     offerte.derivation.units[0]!.adjustments[0]!.value.regel = {
       merkmal: 'stockwerk', merkmalswert: 2, bereich: 2, regelwert: -0.07,
     };
     offerte.derivation.units[0]!.adjustments[0]!.value.uebersteuert = true;
     const html = renderToStaticMarkup(<OfferteDokument offerte={offerte} />);
-    // Alle drei Strings sind in einem regelspurfreien Dokument bereits geprueft:
-    // Das Dossier zeigt "Stockwerk" (Grossbuchstabe, Etagenangabe der Einheit) und
-    // "Konfidenzbereich" (kleines b) — beides trifft die hier gepruefte
-    // Gross-/Kleinschreibung nicht. Die Assertions sind also echt diskriminierend fuer
-    // die Regelspur, nicht zufaellig durch Boilerplate erfuellt.
+    // Kleinschreibung/"Bereich"/"Regelwert" kommen im regelspurfreien Dokument bereits vor
+    // ("Stockwerk", "Konfidenzbereich") — die exakte Schreibung hier ist echt diskriminierend.
     expect(html).not.toContain('stockwerk');
     expect(html).not.toContain('Bereich');
     expect(html).not.toContain('Regelwert');
-    // Das gesetzte Fixture-Feld selbst wurde bislang von keiner Assertion geprueft.
-    // Ein kuenftiges Template, das ein "übersteuert"-Badge rendert,
-    // haette die drei Assertions oben unberuehrt gelassen — genau die sensibelste
-    // Offenlegung (der Eigentuemer saehe, dass der Vermarkter von der Staffel abgewichen
-    // ist) waere unbemerkt durchgerutscht. `toLowerCase()` faengt sowohl
-    // "übersteuert" als auch "Übersteuert" ohne Abhaengigkeit von der genauen
-    // Gross-/Kleinschreibung einer kuenftigen Formulierung.
+    // toLowerCase() faengt "übersteuert"/"Übersteuert" unabhaengig von kuenftiger Formulierung.
     expect(html.toLowerCase()).not.toContain('bersteuer');
-    // Der Regelwert selbst darf ebenfalls nicht auftauchen — weder unformatiert noch so, wie
-    // er als Prozentzahl gerendert wuerde (`formatiereProzent`, die Erfassungsform hier ist
-    // `relativ`, siehe `a.value.factor`-Assertions oben im File). Unabhaengig vom Wortlaut
-    // eines kuenftigen Badges.
     const regelwert = offerte.derivation.units[0]!.adjustments[0]!.value.regel.regelwert;
     expect(html).not.toContain(String(regelwert));
     expect(html).not.toContain(formatiereProzent(regelwert));

@@ -1,13 +1,8 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 
-/**
- * Umschliesst nur die Gruppe (anwendung); Offert-Routen bleiben aussen vor (US-10).
- *
- * Kein eigener Navigationspunkt «Projekte»: Der Logo-Link fuehrt bereits auf die
- * Projektuebersicht, und `Brotkrume` liefert je Seite den Rueckweg dorthin — ein
- * zweiter, staendig sichtbarer Link auf dieselbe Route waere redundant.
- */
+// US-10: nur Gruppe (anwendung) umschlossen, Offert-Routen bleiben aussen vor.
+// Kein Nav-Punkt "Projekte": Logo-Link + Brotkrume decken das bereits ab.
 export function AppShell({ children }: { readonly children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background">

@@ -1,13 +1,6 @@
-/**
- * Gemeinsame Hilfen der Architekturpruefungen.
- *
- * Alle Pruefungen arbeiten auf dem KOMMENTARFREIEN Quelltext. Ein Kommentar, der
- * `localeCompare` oder einen Faktorbezeichner nennt, ist keine Verletzung, sondern
- * haeufig gerade die Begruendung dafuer, dass die Sache NICHT geschieht — der
- * Kopfkommentar von `util/sortierung.ts` sagt ausdruecklich «ausdruecklich nicht
- * localeCompare». Eine Pruefung auf dem Rohtext bestrafte diese Begruendung und
- * setzte einen Anreiz, sie zu loeschen.
- */
+// Alle Pruefungen arbeiten auf dem KOMMENTARFREIEN Quelltext: Ein Kommentar, der
+// `localeCompare` oder einen Faktorbezeichner nennt, ist oft gerade die Begruendung,
+// warum die Sache NICHT geschieht — eine Pruefung auf dem Rohtext bestrafte das.
 import { readFileSync } from 'node:fs';
 import { readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -28,7 +21,6 @@ export function quelldateien(unterverzeichnis = ''): readonly string[] {
   return gesammelt.sort();
 }
 
-/** Entfernt Zeilenkommentare und Blockkommentare; Zeichenketten bleiben erhalten. */
 export function ohneKommentare(inhalt: string): string {
   return inhalt
     .replace(/\/\*[\s\S]*?\*\//g, '')

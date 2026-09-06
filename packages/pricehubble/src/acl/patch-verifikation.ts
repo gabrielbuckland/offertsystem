@@ -7,7 +7,6 @@
  */
 import type { DossierBody } from './bewertung-mapper.js';
 
-/** Toleranz fuer Gleitkommaflaechen. */
 const TOLERANZ = 1e-9;
 
 function gleich(gesendet: unknown, zurueck: unknown): boolean {
@@ -25,7 +24,6 @@ function gleich(gesendet: unknown, zurueck: unknown): boolean {
   return gesendet === zurueck;
 }
 
-/** @returns Liste der abweichenden Pfade; leer bedeutet vertragskonform. */
 export function verifiziereGesendetePatchFelder(
   gesendet: DossierBody,
   antwort: unknown,

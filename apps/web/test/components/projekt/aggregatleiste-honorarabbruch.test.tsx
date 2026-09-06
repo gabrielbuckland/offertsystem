@@ -1,15 +1,4 @@
-/**
- * Bei einem Honorarabbruch (E-04) darf nur die Honorarrange fehlen — Verkaufssumme und
- * Aufwandindikator D bleiben gueltig und MUESSEN in der Aggregatleiste sichtbar bleiben,
- * waehrend die Offert-Schaltflaeche gesperrt bleibt (kein Artefakt, Route antwortet 422,
- * I-24).
- *
- * `ProjektAnsicht.tsx` selbst laesst sich mangels jsdom/Hook-Testbibliothek nicht rendern.
- * Dieser Test geht stattdessen ueber den ECHTEN Produktionspfad: `verarbeiteBerechnungsAntwort`
- * liefert den Stand aus einer echten Honorarabbruch-Antwort, die zwei Anzeige-Fallback-
- * Zeilen werden hier woertlich nachvollzogen und erst DANN an die echte `Aggregatleiste`-
- * Komponente gereicht — nicht nur mit direkt hineingereichten Props isoliert getestet.
- */
+// Honorarabbruch E-04: nur Range fehlt, Verkaufssumme+D bleiben sichtbar, Offert-Button gesperrt (I-24).
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { formatiereAggregat, formatiereScore } from '@offert/offer';
@@ -37,14 +26,11 @@ describe('Aggregatleiste bei Honorarabbruch — ueber den echten Verarbeitungspf
       },
     };
 
-    // Echter Produktionscode, keine Handkonstruktion des Stands.
     const { stand } = verarbeiteBerechnungsAntwort(antwort, EINHEITEN);
     expect(stand.honorarMin).toBeUndefined();
     expect(stand.honorarMax).toBeUndefined();
 
-    // Woertliche Nachbildung der beiden Fallback-Zeilen aus ProjektAnsicht.tsx —
-    // `herleitung`/`aufwandindikator` bleiben hier `undefined`, weil ein Honorarabbruch
-    // keine Herleitung mitfuehrt.
+    // Fallback-Zeilen: herleitung/aufwandindikator undefined (Honorarabbruch führt keine Herleitung mit).
     const aufwandindikator: number | undefined = undefined;
     const verkaufssummeAnzeige = stand.honorarAbbruch?.verkaufssumme ?? stand.verkaufssumme;
     const aufwandindikatorAnzeige = stand.honorarAbbruch?.aufwandindikator ?? aufwandindikator;

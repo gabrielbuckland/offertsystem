@@ -41,11 +41,7 @@ describe('ausText', () => {
   });
 });
 
-/**
- * W-1: Der JSON-Reiter darf die Rollentrennung nicht aushebeln, die dieselbe Seite im
- * Formular fuehrt. Die Wurzelliste kommt aus dem Kern — es gibt genau eine Wahrheit
- * darueber, was unveraenderlich ist.
- */
+// W-1: Wurzelliste kommt aus dem Kern; eine Wahrheit über unveränderliche Roots.
 describe('ohneWurzeln / mitWurzeln', () => {
   const bestand = {
     api: { baseUrl: 'https://echt.example', timeoutMs: 5000 },
@@ -68,9 +64,7 @@ describe('ohneWurzeln / mitWurzeln', () => {
   });
 
   it('verwirft einen im Rohtext eingetippten gesperrten Schluessel', () => {
-    // Sonst waere die Sperre blosse Anzeigekosmetik: Wer `api` von Hand in das Textfeld
-    // schreibt, stellte die Basis-URL auf einen fremden Host — und die Schreibroute
-    // naehme es als gueltiges Feld an.
+    // Sperre nicht blosse UI-Kosmetik; Schreibroute muss sie auch durchsetzen.
     const bearbeitet = { honorar: { gMin: 0.9 }, api: { baseUrl: 'https://fremd.example' } };
     expect(mitWurzeln(bearbeitet, bestand, GESPERRTE_PFADE)['api']).toEqual(bestand.api);
   });

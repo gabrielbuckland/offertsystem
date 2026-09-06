@@ -1,13 +1,9 @@
-// Einmalwerkzeug: bringt die Referenzobjekte abgelegter Projekte auf die feste
-// PriceHubble-Bewertungsmenge. Der Lauf selbst ist einmalig (`npm run
-// migriere:bewertungen`); sein Unit-Test bleibt in der Pruefkette (`tools/test/`,
-// Vitest-Projekt `tools`).
+// Einmalwerkzeug (npm run migriere:bewertungen): bringt Referenzobjekte abgelegter Projekte
+// auf die feste PriceHubble-Bewertungsmenge; der Unit-Test bleibt trotzdem in der Pruefkette.
 import * as fs from 'node:fs/promises';
 import { join } from 'node:path';
-// Relativ mit `.ts`-Endung wie `tools/beispiel-offerte.ts`: Die Werkzeuglaufzeit
-// (`node --experimental-strip-types --import ./tools/ts-aufloeser.mjs`) loest die
-// `@offert/*`-Aliase NICHT auf — der Haken bildet nur `.js` auf `.ts` unter packages/
-// und apps/ ab, die Paketnamen zeigten auf ein womoeglich veraltetes `dist/`.
+// Relativ mit .ts-Endung: der ts-aufloeser-Hook loest @offert/*-Aliase nicht auf, die sonst
+// auf ein womoeglich veraltetes dist/ zeigten.
 import { BEWERTUNGSFELDER } from '../packages/core/src/config/bewertungen.ts';
 
 const ZUSTAND_STANDARD = 'well_maintained';

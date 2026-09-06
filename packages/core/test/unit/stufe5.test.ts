@@ -14,7 +14,6 @@ describe('Stufe 5 — bildeHonorarrange (eq:honorar_mapping)', () => {
       erwartung: 'Stufenindex 1, Interpolationsanteil 0.5, linear interpolierte Basen und Honorarrange 153 750 bis 205 000 CHF in Rappen',
       anforderung: 'A-04',
     });
-    // V = 7 500 000 CHF = 750 000 000 Rappen, Stufe k = 1 [5, 10) Mio.
     const r = bildeHonorarrange(verkaufssummeErgebnis(rappen(750_000_000)),
       gewichtungErgebnis(0.5), k);
     expect(r.ok).toBe(true);

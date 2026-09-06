@@ -1,9 +1,5 @@
-/**
- * Kanonische Serialisierung und SHA-256-Pruefsumme der effektiven Konfiguration (E-26),
- * macht rekonstruierbar, welcher Konfigurationsstand ein Ergebnis erzeugt hat (NFA-07,
- * A-13, I-09). NICHT die eingebettete Konfigurationskopie — der Name
- * `konfigurationsAbdruck` ist projektweit fuer diese reserviert (PE-04).
- */
+// E-26/NFA-07/A-13/I-09: Pruefsumme der effektiven Konfiguration. NICHT die eingebettete
+// Konfigurationskopie — der Name `konfigurationsAbdruck` ist dafuer reserviert (PE-04).
 import { createHash } from 'node:crypto';
 
 export function kanonischSerialisieren(wert: unknown): string {

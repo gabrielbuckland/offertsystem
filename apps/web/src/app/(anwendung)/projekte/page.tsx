@@ -19,9 +19,7 @@ export default async function ProjekteSeite() {
           <a href="/einstellungen" className="text-sm text-primary underline">
             Firmeneinstellungen
           </a>
-          {/* Im Leerfall traegt `ProjektKacheln` den Ausloeser ueber `leerAktion` — ein
-              zweiter, gleichzeitig sichtbarer Ausloeser haette doppelte Feld-IDs im
-              <dialog>. */}
+          {/* Leerfall: ProjektKacheln zeigt eigenen Ausloeser, sonst doppelte Feld-IDs im dialog. */}
           {eintraege.length > 0 && <NeuesProjekt />}
         </div>
       </div>

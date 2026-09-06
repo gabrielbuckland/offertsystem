@@ -28,7 +28,7 @@ describe('Negativfixtures der Konfigurationsvalidierung', () => {
     expect(ergebnis.ok).toBe(false);
     if (ergebnis.ok) return;
     expect(ergebnis.fehler.map((f) => f.code)).toContain(erwarteterCode);
-    // Kein Teilergebnis: das Ergebnisobjekt traegt keinen Wert.
+    // No partial result: result object carries no value on error.
     expect(Object.hasOwn(ergebnis, 'wert')).toBe(false);
   });
 

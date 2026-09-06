@@ -60,9 +60,7 @@ describe('projektSchema', () => {
     expect(JSON.stringify(ergebnis.error.issues)).toContain('EINHEIT_ID_DOPPELT');
   });
 
-  // Das Feld wurde aufgegeben (Einheiten tragen ihre Unterschiede in `spaltenwerte`).
-  // `.strict()` haelt das fest: Ein aelteres Artefakt wird abgewiesen statt stillschweigend
-  // uebernommen — sonst truege die Ablage ein Feld, das keine Berechnung mehr liest.
+  // Feld aufgegeben: `.strict()` hält Altartefakte auf.
   it('weist eine Einheit mit dem aufgegebenen Feld stockwerk zurueck', () => {
     const p = beispiel();
     const ergebnis = projektSchema.safeParse({
@@ -74,9 +72,7 @@ describe('projektSchema', () => {
     expect(ergebnis.error.issues.some((i) => i.code === 'unrecognized_keys')).toBe(true);
   });
 
-  // Gegenprobe: Die Referenzobjekt-Parametrisierung fuehrt `stockwerk` weiter — es ist
-  // der Dossier-Parameter der Bewertung (PriceHubble `floorNumber`), kein Merkmal der
-  // einzelnen Einheit.
+  // Gegenprobe: Dossier-Parameter (nicht Einheit-Merkmal).
   it('fuehrt stockwerk in der Referenzobjekt-Parametrisierung weiter', () => {
     expect(projektSchema.safeParse(beispiel()).success).toBe(true);
     const p = beispiel();

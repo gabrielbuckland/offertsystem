@@ -1,10 +1,6 @@
 'use client';
 
-/**
- * Legt ein Projekt an. Die Kennung entsteht serverseitig in `POST /api/projekt`
- * (E-29) — dieses Formular erfasst nur die Adresse, mit der Menschen ein Projekt
- * identifizieren, nie eine Kennung.
- */
+// E-29: Kennung entsteht serverseitig in POST /api/projekt, dieses Formular erfasst nur die Adresse.
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
@@ -51,8 +47,7 @@ export function NeuesProjekt() {
     router.push(`/projekte/${rumpf.id}` as Route);
   }
 
-  // Am `close`-Ereignis statt am «Abbrechen»-Knopf, da sich der Dialog auch per
-  // Escape-Taste schliessen laesst; der Dialog-Knoten lebt sonst mit alten Werten weiter.
+  // Am close-Ereignis statt am Abbrechen-Knopf: Dialog laesst sich auch per Escape schliessen.
   function setzeZurueck() {
     setAdresse(LEER);
     setMeldung(undefined);
@@ -67,9 +62,7 @@ export function NeuesProjekt() {
         ref={dialogRef}
         onClose={setzeZurueck}
         aria-label="Neues Projekt"
-        // `m-auto` haelt die Zentrierung explizit: Tailwinds Preflight setzt `margin: 0`
-        // auf praktisch jedes Element und ueberschreibt damit die UA-Voreinstellung
-        // `dialog:modal { margin: auto }`, die ein natives `<dialog>` sonst zentriert.
+        // m-auto gegen Tailwinds Preflight-margin: 0 (siehe RechenwegDialog).
         className="m-auto rounded-lg border border-border bg-background p-6 backdrop:bg-foreground/30"
       >
         <div className="grid gap-4 sm:grid-cols-2">

@@ -1,21 +1,11 @@
-/**
- * Keine Formel. Zod-Schema der Offerttext-Dokumente.
- *
- * Bewusst eine TEILMENGE des ProseMirror-JSON: Jeder erlaubte Knoten hat genau einen
- * Renderpfad (VermarktungsOfferte) und eine Editor-Entsprechung — ein durchgereichter
- * unbekannter Knoten wäre Inhalt, den der Renderer stumm verschluckt.
- *
- * TipTap kommt hier NICHT vor: Auflösung und Rendering laufen serverseitig ohne
- * Editor-Bibliothek; der Editor (apps/web) wird auf dieselbe Teilmenge konfiguriert.
- */
+// Keine Formel. Zod-Schema der Offerttext-Dokumente — bewusst eine Teilmenge des
+// ProseMirror-JSON: jeder erlaubte Knoten hat genau einen Renderpfad und eine
+// Editor-Entsprechung. TipTap kommt hier nicht vor, Aufloesung/Rendering laufen
+// serverseitig ohne Editor-Bibliothek.
 import { z } from 'zod';
 
-/**
- * Handgeschriebene Typen statt `any`: Die generische `baueBloecke`-Funktion gibt
- * TypeScript nicht genug Kontext, um Knotenstrukturen zu inferieren (variable
- * Inline-/Blockbestandteile). Explizite Interfaces annotieren die Zod-Schemas so,
- * dass `z.infer` echte Typen produziert.
- */
+// Handgeschriebene Typen statt any: baueBloecke gibt TypeScript nicht genug Kontext,
+// um Knotenstrukturen zu inferieren.
 
 // Inline-Knotentypen (Text-Level)
 export interface TextKnoten {
@@ -120,9 +110,8 @@ const preistabelleSchema = z.object({
   attrs: z.object({ zeilen: z.array(preisZeileSchema) }).strict(),
 }).strict();
 
-/** Baut die Blockebene für einen gegebenen Inline-Bestand auf — die Struktur ist für
- *  editierbares und aufgelöstes Dokument identisch, nur der Inline-/Blockbestand
- *  unterscheidet sich. */
+// Struktur ist für editierbares und aufgelöstes Dokument identisch, nur der
+// Inline-/Blockbestand unterscheidet sich.
 function baueBloecke<I extends z.ZodTypeAny, B extends z.ZodTypeAny>(
   inline: I, zusatzBloecke: readonly B[],
 ) {
@@ -160,17 +149,14 @@ export const aufgeloestesDokumentSchema: z.ZodType<AufgeloestesDokument> = baueB
   textSchema, [preistabelleSchema],
 );
 
-/** Platzhalter-Vorkommen mit Knotenart: `platzhalter` (inline) oder
- *  `platzhalterTabelle` (block). Beide können dieselbe `id` tragen (z. B.
- *  `preistabelle`), sind aber NICHT austauschbar — `aufloesung.ts` kennt
- *  `preistabelle` ausschliesslich als Blockknoten. */
+// platzhalter (inline) und platzhalterTabelle (block) können dieselbe id tragen
+// (z.B. preistabelle), sind aber nicht austauschbar — aufloesung.ts kennt
+// preistabelle ausschliesslich als Blockknoten.
 export interface PlatzhalterVorkommen {
   readonly id: string;
   readonly art: 'inline' | 'block';
 }
 
-/** Reihenfolge des Auftretens, `platzhalterTabelle` erscheint als `preistabelle` — die
- *  ID, unter der sie im Katalog und im Einfügemenü geführt wird. */
 export function sammlePlatzhalterIds(dokument: OffertDokument): readonly PlatzhalterVorkommen[] {
   const vorkommen: PlatzhalterVorkommen[] = [];
   const besuche = (knoten: unknown): void => {

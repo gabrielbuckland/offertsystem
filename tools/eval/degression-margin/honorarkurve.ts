@@ -1,18 +1,7 @@
-/**
- * Geschlossene Auswertung von eq:honorar_mapping ohne Pipeline-Durchlauf.
- *
- * Zwei Festlegungen aus E-11: Die Auswertung geschieht JE RANDKURVE GETRENNT — hMin und
- * hMax sind unabhaengige Stuetzstellen ohne festes Verhaeltnis —, und sie ist eine reine
- * Funktion der Konfiguration, ohne Projektdaten.
- *
- * Oberhalb der letzten Stuetzstelle liefert die Funktion `null`: Das Modell ist dort nach
- * E-04 nicht definiert, und eine Extrapolation waere eine Zahl, die aussieht wie ein
- * Ergebnis, ohne eines zu sein.
- *
- * Die Funktionen sind eine ZWEITIMPLEMENTIERUNG derselben Formel. Sie sind nur als
- * Messgrundlage zulaessig, solange sie mit Stufe 5 des Kerns uebereinstimmen; ein Test
- * prueft genau das.
- */
+// Geschlossene Auswertung von eq:honorar_mapping ohne Pipeline-Durchlauf (E-11: je
+// Randkurve getrennt, reine Funktion der Konfiguration). Oberhalb der letzten
+// Stuetzstelle liefert die Funktion `null` statt zu extrapolieren (E-04). Zweitimplementierung
+// derselben Formel — nur zulaessig, solange sie mit Stufe 5 des Kerns uebereinstimmt.
 export interface Stuetzstelle {
   readonly v: number; // Rappen
   readonly hMin: number; // Rappen
@@ -46,7 +35,6 @@ export function honorarbasis(
   return links[randkurve] + t * (rechts[randkurve] - links[randkurve]);
 }
 
-/** phi(V) = H(V)/V, der relative Honorarsatz. */
 export function durchschnittssatz(
   stuetzstellen: readonly Stuetzstelle[],
   randkurve: Randkurve,

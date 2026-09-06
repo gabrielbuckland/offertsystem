@@ -1,20 +1,12 @@
-/**
- * Ebene 3 der Konfigurationspruefung: fachliche Invarianten.
- * Ausgewertet allein gegen die Konfiguration, ohne Projektdaten (I-21).
- *
- * Formelbezug: eq:aufwandindikator (Gewichtssumme), eq:honorar_mapping
- * (Stufenordnung, g), eq:degression_stufe, eq:netto_degression,
- * eq:normalisierung (Zielintervall der Strategien).
- */
+// eq:aufwandindikator (Gewichtssumme), eq:honorar_mapping (Stufenordnung, g),
+// eq:degression_stufe, eq:netto_degression, eq:normalisierung (Zielintervall der
+// Strategien). Ebene 3: fachliche Invarianten, ohne Projektdaten (I-21).
 import { pruefeNettoDegression, pruefeStufenDegression } from './degression.js';
 import { fehler, type KonfigurationsFehler } from './fehlercodes.js';
 import { ABLEITUNGS_NAMEN, BEZEICHNER_MUSTER, LAGESCORE_NAMEN, type RohKonfiguration } from './schema.js';
 import { normalisiereBereiche, pruefeBereiche } from '../modell/bereichsregel.js';
 
-/**
- * Toleranz der Summenbedingung. Bestandteil der Invariantendefinition I-12
- * und deshalb hier dokumentiert, nicht im Testcode versteckt.
- */
+// Toleranz der Summenbedingung, Bestandteil der Invariantendefinition I-12.
 export const GEWICHTSSUMME_TOLERANZ = 1e-9;
 
 function pruefeGewichtssumme(konfiguration: RohKonfiguration): KonfigurationsFehler[] {
@@ -135,12 +127,9 @@ function pruefeAnpassungsVorlagen(konfiguration: RohKonfiguration): Konfiguratio
   return befunde;
 }
 
-/**
- * Die Oberflaeche verhindert eine Kollision bei der Neuanlage, kann aber eine bereits
- * gespeicherte Konfiguration nicht rueckwirkend heilen (z. B. nach direkter Bearbeitung
- * der JSON-Datei). Ohne diese Pruefung wuerden zwei Tabellenspalten denselben
- * `merkmalswerte`-Schluessel schreiben und React saehe doppelte Keys.
- */
+// Die Oberflaeche verhindert eine Kollision bei Neuanlage, kann eine bereits gespeicherte
+// Konfiguration aber nicht rueckwirkend heilen. Ohne diese Pruefung schreiben zwei
+// Tabellenspalten denselben merkmalswerte-Schluessel und React saehe doppelte Keys.
 function pruefeMerkmale(konfiguration: RohKonfiguration): KonfigurationsFehler[] {
   const befunde: KonfigurationsFehler[] = [];
   const gesehen = new Set<string>();
@@ -157,12 +146,9 @@ function pruefeMerkmale(konfiguration: RohKonfiguration): KonfigurationsFehler[]
   return befunde;
 }
 
-/**
- * Ebene 3 und nicht 2: Die Pruefung blickt ueber das einzelne Feld hinaus — auf die
- * Merkmalsliste, auf die z-Grenzen und auf die Erfassungsform derselben Vorlage. Die
- * Wertschranke wird hier vorverlegt: Eine Staffel mit unzulaessigem Zuschlag ist schon
- * beim Laden falsch, nicht erst wenn zufaellig eine Einheit in diesen Bereich faellt.
- */
+// Ebene 3 und nicht 2: blickt ueber das Feld hinaus (Merkmalsliste, z-Grenzen,
+// Erfassungsform). Wertschranke vorverlegt: eine Staffel mit unzulaessigem Zuschlag ist
+// schon beim Laden falsch, nicht erst wenn eine Einheit in den Bereich faellt.
 function pruefeBereichsregeln(konfiguration: RohKonfiguration): KonfigurationsFehler[] {
   const befunde: KonfigurationsFehler[] = [];
   const { zMin, zMax } = konfiguration.preisanpassung;

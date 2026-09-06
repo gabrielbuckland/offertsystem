@@ -1,10 +1,5 @@
-/**
- * Ebene 2 der Konfigurationspruefung: lokale Wertebereiche.
- * Rein lokale Praedikate ohne Blick auf andere Felder.
- *
- * Formelbezug: eq:flaeche (alpha), eq:wohnungspreis (z-Grenzen),
- * eq:normalisierung (min/max), eq:honorar_mapping (Stuetzstellen, g).
- */
+// eq:flaeche (alpha), eq:wohnungspreis (z-Grenzen), eq:normalisierung (min/max),
+// eq:honorar_mapping (Stuetzstellen, g). Ebene 2: rein lokale Praedikate.
 import { fehler, type KonfigurationsFehler } from './fehlercodes.js';
 import type { RohKonfiguration } from './schema.js';
 

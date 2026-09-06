@@ -21,10 +21,7 @@ interface ErfassteZellenEingabe {
   readonly aendere: (wert: number) => void;
 }
 
-// Faengt die an `ZellenEingabe` uebergebenen Props ab, rendert aber die echte Komponente
-// weiter (per `createElement`, nicht per Direktaufruf — sonst liefe deren `useState` ausserhalb
-// des React-Renderbaums). So bleiben alle bestehenden Assertions auf das gerenderte `value=`
-// gueltig, und Tests koennen zusaetzlich `aendere` direkt aufrufen.
+// Partieller Mock: fängt Props ab, rendert echte Komponente (sonst useState außerhalb Baum).
 const erfassteZellen = vi.hoisted(() => ({ liste: [] as ErfassteZellenEingabe[] }));
 
 vi.mock('../../../src/components/projekt/ZellenEingabe.js', async (importOriginal) => {
@@ -115,8 +112,6 @@ describe('EinheitenTabelle', () => {
     const html = renderToStaticMarkup(
       <EinheitenTabelle einheiten={einheiten} spalten={[SPALTE_MIT_REGEL]} merkmale={MERKMALE}
                         referenzobjekte={REFS} preise={{}} aendere={() => undefined} />);
-    // 2'000'000 Rappen -> 20'000 Franken (rappenZuFranken), unformatiert wie `ZellenEingabe`
-    // jeden Zellwert ausgibt (`String(wert)`, kein Tausendertrennzeichen).
     expect(html).toContain('20000');
     expect(html).toContain('aus Regel');
   });
@@ -131,11 +126,7 @@ describe('EinheitenTabelle', () => {
     expect(html).toContain('übersteuert');
   });
 
-  // Der Fall, den `ermittleWirksamenWert` eigens ausweist: eine Uebersteuerung
-  // auf einer Regel-Spalte, deren Merkmal an dieser Einheit gar keinen Wert fuehrt. Die
-  // Regel kann dann gar nicht ausgewertet werden — `wirksam.regel` bleibt undefiniert —,
-  // trotzdem gilt der eingetippte Wert. Ohne diesen Test koennte ein spaeterer Zugriff
-  // wie `wirksam.regel!.regelwert` unbedingt geschrieben werden und liefe hier ins Leere.
+  // Uebersteuerung ohne Merkmalswert: Regel kann nicht ausgewertet werden, aber Wert gilt.
   it('zeigt bei einer Uebersteuerung ohne Merkmalswert den eingetippten Wert, weder '
     + '"Merkmal fehlt" noch "aus Regel"', () => {
       const einheiten = [{
@@ -144,20 +135,13 @@ describe('EinheitenTabelle', () => {
       const html = renderToStaticMarkup(
         <EinheitenTabelle einheiten={einheiten} spalten={[SPALTE_MIT_REGEL]} merkmale={MERKMALE}
                           referenzobjekte={REFS} preise={{}} aendere={() => undefined} />);
-      // 500'000 Rappen -> 5'000 Franken (rappenZuFranken), unformatiert wie `ZellenEingabe`
-      // jeden Zellwert ausgibt.
       expect(html).toContain('value="5000"');
       expect(html).not.toContain('Merkmal fehlt');
       expect(html).not.toContain('aus Regel');
       expect(html).not.toContain('übersteuert');
     });
 
-  // "Zuruecksetzen stellt den Regelwert wieder her" gilt nur, weil der Rueckruf den
-  // SCHLUESSEL aus `spaltenwerte` entfernt statt ihn auf 0 zu setzen (eine erfasste 0
-  // waere eine bewusste Uebersteuerung, die die Regel weiterhin unterdrueckt).
-  // `toHaveProperty`/`=== undefined` uebersaehe eine Regression zu
-  // `{ ...spaltenwerte, [id]: undefined }` (der Schluessel waere weiterhin vorhanden,
-  // nur sein Wert waere `undefined`) — deshalb hier explizit ueber die Schluesselliste.
+  // Muss Schlüssel entfernen, nicht auf 0 setzen (0 wäre bewusste Übersteuerung, Regel unterdrückt).
   it('entfernt beim Zuruecksetzen den Schluessel aus spaltenwerte, statt ihn auf 0 zu setzen', () => {
     const einheit = {
       ...EINHEITEN[0]!, merkmalswerte: { stockwerk: 2 }, spaltenwerte: { 'S-3': 500000 },
@@ -177,10 +161,7 @@ describe('EinheitenTabelle', () => {
     expect(Object.prototype.hasOwnProperty.call(naechsteSpaltenwerte, 'S-3')).toBe(false);
   });
 
-  // `ZellenEingabe` meldet auf Blur unbedingt, auch ohne Aenderung (reines
-  // Durchtabben). Fuer eine regelgetriebene Zelle darf das NICHT stillschweigend eine
-  // Uebersteuerung erzeugen — sonst friert die Zelle ein und eine spaetere Aenderung der
-  // firmenweiten Staffel erreicht die Einheit nie mehr.
+  // Blur meldet immer. Regelzelle darf nicht stillschweigend übersteuert werden (sonst Regel unterbrochen).
   it('schreibt keine Uebersteuerung, wenn eine regelgetriebene Zelle mit dem angezeigten '
     + 'Regelwert unveraendert verlassen wird', () => {
       const einheiten = [{ ...EINHEITEN[0]!, merkmalswerte: { stockwerk: 2 } }];
@@ -190,7 +171,6 @@ describe('EinheitenTabelle', () => {
         <EinheitenTabelle einheiten={einheiten} spalten={[SPALTE_MIT_REGEL]} merkmale={MERKMALE}
                           referenzobjekte={REFS} preise={{}} aendere={aendere} />);
 
-      // stockwerk=2 faellt in den Restfall (wert: 2'000'000 Rappen = 20'000 Franken).
       const zelle = erfassteZellen.liste.find((z) => z.wert === 20000)!;
       zelle.aendere(20000);
 

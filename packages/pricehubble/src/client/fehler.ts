@@ -28,28 +28,19 @@ export type EndpunktName =
   | 'dossierValuation'
   | 'locationScores';
 
-/**
- * Die optionalen Felder tragen `| undefined` ausdruecklich: Unter
- * `exactOptionalPropertyTypes: true` (P1s strict-Block) ist ein weggelassenes Feld
- * etwas anderes als ein Feld mit dem Wert `undefined`. Der Client setzt die
- * Diagnosefelder einheitlich, auch wenn sie leer bleiben — sonst muesste jede
- * Aufrufstelle das Objekt stueckweise zusammensetzen.
- */
+// `| undefined` explizit: exactOptionalPropertyTypes unterscheidet fehlendes Feld von
+// Feld mit Wert undefined; der Client setzt die Diagnosefelder einheitlich.
 export interface AdapterFehler {
   readonly art: AdapterFehlerArt;
   readonly endpunkt: EndpunktName;
   readonly httpStatus?: number | undefined;
   readonly phRequestId?: string | undefined;
-  /** einschliesslich des ersten Versuchs */
   readonly versuche: number;
-  /** bis zur endgueltigen Aufgabe */
   readonly dauerMs: number;
-  /** interner Grund; wird NIE ungefiltert an den Vermarkter durchgereicht (NFA-11) */
+  /** NIE ungefiltert an den Vermarkter durchgereicht (NFA-11). */
   readonly detail: string;
-  /** vom Anbieter beanstandetes Feld, falls geliefert (nur bei ClientError) */
   readonly feld?: string | undefined;
-  /** Wartedauer aus Retry-After, falls ermittelt (nur bei RateLimitError) */
   readonly wiederholbarNachSek?: number | undefined;
-  /** feinerer Grundcode innerhalb einer Zielvariante, z. B. Schema vs. Stale */
+  /** feinerer Grundcode innerhalb einer Zielvariante, z. B. Schema vs. Stale. */
   readonly grundcode?: string | undefined;
 }

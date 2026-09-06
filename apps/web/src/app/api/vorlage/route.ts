@@ -1,7 +1,4 @@
-/**
- * Lese- und Schreibpfad der Offerttext-Vorlage. Antwortformen wie /api/einstellungen:
- * 422 mit `befunde` (Pfad + Text), damit der Editor Meldungen am Feld verankern kann.
- */
+// Antwortform wie /api/einstellungen: 422 mit `befunde`, Editor verankert Meldung am Feld.
 import { holeLaufzeit } from '../../../server/laufzeit.js';
 import { ladeVorlage, schreibeVorlage } from '../../../server/vorlagen-ablage.js';
 
@@ -10,8 +7,7 @@ export async function GET(): Promise<Response> {
   if (!laufzeit.ok) {
     return Response.json({ fehler: { text: laufzeit.meldungen.join(' ') } }, { status: 500 });
   }
-  // I-4: `ladeVorlage` liefert ein `Ergebnis` statt zu werfen, defektes Artefakt wird
-  // so zu einer benannten 500-Meldung.
+  // I-4: ladeVorlage liefert ein Ergebnis statt zu werfen.
   const vorlage = await ladeVorlage(laufzeit.wert.umgebung.offertVorlagePfad);
   if (!vorlage.ok) {
     return Response.json({ fehler: { text: vorlage.meldung } }, { status: 500 });

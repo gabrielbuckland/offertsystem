@@ -1,15 +1,7 @@
-/**
- * Keine Formel. Zwei-Ebenen-Merge.
- * Ebene 1 ist die firmenweite Berechnungsbasis, Ebene 2 ein Teilbaum des
- * Projektdatensatzes — keine zweite Konfigurationsdatei. Gesperrt sind nur noch
- * `meta` und `api` (siehe `GESPERRTE_PFADE`); alles Uebrige ist projektbezogen
- * ueberschreibbar.
- *
- * Der Merge kann Ebene 3 dadurch nicht mehr konstruktionsbedingt ausschliessen.
- * Die Garantie traegt stattdessen die erneute Validierung im Ladepfad
- * (`konfigurations-lader.ts`), die die zusammengefuehrte Basis erneut durch
- * alle drei Pruefebenen schickt.
- */
+// Keine Formel. Zwei-Ebenen-Merge: Ebene 1 firmenweite Basis, Ebene 2 Projekt-Teilbaum
+// (keine zweite Konfigurationsdatei). Gesperrt nur `meta`/`api` (GESPERRTE_PFADE), Rest
+// projektbezogen ueberschreibbar. Ebene 3 dadurch nicht mehr konstruktionsbedingt
+// ausgeschlossen — Garantie traegt die Nachvalidierung im Ladepfad (konfigurations-lader.ts).
 import { z } from 'zod';
 import { fehler, type KonfigurationsFehler } from './fehlercodes.js';
 import { DossierDefaultsSchema } from './schema.js';
@@ -18,13 +10,9 @@ import type { OffertKonfiguration } from './validieren.js';
 export interface Preisanpassung {
   readonly faktor: number;
   readonly begruendung: string;
-  /**
-   * Verweist auf die Vorlage, aus der die Anpassung instanziiert wurde. Damit
-   * bleibt in der Offerte erkennbar, ob eine Anpassung aus der Vorlage stammt,
-   * gegenueber der Vorlage veraendert wurde oder frei erfasst ist (A-13).
-   * `| undefined` ist bei exactOptionalPropertyTypes noetig, weil Zod die
-   * optionale Eigenschaft genau so ableitet.
-   */
+  // Verweist auf die Ursprungsvorlage, damit erkennbar bleibt ob eine Anpassung aus der
+  // Vorlage stammt, veraendert oder frei erfasst ist (A-13). `| undefined` noetig, weil
+  // Zod die optionale Eigenschaft bei exactOptionalPropertyTypes genau so ableitet.
   readonly vorlageId?: string | undefined;
 }
 
@@ -47,17 +35,10 @@ export type MergeErgebnis =
   | { readonly ok: true; readonly wert: EffektiveKonfiguration }
   | { readonly ok: false; readonly fehler: readonly KonfigurationsFehler[] };
 
-/**
- * Nicht projektbezogen ueberschreibbar: nur zwei Pfade. `meta` traegt Schema- und
- * Konfigversion (ein Projekt darf nicht behaupten, einer anderen Schemaversion zu
- * folgen), `api` traegt Betriebsparameter der Zugriffsschicht und gehoert der IT,
- * nicht dem Auftraggeber (Rollentrennung US-08).
- *
- * ALLES UEBRIGE IST UEBERSTEUERBAR. Die Garantie liegt bei der Nachvalidierung im
- * Ladepfad (`konfigurations-lader.ts`), die die zusammengefuehrte Basis erneut durch
- * alle drei Pruefebenen schickt und eine verletzende Projektkonfiguration ZURUECKWEIST.
- * Diese Nachvalidierung ist damit tragend und darf nicht uebersprungen werden.
- */
+// Nicht ueberschreibbar: `meta` (Schema-/Konfigversion), `api` (Betriebsparameter der
+// Zugriffsschicht, gehoert der IT, nicht dem Auftraggeber — Rollentrennung US-08). Alles
+// Uebrige ist ueberschreibbar; die Nachvalidierung im Ladepfad (konfigurations-lader.ts)
+// ist die tragende Garantie und darf nicht uebersprungen werden.
 export const GESPERRTE_PFADE: readonly string[] = ['meta', 'api'];
 
 /** Zweigt in die Sonderbehandlung ab statt in die Basis-Zusammenfuehrung. */
@@ -73,13 +54,10 @@ function istObjekt(wert: unknown): wert is Record<string, unknown> {
   return typeof wert === 'object' && wert !== null && !Array.isArray(wert);
 }
 
-/**
- * `zusammengefuehrteDefaults` ist bewusst die BEREITS ZUSAMMENGEFUEHRTE `dossierDefaults`
- * und nicht die Firmenbasis: Seit `dossierDefaults` uebersteuerbar ist, wuerde eine
- * projektbezogene Voreinstellung sonst genau fuer die Wohnungstypen verschluckt, fuer die
- * das Projekt zusaetzlich eigene `dossierParameter` fuehrt — ohne Meldung. Deshalb laeuft
- * dieser Aufruf NACH der Basis-Zusammenfuehrung.
- */
+// `zusammengefuehrteDefaults` ist bewusst die bereits zusammengefuehrte `dossierDefaults`,
+// nicht die Firmenbasis: sonst wuerde eine projektbezogene Voreinstellung fuer Wohnungstypen
+// mit eigenen `dossierParameter` verschluckt. Deshalb laeuft dieser Aufruf nach der
+// Basis-Zusammenfuehrung.
 function verschmelzeDossierParameter(
   zusammengefuehrteDefaults: unknown,
   roh: unknown,
@@ -95,11 +73,9 @@ function verschmelzeDossierParameter(
     return ergebnis;
   }
 
-  // Ein Delta darf `dossierDefaults` durch einen Skalar oder null ersetzen. Als
-  // Schluesselmenge bleibt dann die leere: Jeder Projektschluessel faellt als unbekannt
-  // auf, und die Formpruefung unten meldet zusaetzlich die beiden fehlenden
-  // Bewertungsobjekte. Diese Befunde bleiben bewusst stehen — sie benennen dieselbe
-  // untaugliche Form, die auch die Nachvalidierung im Ladepfad zurueckweist.
+  // Ein Delta darf dossierDefaults durch einen Skalar oder null ersetzen; Schluesselmenge
+  // wird dann leer, jeder Projektschluessel faellt als unbekannt auf. Befunde bleiben
+  // bewusst stehen, dieselbe Form weist auch die Nachvalidierung im Ladepfad zurueck.
   const defaults = istObjekt(zusammengefuehrteDefaults) ? zusammengefuehrteDefaults : {};
 
   for (const [wohnungstyp, rohParameter] of Object.entries(roh)) {
@@ -119,11 +95,8 @@ function verschmelzeDossierParameter(
       }
       const defaultwert = defaults[schluessel];
       zusammengesetzt[schluessel] = projektwert;
-      // Nur wirksame Ueberschreibungen werden protokolliert. Vergleich per Wert, nicht per
-      // Referenz: `zustandsbewertungen`/`qualitaetsbewertungen` sind Objekte, `projektwert`
-      // ist immer ein frisch geparstes Objekt und waere per `!==` nie gleich `defaultwert`
-      // — jede woertliche Wiederholung des Firmenstandards wuerde sonst faelschlich als
-      // Ueberschreibung protokolliert.
+      // Vergleich per Wert, nicht per Referenz: projektwert ist immer frisch geparst und
+      // waere per !== nie gleich defaultwert, auch bei woertlicher Wiederholung.
       if (JSON.stringify(projektwert) !== JSON.stringify(defaultwert)) {
         protokoll.push({
           pfad: `dossierParameter.${wohnungstyp}.${schluessel}`,
@@ -132,11 +105,8 @@ function verschmelzeDossierParameter(
         });
       }
     }
-    // Die Blattpruefung oben kennt nur die Schluesselmenge, nicht die Form der Werte:
-    // `rohParameter` kann `zustandsbewertungen`/`qualitaetsbewertungen` durch ein
-    // unvollstaendiges oder fremdwertiges Objekt ersetzen (DossierParameter ist als die
-    // vollstaendige, strikte Form typisiert — das muss hier durchgesetzt werden, nicht nur
-    // versprochen sein).
+    // Blattpruefung oben kennt nur die Schluesselmenge, nicht die Form der Werte —
+    // deshalb hier zusaetzlich strikt gegen DossierDefaultsSchema pruefen.
     const geprueft = DossierDefaultsSchema.safeParse(zusammengesetzt);
     if (!geprueft.success) {
       for (const issue of geprueft.error.issues) {
@@ -185,7 +155,7 @@ function verschmelzePreisanpassungen(
       }
       continue;
     }
-    // Listen werden immer vollstaendig ersetzt, nie elementweise zusammengefuehrt.
+    // Listen werden vollstaendig ersetzt, nie elementweise zusammengefuehrt.
     ergebnis[wohnungsnummer] = geprueft.data;
     protokoll.push({
       pfad: `preisanpassungen.${wohnungsnummer}`,
@@ -196,28 +166,12 @@ function verschmelzePreisanpassungen(
   return ergebnis;
 }
 
-/**
- * Fuehrt einen Ueberschreibungsteilbaum in die Basis ein und protokolliert jedes
- * geaenderte Blatt mit seinem vollqualifizierten Punktpfad.
- *
- * Objekte werden feldweise zusammengelegt, ARRAYS VOLLSTAENDIG ERSETZT. Die
- * Array-Regel ist die bestehende und bleibt begruendet: Eine elementweise
- * Zusammenfuehrung koennte einen projektbezogen geloeschten Zu-/Abschlag
- * stillschweigend wieder einfuehren.
- *
- * Ein unbekannter Schluessel ist ein Fehler, keine Warnung — sonst verschwaende ein
- * Tippfehler die Uebersteuerung lautlos. Geprueft wird gegen die Schluesselmenge der
- * Basis.
- *
- * `offen` nimmt davon aus, was in `OFFENE_WURZELN` steht — heute genau
- * `aufwandfaktoren` —, und zwar NUR auf der obersten Ebene: In der Rekursion wird `offen`
- * immer als `false` weitergereicht, damit ein Tippfehler INNERHALB eines neuen Faktors
- * weiterhin auffaellt. `dossierDefaults.zustandsbewertungen` und
- * `dossierDefaults.qualitaetsbewertungen` sind hier NICHT ausgenommen: Ein projektbezogen
- * neu angelegter Bewertungsschluessel wird mit `CFG_SCHEMA_UNKNOWN_KEY` zurueckgewiesen.
- * Uebersteuern bestehender Schluessel geht. Das ist eine bewusste Grenze des Delta-Modells
- * und keine Zusicherung des Gegenteils.
- */
+// Objekte werden feldweise zusammengelegt, Arrays vollstaendig ersetzt (sonst koennte
+// eine elementweise Zusammenfuehrung einen projektbezogen geloeschten Zu-/Abschlag
+// stillschweigend wieder einfuehren). Unbekannter Schluessel ist Fehler, keine Warnung
+// — sonst verschwaende ein Tippfehler die Uebersteuerung lautlos.
+// `offen` (OFFENE_WURZELN, aktuell nur aufwandfaktoren) gilt nur auf oberster Ebene; in
+// der Rekursion immer `false`, damit ein Tippfehler innerhalb eines neuen Faktors auffaellt.
 function verschmelzeTeilbaum(
   basiswert: unknown,
   ueberschreibung: unknown,
@@ -255,11 +209,8 @@ function verschmelzeTeilbaum(
   return ergebnis;
 }
 
-/**
- * Wurzeln, unter denen der Anwender eigene Schluessel anlegen darf. `aufwandfaktoren`
- * ist der tragende Fall: Ein rein konfigurativ ergaenzter Faktor ist der Nachweis fuer
- * FF 1 (A-10) und darf projektbezogen nicht an einer Schluesselpruefung scheitern.
- */
+// Wurzeln mit frei anlegbaren Schluesseln. aufwandfaktoren ist der tragende Fall:
+// ein rein konfigurativ ergaenzter Faktor ist der Nachweis fuer FF 1 (A-10).
 const OFFENE_WURZELN: readonly string[] = ['aufwandfaktoren'];
 
 export function mergeKonfiguration(

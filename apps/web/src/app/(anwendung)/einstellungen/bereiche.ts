@@ -4,13 +4,8 @@ import { HonorarEditor } from '../../../components/einstellungen/HonorarEditor.j
 import { PreisanpassungEditor } from '../../../components/einstellungen/PreisanpassungEditor.js';
 import type { BereichsEditor } from '../../../components/einstellungen/verwende-einstellungen.js';
 
-/**
- * Bewusst hier belassen, nicht nach `components/einstellungen/` verschoben:
- * Ein Architekturtest scannt genau diesen Ordner auf fest verdrahtete
- * Konfigurationsbezeichner, und Werte wie `honorar`/`aufwandfaktoren` sind
- * solche Bezeichner. Als Routing-Metadatum faellt die Zuordnung hier nicht
- * unter das Verbot — im Editor-Ordner selbst waere sie es.
- */
+// Bewusst nicht in components/einstellungen/: Architekturtest scannt dort auf fest
+// verdrahtete Konfigurationsbezeichner (z.B. `honorar`); hier als Routing-Metadatum ausgenommen.
 export const BEREICHE = {
   dossier: {
     titel: 'Dossier-Voreinstellungen',

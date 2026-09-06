@@ -1,21 +1,7 @@
-/**
- * Reine Datenaufbereitung fuer die Rechenweg-Ansicht (US-09/A-10): fuenf feste Stufen in
- * Rechenreihenfolge, deren Inhalte ausschliesslich durch Iteration ueber die Konfiguration
- * bzw. eine optionale Herleitung entstehen. Kein Faktor-, Vorlagen- oder
- * Konfigurationsschluessel ist hier woertlich verdrahtet — ein Architekturtest prueft das
- * ueber diesen Ordner. Keine React-/Node-Importe: die Funktion laeuft unveraendert im
- * Browser.
- *
- * Jede Formelzeile zeigt den Ausdruck mit den tatsaechlich eingesetzten Werten und den
- * vom Kern berechneten Wert — hier wird nichts nachgerechnet, nur ausgewiesen (I-24).
- *
- * Jede Zeile, die einen Konfigurationswert zeigt, weist zusaetzlich aus, ob dieser
- * firmenweit gilt oder projektbezogen uebersteuert ist (A-13). Die Auskunft kommt
- * ausschliesslich aus dem Ueberschreibungsprotokoll des Zwei-Ebenen-Merge, nie aus einer
- * festen Annahme: Eine fest verdrahtete Herkunft waere eine Aussage ueber die
- * Konfiguration, die diese Datei nicht treffen kann. Zeilen ohne Konfigurationsbezug
- * (Rechenergebnisse) fuehren gar keine Herkunft.
- */
+// US-09/A-10: keine Faktor-/Konfigurationsschluessel hier verdrahtet (Architekturtest
+// prueft das). Nichts wird nachgerechnet, nur ausgewiesen (I-24). Herkunft je Zeile
+// (firmenweit/projekt, A-13) kommt ausschliesslich aus dem Ueberschreibungsprotokoll,
+// nie aus einer festen Annahme.
 import { GESPERRTE_PFADE } from '@offert/core';
 import type { OffertKonfiguration, UeberschreibungsProtokoll } from '@offert/core';
 import {
@@ -32,26 +18,21 @@ import { beschrifteFeld, beschrifteObjekt, beschrifteWert } from '../../lib/doss
 
 export interface PipelineZeile {
   readonly beschriftung: string;
-  /** Eingesetzte Formel, z. B. «CHF 850’000 ÷ 88.0 m²»; fehlt bei reinen Wertzeilen. */
   readonly ausdruck?: string;
   readonly wert: string;                       // formatiert; '—' fuer fehlend (I-24)
   readonly herkunft?: 'firmenweit' | 'projekt';
-  /** Stufenergebnis; wird in der Ansicht abgesetzt dargestellt. */
   readonly hervorgehoben?: boolean;
-  /** 0..1, zeichnet einen kleinen Anteilsbalken unter der Zeile (Faktorbeitraege, D). */
   readonly anteil?: number;
 }
 
 export interface PipelineTabelle {
   readonly kopf: readonly string[];
-  /** Ausrichtung je Kolonne; Zahlenkolonnen stehen rechtsbuendig. */
   readonly ausrichtung: readonly ('links' | 'rechts')[];
   readonly zeilen: readonly (readonly string[])[];
 }
 
 export interface PipelineAbschnitt {
   readonly titel?: string;
-  /** Symbolische Formeln des Abschnitts, mit Konfigurationswerten eingesetzt. */
   readonly formeln?: readonly string[];
   readonly zeilen?: readonly PipelineZeile[];
   readonly tabelle?: PipelineTabelle;
@@ -60,7 +41,6 @@ export interface PipelineAbschnitt {
 export interface PipelineStufe {
   readonly nr: 1 | 2 | 3 | 4 | 5;
   readonly titel: string;
-  /** Ein Satz dazu, was die Stufe rechnet — Sprache der Oberflaeche, keine Formel. */
   readonly zweck: string;
   readonly abschnitte: readonly PipelineAbschnitt[];
   readonly editorPfad: '/einstellungen/dossier' | '/einstellungen/preisanpassung'
@@ -75,25 +55,15 @@ interface Herleitung {
 interface PipelineExtras {
   readonly herleitung?: Herleitung;
   readonly ueberschreibungen?: readonly UeberschreibungsProtokoll[];
-  /** Wahr, wenn der Vermarkter D uebersteuert hat — die Stufe 4 weist dann den
-   *  abgeleiteten und den wirksamen Wert getrennt aus. */
   readonly aufwandindikatorUebersteuert?: boolean;
 }
 
 const FEHLT = '—';
 
-/**
- * Vergleicht den Bezugspfad einer Zeile mit dem Pfad eines Protokolleintrags,
- * segmentweise. `*` im Bezugspfad steht fuer genau ein beliebiges Segment
- * (`dossierParameter.*.zustandsbewertungen` trifft jeden Wohnungstyp).
- *
- * Verglichen wird in BEIDE Richtungen, weil das Protokoll gleichzeitig feiner und
- * groeber sein kann als die angezeigte Zeile: Der Merge protokolliert jedes geaenderte
- * Blatt einzeln (`honorar.skalierung.gMin` trifft die Zeile «Skalierungsbereich g»),
- * ersetzt Arrays und neu angelegte Teilbaeume aber als Ganzes
- * (`aufwandfaktoren.<faktor>` trifft die Skalenzeile desselben Faktors). Es genuegt
- * deshalb, dass der kuerzere Pfad ein Praefix des laengeren ist.
- */
+// `*` im Bezugspfad steht fuer ein beliebiges Segment. Vergleich in BEIDE Richtungen,
+// weil das Protokoll je nach Aenderung feiner (einzelnes Blatt) oder groeber (ganzer
+// ersetzter Teilbaum) sein kann als die angezeigte Zeile — es genuegt daher, dass der
+// kuerzere Pfad Praefix des laengeren ist.
 function pfadeUeberlappen(bezugspfad: string, protokollpfad: string): boolean {
   const bezug = bezugspfad.split('.');
   const eintrag = protokollpfad.split('.');
@@ -104,21 +74,13 @@ function pfadeUeberlappen(bezugspfad: string, protokollpfad: string): boolean {
   return true;
 }
 
-/**
- * Projektbezogen uebersteuerbar ist jede Wurzel, die der Kern nicht sperrt. Die Liste
- * der Wurzeln wird deshalb aus `GESPERRTE_PFADE` abgeleitet und hier bewusst NICHT
- * erneut aufgezaehlt: Eine zweite Wahrheit ueber zulaessige Konfigurationspfade waere
- * genau die Fehlerquelle, aus der die falsche Herkunftsanzeige entstanden ist.
- */
+// Wurzeln bewusst aus GESPERRTE_PFADE abgeleitet statt hier erneut aufgezaehlt: eine
+// zweite Wahrheit ueber zulaessige Pfade war die Fehlerquelle fuer falsche Herkunft.
 function istUebersteuerbar(bezugspfad: string): boolean {
   return !GESPERRTE_PFADE.includes(bezugspfad.split('.')[0] ?? bezugspfad);
 }
 
-/**
- * Wahr, wenn mindestens einer der Bezugspfade der Zeile projektbezogen uebersteuert
- * wurde. Traegt die Herkunftsanzeige des Rechenwegs (A-13) und wird deshalb
- * ausgewiesen, damit sie unabhaengig von der Darstellung pruefbar bleibt.
- */
+// A-13: exportiert, damit die Herkunftslogik unabhaengig von der Darstellung pruefbar bleibt.
 export function istProjektbezogen(
   bezugspfade: readonly string[],
   ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
@@ -128,7 +90,6 @@ export function istProjektbezogen(
     && ueberschreibungen.some((u) => pfadeUeberlappen(bezug, u.pfad)));
 }
 
-/** Herkunft einer Zeile aus ihren Bezugspfaden — keine Zeile verdrahtet sie fest. */
 function herkunft(
   ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
   ...bezugspfade: readonly string[]
@@ -136,17 +97,8 @@ function herkunft(
   return istProjektbezogen(bezugspfade, ueberschreibungen) ? 'projekt' : 'firmenweit';
 }
 
-/**
- * `dossierDefaults` fuehrt genau die beiden Bewertungsobjekte `zustandsbewertungen` und
- * `qualitaetsbewertungen`, jedes mit der vollstaendigen PriceHubble-Feldmenge
- * (`DossierDefaultsSchema`, strikt). Es gibt keine Rechenstufe dahinter und keinen
- * Fehlfall: Eine leere, fehlende oder skalare Form haelt schon die Konfigurationspruefung
- * auf, hier kaeme sie nie an.
- *
- * Beide Objekte werden als eigener Abschnitt mit einer Zeile je Bewertungsfeld
- * ausgewiesen; die Ansprache kommt aus `lib/dossier-beschriftungen`, damit im Rechenweg
- * dieselben Begriffe stehen wie im Dossier-Editor.
- */
+// Kein Fehlfall noetig: eine leere/skalare Form haelt schon die Konfigurationspruefung
+// auf (DossierDefaultsSchema, strikt), hier kaeme sie nie an.
 function baueStufeEingabe(
   basis: OffertKonfiguration,
   ueberschreibungen: readonly UeberschreibungsProtokoll[] | undefined,
@@ -158,8 +110,7 @@ function baueStufeEingabe(
       zeilen: Object.entries(bewertungen).map(([feld, wert]) => ({
         beschriftung: beschrifteFeld(feld),
         wert: beschrifteWert(objektschluessel, String(wert)),
-        // Zwei Wege fuehren zu einem projektbezogenen Dossier-Wert: die Voreinstellung
-        // selbst oder der Wert eines einzelnen Wohnungstyps.
+        // Zwei Wege zu einem projektbezogenen Dossier-Wert: Voreinstellung oder Wohnungstyp.
         herkunft: herkunft(ueberschreibungen,
           `dossierDefaults.${objektschluessel}.${feld}`,
           `dossierParameter.*.${objektschluessel}.${feld}`),
@@ -176,14 +127,11 @@ function baueStufeEingabe(
   };
 }
 
-/** Bezieht die Typbezeichnung aus der Zimmerzahl — dieselbe Ansprache wie in der
- *  Einheitentabelle («3.5 Zimmer»). */
 function typName(roomCount: number): string {
   return `${formatiereZimmerzahl(roomCount)} Zimmer`;
 }
 
-/** Einzelausweis eines Zu-/Abschlags: Faktor, Begruendung und bei Frankenerfassung der
- *  urspruenglich erfasste Betrag (I-09). */
+// I-09: bei Frankenerfassung zusaetzlich den urspruenglich erfassten Betrag ausweisen.
 function beschreibeAnpassung(a: {
   readonly factor: number;
   readonly enteredAs: 'factor' | 'amount';
@@ -304,17 +252,12 @@ function stufeVerkaufssumme(abschnitte: readonly PipelineAbschnitt[]): PipelineS
   };
 }
 
-/** Sortiert die konfigurierten Faktoren nach Schluessel — stabile, datengetriebene Reihenfolge. */
 function sortierteFaktoren(basis: OffertKonfiguration) {
   return Object.entries(basis.aufwandfaktoren).sort(([a], [b]) => a.localeCompare(b));
 }
 
-/**
- * Bezugspfade der Skalenzeile eines Faktors: Die Zeile zeigt Grenzen und Strategie, also
- * markiert sie nur eine Uebersteuerung genau dieser Felder — ein projektbezogen
- * geaendertes Gewicht faerbt die Skalenzeile nicht ein, sondern die Beitragszeile in
- * Stufe 4. Ein vollstaendig neu angelegter Faktor wird ueber das Praefix mitgetroffen.
- */
+// Nur Grenzen/Strategie: ein geaendertes Gewicht faerbt hier nichts ein, sondern die
+// Beitragszeile in Stufe 4. Ein neu angelegter Faktor wird ueber das Praefix mitgetroffen.
 function skalenpfade(faktorSchluessel: string): readonly string[] {
   return [
     `aufwandfaktoren.${faktorSchluessel}.min`,
@@ -337,15 +280,13 @@ function baueStufeNormalisierung(
       }))
     : herleitung.aggregates.effortFactors.map((ef) => ({
         beschriftung: ef.bezeichnung,
-        // Eingesetzte min-max-Formel; eine andere Strategie weist Rohwert und Skala aus,
-        // ohne eine fremde Formel zu behaupten.
+        // Andere Strategien zeigen nur Rohwert/Skala statt einer unzutreffenden Formel.
         ausdruck: ef.strategie === 'min-max'
           ? `(${formatiereScore(ef.rawValue)} − ${formatiereScore(ef.grenzeMin)}) ÷ `
             + `(${formatiereScore(ef.grenzeMax)} − ${formatiereScore(ef.grenzeMin)})`
           : `Rohwert ${formatiereScore(ef.rawValue)}, Skala `
             + `${formatiereScore(ef.grenzeMin)} bis ${formatiereScore(ef.grenzeMax)} (${ef.strategie})`,
         wert: `${formatiereScore(ef.normalised)}${ef.gekappt ? ' (gekappt)' : ''}`,
-        // `id` ist der Konfigurationsschluessel des Faktors, den der Kern mitfuehrt.
         herkunft: herkunft(ueberschreibungen, ...skalenpfade(ef.id)),
       }));
   return {

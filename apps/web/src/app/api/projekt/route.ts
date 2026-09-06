@@ -1,4 +1,4 @@
-/** Legt ein Projekt an. Die Kennung entsteht in der Ablage, nicht im Client (E-29). */
+// E-29: Kennung entsteht in der Ablage, nicht im Client.
 import { z } from 'zod';
 import { holeLaufzeit } from '../../../server/laufzeit.js';
 import { legeProjektAn } from '../../../server/projekt-ablage.js';

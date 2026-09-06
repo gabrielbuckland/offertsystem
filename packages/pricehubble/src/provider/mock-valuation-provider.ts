@@ -24,7 +24,6 @@ import type {
 export interface MockEinstellungen {
   /** Ab diesem Wohnungstyp liefert der Mock ein gekennzeichnetes Teilergebnis (US-15). */
   readonly scheiternAbTyp?: WohnungstypId;
-  /** Erzeugt einen Portfehler beim Lagescore-Abruf. */
   readonly lagescoreFehler?: ProviderFehler['art'];
 }
 
@@ -40,15 +39,13 @@ const MOCK_SCORES: ReadonlyArray<readonly [string, number]> = [
   ['nuisance', 0.79],
 ];
 
-/** Rappen je Quadratmeter der Mock-Bewertung; reine Testgroesse, kein Modellparameter. */
+// Reine Testgroesse, kein Modellparameter.
 const MOCK_RAPPEN_JE_QM = 1_200_000;
 
 export class MockValuationProvider implements ValuationProvider {
   private readonly einstellungen: MockEinstellungen;
 
-  // Feldzuweisung statt Parametereigenschaft: `node --experimental-strip-types`
-  // (PE-09) uebersetzt nicht, es entfernt nur Typen — Parametereigenschaften
-  // haetten eine Codeerzeugung verlangt und sind dort nicht zulaessig.
+  // PE-09: Feldzuweisung statt Parametereigenschaft, siehe http-client.ts.
   public constructor(einstellungen: MockEinstellungen = {}) {
     this.einstellungen = einstellungen;
   }

@@ -15,8 +15,7 @@ import {
   type KonfigurationsFehler,
   type StufenFehler,
 } from '@offert/core';
-// Modulpfad wie in `fehlertexte.ts` selbst (PE-09): Der Paketindex zoege die
-// React-Komponenten nach, fuer die Node kein Type-Stripping leistet.
+// PE-09: Same path as fehlertexte.ts (package index brings React components, no type stripping).
 import {
   formatiereAggregat, formatiereProzent, formatiereScore,
 } from '@offert/offer';
@@ -81,10 +80,7 @@ describe('uebersetzeAggregatFehler', () => {
 });
 
 /**
- * Jeder Fehler entsteht hier durch einen echten `berechne`-Lauf ueber eine gezielt
- * verletzte Fixtur, nicht durch ein handgeschriebenes `parameter`-Objekt — sonst pruefte
- * die Vorlage nur gegen sich selbst. `not.toMatch(/undefined|NaN/)` faengt jeden Parameter
- * ab, der nicht geliefert wird, unabhaengig vom Wortlaut der jeweiligen Vorlage.
+ * Real berechne run over violated fixture, not hand-written parameter; catches missing values via /undefined|NaN/.
  */
 describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
   function scheitert(eingang: EingangsArgumente): StufenFehler {
@@ -107,13 +103,7 @@ describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
     return ergebnis.wert.verkaufssumme.verkaufssumme;
   }
 
-  /**
-   * Elementtyp ueber die Konfiguration selbst hergeleitet, nicht ueber den gleichnamigen
-   * Import: `@offert/core` exportiert ZWEI `Stuetzstelle` — die des Ladeschemas
-   * (`config/validieren.js`) und die des Kerns (`config/typen.js`, dort als
-   * `KernStuetzstelle`). Nur letztere steht in `Konfiguration`; der naheliegende Import
-   * waere die falsche gewesen.
-   */
+  // Element type derived from Konfiguration, not import: two Stuetzstelle types exist (@offert/core).
   type Stelle = Konfiguration['honorar']['stuetzstellen'][number];
   const stelle = (v: number): Stelle =>
     ({ v: rappen(v), hMin: rappen(3_000_000), hMax: rappen(4_000_000) });
@@ -121,15 +111,13 @@ describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
   interface Fall {
     readonly code: BerechnungsFehlerCode;
     readonly eingang: () => EingangsArgumente;
-    /** Bausteine, die im Text stehen muessen — je einer je eingesetztem Parameter. */
     readonly erwartet: () => readonly string[];
   }
 
   const faelle: readonly (readonly [string, Fall])[] = [
     ['FAKTOR_FEHLT', {
       code: 'FAKTOR_FEHLT',
-      // Es gibt keinen manuellen Faktor mehr; der Fall wird ueber einen fehlenden
-      // Lagescore ausgeloest (gleicher Code, phase 'quelle').
+      // No manual factor; triggered by missing lagescore (same code, phase 'quelle').
       eingang: () => {
         const basis = baueEingangsArgumente();
         return { ...basis, lagescores: { ...basis.lagescores, werte: new Map() } };
@@ -213,7 +201,7 @@ describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
           },
         };
       },
-      // Zweigwahl ueber `art === 'modellgrenze'`.
+      // Branch on art === 'modellgrenze'.
       erwartet: () => ['A1.01', 'grösser als −1', formatiereProzent(-1.5)],
     }],
     ['VERKAUFSSUMME_AUSSERHALB', {
@@ -246,9 +234,7 @@ describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
     expect(fehler.code).toBe(fall.code);
 
     const angezeigt = uebersetzeStufenFehler(fehler);
-    // Der Waechter: ein nicht gelieferter Parameter wird zu `undefined` oder `NaN`.
     expect(angezeigt.text).not.toMatch(/undefined|NaN/);
-    // Und keine leere Aufzaehlung, wie sie ein falsch benannter Listenparameter erzeugt.
     expect(angezeigt.text).not.toMatch(/: \.|\[, |, \]/);
     for (const baustein of fall.erwartet()) {
       expect(angezeigt.text).toContain(baustein);
@@ -259,31 +245,22 @@ describe('Vorlagen lesen genau die Parameter, die der Kern liefert', () => {
     const fehler = scheitert(mitKonfiguration((k) => ({
       ...k, honorar: { ...k.honorar, stuetzstellen: [stelle(0), stelle(1_000)] },
     })));
-    // Tausendertrennung U+2019, wie `de-CH` sie setzt.
     expect(uebersetzeStufenFehler(fehler).text).toContain('’');
     expect(uebersetzeStufenFehler(fehler).text).toContain('Die Honorarstaffelung ist zu erweitern.');
   });
 });
 
 /**
- * Dieselbe Pruefart wie fuer die Stufenfehler: Der `KonfigurationsFehler` entsteht durch
- * echte Kernpruefung ueber eine gezielt verletzte Kopie von `config/company-defaults.json`,
- * nie durch ein handgeschriebenes Parameterobjekt.
+ * Same approach as stage errors: real core check on violated company-defaults.json copy, not hand-written params.
  */
 describe('Ladezeitvorlagen lesen die Parameter des Konfigurationspruefers', () => {
   const KONFIGURATIONSPFAD = new URL('../../../../config/company-defaults.json', import.meta.url);
 
-  /** Frische Kopie je Fall; die Datei selbst wird nur gelesen. */
   function rohkonfiguration(): Record<string, unknown> {
     return JSON.parse(readFileSync(KONFIGURATIONSPFAD, 'utf8')) as Record<string, unknown>;
   }
 
-  /**
-   * `validiereKonfiguration` ist der Weg, den auch der Schreibpfad geht; es meldet die
-   * Stuetzstellenbefunde mit, nicht nur die reinen Schemaverstoesse. Gesucht wird gezielt
-   * nach dem erwarteten Code: Eine verletzte Fixtur kann mehrere Befunde ausloesen, und
-   * `[0]` waere dann von der Reihenfolge abhaengig.
-   */
+  // validiereKonfiguration also reports support point findings, not just schema violations.
   function befund(roh: Record<string, unknown>, code: string): KonfigurationsFehler {
     const ergebnis = validiereKonfiguration(roh);
     if (ergebnis.ok) throw new Error('Die Fixtur ist gueltig — sie trifft den Fall nicht.');
@@ -295,7 +272,6 @@ describe('Ladezeitvorlagen lesen die Parameter des Konfigurationspruefers', () =
     return treffer;
   }
 
-  /** Der Aufrufer reicht `KonfigurationsFehler['parameter']` genau so hinein. */
   function angezeigt(f: KonfigurationsFehler) {
     const parameter = f.parameter as unknown as Parameters<typeof uebersetzeKonfigFehler>[1];
     return uebersetzeKonfigFehler(f.code as keyof typeof KONFIG_VORLAGEN, parameter);
@@ -308,7 +284,7 @@ describe('Ladezeitvorlagen lesen die Parameter des Konfigurationspruefers', () =
     faktoren[ersterFaktor]!['strategie'] = 'gibt-es-nicht';
 
     const treffer = befund(roh, 'CFG_STRATEGY_UNKNOWN');
-    // `verfuegbare` ist ein STRING.
+    // verfuegbare is a string, not an array.
     expect(typeof treffer.parameter['verfuegbare']).toBe('string');
     expect(() => angezeigt(treffer)).not.toThrow();
 
@@ -316,7 +292,6 @@ describe('Ladezeitvorlagen lesen die Parameter des Konfigurationspruefers', () =
     expect(text).not.toMatch(/undefined|NaN/);
     expect(text).toContain('gibt-es-nicht');
     expect(text).toContain(String(treffer.parameter['verfuegbare']));
-    // Der Feldanker steckt im Pfad des Befunds, nicht im Satz.
     expect(treffer.pfad).toContain(ersterFaktor);
   });
 

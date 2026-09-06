@@ -10,8 +10,7 @@ export interface AggregatleisteProps {
   readonly honorarMax: number | undefined;
   readonly aufwandindikator: number | undefined;
   readonly aufwandindikatorUebersteuert?: boolean;
-  // E-04: nur bei Verkaufssumme ausserhalb der Staffel gesetzt; Text kommt fertig
-  // uebersetzt aus der Route.
+  // E-04: nur bei Verkaufssumme ausserhalb der Staffel gesetzt.
   readonly honorarAbbruchMeldung?: string;
   readonly erzeuge: () => void;
   readonly laeuft: boolean;
@@ -20,8 +19,7 @@ export interface AggregatleisteProps {
   readonly zeigeRechenweg: () => void;
 }
 
-// I-24: fehlendes Aggregat wird als solches ausgewiesen, nicht als Null (Null ist ein
-// gueltiger Rechenwert).
+// I-24: fehlendes Aggregat wird als solches ausgewiesen, nicht als Null.
 export function Aggregatleiste(
   {
     verkaufssumme, honorarMin, honorarMax, aufwandindikator, aufwandindikatorUebersteuert,
@@ -32,8 +30,6 @@ export function Aggregatleiste(
   const vollstaendig = verkaufssumme !== undefined
     && honorarMin !== undefined && honorarMax !== undefined;
 
-  // Waehrend Speichern/Neuberechnung darf der zuletzt angezeigte, jetzt veraltete Stand
-  // nicht in eine Offerte ueberfuehrt werden koennen.
   const gesperrtWeil = speichernLaeuft || berechnungLaeuft
     ? 'Änderungen werden gespeichert und neu berechnet …'
     : !vollstaendig ? 'Es liegt noch kein vollständiges Ergebnis vor.' : undefined;
@@ -49,9 +45,6 @@ export function Aggregatleiste(
             </dd>
           </div>
           <div>
-            {/* Prozent statt Franken: der Vermarkter entscheidet den Honorarsatz in
-                Prozent der Verkaufssumme (Eingabemodal), die Range ist die Empfehlung
-                dazu und muss in derselben Groesse ablesbar sein. */}
             <dt className="text-sm text-muted-foreground">Honorarrange</dt>
             <dd className="text-lg font-medium">
               {honorarAbbruchMeldung !== undefined
@@ -75,8 +68,8 @@ export function Aggregatleiste(
         </Button>
         <div className="flex flex-col items-end gap-1">
           {honorarAbbruchMeldung !== undefined && (
-            // E-04 blockiert das Ziel (keine Honorarrange/Offerte), daher `rolle="alert"`
-            // trotz nicht-roter Warnfarbe statt der stillen `status`-Rolle.
+            // E-04 blockiert das Ziel (keine Honorarrange/Offerte), daher rolle="alert"
+            // trotz nicht-roter Warnfarbe statt der stillen status-Rolle.
             <Hinweis art="warnung" rolle="alert">{honorarAbbruchMeldung}</Hinweis>
           )}
           <Button type="button" onClick={erzeuge} disabled={gesperrtWeil !== undefined || laeuft}>

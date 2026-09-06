@@ -1,13 +1,8 @@
-/**
- * Keine Formel. Datenvertrag der Offerte in fuenf Bereichen.
- *
- * Rundungsordnung (E-09): R1 `referenceValuation.marktwert`, R2 `unitPrice`,
- * R3 `feeRange.min/max` und `gewaehltesHonorar` sind ganzzahlig. `pricePerSqm`, `basePrice`,
- * `feeBasis.min/max` bleiben ungerundet (Zwischengroessen).
- *
- * Keine Faktorbezeichner: Die Faktorliste ist datengetrieben (I-13) — ein neuer
- * Aufwandfaktor aendert die Konfiguration, nicht dieses Schema.
- */
+// Keine Formel. Datenvertrag der Offerte in fuenf Bereichen.
+// E-09 Rundungsordnung: R1 referenceValuation.marktwert, R2 unitPrice, R3
+// feeRange.min/max und gewaehltesHonorar sind ganzzahlig; pricePerSqm, basePrice,
+// feeBasis.min/max bleiben ungerundet (Zwischengroessen).
+// I-13: keine Faktorbezeichner — die Faktorliste ist datengetrieben.
 import {
   BADEZIMMER_MAX, BADEZIMMER_MIN, EnergielabelSchema, HeizungsartSchema,
 } from '@offert/core';
@@ -19,12 +14,8 @@ const rappen = z.number().int().finite();              // ganzzahlig: R1, R2, R3
 const rappenGenau = z.number().finite();               // ungerundeter Zwischenwert
 const quadratmeter = z.number().finite().positive();
 
-/**
- * Erster Bereich der Offerte: Kennung des erzeugenden Projekts.
- * `projektId` ist keine Dublette von `offertId` — ein Projekt kann mehrere Offerten
- * hervorbringen. Kundenname/Kontakt bewusst nicht Teil des Prototyps: Er berechnet
- * den Kalkulationsteil und adressiert keinen Empfaenger.
- */
+// projektId ist keine Dublette von offertId — ein Projekt kann mehrere Offerten
+// hervorbringen. Kundenname/Kontakt bewusst nicht Teil des Prototyps.
 export const projectDataSchema = z.object({
   projektId: z.string().uuid(),
 }).strict();
@@ -51,9 +42,8 @@ export const adjustmentSchema = z.object({
   enteredAmount: rappen.optional(),
   justification: z.string().min(1),                    // Pflichtfeld, US-04, I-09
   vorlageId: z.string().min(1).optional(),             // rein dokumentarisch
-  /** Nachweis der Regel, aus der der Wert stammt; rein dokumentarisch, erscheint
-   *  bewusst NICHT im gerenderten Dokument (geht an den Eigentuemer, nicht an den
-   *  Vermarkter). */
+  // Nachweis der Regel; erscheint bewusst nicht im gerenderten Dokument (geht an
+  // den Eigentuemer, nicht an den Vermarkter).
   regel: z.object({
     merkmal: z.string().min(1),
     merkmalswert: z.number(),
@@ -151,14 +141,9 @@ export const aggregateValuesSchema = z.object({
     z.object({ min: rappen, max: rappen }).strict(),                // R3
     'local-calculation',
   ),
-  /**
-   * Der EINE Honorarbetrag, den die Offerte dem Eigentuemer nennt.
-   * `feeRange` bleibt daneben bestehen — sie ist die interne Empfehlung, keine dem
-   * Eigentuemer zu zeigende Zahl. Herkunft `marketer-decision`, nicht
-   * `local-calculation`: Der Betrag ist eine Eingabe des Vermarkters, keine Ableitung.
-   * Optional, weil `baueOfferte` (E-19/E-20) ihn nicht kennt — er entsteht erst mit der
-   * Bestaetigung im Eingabemodal und wird von der Offert-Route ergaenzt, analog `dokument`.
-   */
+  // Der EINE Honorarbetrag fuer den Eigentuemer; feeRange bleibt die interne Empfehlung.
+  // Herkunft marketer-decision (Eingabe, keine Ableitung); optional, da baueOfferte
+  // (E-19/E-20) ihn nicht kennt — entsteht erst mit Bestaetigung im Eingabemodal.
   gewaehltesHonorar: provenancedSchema(rappen, 'marketer-decision').optional(),  // R3
 }).strict();
 
@@ -171,24 +156,18 @@ export const offerMetadataSchema = z.object({
     bewertungsdatum: z.string().min(1),
     konfidenzklasse: z.enum(['poor', 'medium', 'good']),
   }).strict()).min(1),
-  /** Eingebettete Kopie der Konfiguration, kein Verweis — sonst verfehlt US-10/US-13
-   *  beim naechsten Konfigwechsel. Kurzausweis heisst bei P1 `KonfigurationsFingerabdruck` (PE-04). */
+  // Eingebettete Kopie der Konfiguration, kein Verweis — sonst verfehlt US-10/US-13
+  // beim naechsten Konfigwechsel (PE-04: KonfigurationsFingerabdruck).
   konfigurationsAbdruck: z.record(z.unknown()),
   konfigVersion: z.string().min(1),
-  /** SHA-256 der kanonisch serialisierten Konfiguration, eigenes Feld (E-26, PE-04). */
-  konfigPruefsumme: z.string().regex(/^[0-9a-f]{64}$/),
-  /** Ergebnis von `serialisiereEingang(EingangsArgumente)` aus @offert/core (PE-08),
-   *  nicht die Formulardaten. Basis des Reproduktionstests; `deserialisiereEingang`
-   *  fuehrt sie zurueck. */
+  konfigPruefsumme: z.string().regex(/^[0-9a-f]{64}$/),  // SHA-256, E-26/PE-04
+  // PE-08: Ergebnis von serialisiereEingang(), nicht die Formulardaten — Basis des
+  // Reproduktionstests, deserialisiereEingang fuehrt sie zurueck.
   berechnungsEingabe: z.record(z.unknown()),
 }).strict();
 
-/**
- * Kundengerichteter Offerttext: Ergebnis der Platzhalter-Aufloesung,
- * NIE die Vorlage — selbsttragend, unabhaengig vom Vorlagenstand (US-13). Optional, damit
- * Altartefakte gueltig bleiben (I-24). `auftraggeber` steht hier statt im Offert-Kern,
- * da Empfaengerangabe des Dokuments, keine Rechengroesse.
- */
+// US-13: Ergebnis der Platzhalter-Aufloesung, nie die Vorlage — selbsttragend,
+// unabhaengig vom Vorlagenstand. Optional, damit Altartefakte gueltig bleiben (I-24).
 export const offertDokumentBlockSchema = z.object({
   inhalt: aufgeloestesDokumentSchema,
   vorlageVersion: z.string().min(1),

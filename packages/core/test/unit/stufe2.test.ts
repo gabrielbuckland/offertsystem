@@ -10,7 +10,6 @@ describe('Stufe 2 — berechneVerkaufssumme (eq:flaeche, eq:qm_preis, eq:wohnung
       schritte: 'berechneVerkaufssumme ausführen und Quadratmeterpreis sowie Positionspreise prüfen',
       erwartung: 'q_t bleibt ungerundet (nicht ganzzahlig); jeder Positionspreis ist ganzzahlig in Rappen',
     });
-    // P_ref = 85 000 000 Rappen, A_ref = 92.5 m^2, alpha = 0.5, A_aussen = 0
     const r = berechneVerkaufssumme(pipelineEingang());
     expect(r.ok).toBe(true);
     if (r.ok) {

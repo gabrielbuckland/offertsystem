@@ -1,16 +1,3 @@
-/**
- * Deterministisches Offert-Objekt fuer die Tests von `apps/web`.
- *
- * BEWUSSTE DOPPELUNG zu `packages/offer/test/bau/`: Die Boundary-Regel verbietet
- * relative Importe ueber Paketgrenzen, und Testcode wird nicht ueber `src/`
- * veroeffentlicht — ein gemeinsames Fixture haette also entweder die Regel gebrochen
- * oder Testdaten in den Produktivcode gelegt.
- *
- * Die Doppelung ist deshalb bewusst KEINE Kopie eines Literals: Beide Fassungen bauen
- * das Objekt ueber die oeffentlichen Wege (`berechne` aus @offert/core, `baueOfferte`
- * aus @offert/offer) und werden von `offerSchema` geprueft. Sie koennen im Aufbau
- * nicht auseinanderlaufen, ohne dass ein Test bricht.
- */
 import { readFileSync } from 'node:fs';
 import {
   berechne,
@@ -87,10 +74,7 @@ function einheit(
 }
 
 export interface BauOptionen {
-  /**
-   * Vorlagenkennung der ersten Anpassung der ersten Einheit. `undefined` steht fuer
-   * eine frei erfasste Anpassung — dann traegt sie keine Kennung (PE-07).
-   */
+  // `undefined` steht fuer eine frei erfasste Anpassung — dann ohne Kennung (PE-07).
   readonly anpassungMitVorlage?: string | undefined;
 }
 
@@ -183,8 +167,6 @@ export const BEISPIEL_PROJEKT = {
 export const BEISPIEL_META = {
   offertId: 'A-2026-014',
   erstelltAm: ZEITSTEMPEL,
-  // Aus der Konfiguration gelesen, nicht literal gesetzt: Sonst behauptete das Fixture
-  // eine Version, die der eingebettete Abdruck nicht traegt.
   konfigVersion: standardKonfiguration().meta.konfigVersion,
   konfigPruefsumme: 'a'.repeat(64),
   berechnungsEingabe: { schemaVersion: 1 },
@@ -198,8 +180,7 @@ export function baueBeispielOfferte(optionen: BauOptionen = {}): Offer {
     projekt: BEISPIEL_PROJEKT,
     meta: {
       ...BEISPIEL_META,
-      // PE-08: der serialisierte EINGANG, nicht die Formulardaten. Nur so ist das
-      // Fixture derselbe Reproduktionsanker wie ein echt erzeugtes Artefakt.
+      // PE-08: serialisierter Eingang, nicht Formulardaten — Reproduktionsanker.
       berechnungsEingabe: serialisiereEingang(eingang) as Record<string, unknown>,
     },
   });

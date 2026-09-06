@@ -1,10 +1,7 @@
 'use client';
 
-/**
- * Pflege der GLOBALEN Offerttext-Vorlage. Gespeichert wird explizit, nicht bei jedem
- * Tastendruck: die Vorlage betrifft alle künftigen Offerten, die 422-Befunde der Route
- * gehören deshalb VOR das Sichern, nicht in ein stilles Autosave.
- */
+// Speichern ist explizit (kein Autosave): betrifft alle kuenftigen Offerten,
+// 422-Befunde sollen vor dem Sichern sichtbar sein.
 import { useEffect, useState } from 'react';
 import type { OffertDokument } from '@offert/offer';
 import { OffertTextEditor } from './OffertTextEditor.js';

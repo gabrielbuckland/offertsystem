@@ -1,13 +1,9 @@
-/**
- * Keine Formel. Uebersetzung Zod-Befund -> feldverankerte Meldung (US-01, NFA-11, AK-3.5).
- *
- * Jede Meldung nennt Feld und verletzten Wertebereich konkret und haengt an genau einem
- * Feldpfad; eine Sammelliste am Formularkopf gibt es nicht. Rohe Zod-Ausgaben,
- * HTTP-Statuscodes und Stapelverfolgungen erreichen die Oberflaeche nie.
- */
+// US-01, NFA-11, AK-3.5: Uebersetzung Zod-Befund -> feldverankerte Meldung. Jede Meldung
+// haengt an genau einem Feldpfad, keine Sammelliste. Rohe Zod-Ausgaben, HTTP-Statuscodes
+// und Stapelverfolgungen erreichen die Oberflaeche nie.
 import type { Konfiguration } from '@offert/core';
-// Modulpfad statt Paketindex: Der Index re-exportiert React-Komponenten (.tsx), fuer
-// die Node kein Type-Stripping leistet (PE-09).
+// PE-09: Modulpfad statt Paketindex — der Index re-exportiert .tsx, fuer die Node kein
+// Type-Stripping leistet.
 import { formatiereProzent, formatiereZimmerzahl } from '@offert/offer';
 import type { z } from 'zod';
 import { erfassungsSchema } from './erfassung-schema.js';
@@ -94,7 +90,6 @@ export function zuFeldmeldungen(
   });
 }
 
-/** Prueft eine Erfassung und liefert ausschliesslich feldverankerte Meldungen. */
 export function pruefeErfassung(eingabe: unknown, k: Konfiguration): readonly Feldmeldung[] {
   const ergebnis = erfassungsSchema(k).safeParse(eingabe);
   return ergebnis.success ? [] : zuFeldmeldungen(ergebnis.error, k);

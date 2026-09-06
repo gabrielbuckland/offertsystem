@@ -41,7 +41,6 @@ describe('DossierEditor', () => {
 
   it('fuehrt je Objekt genau die vier Anbieterfelder', () => {
     for (const beschriftung of ['Badezimmer', 'Küche', 'Böden', 'Fenster']) {
-      // je einmal unter Zustand und einmal unter Qualitaet
       expect(markup.split(beschriftung).length - 1).toBe(2);
     }
   });

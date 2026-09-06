@@ -70,8 +70,7 @@ describe('Ebene 3 — fachliche Invarianten', () => {
   });
 
   it('kennt die Ableitung nur unter dem Namen einheitenzahl, nicht unter projektumfang', () => {
-    // Der Faktorschluessel bleibt `projektumfang`; als QUELLschluessel ist er
-    // nach E-05/PE-03 kein gueltiger Ableitungsname mehr.
+    // E-05/PE-03: Als QUELLschluessel ist `projektumfang` kein gueltiger Ableitungsname mehr.
     const befunde = pruefeEbene3(baueKonfiguration((k) => {
       k.aufwandfaktoren['projektumfang']!.quellSchluessel = 'projektumfang';
     }));
@@ -99,9 +98,9 @@ describe('Ebene 3 — fachliche Invarianten', () => {
   });
 
   it('meldet doppelte Merkmalskennungen', () => {
-    // Review-Finding 6: `MerkmalEditor.tsx` verhindert eine Kollision nur bei der
-    // Neuanlage in der Oberflaeche; eine bereits gespeicherte Konfiguration mit doppelter
-    // `id` (z. B. nach direkter Bearbeitung der JSON-Datei) muss beim Laden auffallen.
+    // `MerkmalEditor.tsx` verhindert eine Kollision nur bei der Neuanlage in der
+    // Oberflaeche; eine gespeicherte Konfiguration mit doppelter `id` (z. B. nach
+    // direkter JSON-Bearbeitung) muss deshalb beim Laden auffallen.
     expect(codes(baueKonfiguration((k) => {
       (k as unknown as { merkmale: unknown[] }).merkmale = [
         { id: 'stockwerk', bezeichnung: 'Stockwerk', form: 'zahl' },
@@ -189,8 +188,7 @@ describe('pruefeEbene3 — Bereichsregeln', () => {
 
   it('laesst einen absoluten Bereichswert ausserhalb der z-Grenzen zu (Kontrolle zur Stockwerkstaffel)', () => {
     // Die z-Grenzen (relativ, [-0.25, 0.25]) duerfen einen absoluten Rappenbetrag nicht
-    // sperren; sonst waere die firmenweite Staffel selbst (860'000/1'720'000 Rappen)
-    // ungueltig. Reale Werte der Vorlage `stockwerklage` in company-defaults.json.
+    // sperren; sonst waere die reale Staffel der Vorlage `stockwerklage` ungueltig.
     const befunde = pruefeEbene3(mitVorlage({
       ...GUELTIG,
       erfassungsform: 'absolut',

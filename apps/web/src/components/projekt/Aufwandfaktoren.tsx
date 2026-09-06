@@ -1,13 +1,7 @@
 'use client';
 
-/**
- * Aufwandfaktoren-Formular: datengetrieben aus
- * `baueFaktorformular(konfiguration).felder` erzeugt, keine feste Faktorliste im Code —
- * ein neuer Faktor soll ohne Codeaenderung funktionieren.
- *
- * `anzeigeFaktoren` werden nicht erfasst, sondern in der Faktorermittlung
- * (Lagescore/Ableitung) hergeleitet, darum reine Anzeige.
- */
+// Datengetrieben aus baueFaktorformular(konfiguration).felder, keine feste Faktorliste
+// im Code — ein neuer Faktor soll ohne Codeaenderung funktionieren.
 import { useEffect, useState } from 'react';
 import {
   pruefeFaktorwerte, type Feldbeschreibung, type Faktorformular,
@@ -27,11 +21,6 @@ export interface AufwandfaktorenProps {
   readonly aendere: (werte: Readonly<Record<string, number>>) => void;
 }
 
-/**
- * `Number('')` ist 0 und `Number.isFinite(0)` wahr: ein geleertes Feld wuerde ohne
- * `entscheideZellenwert` als erfasste Null gemeldet, und der Kern gewichtet eine Null
- * bereitwillig (siehe zellen-logik.ts).
- */
 function meldeGueltige(entwurf: string, aendere: (wert: number) => void): void {
   const entscheid = entscheideZellenwert(entwurf);
   if (entscheid.art === 'uebernehmen') aendere(entscheid.wert);
@@ -44,7 +33,6 @@ function OrdinalFeld(
     readonly aendere: (wert: number) => void;
   },
 ) {
-  // Ein Select hat keinen Tipp-Zwischenzustand, darum kein lokaler Entwurf wie in ZahlFeld.
   return (
     <Select
       id={`faktor-${feld.faktorId}`}
@@ -65,16 +53,10 @@ export type ZahlfeldEntscheid =
   | { readonly art: 'uebernehmen'; readonly wert: number }
   | { readonly art: 'beibehalten'; readonly wert: number | undefined };
 
-/**
- * Reine Commit-Entscheidung fuer `ZahlFeld` beim Verlassen des Feldes, testbar ohne
- * DOM/Handler-Attrappen (Muster `zellen-logik.ts`). Ein leerer oder nicht parsierbarer
- * Entwurf committet nicht, sondern faellt auf den bisherigen Wert zurueck.
- *
- * Die Feldgrenzen (`untergrenze`/`obergrenze`) sind bewusst NICHT Teil dieser Entscheidung:
- * ein ausserhalb der Grenzen liegender, aber parsierbarer Wert wird trotzdem committet und
- * erst danach ueber `pruefeFaktorwerte`/`Hinweis` sichtbar gemacht — Parsierung hier,
- * Bereichspruefung dort.
- */
+// Feldgrenzen (untergrenze/obergrenze) sind bewusst NICHT Teil dieser Entscheidung: ein
+// ausserhalb der Grenzen liegender, aber parsierbarer Wert wird trotzdem committet und
+// erst danach ueber pruefeFaktorwerte/Hinweis sichtbar gemacht — Parsierung hier,
+// Bereichspruefung dort.
 export function entscheideZahlfeldCommit(
   entwurf: string, aktuellerWert: number | undefined,
 ): ZahlfeldEntscheid {
@@ -83,14 +65,10 @@ export function entscheideZahlfeldCommit(
   return { art: 'uebernehmen', wert: entscheid.wert };
 }
 
-/**
- * Haelt den Eingabewert lokal und meldet ihn erst beim Verlassen des Feldes (Muster
- * `ZellenEingabe.tsx`). Ohne lokalen Zustand waere das Feld ueber `value={wert ?? ''}`
- * direkt vom Projektstand kontrolliert: Ein geleertes Feld wuerde sofort auf `verwerfen`
- * fallen, nichts am Projektstand aendern, und die Anzeige springt im selben Tastendruck auf
- * den alten Wert zurueck — ein Feld liesse sich so nie leeren. Der Abgleich per useEffect
- * holt Aenderungen nach, die von aussen kommen (z. B. Formular-Reset).
- */
+// Haelt den Eingabewert lokal statt ueber value={wert ?? ''} direkt vom Projektstand zu
+// kontrollieren: sonst wuerde ein geleertes Feld sofort auf verwerfen fallen, nichts
+// aendern, und die Anzeige springt im selben Tastendruck zurueck — ein Feld liesse sich
+// so nie leeren.
 function ZahlFeld(
   { feld, wert, aendere }: {
     readonly feld: Feldbeschreibung;
@@ -128,8 +106,6 @@ export function Aufwandfaktoren({ formular, werte, aendere }: AufwandfaktorenPro
     aendere({ ...werte, [faktorId]: wert });
   }
 
-  // Dieselbe reine Pruefung wie serverseitig (server/faktorformular.ts), hier nur fuer die
-  // feldnahe Vorschau, nicht als Ersatz fuer die serverseitige Validierung.
   const meldungen = pruefeFaktorwerte(formular, werte);
   function meldungFuer(faktorId: string): string | undefined {
     return meldungen.find((m) => m.feldpfad === `aufwandfaktoren.${faktorId}`)?.text;

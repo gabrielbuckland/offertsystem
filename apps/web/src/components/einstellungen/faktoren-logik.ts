@@ -1,16 +1,9 @@
-// Reine Entscheidungslogik des Aufwandfaktoren-Editors, getrennt von `FaktorenEditor.tsx`,
-// damit sie ohne DOM/React testbar ist (gleiches Muster wie `zellen-logik.ts`).
-
 const GEWICHT_PRAEZISION = 4;
 
-/**
- * Skaliert alle Gewichte proportional auf Summe 1; rundet auf 4 Nachkommastellen und legt
- * die Restdifferenz auf den GROESSTEN Eintrag, damit die Summe innerhalb
- * `GEWICHTSSUMME_TOLERANZ` (`1e-9`, `packages/core/src/config/ebene3.ts`) liegt. Wegen
- * IEEE-754 ist die Summe nicht immer bitgenau 1, eine Abweichung im Bereich eines ULP
- * bleibt aber innerhalb der Toleranz. Ausgangssumme 0 kommt unveraendert zurueck, statt
- * durch 0 zu teilen.
- */
+// Skaliert Gewichte proportional auf Summe 1 und legt die Rundungs-Restdifferenz auf den
+// groessten Eintrag, damit die Summe innerhalb `GEWICHTSSUMME_TOLERANZ` (1e-9,
+// packages/core/src/config/ebene3.ts) liegt. Summe 0 kommt unveraendert zurueck (keine
+// Division durch 0).
 export function renormalisiereGewichte<T extends { readonly gewicht: number }>(
   faktoren: Readonly<Record<string, T>>,
 ): Readonly<Record<string, T>> {
@@ -41,11 +34,7 @@ export function renormalisiereGewichte<T extends { readonly gewicht: number }>(
   return ergebnis;
 }
 
-/**
- * Rohgeruest eines neuen manuellen Faktors: Grenzen 1..6 (uebliche Skala manuell
- * erfasster Faktoren), Gewicht 0 haelt die Gewichtssumme gueltig, bis der Auftraggeber
- * bewusst gewichtet.
- */
+// Gewicht 0 haelt die Gewichtssumme gueltig, bis der Auftraggeber bewusst gewichtet.
 export function neuerManuellerFaktor(schluessel: string): {
   bezeichnung: string; quelle: 'manuell'; quellSchluessel: string;
   strategie: 'minmax'; min: number; max: number; gewicht: number;

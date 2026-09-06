@@ -1,10 +1,5 @@
-/**
- * Legt beim ersten Start ein Playground-Projekt in die lokale Projektablage.
- *
- * Laeuft als predev-Hook vor `npm run dev`. Geseedet wird nur, wenn die Ablage
- * noch kein Projekt enthaelt. Bestehende Arbeitsstaende werden nie angefasst,
- * in eine wieder ganz geleerte Ablage kommt das Playground aber erneut.
- */
+// predev-Hook vor npm run dev: seedet nur eine leere Projektablage, bestehende
+// Arbeitsstaende werden nie angefasst.
 import { copyFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';

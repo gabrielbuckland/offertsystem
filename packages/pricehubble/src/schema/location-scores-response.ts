@@ -2,15 +2,11 @@
 import { z } from 'zod';
 
 /**
- * Neun Einzelscores (`subsec:ph_dimensionen`). Der Adapter polt `noise` und
- * `nuisance` NICHT um — die Umpolung geschieht ausschliesslich ueber vertauschte
- * Normalisierungsgrenzen in der Konfiguration (I-13).
- *
- * Die neun Score-Objekte stehen unter `scores`. Dieselben neun Namen erscheinen
- * zusaetzlich flach auf oberster Ebene als blosse Zahlen; sie werden verworfen, weil
- * ihnen `originalScore` und `isOverridden` fehlen und der Kern die Uebersteuerung
- * fuehren muss. Tolerant nach oben, streng nach unten. Gegen eine echte Antwort
- * verifiziert.
+ * Neun Einzelscores (`subsec:ph_dimensionen`). Keine Umpolung von `noise`/`nuisance`
+ * hier — geschieht ueber vertauschte Normalisierungsgrenzen in der Konfiguration (I-13).
+ * Dieselben Namen erscheinen zusaetzlich flach auf oberster Ebene als blosse Zahlen;
+ * sie werden verworfen, weil ihnen `originalScore`/`isOverridden` fehlen. Gegen eine
+ * echte Antwort verifiziert.
  */
 export const LAGESCORE_NAMEN = [
   'location',

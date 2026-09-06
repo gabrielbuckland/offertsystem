@@ -1,13 +1,6 @@
-/**
- * Keine Modellformel. Erzeugt die LaTeX-Fragmente in das Berichtsverzeichnis.
- *
- * Der Zielort liegt ausserhalb des Code-Repositoriums und wird ueber `BA_MAIN` bezogen.
- * Ist die Variable nicht gesetzt, bricht der Generator ab, statt in ein geratenes
- * Verzeichnis zu schreiben.
- *
- * Ohne vollstaendigen Artefaktsatz entsteht kein Anhang: Ein fehlendes Artefakt ist ein
- * Reihenfolgefehler, und ein halb erzeugter Anhang saehe vollstaendig aus.
- */
+// Zielort liegt ausserhalb des Code-Repos, ueber BA_MAIN bezogen; ungesetzt bricht der
+// Generator ab statt in ein geratenes Verzeichnis zu schreiben. Ohne vollstaendigen
+// Artefaktsatz entsteht kein Anhang, da ein halb erzeugter Anhang vollstaendig aussaehe.
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { leseLatest, repoWurzel } from '../shared/artefakt.ts';
@@ -24,12 +17,9 @@ import { meldeFehlend, pruefeSeed, sammle } from './sammler.ts';
 export interface Laufoptionen {
   readonly main?: string | null;
   readonly wurzel?: string;
-  /** Ohne Beispiel-Offerte laufen lassen; die Pruefung wird dann uebersprungen. */
   readonly ohneOfferte?: boolean;
-  /**
-   * Abweichender Ort der Abdeckungsdatei, gebraucht im eigenen Abnahmetest: Er laeuft
-   * INNERHALB des Testlaufs, der die Datei erst am Ende schreibt.
-   */
+  // Abweichender Ort der Abdeckungsdatei fuer den eigenen Abnahmetest, der INNERHALB
+  // des Testlaufs laeuft, der die Datei erst am Ende schreibt.
   readonly coveragePfad?: string;
 }
 
@@ -95,11 +85,8 @@ export function hauptlauf(opt: Laufoptionen = {}): readonly string[] {
   return geschrieben;
 }
 
-/**
- * Zaehlt die Contract Tests aus dem juengsten Testartefakt, dessen Faelle vollstaendig
- * im Contract-Projekt liegen. Der Contract-Lauf traegt den latest-Zeiger bewusst nicht
- * (F-077); sein Zeitstempelverzeichnis bleibt aber stehen und ist die Zaehlquelle.
- */
+// Contract-Lauf traegt den latest-Zeiger bewusst nicht (F-077); sein
+// Zeitstempelverzeichnis bleibt aber stehen und ist hier die Zaehlquelle.
 function zaehleContractTests(wurzel: string): number | null {
   const ablage = join(wurzel, 'artifacts', 'tests');
   if (!existsSync(ablage)) return null;

@@ -114,7 +114,7 @@ describe('Stufe 4 — berechneAufwandindikator (eq:aufwandindikator)', () => {
     if (r.ok) {
       expect(r.wert.aufwandindikator).toBe(0.7);
       expect(r.wert.uebersteuerung?.abgeleitet).toBeCloseTo(0.315, 12);
-      // Die Faktorspuren bleiben vollstaendig — Vorschlag und Herleitung (US-13).
+      // Faktorspuren bleiben vollstaendig — Vorschlag und Herleitung (US-13).
       expect(r.wert.beitraege).toHaveLength(4);
     }
   });

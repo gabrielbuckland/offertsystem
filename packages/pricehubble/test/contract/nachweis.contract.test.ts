@@ -61,8 +61,7 @@ afterAll(() => {
       laufzeitMs: Date.now() - beginn,
       // Contract-Tests melden eine Vertragsabweichung, sie verhindern sie nicht.
       wirkung: 'detektiv',
-      // Synthetische Fixtures fuer die MSW-Tests plus per test:record aufgezeichnete
-      // API-Antworten (M-FIX erledigt 2026-09-06).
+      // Synthetische Fixtures fuer die MSW-Tests plus per test:record aufgezeichnete API-Antworten.
       fixtures_herkunft: 'gemischt',
     },
   );

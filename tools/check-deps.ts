@@ -1,10 +1,7 @@
 /**
- * R4 — Deklarationsdisziplin: prueft die package.json-Deklarationen und die
- * tatsaechlichen Importe gegen die Abhaengigkeitsmatrix.
- *
- * Laufzeit: node --experimental-strip-types (PE-09). Deshalb kein enum, keine
- * namespace-Deklaration und keine Parametereigenschaften — Type-Stripping
- * entfernt Typen, es uebersetzt nicht.
+ * R4: prueft package.json-Deklarationen und Importe gegen die Abhaengigkeitsmatrix.
+ * Laufzeit: node --experimental-strip-types (PE-09) — kein enum/namespace/Parametereigenschaften,
+ * da Type-Stripping nur Typen entfernt, nicht uebersetzt.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';

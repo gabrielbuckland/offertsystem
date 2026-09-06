@@ -1,26 +1,12 @@
-/**
- * Keine Modellformel. Rendert die Tabellen der Platzhalter P2 bis P8 aus den Artefakten.
- *
- * Jede Funktion beginnt mit einem Hinweiskopf und nennt in der Beschriftung ihr
- * Quellartefakt. Kein Zahlenwert gelangt von Hand in den Bericht.
- */
 import { hinweiskopf, latexEscape, tabelle, zahlDeCh } from './latex.ts';
 import type { Testfall } from './vitest-reporter.ts';
 import { gewichteteAbdeckung, type CoverageArtefakt } from './a5.ts';
-
-
-
-// --- P7 (4): Marge der Netto-Degression ---------------------------------------------
-
-
-// --- P2: Stufen, Invarianten, Konfigurationspruefung --------------------------------
 
 export function p2Stufen(
   tests: { readonly faelle: readonly Testfall[] },
   coverage: CoverageArtefakt,
 ): string {
-  // Trennzeichen am Ende, sonst zaehlt 'stufe2' auch stufe2a mit:
-  // Testdateien heissen '<stufe>.test.ts', Quelldateien '<stufe>-<name>.ts'.
+  // Trennzeichen am Ende noetig, sonst zaehlt 'stufe2' auch stufe2a mit.
   const stufen = [
     ['Stufe 1 — Eingabe', 'stufe1.', 'stufe1-'],
     ['Stufe 2 — Verkaufssumme', 'stufe2.', 'stufe2-'],
@@ -50,7 +36,6 @@ export function p2Stufen(
   });
 }
 
-
 export interface KonfigArtefakt {
   readonly konfigVersion: string;
   readonly positivlauf: Readonly<Record<string, unknown>>;
@@ -63,7 +48,3 @@ export interface KonfigArtefakt {
     readonly fall: string; readonly begruendung: string; readonly status: string;
   }[];
 }
-
-
-// --- P5/P6: Integration und Entkopplung ---------------------------------------------
-

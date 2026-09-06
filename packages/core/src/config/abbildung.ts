@@ -1,7 +1,4 @@
-// Keine Formel. Einzige Uebersetzungsstelle zwischen der Rohkonfiguration (JSON-Schreibweise)
-// und dem Kerntyp `Konfiguration` (I-23, PE-01, PE-02).
-// Die Funktion ist total: Sie wirft nie, sondern liefert entweder die Abbildung oder die
-// Fehlerliste der drei Pruefebenen.
+// Keine Formel. I-23, PE-01, PE-02.
 import { fehler, type KonfigurationsFehler } from './fehlercodes.js';
 import { ROH_SCHREIBWEISE, STRATEGIE_BEZEICHNER } from '../normalization/bezeichner.js';
 import type { RohFaktor, RohKonfiguration, StrategieBezeichner as RohStrategie } from './schema.js';
@@ -15,21 +12,13 @@ import type {
 } from './typen.js';
 
 export interface KonfigurationsAbbildung {
-  /** Der Typ, auf dem die fuenf Stufen rechnen. */
   readonly kern: Konfiguration;
-  /**
-   * Die geprueften Rohdaten, gebraucht fuer Merge und Pruefsumme; die Zugriffsschicht
-   * entnimmt ihnen den `api`-Block fuer den Adapter (PE-17).
-   */
+  /** roh: Zugriffsschicht entnimmt den `api`-Block daraus fuer den Adapter (PE-17). */
   readonly roh: RohKonfiguration;
 }
 
-/**
- * Vollstaendige Abbildung der beiden Schreibweisen, ABGELEITET aus der Bezeichner-Liste
- * in `normalization/bezeichner.ts` statt hier dupliziert: Kommt eine Strategie hinzu,
- * traegt allein die Liste die neue Kante — `satisfies` dort erzwingt die JSON-Schreibweise
- * zur Uebersetzungszeit, nicht zur Laufzeit (Totalitaet, PE-01; E-15).
- */
+// Abgeleitet aus der Bezeichner-Liste in normalization/bezeichner.ts statt dupliziert,
+// damit eine neue Strategie nur dort ergaenzt werden muss (PE-01; E-15).
 const STRATEGIE: Readonly<Record<RohStrategie, StrategieBezeichner>> = Object.fromEntries(
   STRATEGIE_BEZEICHNER.map((kern) => [ROH_SCHREIBWEISE[kern], kern]),
 ) as Record<RohStrategie, StrategieBezeichner>;
@@ -39,8 +28,7 @@ function bildeFaktorAb(
   roh: RohFaktor,
 ): Result<readonly [FaktorId, FaktorParameter], readonly KonfigurationsFehler[]> {
   const pfad = `aufwandfaktoren.${bezeichner}`;
-  // Netz gegen den Defekt, nicht gegen erwartbare Eingaben: Ebene 2 haelt das Gewicht
-  // bereits in [0, 1]. Ohne die Pruefung wuerde `gewicht()` werfen und die Totalitaet brechen.
+  // Netz gegen Defekt, nicht gegen erwartbare Eingaben: ohne Pruefung wuerde gewicht() werfen.
   if (!Number.isFinite(roh.gewicht) || roh.gewicht < 0 || roh.gewicht > 1) {
     return fehlschlag([fehler('CFG_WEIGHT_RANGE', `${pfad}.gewicht`, { wert: roh.gewicht })]);
   }
@@ -60,11 +48,8 @@ function bildeFaktorAb(
   return ok([faktorId(bezeichner), parameter] as const);
 }
 
-/**
- * Uebersetzt eine Rohvorlage in den Kerntyp. Die optionale `regel` darf im Kerntyp nicht
- * als explizites `undefined` auftreten, nur als fehlender Schluessel (exactOptionalPropertyTypes);
- * `normalisiereBereiche` traegt dieselbe Umformung fuer die Bereiche selbst.
- */
+// `regel` darf im Kerntyp nicht als explizites undefined auftreten, nur als fehlender
+// Schluessel (exactOptionalPropertyTypes).
 function bildeAnpassungsVorlageAb(
   roh: RohKonfiguration['anpassungsVorlagen'][number],
 ): AnpassungsVorlage {

@@ -1,9 +1,6 @@
-// Regelfall der Konfigurationserweiterung (NFA-05, US-09): laedt die Variante
-// config/company-defaults.erweitert.json (zusaetzlicher manueller Faktor
-// risikoindex, Gewichte um den Faktor 0,9 renormalisiert) und rechnet einen
-// vollstaendigen Pipeline-Lauf. Kein Quelltext fuehrt den Faktor; die
-// ausgelieferte company-defaults.json bleibt ohne ihn — beide Fassungen werden
-// gegeneinander gehalten.
+// NFA-05/US-09: Regelfall der Konfigurationserweiterung — laedt die Variante
+// company-defaults.erweitert.json (zusaetzlicher Faktor risikoindex, Gewichte
+// renormalisiert) und haelt sie gegen die ausgelieferte Basis, die ihn nicht fuehrt.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';

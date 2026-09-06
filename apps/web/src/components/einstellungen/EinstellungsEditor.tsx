@@ -1,23 +1,8 @@
 'use client';
 
-/**
- * Gemeinsamer Rahmen aller vier Bereichs-Editoren (dossier/preisanpassung/faktoren/
- * honorar) — Karte mit Titel, Zweck-Satz, dem Formular des Bereichs, sammelfaehigen
- * Befunden und einer Fussleiste mit explizitem Speichern/Verwerfen (kein Autosave).
- *
- * EIGENTUEMER des Bearbeitungszustands: `verwendeEinstellungen` wird GENAU HIER
- * aufgerufen, nicht in den Bereichsseiten und nicht im konkreten Feld-Editor
- * (`Editor`-Prop). Zwei UNABHAENGIGE Hook-Aufrufe haetten zwei getrennte Entwuerfe zur
- * Folge — eine Eingabe im Feld-Editor bliebe dem Speichern-Knopf hier unbekannt. Der
- * Zustand entsteht deshalb EINMAL, aus der rohen Startkonfiguration (`anfang`-Prop),
- * und wird dem konkreten Editor explizit als `einstellungen`-Prop gereicht
- * (`<Editor einstellungen={zustand} />`).
- *
- * `Editor` ist eine KOMPONENTEN-Referenz (`BereichsEditor`), kein `children: ReactNode`
- * mit stillschweigend hineingereichter Prop: Der Vertrag "welche Props bekommt der
- * Editor" steht damit an EINER Stelle und ist typgeprueft; eine per `cloneElement` in
- * beliebige Kinder injizierte Prop waere das nicht.
- */
+// `verwendeEinstellungen` wird GENAU HIER aufgerufen, nicht im `Editor`-Prop: zwei
+// unabhaengige Hook-Aufrufe haetten zwei getrennte Entwuerfe zur Folge, eine Eingabe im
+// Feld-Editor bliebe dem Speichern-Knopf hier unbekannt.
 import { useState } from 'react';
 import { GESPERRTE_PFADE } from '@offert/core';
 import { Button } from '../ui/button.js';
@@ -30,31 +15,16 @@ import { verwendeEinstellungen, type BereichsEditor } from './verwende-einstellu
 export interface EinstellungsEditorProps {
   readonly titel: string;
   readonly zweck: string;
-  /**
-   * Wurzelpfad(e) dieses Bereichs im Konfigurationsbaum. Der Rahmen zeigt Befunde
-   * GENAU auf diesen Pfaden; alles darunter verankert der Feld-Editor an seiner Zeile
-   * (`befundeFuerPfad`). Ein Bereich kann mehrere Wurzeln umfassen — «Preisanpassung»
-   * etwa deckt sowohl `flaeche` als auch `preisanpassung` und `anpassungsVorlagen` ab —
-   * deshalb ein String ODER mehrere.
-   */
+  // Ein Bereich kann mehrere Wurzeln umfassen (z. B. "Preisanpassung": `flaeche` +
+  // `preisanpassung` + `anpassungsVorlagen`).
   readonly bereichPraefix: string | readonly string[];
-  /** Rohe Startkonfiguration (ganzer Baum) — siehe Dateikommentar zur Aufteilung. */
   readonly anfang: Readonly<Record<string, unknown>>;
-  /** Konkreter Feld-Editor des Bereichs. */
   readonly Editor: BereichsEditor;
 }
 
-/**
- * Befunde, die KEIN Feld-Editor an seiner Zeile verankern kann — die Gegenmenge zu
- * `befundeFuerPfad` (reine Funktion, deshalb ohne DOM pruefbar).
- *
- * Jeder Bereichseditor zeigt die Befunde seiner Felder selbst, je Zeile ueber
- * `befundeFuerPfad`. Das ist ein PRAEFIX-Treffer: Ein Befund auf
- * `honorar.stuetzstellen[1].hMin` erschiene an seiner Zeile UND noch einmal in einer
- * Sammelliste des Rahmens — der Nutzer laese zwei Probleme, wo eines ist. Dem Rahmen
- * bleiben genau die zwei ortlosen Formen: der unanhaengige Befund (`pfad === ''`) und
- * ein Befund auf der Bereichswurzel selbst, zu der es keine Formularzeile gibt.
- */
+// Gegenmenge zu `befundeFuerPfad`: nur die zwei ortlosen Formen (unabhaengiger Befund
+// `pfad === ''` und ein Befund auf der Bereichswurzel selbst), da jeder Bereichseditor
+// seine Feldbefunde bereits selbst je Zeile zeigt und ein Praefix-Treffer sonst doppelt erschiene.
 export function rahmenBefunde<T extends { readonly pfad: string }>(
   befunde: readonly T[], praefixe: readonly string[],
 ): readonly T[] {
@@ -69,17 +39,8 @@ const REITER: ReadonlyArray<{ readonly wert: Reiter; readonly beschriftung: stri
 ];
 
 export function EinstellungsEditor({ titel, zweck, bereichPraefix, anfang, Editor }: EinstellungsEditorProps) {
-  /**
-   * GENAU EIN Aufruf von `verwendeEinstellungen` fuer BEIDE Reiter — der Umschalter
-   * waehlt nur die Darstellung desselben Entwurfsstands. Ein zweiter Hook-Aufruf im
-   * JSON-Zweig haette zwei unabhaengige Entwuerfe zur Folge; der Speichern-Knopf in der
-   * Fussleiste kennte dann die Eingaben des jeweils anderen Reiters nicht, und welcher
-   * der beiden Staende beim Klick gewaenne, haette allein die Aufrufreihenfolge
-   * entschieden. Deshalb steht der Zustand hier, oberhalb der Verzweigung.
-   *
-   * `zustand.aendere` passt namensgleich auf die `aendere`-Prop von `JsonReiter` — die
-   * JSON-Sicht schreibt in denselben Entwurf wie jedes Formularfeld.
-   */
+  // GENAU EIN Aufruf fuer BEIDE Reiter: ein zweiter im JSON-Zweig haette zwei unabhaengige
+  // Entwuerfe zur Folge, und welcher beim Speichern gewaenne, entschiede nur die Aufrufreihenfolge.
   const zustand = verwendeEinstellungen(anfang);
   const [reiter, setzeReiter] = useState<Reiter>('formular');
   const praefixe = typeof bereichPraefix === 'string' ? [bereichPraefix] : bereichPraefix;
@@ -110,16 +71,9 @@ export function EinstellungsEditor({ titel, zweck, bereichPraefix, anfang, Edito
         {reiter === 'formular'
           ? <Editor einstellungen={zustand} />
           : (
-            /**
-             * Im JSON-Reiter bekommt `JsonReiter` ALLE Befunde, nicht nur die
-             * rahmenfaehigen: Die zeilenverankerten Meldungen haengen sonst an
-             * Formularzeilen, die hier gar nicht gerendert sind — ein gescheitertes
-             * Speichern bliebe im JSON-Reiter ohne jede Begruendung sichtbar.
-             */
-            /* Die gesperrten Wurzeln werden ausgeblendet und beim Zurueckschreiben aus
-             * dem unveraenderten Bestand wieder eingesetzt. Sonst hoebe der JSON-Reiter
-             * die Rollentrennung auf: `api` ist im Formular bewusst nur lesend
-             * (Betriebsparameter der IT, US-08). */
+            // JsonReiter bekommt ALLE Befunde, nicht nur die rahmenfaehigen: zeilenverankerte
+            // Meldungen haengen sonst an Formularzeilen, die hier nicht gerendert sind.
+            // Gesperrte Wurzeln (US-08, `api` nur lesend) werden aus-/wieder eingeblendet.
             <JsonReiter
               wert={ohneWurzeln(zustand.entwurf, GESPERRTE_PFADE)}
               aendere={(naechster) => zustand.aendere(

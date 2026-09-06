@@ -112,7 +112,6 @@ export function faktormengeMitGewichtssummeEins(rohGewichte: readonly number[]):
   return { ...standardKonfiguration(), faktoren };
 }
 
-/** Normalisierungsergebnis passend zu einer Faktormenge; Werte werden zyklisch zugeteilt. */
 export function normalisierungZu(
   konfiguration: Konfiguration,
   normierte: readonly number[],
@@ -131,7 +130,6 @@ export function normalisierungZu(
   };
 }
 
-/** Liegenschaft mit `anzahl` Einheiten eines Typs; alle mit den Referenzflaechen. */
 function liegenschaftMitEinheiten(anzahl: number): Liegenschaft {
   const typ = {
     id: wohnungstypId('T1'),
@@ -156,11 +154,7 @@ function liegenschaftMitEinheiten(anzahl: number): Liegenschaft {
   return erzeugt.wert;
 }
 
-/**
- * Vollstaendige Berechnungseingabe mit variabler Einheitenzahl, Referenzwert und
- * Vermarkterbewertung. Alle uebrigen Groessen bleiben fest — variiert wird genau das,
- * was die Eigenschaften beruehren.
- */
+// Variiert wird genau das, was die Eigenschaften beruehren; alles uebrige bleibt fest.
 export function projektGenerator(): fc.Arbitrary<EingangsArgumente> {
   return fc.record({
     einheiten: fc.integer({ min: 1, max: 30 }),
@@ -172,8 +166,6 @@ export function projektGenerator(): fc.Arbitrary<EingangsArgumente> {
       liegenschaft: liegenschaftMitEinheiten(einheiten),
       bewertungen: [{ ...referenzbewertungFixture('T1'), marktwert: rappen(pRef) }],
       lagescores: lagescoresFixture(new Map([[
-        // `lagescoreName` waere hier ein zweiter Import ohne Gewinn: die Fixture nimmt
-        // den Markentyp, und der Schluessel ist derselbe Bezeichner.
         'location' as never, score(lage),
       ]])),
       vermarkterFaktoren: { werte: new Map([[faktorId('innenausbau_qualitaet'), ausbau]]) },
@@ -181,13 +173,8 @@ export function projektGenerator(): fc.Arbitrary<EingangsArgumente> {
   }));
 }
 
-/**
- * Zwei Projekte mit identischem Einheitenpreis und unterschiedlicher Einheitenzahl.
- *
- * Genau diese Konstruktion prueft I-18: Der relative Honorarsatz darf mit steigender
- * Einheitenzahl nicht steigen. Waeren auch die Einheitenpreise verschieden, mischte der
- * Vergleich zwei Ursachen und die Eigenschaft waere nicht mehr zuordenbar.
- */
+// I-18: gleicher Einheitenpreis isoliert den Effekt der Einheitenzahl; unterschiedliche
+// Preise mischten zwei Ursachen und machten die Eigenschaft nicht mehr zuordenbar.
 export function projektpaarGleicherEinheitenpreis(
   klein: number,
   gross: number,

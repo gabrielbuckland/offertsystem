@@ -11,8 +11,6 @@ const stuetzstellen = BASIS_KONFIGURATION.honorar.stuetzstellen;
 
 describe('interpoliereHonorarbasis (eq:honorar_mapping)', () => {
   it('interpoliert linear innerhalb einer Stufe', () => {
-    // V = 20 Mio. CHF = 2_000_000_000 Rappen, Stufe [10, 25) Mio.
-    // hMax = 260_000 + (10/15) * 240_000 = 420_000 CHF
     expect(interpoliereHonorarbasis(stuetzstellen, 2000000000, 'hMax')).toBeCloseTo(42000000, 6);
     expect(interpoliereHonorarbasis(stuetzstellen, 2000000000, 'hMin')).toBeCloseTo(31500000, 6);
   });
@@ -63,7 +61,7 @@ describe('berechneNettoDegression (eq:netto_degression, I-18)', () => {
   });
 
   it('entfaellt, wenn kein Faktor den Quellschluessel einheitenzahl fuehrt', () => {
-    // Zugriff ueber den FAKTORschluessel `projektumfang` — der bleibt (PE-03).
+    // PE-03: Faktorschluessel `projektumfang` bleibt bestehen.
     const ohne = baueKonfiguration((k) => {
       delete k.aufwandfaktoren['projektumfang'];
       k.aufwandfaktoren['lage_gesamt']!.gewicht = 0.55;
