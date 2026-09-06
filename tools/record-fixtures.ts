@@ -167,7 +167,9 @@ async function main(): Promise<void> {
         location: {
           address: {
             postCode: '8008',
-            city: 'Zuerich',
+            // Muss der Dossier-Adresse exakt entsprechen: Mit 'Zuerich' lehnt die API
+            // die Referenz ab (403 «Request is not allowed with this reference»).
+            city: 'Zürich',
             street: 'Hornbachstrasse',
             houseNumber: '65',
           },

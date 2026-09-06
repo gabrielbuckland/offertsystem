@@ -22,7 +22,7 @@ samt Prüf- und Auswertungswerkzeugen.
 | `apps/web` | Next.js-Anwendung (App Router unter `src/app/`): Projektübersicht und -detailseite (`/projekte`), Einstellungen mit Firmen- und Projektebene (`/einstellungen`), Offert-Ansicht und Druckseite (`/offerte/[id]`), API-Routen unter `src/app/api/` (u. a. `projekt`, `offerte`, `einstellungen`, `vorlage`) |
 | `tools/` | Werkzeuge ausserhalb der Anwendung: `check-deps.ts` (Deklarationsdisziplin), `record-fixtures.ts` (API-Aufzeichnung), `beispiel-offerte.ts`, `eval/` (Auswertungen, siehe unten) |
 | `config/` | Fachliche Laufzeitkonfiguration `company-defaults.json` plus Varianten (`*.erweitert.json`, `*.strategie.json`). Beträge durchgängig in Rappen; Herleitung aller Zahlenwerte in `config/README.md` |
-| `fixtures/pricehubble` | Aufgezeichnete, anonymisierte API-Antworten für den Fixture-Betrieb (MSW) und die Contract-Tests |
+| `fixtures/pricehubble` | API-Antworten für MSW- und Contract-Tests: `synthetic/` von Hand gebaut, `recorded/` per `test:record` gegen die echte API aufgezeichnet und anonymisiert (samt Aufzeichnungsprotokoll) |
 | `data/` | Lokale Ablagen (gitignored): `offerten/` append-only, `projekte/` veränderliche Arbeitsstände |
 | `artifacts/` | Nachweisartefakte der Test- und Auswertungsläufe (gitignored, siehe «Artefakte lesen») |
 
@@ -66,8 +66,8 @@ npm run verify   # lint + check:deps + typecheck + test:unit + test:contract
   Next-Build.
 - `npm run test:unit` — Vitest-Projekte `core`, `pricehubble`, `offer`, `web`,
   `tools`.
-- `npm run test:contract` — Contract-Tests gegen die aufgezeichneten
-  PriceHubble-Fixtures.
+- `npm run test:contract` — Contract-Tests der Zod-Schemata gegen den
+  Fixture-Bestand, synthetisch wie aufgezeichnet.
 - `npm run test:coverage` — Abdeckung nach `artifacts/coverage/`.
 
 Hinweise:

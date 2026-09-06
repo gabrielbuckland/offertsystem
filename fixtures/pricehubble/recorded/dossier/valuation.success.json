@@ -1,0 +1,625 @@
+{
+  "isValuationStale": false,
+  "valuationRentGross": {
+    "valuationConfidence": "poor",
+    "valuationDate": "2026-09-06",
+    "value": 3418,
+    "valueRange": {
+      "lower": 3318,
+      "upper": 4204
+    }
+  },
+  "valuationRentGrossTimeline": [
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2022-10-01",
+      "value": 3076,
+      "valueRange": {
+        "lower": 2821,
+        "upper": 3521
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2023-01-01",
+      "value": 3105,
+      "valueRange": {
+        "lower": 2849,
+        "upper": 3559
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2023-04-01",
+      "value": 3155,
+      "valueRange": {
+        "lower": 2896,
+        "upper": 3625
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2023-07-01",
+      "value": 3156,
+      "valueRange": {
+        "lower": 2898,
+        "upper": 3627
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2023-10-01",
+      "value": 3209,
+      "valueRange": {
+        "lower": 2949,
+        "upper": 3698
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2024-01-01",
+      "value": 3271,
+      "valueRange": {
+        "lower": 3009,
+        "upper": 3781
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2024-04-01",
+      "value": 3310,
+      "valueRange": {
+        "lower": 3046,
+        "upper": 3834
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2024-07-01",
+      "value": 3307,
+      "valueRange": {
+        "lower": 3045,
+        "upper": 3830
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2024-10-01",
+      "value": 3324,
+      "valueRange": {
+        "lower": 3062,
+        "upper": 3852
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2025-01-01",
+      "value": 3391,
+      "valueRange": {
+        "lower": 3126,
+        "upper": 3939
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2025-04-01",
+      "value": 3418,
+      "valueRange": {
+        "lower": 3164,
+        "upper": 3990
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2025-07-01",
+      "value": 3418,
+      "valueRange": {
+        "lower": 3190,
+        "upper": 4027
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2025-10-01",
+      "value": 3418,
+      "valueRange": {
+        "lower": 3217,
+        "upper": 4064
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2026-01-01",
+      "value": 3418,
+      "valueRange": {
+        "lower": 3244,
+        "upper": 4101
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2026-04-01",
+      "value": 3418,
+      "valueRange": {
+        "lower": 3270,
+        "upper": 4138
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2026-07-01",
+      "value": 3418,
+      "valueRange": {
+        "lower": 3298,
+        "upper": 4176
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2026-10-01",
+      "value": 3418,
+      "valueRange": {
+        "lower": 3325,
+        "upper": 4215
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2027-01-01",
+      "value": 3418,
+      "valueRange": {
+        "lower": 3353,
+        "upper": 4254
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2027-04-01",
+      "value": 3418,
+      "valueRange": {
+        "lower": 3381,
+        "upper": 4292
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2027-07-01",
+      "value": 3418,
+      "valueRange": {
+        "lower": 3409,
+        "upper": 4331
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2027-10-01",
+      "value": 3418,
+      "valueRange": {
+        "lower": 3437,
+        "upper": 4371
+      }
+    }
+  ],
+  "valuationRentNet": {
+    "valuationConfidence": "poor",
+    "valuationDate": "2026-09-06",
+    "value": 3170,
+    "valueRange": {
+      "lower": 2903,
+      "upper": 3725
+    }
+  },
+  "valuationRentNetTimeline": [
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2022-10-01",
+      "value": 2827,
+      "valueRange": {
+        "lower": 2572,
+        "upper": 3272
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2023-01-01",
+      "value": 2856,
+      "valueRange": {
+        "lower": 2600,
+        "upper": 3311
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2023-04-01",
+      "value": 2906,
+      "valueRange": {
+        "lower": 2648,
+        "upper": 3376
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2023-07-01",
+      "value": 2908,
+      "valueRange": {
+        "lower": 2649,
+        "upper": 3379
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2023-10-01",
+      "value": 2961,
+      "valueRange": {
+        "lower": 2700,
+        "upper": 3449
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2024-01-01",
+      "value": 3023,
+      "valueRange": {
+        "lower": 2760,
+        "upper": 3533
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2024-04-01",
+      "value": 3062,
+      "valueRange": {
+        "lower": 2798,
+        "upper": 3585
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2024-07-01",
+      "value": 3059,
+      "valueRange": {
+        "lower": 2796,
+        "upper": 3582
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2024-10-01",
+      "value": 3076,
+      "valueRange": {
+        "lower": 2814,
+        "upper": 3604
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2025-01-01",
+      "value": 3143,
+      "valueRange": {
+        "lower": 2878,
+        "upper": 3691
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2025-04-01",
+      "value": 3170,
+      "valueRange": {
+        "lower": 2903,
+        "upper": 3725
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2025-07-01",
+      "value": 3170,
+      "valueRange": {
+        "lower": 2903,
+        "upper": 3725
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2025-10-01",
+      "value": 3170,
+      "valueRange": {
+        "lower": 2903,
+        "upper": 3725
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2026-01-01",
+      "value": 3170,
+      "valueRange": {
+        "lower": 2903,
+        "upper": 3725
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2026-04-01",
+      "value": 3170,
+      "valueRange": {
+        "lower": 2903,
+        "upper": 3725
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2026-07-01",
+      "value": 3170,
+      "valueRange": {
+        "lower": 2903,
+        "upper": 3725
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2026-10-01",
+      "value": 3170,
+      "valueRange": {
+        "lower": 2903,
+        "upper": 3725
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2027-01-01",
+      "value": 3170,
+      "valueRange": {
+        "lower": 2903,
+        "upper": 3725
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2027-04-01",
+      "value": 3170,
+      "valueRange": {
+        "lower": 2903,
+        "upper": 3725
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2027-07-01",
+      "value": 3170,
+      "valueRange": {
+        "lower": 2903,
+        "upper": 3725
+      }
+    },
+    {
+      "valuationConfidence": "poor",
+      "valuationDate": "2027-10-01",
+      "value": 3170,
+      "valueRange": {
+        "lower": 2903,
+        "upper": 3725
+      }
+    }
+  ],
+  "valuationSale": {
+    "valuationConfidence": "medium",
+    "valuationConfidenceScore": 0.36625424,
+    "valuationDate": "2026-09-06",
+    "value": 1416400,
+    "valueRange": {
+      "lower": 1321700,
+      "upper": 1845300
+    }
+  },
+  "valuationSaleTimeline": [
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.355962038,
+      "valuationDate": "2022-10-01",
+      "value": 1232600,
+      "valueRange": {
+        "lower": 1130000,
+        "upper": 1568700
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.353701919,
+      "valuationDate": "2023-01-01",
+      "value": 1216800,
+      "valueRange": {
+        "lower": 1114500,
+        "upper": 1544900
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.351877749,
+      "valuationDate": "2023-04-01",
+      "value": 1241000,
+      "valueRange": {
+        "lower": 1136100,
+        "upper": 1572800
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.350467652,
+      "valuationDate": "2023-07-01",
+      "value": 1260200,
+      "valueRange": {
+        "lower": 1153500,
+        "upper": 1595100
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.349227607,
+      "valuationDate": "2023-10-01",
+      "value": 1253200,
+      "valueRange": {
+        "lower": 1147800,
+        "upper": 1585400
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.348150671,
+      "valuationDate": "2024-01-01",
+      "value": 1263100,
+      "valueRange": {
+        "lower": 1157100,
+        "upper": 1596900
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.347065032,
+      "valuationDate": "2024-04-01",
+      "value": 1278900,
+      "valueRange": {
+        "lower": 1171800,
+        "upper": 1615700
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.34612143,
+      "valuationDate": "2024-07-01",
+      "value": 1287700,
+      "valueRange": {
+        "lower": 1180300,
+        "upper": 1626000
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.345838934,
+      "valuationDate": "2024-10-01",
+      "value": 1272400,
+      "valueRange": {
+        "lower": 1168100,
+        "upper": 1608100
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.348142743,
+      "valuationDate": "2025-01-01",
+      "value": 1281700,
+      "valueRange": {
+        "lower": 1179900,
+        "upper": 1626100
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.351480126,
+      "valuationDate": "2025-04-01",
+      "value": 1303800,
+      "valueRange": {
+        "lower": 1203600,
+        "upper": 1661900
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.354827642,
+      "valuationDate": "2025-07-01",
+      "value": 1323000,
+      "valueRange": {
+        "lower": 1224800,
+        "upper": 1694200
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.358397275,
+      "valuationDate": "2025-10-01",
+      "value": 1341000,
+      "valueRange": {
+        "lower": 1244400,
+        "upper": 1725000
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.362353116,
+      "valuationDate": "2026-01-01",
+      "value": 1359600,
+      "valueRange": {
+        "lower": 1264600,
+        "upper": 1757200
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.366349906,
+      "valuationDate": "2026-04-01",
+      "value": 1386500,
+      "valueRange": {
+        "lower": 1292600,
+        "upper": 1800600
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.36625424,
+      "valuationDate": "2026-07-01",
+      "value": 1407500,
+      "valueRange": {
+        "lower": 1314200,
+        "upper": 1829900
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.36625424,
+      "valuationDate": "2026-10-01",
+      "value": 1419700,
+      "valueRange": {
+        "lower": 1324500,
+        "upper": 1851100
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.36625424,
+      "valuationDate": "2027-01-01",
+      "value": 1432100,
+      "valueRange": {
+        "lower": 1334800,
+        "upper": 1872600
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.36625424,
+      "valuationDate": "2027-04-01",
+      "value": 1444300,
+      "valueRange": {
+        "lower": 1345000,
+        "upper": 1893900
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.36625424,
+      "valuationDate": "2027-07-01",
+      "value": 1456700,
+      "valueRange": {
+        "lower": 1355400,
+        "upper": 1915800
+      }
+    },
+    {
+      "valuationConfidence": "medium",
+      "valuationConfidenceScore": 0.36625424,
+      "valuationDate": "2027-10-01",
+      "value": 1469400,
+      "valueRange": {
+        "lower": 1365900,
+        "upper": 1938200
+      }
+    }
+  ]
+}
