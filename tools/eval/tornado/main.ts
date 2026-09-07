@@ -8,9 +8,9 @@ import { schreibePdf } from '../shared/pdf-writer.ts';
 import { baueBalken, zeichne, type Balken, type OatZeile } from './diagramm.ts';
 
 const GROESSEN = [
-  { schluessel: 'V', feld: 'delta_V_prozent', titel: 'Verkaufssumme V' },
-  { schluessel: 'Hmin', feld: 'delta_Hmin_prozent', titel: 'Honorarrange, Untergrenze H_min mal g(D)' },
-  { schluessel: 'Hmax', feld: 'delta_Hmax_prozent', titel: 'Honorarrange, Obergrenze H_max mal g(D)' },
+  { schluessel: 'V', feld: 'delta_V_prozent' },
+  { schluessel: 'Hmin', feld: 'delta_Hmin_prozent' },
+  { schluessel: 'Hmax', feld: 'delta_Hmax_prozent' },
 ] as const;
 
 export const SCHWELLE_PROZENT = 10;
@@ -33,7 +33,7 @@ export function hauptlauf(wurzel: string = repoWurzel()): string {
       balken,
     );
     dateien[`tornado-${g.schluessel}.pdf`] =
-      schreibePdf(zeichne(balken, { titel: g.titel, schwelle: SCHWELLE_PROZENT }));
+      schreibePdf(zeichne(balken, { schwelle: SCHWELLE_PROZENT }));
   }
 
   dateien['tornado.json'] = `${JSON.stringify(

@@ -37,10 +37,10 @@ describe('baueBalken', () => {
 describe('zeichne', () => {
   it('zeichnet je Balken zwei Rechtecke, eine Nulllinie und zwei Schwellenlinien', () => {
     const seite = zeichne(baueBalken(zeilen, 'delta_Hmax_prozent', 10), {
-      titel: 'Honorarrange (H_max mal g)', schwelle: 10,
+      schwelle: 10,
     });
     expect(seite.elemente.filter((e) => e.art === 'rechteck')).toHaveLength(4);
     expect(seite.elemente.filter((e) => e.art === 'linie').length).toBeGreaterThanOrEqual(3);
-    expect(seite.elemente.some((e) => e.art === 'text' && e.inhalt.includes('H_max'))).toBe(true);
+    expect(seite.elemente.some((e) => e.art === 'text' && e.inhalt.includes('relative Änderung'))).toBe(true);
   });
 });

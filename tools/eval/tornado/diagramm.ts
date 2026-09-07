@@ -66,7 +66,7 @@ const GRAU: Farbe = [0.55, 0.55, 0.55];
 
 export function zeichne(
   balken: readonly Balken[],
-  opt: { titel: string; schwelle: number },
+  opt: { schwelle: number },
 ): Seite {
   const spanne = Math.max(
     opt.schwelle * 1.5,
@@ -80,7 +80,7 @@ export function zeichne(
   const xVon = (prozent: number): number => mitte + (prozent / spanne) * (zeichenbreite / 2);
 
   const elemente: Element[] = [
-    { art: 'text', x: RAND_LINKS, y: hoehe - 22, groesse: 11, inhalt: opt.titel, farbe: [0, 0, 0] },
+    { art: 'text', x: mitte - 46, y: RAND_UNTEN - 30, groesse: 8, inhalt: 'relative Änderung in %', farbe: [0, 0, 0] },
     { art: 'linie', x1: mitte, y1: RAND_UNTEN - 6, x2: mitte, y2: hoehe - RAND_OBEN + 6, breite: 0.8, farbe: [0, 0, 0] },
     { art: 'linie', x1: xVon(-opt.schwelle), y1: RAND_UNTEN - 6, x2: xVon(-opt.schwelle), y2: hoehe - RAND_OBEN + 6, breite: 0.5, farbe: GRAU },
     { art: 'linie', x1: xVon(opt.schwelle), y1: RAND_UNTEN - 6, x2: xVon(opt.schwelle), y2: hoehe - RAND_OBEN + 6, breite: 0.5, farbe: GRAU },
